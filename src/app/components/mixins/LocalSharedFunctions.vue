@@ -28,8 +28,8 @@ export default {
 
       for (let [ index, day ] of allDays.entries()) {
         console.log('day:', day, 'index:', index);
-        let scheduleOrClosed = this.parseTimeRange(day, this.item.attributes['hours_' + day + '_start1'], this.item.attributes['hours_' + day + '_end1'], this.item.attributes['hours_' + day + '_start2'], this.item.attributes['hours_' + day + '_end2']);
-        // let scheduleOrClosed = this.parseTimeRange(day, this.item.attributes['hours_'+day+'_start'], this.item.attributes['hours_'+day+'_end']);
+        let scheduleOrClosed = this.parseTimeRange(day, this.item.properties['hours_' + day + '_start1'], this.item.properties['hours_' + day + '_end1'], this.item.properties['hours_' + day + '_start2'], this.item.properties['hours_' + day + '_end2']);
+        // let scheduleOrClosed = this.parseTimeRange(day, this.item.properties['hours_'+day+'_start'], this.item.properties['hours_'+day+'_end']);
         if (scheduleOrClosed !== 'Closed') {
           rows.push({
             id: index + 1,

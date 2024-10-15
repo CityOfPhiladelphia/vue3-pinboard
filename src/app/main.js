@@ -79,9 +79,9 @@ export default {
       let value;
 
       if (item._featureId.includes('covidFreeMealSites')) {
-        value = item.attributes.site_name;
+        value = item.properties.site_name;
       } else if (item._featureId.includes('parksSites')) {
-        value = transforms.titleCase.transform(item.attributes.site_name);
+        value = transforms.titleCase.transform(item.properties.site_name);
       }
       return value;
     },
@@ -101,36 +101,36 @@ export default {
             unique_key: 'categoryType_foodSite',
             i18n_key: 'categoryType.foodSite',
             value: function(item) {
-              return item.attributes.category_type == "Food Site";
+              return item.properties.category_type == "Food Site";
             },
           },
           'generalMealSite': {
             unique_key: 'categoryType_generalMealSite',
             i18n_key: 'categoryType.generalMealSite',
             value: function(item) {
-              return item.attributes.category_type == "General Meal Site";
+              return item.properties.category_type == "General Meal Site";
             },
           },
           'studentMealSite': {
             unique_key: 'categoryType_studentMealSite',
             i18n_key: 'categoryType.studentMealSite',
             value: function(item) {
-              return item.attributes.category_type == "Student Meal Site";
+              return item.properties.category_type == "Student Meal Site";
             },
           },
           'olderAdultMealSite': {
             unique_key: 'categoryType_olderAdultMealSite',
             i18n_key: 'categoryType.olderAdultMealSite',
             value: function(item) {
-              // return item.attributes.category_type == "Older Adult Meal Site";
-              return item.attributes.category_type == "Senior Meal Site";
+              // return item.properties.category_type == "Older Adult Meal Site";
+              return item.properties.category_type == "Senior Meal Site";
             },
           },
           'publicBenefits': {
             unique_key: 'categoryType_publicBenefits',
             i18n_key: 'categoryType.publicBenefits',
             value: function(item) {
-              return item.attributes.category_type == "Public Benefits";
+              return item.properties.category_type == "Public Benefits";
             },
           },
         },
@@ -142,10 +142,10 @@ export default {
             unique_key: 'weekday_monday',
             i18n_key: 'weekday.monday',
             value: function(item) {
-              let na_category = [ 'playstreets', 'Community Refrigerators', 'Recreation Center' ].includes(item.attributes.category);
-              let na_category_type = [].includes(item.attributes.category_type);
-              let day = item.attributes.hours_mon_start1 != null;
-              // console.log('monday, item.attributes.category_type:', item.attributes.category_type, 'category_type:', category_type, 'category_type || day', category_type || day);
+              let na_category = [ 'playstreets', 'Community Refrigerators', 'Recreation Center' ].includes(item.properties.category);
+              let na_category_type = [].includes(item.properties.category_type);
+              let day = item.properties.hours_mon_start1 != null;
+              // console.log('monday, item.properties.category_type:', item.properties.category_type, 'category_type:', category_type, 'category_type || day', category_type || day);
               return na_category || na_category_type || day;
             },
           },
@@ -153,9 +153,9 @@ export default {
             unique_key: 'weekday_tuesday',
             i18n_key: 'weekday.tuesday',
             value: function(item) {
-              let na_category = [ 'playstreets', 'Community Refrigerators', 'Recreation Center' ].includes(item.attributes.category);
-              let na_category_type = [].includes(item.attributes.category_type);
-              let day = item.attributes.hours_tues_start1 != null;
+              let na_category = [ 'playstreets', 'Community Refrigerators', 'Recreation Center' ].includes(item.properties.category);
+              let na_category_type = [].includes(item.properties.category_type);
+              let day = item.properties.hours_tues_start1 != null;
               return na_category || na_category_type || day;
             },
           },
@@ -163,9 +163,9 @@ export default {
             unique_key: 'weekday_wednesday',
             i18n_key: 'weekday.wednesday',
             value: function(item) {
-              let na_category = [ 'playstreets', 'Community Refrigerators', 'Recreation Center' ].includes(item.attributes.category);
-              let na_category_type = [].includes(item.attributes.category_type);
-              let day = item.attributes.hours_wed_start1 != null;
+              let na_category = [ 'playstreets', 'Community Refrigerators', 'Recreation Center' ].includes(item.properties.category);
+              let na_category_type = [].includes(item.properties.category_type);
+              let day = item.properties.hours_wed_start1 != null;
               return na_category || na_category_type || day;
             },
           },
@@ -173,9 +173,9 @@ export default {
             unique_key: 'weekday_thursday',
             i18n_key: 'weekday.thursday',
             value: function(item) {
-              let na_category = [ 'playstreets', 'Community Refrigerators', 'Recreation Center' ].includes(item.attributes.category);
-              let na_category_type = [].includes(item.attributes.category_type);
-              let day = item.attributes.hours_thurs_start1 != null;
+              let na_category = [ 'playstreets', 'Community Refrigerators', 'Recreation Center' ].includes(item.properties.category);
+              let na_category_type = [].includes(item.properties.category_type);
+              let day = item.properties.hours_thurs_start1 != null;
               return na_category || na_category_type || day;
             },
           },
@@ -183,9 +183,9 @@ export default {
             unique_key: 'weekday_friday',
             i18n_key: 'weekday.friday',
             value: function(item) {
-              let na_category = [ 'playstreets', 'Community Refrigerators', 'Recreation Center' ].includes(item.attributes.category);
-              let na_category_type = [].includes(item.attributes.category_type);
-              let day = item.attributes.hours_fri_start1 != null;
+              let na_category = [ 'playstreets', 'Community Refrigerators', 'Recreation Center' ].includes(item.properties.category);
+              let na_category_type = [].includes(item.properties.category_type);
+              let day = item.properties.hours_fri_start1 != null;
               return na_category || na_category_type || day;
             },
           },
@@ -194,9 +194,9 @@ export default {
             i18n_key: 'weekday.saturday',
             value: function(item) {
               // let na_category = false;
-              let na_category = [ 'Community Refrigerators' ].includes(item.attributes.category);
-              let na_category_type = [].includes(item.attributes.category_type);
-              let day = item.attributes.hours_sat_start1 != null;
+              let na_category = [ 'Community Refrigerators' ].includes(item.properties.category);
+              let na_category_type = [].includes(item.properties.category_type);
+              let day = item.properties.hours_sat_start1 != null;
               return na_category || na_category_type || day;
             },
           },
@@ -205,9 +205,9 @@ export default {
             i18n_key: 'weekday.sunday',
             value: function(item) {
               // let na_category = false;
-              let na_category = [ 'Community Refrigerators' ].includes(item.attributes.category);
-              let na_category_type = [].includes(item.attributes.category_type);
-              let day = item.attributes.hours_sun_start1 != null;
+              let na_category = [ 'Community Refrigerators' ].includes(item.properties.category);
+              let na_category_type = [].includes(item.properties.category_type);
+              let day = item.properties.hours_sun_start1 != null;
               return na_category || na_category_type || day;
             },
           },
@@ -220,8 +220,8 @@ export default {
             i18n_key: 'time.morning',
             dependentGroups: [ 'weekday' ],
             value: function(item, dependentServices) {
-              let na_category = [ 'playstreets', 'Community Refrigerators', 'Recreation Center' ].includes(item.attributes.category);
-              let na_category_type = [].includes(item.attributes.category_type);
+              let na_category = [ 'playstreets', 'Community Refrigerators', 'Recreation Center' ].includes(item.properties.category);
+              let na_category_type = [].includes(item.properties.category_type);
               let dayAndTime =false;
               let days = {
                 'monday': 'mon',
@@ -243,7 +243,7 @@ export default {
               noon.setHours(12, 0, 0, 0);
 
               for (let day of Object.keys(days)) {
-                let startTime1 = item.attributes['hours_' + days[day] + '_start1'];
+                let startTime1 = item.properties['hours_' + days[day] + '_start1'];
                 let startTime1Split;
                 let st1;
                 if (typeof(startTime1) !== "undefined" && startTime1 != null) {
@@ -257,10 +257,10 @@ export default {
                   dayAndTime = true;
                   break;
                 }
-                // console.log('noon:', noon, 'startTime1Split:', startTime1Split, 'd:', d, 'selectedDay:', selectedDay, "item.attributes['hours_' + selectedDay + '_start1']", item.attributes['hours_' + selectedDay + '_start1']);
-                // if (item.attributes['hours_' + selectedDay + '_start1'] );
+                // console.log('noon:', noon, 'startTime1Split:', startTime1Split, 'd:', d, 'selectedDay:', selectedDay, "item.properties['hours_' + selectedDay + '_start1']", item.properties['hours_' + selectedDay + '_start1']);
+                // if (item.properties['hours_' + selectedDay + '_start1'] );
               }
-              // console.log('site_name:', item.attributes.site_name, 'dependentServices:', dependentServices, 'startTimes1:', startTimes1);
+              // console.log('site_name:', item.properties.site_name, 'dependentServices:', dependentServices, 'startTimes1:', startTimes1);
               // let day = 1 != null;
               return na_category || na_category_type || dayAndTime;
             },
@@ -270,8 +270,8 @@ export default {
             i18n_key: 'time.afternoon',
             dependentGroups: [ 'weekday' ],
             value: function(item, dependentServices) {
-              let na_category = [ 'playstreets', 'Community Refrigerators', 'Recreation Center' ].includes(item.attributes.category);
-              let na_category_type = [].includes(item.attributes.category_type);
+              let na_category = [ 'playstreets', 'Community Refrigerators', 'Recreation Center' ].includes(item.properties.category);
+              let na_category_type = [].includes(item.properties.category_type);
               let dayAndTime =false;
               let days = {
                 'monday': 'mon',
@@ -295,10 +295,10 @@ export default {
               fivePm.setHours(17, 0, 0, 0);
 
               for (let day of Object.keys(days)) {
-                let startTime1 = item.attributes['hours_' + days[day] + '_start1'];
-                let endTime1 = item.attributes['hours_' + days[day] + '_end1'];
-                let startTime2 = item.attributes['hours_' + days[day] + '_start2'];
-                let endTime2 = item.attributes['hours_' + days[day] + '_end2'];
+                let startTime1 = item.properties['hours_' + days[day] + '_start1'];
+                let endTime1 = item.properties['hours_' + days[day] + '_end1'];
+                let startTime2 = item.properties['hours_' + days[day] + '_start2'];
+                let endTime2 = item.properties['hours_' + days[day] + '_end2'];
                 let startTime1Split, endTime1Split, startTime2Split, endTime2Split;
                 let st1, et1, st2, et2;
 
@@ -337,8 +337,8 @@ export default {
             dependentGroups: [ 'weekday' ],
             value: function(item, dependentServices) {
               // let na_category = false;
-              let na_category = [ 'Community Refrigerators' ].includes(item.attributes.category);
-              let na_category_type = [].includes(item.attributes.category_type);
+              let na_category = [ 'Community Refrigerators' ].includes(item.properties.category);
+              let na_category_type = [].includes(item.properties.category_type);
               let dayAndTime =false;
               let days = {
                 'monday': 'mon',
@@ -362,10 +362,10 @@ export default {
               fivePm.setHours(17, 0, 0, 0);
 
               for (let day of Object.keys(days)) {
-                let startTime1 = item.attributes['hours_' + days[day] + '_start1'];
-                let endTime1 = item.attributes['hours_' + days[day] + '_end1'];
-                let startTime2 = item.attributes['hours_' + days[day] + '_start2'];
-                let endTime2 = item.attributes['hours_' + days[day] + '_end2'];
+                let startTime1 = item.properties['hours_' + days[day] + '_start1'];
+                let endTime1 = item.properties['hours_' + days[day] + '_end1'];
+                let startTime2 = item.properties['hours_' + days[day] + '_start2'];
+                let endTime2 = item.properties['hours_' + days[day] + '_end2'];
                 let startTime1Split, endTime1Split, startTime2Split, endTime2Split;
                 let st1, et1, st2, et2;
 
@@ -405,20 +405,20 @@ export default {
     // value: function(item) {
     //   // console.log('value is running, item:', item);
     //   let value;
-    //   if (item.attributes.category_type == "Senior Meal Site") {
+    //   if (item.properties.category_type == "Senior Meal Site") {
     //     value = "Older adult meal site";
-    //   } else if (item.attributes.category_type == "Food Site") {
+    //   } else if (item.properties.category_type == "Food Site") {
     //     value = "Food site";
-    //   } else if (item.attributes.category_type == "Student Meal Site") {
+    //   } else if (item.properties.category_type == "Student Meal Site") {
     //     value = "Student meal site";
-    //   } else if (item.attributes.category_type == "General Meal Site") {
+    //   } else if (item.properties.category_type == "General Meal Site") {
     //     value = "General meal site";
-    //   } else if (item.attributes.category_type == "Community Refrigerators") {
+    //   } else if (item.properties.category_type == "Community Refrigerators") {
     //     value = "Community refrigerator";
-    //   } else if (item.attributes.category_type) {
-    //     value = item.attributes.category_type;
-    //   } else if (item.attributes.category_type) {
-    //     value = item.attributes.category_type;
+    //   } else if (item.properties.category_type) {
+    //     value = item.properties.category_type;
+    //   } else if (item.properties.category_type) {
+    //     value = item.properties.category_type;
     //   }
     //   return value;
     // },
@@ -747,7 +747,7 @@ export default {
   pickupDetailsExceptions: {
     condition: function(item) {
       let value = false;
-      if (item.attributes.Site_Key === 163) {
+      if (item.properties.Site_Key === 163) {
         value = true;
       }
       return value;

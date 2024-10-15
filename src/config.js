@@ -75,131 +75,22 @@ const pwdDrawnMapStyle = {
         'circle-radius': 7,
         'circle-color': [
           'match',
-          ['get', 'type'],
-          'nearby311',
-          '#FF0000',
-          'city311',
-          '#FF0000',
-          'nearbyCrimeIncidents',
-          '#0096FF',
-          'nearbyZoningAppeals',
-          '#009900',
-          'nearbyVacantIndicatorPoints',
-          '#9400c6',
-          'nearbyConstructionPermits',
-          '#FF0000',
-          'nearbyDemolitionPermits',
-          '#0096FF',
-          'nearbyUnsafeBuildings',
-          '#009900',
+          ['get', 'category_type'],
+          'Food Site',
+          '#0F4D90',
+          'Senior Meal Site',
+          '#a86518',
+          'Student Meal Site',
+          '#721817',
+          'General Meal Site',
+          '#506D0A',
+          'Public Benefits',
+          '#444444',
           /* other */ '#000000'
         ],
         'circle-stroke-width': 1,
         'circle-stroke-color': 'white',
       },
-    },
-  ],
-};
-
-const nearbyDrawnMapStyle = {
-  version: 8,
-  name: 'nearbyDrawnMap',
-  glyphs: '//fonts.openmaptiles.org/{fontstack}/{range}.pbf',
-  sources: {
-    pwd: {
-      tiles: [
-        'https://tiles.arcgis.com/tiles/fLeGjb7u4uXqeF9q/arcgis/rest/services/CityBasemap/MapServer/tile/{z}/{y}/{x}',
-      ],
-      type: 'raster',
-      tileSize: 256,
-    },
-    pwdLabels: {
-      tiles: [
-        'https://tiles.arcgis.com/tiles/fLeGjb7u4uXqeF9q/arcgis/rest/services/CityBasemap_Labels/MapServer/tile/{z}/{y}/{x}',
-      ],
-      type: 'raster',
-      tileSize: 256,
-    },
-    addressMarker: {
-      type: 'geojson',
-      data: {
-        type: 'Feature',
-        geometry: {
-          type: 'Point',
-          coordinates: [],
-        },
-      }
-    },
-    dorParcel: {
-      type: 'geojson',
-      data: {
-        type: 'Feature',
-        geometry: {
-          type: 'Polygon',
-          coordinates: [[[]]],
-        }
-      }
-    },
-    nearby: {
-      type: 'geojson',
-      data: {
-        type: 'FeatureCollection',
-        features: []
-      },
-    },
-  },
-  layers: [
-    {
-      id: 'pwd',
-      source: 'pwd',
-      type: 'raster',
-    },
-    {
-      id: 'pwdLabels',
-      source: 'pwdLabels',
-      type: 'raster',
-    },
-    {
-      id: 'nearby',
-      source: 'nearby',
-      type: 'circle',
-      paint: {
-        'circle-radius': 7,
-        'circle-color': [
-          'match',
-          ['get', 'type'],
-          'nearby311',
-          '#FF0000',
-          'city311',
-          '#FF0000',
-          'nearbyCrimeIncidents',
-          '#0096FF',
-          'nearbyZoningAppeals',
-          '#009900',
-          'nearbyVacantIndicatorPoints',
-          '#9400c6',
-          'nearbyConstructionPermits',
-          '#FF0000',
-          'nearbyDemolitionPermits',
-          '#0096FF',
-          'nearbyUnsafeBuildings',
-          '#009900',
-          /* other */ '#000000'
-        ],
-        'circle-stroke-width': 1,
-        'circle-stroke-color': 'white',
-      },
-    },
-    {
-      id: 'addressMarker',
-      source: 'addressMarker',
-      type: 'symbol',
-      layout: {
-        'icon-image': 'marker-blue',
-        'icon-rotate': 180,
-        'icon-anchor': 'bottom',
-        'icon-size': .05,
-      }
     },
   ],
 };

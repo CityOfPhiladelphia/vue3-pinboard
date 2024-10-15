@@ -81,8 +81,8 @@ export default {
       return false;
     },
     currentWeatherClosure() {
-      if (this.item.attributes.close_weather_start != null && this.item.attributes.close_weather_end != null) {
-        if (this.currentUnixDate >= this.item.attributes.close_weather_start && this.currentUnixDate <= this.item.attributes.close_weather_end) {
+      if (this.item.properties.close_weather_start != null && this.item.properties.close_weather_end != null) {
+        if (this.currentUnixDate >= this.item.properties.close_weather_start && this.currentUnixDate <= this.item.properties.close_weather_end) {
           return true;
         } 
         return false;
@@ -90,8 +90,8 @@ export default {
       return false;
     },
     currentTemporaryClosure() {
-      if (this.item.attributes.close_temporary_start != null && this.item.attributes.close_temporary_end != null) {
-        if (this.currentUnixDate >= this.item.attributes.close_temporary_start && this.currentUnixDate <= this.item.attributes.close_temporary_end) {
+      if (this.item.properties.close_temporary_start != null && this.item.properties.close_temporary_end != null) {
+        if (this.currentUnixDate >= this.item.properties.close_temporary_start && this.currentUnixDate <= this.item.properties.close_temporary_end) {
           return true;
         } 
         return false;
@@ -105,7 +105,7 @@ export default {
         message = this.$t('holidayClosure') + holiday.holiday_label + ' ' + holiday.start_date;
       } else if (this.futureHolidayClosure) {
         message = this.$t('futureHolidayClosure') + holiday.holiday_label + ' ' + holiday.start_date;
-        // message = this.$t('futureHolidayClosure') + transforms.toLocaleDateString.transform(this.item.attributes.close_holiday_start);
+        // message = this.$t('futureHolidayClosure') + transforms.toLocaleDateString.transform(this.item.properties.close_holiday_start);
       } else if (this.currentWeatherClosure) {
         message = this.$t('weatherClosure');
       } else if (this.currentTemporaryClosure) {
@@ -122,26 +122,26 @@ export default {
       return this.$config.subsections;
     },
     section() {
-      return this.subsections[this.$props.item.attributes['category']];
+      return this.subsections[this.$props.item.properties['category']];
     },
     subsection() {
-      return this.$props.item.attributes.category;
+      return this.$props.item.properties.category;
     },
     address() {
       let value;
       if (this.$props.item._featureId.includes('covidFreeMealSites')) {
-        value = this.$props.item.attributes.address;
+        value = this.$props.item.properties.address;
       } else if (this.$props.item._featureId.includes('parksSites')) {
-        value = transforms.titleCase.transform(this.$props.item.attributes.site_name);
+        value = transforms.titleCase.transform(this.$props.item.properties.site_name);
       }
       return value;
     },
     zipcode() {
       let value;
-      if (this.$props.item.attributes.zip_code) {
-        value = this.$props.item.attributes.zip_code;
-      } else if (this.$props.item.attributes.ZIP_CODE) {
-        value = this.$props.item.attributes.ZIP_CODE;
+      if (this.$props.item.properties.zip_code) {
+        value = this.$props.item.properties.zip_code;
+      } else if (this.$props.item.properties.ZIP_CODE) {
+        value = this.$props.item.properties.ZIP_CODE;
       }
       return value;
     },
@@ -160,7 +160,7 @@ export default {
       let days = [ 'mon', 'tues', 'wed', 'thurs', 'fri', 'sat', 'sun' ];
       let exceptionsArray = [];
       for (let day of days) {
-        let dayException = this.item.attributes['hours_' + day + '_exceptions'];
+        let dayException = this.item.properties['hours_' + day + '_exceptions'];
         if (dayException) {
           exceptionsArray.push(dayException);
         }
@@ -173,7 +173,7 @@ export default {
       let days = [ 'mon', 'tues', 'wed', 'thurs', 'fri', 'sat', 'sun' ];
       let exceptions = {};
       for (let day of days) {
-        let dayException = this.item.attributes['hours_' + day + '_exceptions'];
+        let dayException = this.item.properties['hours_' + day + '_exceptions'];
         if (dayException) {
           exceptions[day] = dayException;
         }
@@ -207,10 +207,10 @@ export default {
           value = this.$config.categoryExceptions.value;
           // console.log('getCategory is running, item:', item, 'value:', value);
         } else {
-          value = item.attributes.category;
+          value = item.properties.category;
         }
       } else {
-        value = item.attributes.category;
+        value = item.properties.category;
       }
       return value;
     },
@@ -280,21 +280,21 @@ export default {
           </div>
 
           <div
-            v-if="item.attributes.phone_number"
+            v-if="item.properties.phone_number"
             class="columns is-mobile"
           >
             <div class="column is-1">
               <font-awesome-icon icon="phone" />
             </div>
             <div class="column">
-              {{ item.attributes.phone_number }}
+              {{ item.properties.phone_number }}
             </div>
           </div>
         </div>
 
         <div class="column is-6">
           <div
-            v-if="item.attributes.category && item.attributes.category !== 'General Food Site'"
+            v-if="item.properties.category && item.properties.category !== 'General Food Site'"
             class="columns is-mobile"
           >
             <div class="column is-1">
@@ -302,22 +302,22 @@ export default {
             </div>
             <div class="column is-11">
               <!-- <a
-                v-if="item.attributes.website"
+                v-if="item.properties.website"
                 target="_blank"
-                :href="item.attributes.website"
+                :href="item.properties.website"
               >
-                {{ $t('sections.' + section + '.subsections[\'' + item.attributes.category + '\'].name') }}
+                {{ $t('sections.' + section + '.subsections[\'' + item.properties.category + '\'].name') }}
                 <font-awesome-icon icon="external-link-alt" />
               </a> -->
               <span
-                v-html="$t('sections.' + section + '.subsections[\'' + item.attributes.category + '\'].name')"
+                v-html="$t('sections.' + section + '.subsections[\'' + item.properties.category + '\'].name')"
               />
-              <!-- v-if="!item.attributes.website" -->
+              <!-- v-if="!item.properties.website" -->
             </div>
           </div>
 
           <div
-            v-if="item.attributes.website"
+            v-if="item.properties.website"
             class="columns is-mobile website-div"
           >
             <div class="column is-1">
@@ -326,9 +326,9 @@ export default {
             <div class="column is-11">
               <a
                 target="_blank"
-                :href="makeValidUrl(item.attributes.website)"
+                :href="makeValidUrl(item.properties.website)"
               >
-                {{ item.attributes.website }}
+                {{ item.properties.website }}
                 <font-awesome-icon icon="external-link-alt" />
               </a>
             </div>
@@ -337,7 +337,7 @@ export default {
       </div>
 
       <div
-        v-if="item.attributes.TEMPCLOSE !== null && item.attributes.TEMPCLOSE >= currentUnixDate"
+        v-if="item.properties.TEMPCLOSE !== null && item.properties.TEMPCLOSE >= currentUnixDate"
         class="temp-close-section"
       >
         <div class="card-exclamation-holder small-5">
@@ -348,7 +348,7 @@ export default {
         </div>
         <div class="grid-y card-exclamation-details small-19">
           <div><b>{{ $t('change') }}:</b></div>
-          <div>{{ $t('closure') }}: {{ transforms.toLocaleDateString.transform(item.attributes.TEMPCLOSE) }}</div>
+          <div>{{ $t('closure') }}: {{ transforms.toLocaleDateString.transform(item.properties.TEMPCLOSE) }}</div>
         </div>
       </div>
 

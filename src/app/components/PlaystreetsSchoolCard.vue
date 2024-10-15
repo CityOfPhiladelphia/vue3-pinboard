@@ -35,10 +35,10 @@ export default {
       return this.$config.subsections;
     },
     section() {
-      return this.subsections[this.$props.item.attributes['category']];
+      return this.subsections[this.$props.item.properties['category']];
     },
     subsection() {
-      return this.$props.item.attributes.category;
+      return this.$props.item.properties.category;
     },
   },
 };

@@ -124,25 +124,36 @@ onMounted(async () => {
   //     .addTo(map);
   // });
 
-  // map.on('mouseenter', 'nearby', (e) => {
-  //   // if (import.meta.env.VITE_DEBUG == 'true') console.log('mouseenter, e:', e);
-  //   if (e.features.length > 0) {
-  //     // if (import.meta.env.VITE_DEBUG == 'true') console.log('map.getSource(nearby):', map.getSource('nearby'), 'map.getStyle().sources:', map.getStyle().sources);
-  //     map.getCanvas().style.cursor = 'pointer'
-  //     MainStore.hoveredStateId = e.features[0].properties.id;
-  //   }
-  // });
+  map.on('click', 'resources', (e) => {
+    if (import.meta.env.VITE_DEBUG == 'true') console.log('click, e:', e);
+    if (e.features.length > 0) {
+      // if (import.meta.env.VITE_DEBUG == 'true') console.log('map.getSource(nearby):', map.getSource('nearby'), 'map.getStyle().sources:', map.getStyle().sources);
+      // MainStore.clickedMarkerId = e.features[0].properties.id;
+      // MainStore.clickedRow = { id: e.features[0].properties.id, lngLat: e.lngLat };
+      // MainStore.clickedRow = { id: e.features[0].properties.id, lngLat: e.lngLat };
+      // MainStore.clickedRow = { id: e.features[0].properties.id, lngLat: e.lngLat, type: e.features[0].properties.type };
+    }
+  });
 
-  // map.on('mouseleave', 'nearby', () => {
-  //   if (hoveredStateId.value) {
-  //     map.getCanvas().style.cursor = ''
-  //     MainStore.hoveredStateId = null;
-  //   }
-  // });
+  map.on('mouseenter', 'resources', (e) => {
+    if (import.meta.env.VITE_DEBUG == 'true') console.log('mouseenter, e:', e);
+    if (e.features.length > 0) {
+      // if (import.meta.env.VITE_DEBUG == 'true') console.log('map.getSource(nearby):', map.getSource('nearby'), 'map.getStyle().sources:', map.getStyle().sources);
+      map.getCanvas().style.cursor = 'pointer'
+      // MainStore.hoveredStateId = e.features[0].properties.id;
+    }
+  });
+
+  map.on('mouseleave', 'resources', () => {
+    // if (hoveredStateId.value) {
+    map.getCanvas().style.cursor = ''
+      // MainStore.hoveredStateId = null;
+    // }
+  });
 });
 
 watch(
-  () => DataStore.covidFreeMealSites.features,
+  () => DataStore.covidFreeMealSites,
   async newData => {
     if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue watch DataStore.covidFreeMealSites.features, newData:', newData);
     let geojson = featureCollection(newData);

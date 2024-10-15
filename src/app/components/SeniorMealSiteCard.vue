@@ -72,7 +72,7 @@ export default {
       return this.$config.subsections;
     },
     section() {
-      return this.subsections[this.$props.item.attributes['category']];
+      return this.subsections[this.$props.item.properties['category']];
     },
     subsection() {
       // special cases allow picking meals up
@@ -92,10 +92,10 @@ export default {
         'West Philadelphia Senior Community Center',
         'Peter Brassi NE Senior Center',
       ];
-      if (specialCases.includes(this.$props.item.attributes['site_name'])) {
+      if (specialCases.includes(this.$props.item.properties['site_name'])) {
         return 'specialPCA';
       }
-      return this.$props.item.attributes.category;
+      return this.$props.item.properties.category;
     },
   },
 };

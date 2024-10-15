@@ -97,8 +97,8 @@ const subsections = computed(() => {
 const section = computed(() => {
   let section;
   let category;
-  if (props.item.attributes) {
-    category = props.item.attributes['CATEGORY'] || props.item.attributes['category'];
+  if (props.item.properties) {
+    category = props.item.properties['CATEGORY'] || props.item.properties['category'];
   }
   if (Object.keys(subsections.value).length) {
     section = subsections.value[category];

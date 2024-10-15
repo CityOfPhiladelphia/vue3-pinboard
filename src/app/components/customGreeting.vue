@@ -286,8 +286,8 @@ export default {
         if (location) {
           // console.log('in loop, location:', location);
           for (let field of exceptionFields) {
-            if (location.attributes[field]) {
-              exceptionsPreliminary.push(location.attributes[field]);
+            if (location.properties[field]) {
+              exceptionsPreliminary.push(location.properties[field]);
             }
           }
         }
@@ -341,8 +341,8 @@ export default {
         // console.log('arrayElem:', arrayElem);
         if (arrayElem.services_offered) {
           service += `${arrayElem.services_offered},`;
-        } else if (arrayElem.attributes.category) {
-          service += `${arrayElem.attributes.category},`;
+        } else if (arrayElem.properties.category) {
+          service += `${arrayElem.properties.category},`;
         }
       });
 
