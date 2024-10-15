@@ -5,6 +5,8 @@ const { getSiteName } = useSharedFunctions();
 // import { library } from '@fortawesome/fontawesome-svg-core';
 import { findIconDefinition } from '@fortawesome/fontawesome-svg-core';
 
+import { useMainStore } from '@/stores/MainStore.js'
+const MainStore = useMainStore();
 import { useMapStore } from '@/stores/MapStore.js'
 const MapStore = useMapStore();
 import { useDataStore } from '@/stores/DataStore.js'
@@ -13,7 +15,7 @@ const DataStore = useDataStore();
 import { ref, computed, defineProps, onMounted, watch } from 'vue';
 
 import $config from '@/app/main.js'
-console.log('$config:', $config);
+// if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse.vue $config:', $config);
 
 const props = defineProps({
   // isMapVisible: Boolean,
@@ -48,11 +50,11 @@ const allowPrint = computed(() => {
 
 const locationClass = computed(() => {
   let value;
-  if (locationOpen.value && this.isMobile) {
+  if (locationOpen.value && MainStore.isMobileDevice) {
     value = 'location-content-mobile location-open';
   } else if (locationOpen.value) {
     value = 'location-content location-open';
-  } else if (props.isMobile) {
+  } else if (MainStore.isMobileDevice) {
     value = 'location-content-mobile';
   } else {
     value = 'location-content';
@@ -304,7 +306,7 @@ const makeID = (itemTitle) =>{
       :class="{ 'open': locationOpen }"
     >
       <div
-        v-if="allowPrint && !isMobile"
+        v-if="allowPrint && !MainStore.isMobileDevice"
         class="field column expand-collapse-checkbox is-1 pt-4 pb-0"
       >
         <div class="checkbox-height-fixer">

@@ -24,6 +24,8 @@ import { useMainStore } from '@/stores/MainStore.js'
 const MainStore = useMainStore();
 import { useGeocodeStore } from '@/stores/GeocodeStore.js'
 const GeocodeStore = useGeocodeStore();
+import { useDataStore } from '@/stores/DataStore.js'
+const DataStore = useDataStore();
 
 // ROUTER
 import { useRouter, useRoute } from 'vue-router';
@@ -65,6 +67,9 @@ onMounted(async () => {
     maxZoom: 22,
     attributionControl: false,
   });
+
+  console.log('import.meta.env.VITE_DEBUG:', import.meta.env.VITE_DEBUG);
+  if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue onMounted, DataStore.covidFreeMealSites.features:', DataStore.covidFreeMealSites.features);
 
   map.on('load', () => {
     let canvas = document.querySelector(".maplibregl-canvas");
@@ -135,6 +140,16 @@ onMounted(async () => {
   //   }
   // });
 });
+
+watch(
+  () => DataStore.covidFreeMealSites.features,
+  async newData => {
+    if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue watch DataStore.covidFreeMealSites.features, newData:', newData);
+    let geojson = featureCollection(newData);
+    if (import.meta.env.VITE_DEBUG == 'true') console.log('geojson:', geojson, 'map.getStyle().sources.resources.data:', map.getStyle().sources.resources.data);
+    map.getSource('resources').setData(newData);
+  }
+)
 
 // watch GeocodeStore.aisData for moving map center and setting zoom
 watch(

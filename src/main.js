@@ -6,6 +6,7 @@ import App from './App.vue'
 import router from './router'
 
 import isMac from './util/is-mac';
+import mergeDeep from './util/merge-deep';
 
 import 'vue-good-table-next/dist/vue-good-table-next.css'
 import "bulma";
@@ -88,7 +89,8 @@ import VueGoodTablePlugin from 'vue-good-table-next';
 app.use(VueGoodTablePlugin);
 
 import i18nFromFiles from './i18n/i18n.js';
-const messages = i18nFromFiles.i18n.data.messages;
+import i18nProject from './app/i18n/i18n.js';
+const messages = mergeDeep(i18nFromFiles.i18n.data.messages, i18nProject.i18n.data.messages);
 if (import.meta.env.VITE_DEBUG == 'true') console.log('i18nFromFiles:', i18nFromFiles, 'messages:', messages);
 const i18n = createI18n({
   legacy: false,

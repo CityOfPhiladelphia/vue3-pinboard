@@ -10,7 +10,7 @@ export const useDataStore = defineStore('DataStore', {
     return {
       covidFreeMealSites: {},
       printCheckboxes: [],
-      selectedResources: {},
+      selectedResources: [],
     };
   },
 

@@ -35,15 +35,12 @@ const pwdDrawnMapStyle = {
         }
       }
     },
-    dorParcel: {
+    resources: {
       type: 'geojson',
       data: {
-        type: 'Feature',
-        geometry: {
-          type: 'Polygon',
-          coordinates: [[[]]],
-        }
-      }
+        type: 'FeatureCollection',
+        features: []
+      },
     },
   },
   layers: [
@@ -68,6 +65,37 @@ const pwdDrawnMapStyle = {
         'icon-size': .05,
         "icon-allow-overlap" : true,
         "text-allow-overlap": true,
+      },
+    },
+    {
+      id: 'resources',
+      source: 'resources',
+      type: 'circle',
+      paint: {
+        'circle-radius': 7,
+        'circle-color': [
+          'match',
+          ['get', 'type'],
+          'nearby311',
+          '#FF0000',
+          'city311',
+          '#FF0000',
+          'nearbyCrimeIncidents',
+          '#0096FF',
+          'nearbyZoningAppeals',
+          '#009900',
+          'nearbyVacantIndicatorPoints',
+          '#9400c6',
+          'nearbyConstructionPermits',
+          '#FF0000',
+          'nearbyDemolitionPermits',
+          '#0096FF',
+          'nearbyUnsafeBuildings',
+          '#009900',
+          /* other */ '#000000'
+        ],
+        'circle-stroke-width': 1,
+        'circle-stroke-color': 'white',
       },
     },
   ],
