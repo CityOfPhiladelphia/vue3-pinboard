@@ -8,6 +8,16 @@ import fr from './fr';
 
 export default {
   i18n: {
+    languages: [
+      {
+        language: 'en-US',
+        title: 'English',
+      },
+      {
+        language: 'es',
+        title: 'Español',
+      },
+    ],
     data: {
       locale: 'en-US',
       messages: {

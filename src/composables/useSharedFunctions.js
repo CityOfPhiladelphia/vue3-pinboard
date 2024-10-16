@@ -1,18 +1,18 @@
 
 import transforms from '../util/transforms.js';
-import $config from '@/app/main.js'
-
-import { useRoute } from 'vue-router';
-// const route = useRoute();
-// console.log('route:', route);
+import $config from '@/app/main.js';
+// import { getCurrentInstance } from 'vue';
 
 export default function useSharedFunctions() {
   
-  const i18nLocale = 'en-us';
+  // const i18nLocale = 'en-us';
+  // const instance = getCurrentInstance();
+  // const locale = instance.appContext.config.globalProperties.$i18n;
+  // console.log('instance:', instance, 'locale:', locale);
   
-  const getSiteName = (item) => {
-    const route = useRoute();
-    // console.log('in getSiteName, item:', item, 'transforms:', transforms, 'this.$i18n.messages:', this.$i18n.messages, 'this.i18nLocale:', this.i18nLocale);
+  const getSiteName = (item, route) => {
+    // const route = useRoute();
+    // if (import.meta.env.VITE_DEBUG == 'true') console.log('route:', route);
     if (!item) {
       return;
     }
@@ -29,7 +29,8 @@ export default function useSharedFunctions() {
       if (currentQueryKeys.includes('address') || currentQueryKeys.includes('zipcode')) {// || this.$store.state.map.watchPositionOn) {
         // console.log('item:', item);
         if (item && item.distance) {
-          val = '(' + item.distance.toFixed(2) + ' ' + this.$i18n.messages[this.i18nLocale]['miles'] + ') ' + getter(item, transforms);
+          val = '(' + item.distance.toFixed(2) + 'miles) ' + getter(item, transforms);
+          // val = '(' + item.distance.toFixed(2) + ' ' + this.$i18n.messages[this.i18nLocale]['miles'] + ') ' + getter(item, transforms);
         } else {
           // console.log('getSiteName else is running');
           // val = '(' + item.distance.toFixed(2) + ' miles) ' + getter(state);

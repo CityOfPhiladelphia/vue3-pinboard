@@ -61,7 +61,6 @@ onMounted(async () => {
     container: 'map',
     style: $config[currentTopicMapStyle],
     center: $config.cityCenterCoords,
-    // center: [-75.163471, 39.953338],
     zoom: zoom,
     minZoom: 6,
     maxZoom: 22,
@@ -74,83 +73,135 @@ onMounted(async () => {
   map.on('load', () => {
     let canvas = document.querySelector(".maplibregl-canvas");
     canvas.setAttribute('tabindex', -1);
+
+    if (import.meta.env.VITE_DEBUG) console.log('map on load, map.getSource("resources"):', map.getSource('resources'));
+    if (map.getSource('resources') && DataStore.selectedResource) {
+      map.setPaintProperty(
+        'resources',
+        'circle-radius',
+        ['match',
+        ['get', '_featureId'],
+        DataStore.selectedResource,
+        12,
+        7,
+        ]
+      )
+    };
+    if (DataStore.covidFreeMealSites.features) {
+      const dataPoint = DataStore.covidFreeMealSites.features.filter(item => item._featureId == DataStore.selectedResource)[0];
+      if (import.meta.env.VITE_DEBUG) console.log('dataPoint:', dataPoint);
+      map.setCenter(dataPoint.geometry.coordinates);
+
+      const popup = document.getElementsByClassName('maplibregl-popup');
+      if (popup.length) {
+        popup[0].remove();
+      }
+      new maplibregl.Popup({ className: 'my-class' })
+        .setLngLat(dataPoint.geometry.coordinates)
+        .setHTML(dataPoint.properties.site_name)
+        .setMaxWidth("300px")
+        .addTo(map);
+    }
   })
 
   // add the address marker and camera icon sources
   const markerImage = await map.loadImage(markerSrc.value)
   if (import.meta.env.VITE_DEBUG == 'true') console.log('markerImage:', markerImage);
   map.addImage('marker-blue', markerImage.data);
-  // const buildingColumnsImage = await map.loadImage(buildingColumnsSrc.value)
-  // map.addImage('building-columns-solid', buildingColumnsImage.data);
-  // const cameraImage = await map.loadImage(cameraSrc.value)
-  // map.addImage('camera-icon', cameraImage.data);
 
   // add the unchanged maplibre controls
   map.addControl(new maplibregl.NavigationControl(), 'bottom-left');
   map.addControl(new maplibregl.GeolocateControl(), 'bottom-left');
 
   // if the L&I topic is selected, and a building footprint is clicked, set the selected building number in the LiStore
-
-  // if a nearby circle marker is clicked or hovered on, set its id in the MainStore as the hoveredStateId
-  // map.on('click', 'nearby', (e) => {
-  //   const properties = e.features[0].properties;
-  //   let idField, infoField, row;
-  //   if (MainStore.currentTopic == 'nearby') {
-  //     idField = NearbyActivityStore.dataFields[properties.type].id_field;
-  //     infoField = NearbyActivityStore.dataFields[properties.type].info_field;
-  //     row = NearbyActivityStore[properties.type].rows.filter(row => row[idField] === properties.id)[0];
-  //   } else if (MainStore.currentTopic == '311') {
-  //     idField = City311Store.dataFields[properties.type].id_field;
-  //     infoField = City311Store.dataFields[properties.type].info_field;
-  //     row = City311Store[properties.type].rows.filter(row => row[idField] === properties.id)[0];
-  //   }
-  //   if (import.meta.env.VITE_DEBUG == 'true') console.log('nearby click, e:', e, 'properties:', properties, 'idField:', idField, 'infoField:', infoField, 'e.features[0]:', e.features[0], 'row:', row);
-  //   // if (import.meta.env.VITE_DEBUG == 'true') console.log('nearby click, e:', e, 'properties:', properties, 'idField:', idField, 'e.features[0]:', e.features[0], 'type:', type, 'row:', row);
-  //   e.clickOnLayer = true;
-  //   MainStore.clickedMarkerId = e.features[0].properties.id;
-  //   MainStore.hoveredStateId = e.features[0].properties.id;
-  //   if (row.properties) {
-  //     row[infoField] = row.properties[infoField];
-  //   }
-
-  //   const popup = document.getElementsByClassName('maplibregl-popup');
-  //   if (popup.length) {
-  //     popup[0].remove();
-  //   }
-  //   new maplibregl.Popup({ className: 'my-class' })
-  //     .setLngLat(e.lngLat)
-  //     .setHTML(row[infoField])
-  //     .setMaxWidth("300px")
-  //     .addTo(map);
-  // });
-
   map.on('click', 'resources', (e) => {
-    if (import.meta.env.VITE_DEBUG == 'true') console.log('click, e:', e);
-    if (e.features.length > 0) {
-      // if (import.meta.env.VITE_DEBUG == 'true') console.log('map.getSource(nearby):', map.getSource('nearby'), 'map.getStyle().sources:', map.getStyle().sources);
-      // MainStore.clickedMarkerId = e.features[0].properties.id;
-      // MainStore.clickedRow = { id: e.features[0].properties.id, lngLat: e.lngLat };
-      // MainStore.clickedRow = { id: e.features[0].properties.id, lngLat: e.lngLat };
-      // MainStore.clickedRow = { id: e.features[0].properties.id, lngLat: e.lngLat, type: e.features[0].properties.type };
+    MainStore.lastSelectMethod = 'map';
+    const feature = e.features[0];
+    const properties = e.features[0].properties;
+    if (import.meta.env.VITE_DEBUG == 'true') console.log('click, e:', e, 'feature:', feature, 'properties:', properties);
+    const selectedResourceId = e.features[0].properties._featureId;
+    let query = {...route.query};
+    if (import.meta.env.VITE_DEBUG) console.log('Map click query:', query);
+    if (selectedResourceId != DataStore.selectedResource) {
+      query['resource'] = selectedResourceId;
+      router.push({ name: 'home', query });
+    } else {
+      delete query.resource;
+      router.push({ name: 'home', query });
     }
   });
 
   map.on('mouseenter', 'resources', (e) => {
-    if (import.meta.env.VITE_DEBUG == 'true') console.log('mouseenter, e:', e);
+    // if (import.meta.env.VITE_DEBUG == 'true') console.log('mouseenter, e:', e);
     if (e.features.length > 0) {
-      // if (import.meta.env.VITE_DEBUG == 'true') console.log('map.getSource(nearby):', map.getSource('nearby'), 'map.getStyle().sources:', map.getStyle().sources);
       map.getCanvas().style.cursor = 'pointer'
-      // MainStore.hoveredStateId = e.features[0].properties.id;
     }
   });
 
   map.on('mouseleave', 'resources', () => {
-    // if (hoveredStateId.value) {
     map.getCanvas().style.cursor = ''
-      // MainStore.hoveredStateId = null;
-    // }
   });
+
+  map.on('style.load', () => {
+    if (import.meta.env.VITE_DEBUG) console.log('Map.vue map style.load event');
+  })
+
 });
+
+watch(
+  () => DataStore.selectedResource,
+  async (newSelectedResource, oldSelectedResource) => {
+    if (import.meta.env.VITE_DEBUG) console.log('newSelectedResource:', newSelectedResource, 'oldSelectedResource:', oldSelectedResource);
+    if (oldSelectedResource) {
+      map.setPaintProperty(
+          'resources',
+          'circle-radius',
+          ['match',
+          ['get', '_featureId'],
+          oldSelectedResource,
+          7,
+          7,
+          ]
+        )
+      const popup = document.getElementsByClassName('maplibregl-popup');
+      if (popup.length) {
+        popup[0].remove();
+      }
+    }
+    if (newSelectedResource) {
+      if (map.getSource('resources')) {
+        map.setPaintProperty(
+          'resources',
+          'circle-radius',
+          ['match',
+          ['get', '_featureId'],
+          newSelectedResource,
+          12,
+          7,
+          ]
+        )
+      };
+      if (DataStore.covidFreeMealSites.features) {
+        const dataPoint = DataStore.covidFreeMealSites.features.filter(item => item._featureId == newSelectedResource)[0];
+        if (import.meta.env.VITE_DEBUG) console.log('dataPoint:', dataPoint);
+        if (MainStore.lastSelectMethod == 'row') {
+          map.setCenter(dataPoint.geometry.coordinates);
+        }
+        // map.setZoom(15);
+
+        const popup = document.getElementsByClassName('maplibregl-popup');
+        if (popup.length) {
+          popup[0].remove();
+        }
+        new maplibregl.Popup({ className: 'my-class' })
+          .setLngLat(dataPoint.geometry.coordinates)
+          .setHTML(dataPoint.properties.site_name)
+          .setMaxWidth("300px")
+          .addTo(map);
+      }
+    }
+  }
+)
 
 watch(
   () => DataStore.covidFreeMealSites,
@@ -169,10 +220,10 @@ watch(
     if (import.meta.env.VITE_DEBUG == 'true') console.log('MapStore aisData watch, newAddress:', newAddress);
     if (newAddress.features && newAddress.features[0].geometry.coordinates.length) {
       const newCoords = newAddress.features[0].geometry.coordinates;
-      if (MainStore.lastSearchMethod !== 'mapClick') {
-        map.setCenter(newCoords);
-        map.setZoom(17);
-      }
+      // if (MainStore.lastSearchMethod !== 'mapClick') {
+      map.setCenter(newCoords);
+      map.setZoom(14);
+      // }
       MapStore.currentAddressCoords = newCoords;
   
       const popup = document.getElementsByClassName('maplibregl-popup');
@@ -201,127 +252,6 @@ watch(
     map.getSource('addressMarker').setData(address);
   }
 });
-
-
-// for Nearby topic, watch the clicked row to fly to its coordinates and show a popup
-// const clickedRow = computed(() => { return MainStore.clickedRow; })
-// watch(
-//   () => clickedRow.value,
-//   newClickedRow => {
-//     if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue clickedRow watch, newClickedRow:', newClickedRow, 'newClickedRow.type:', newClickedRow.type);
-//     if (newClickedRow) map.flyTo({ center: newClickedRow.lngLat });
-//     let idField, infoField, row;
-//     if (MainStore.currentTopic == 'nearby') {
-//       idField = NearbyActivityStore.dataFields[newClickedRow.type].id_field;
-//       infoField = NearbyActivityStore.dataFields[newClickedRow.type].info_field;
-//       row = NearbyActivityStore[newClickedRow.type].rows.filter(row => row[idField] === newClickedRow.id)[0];
-//     } else if (MainStore.currentTopic == 'city311') {
-//       idField = City311Store.dataFields.city311.id_field;
-//       infoField = City311Store.dataFields.city311.info_field;
-//       row = City311Store[newClickedRow.type].rows.filter(row => row[idField] === newClickedRow.id)[0];
-//     }
-//     if (import.meta.env.VITE_DEBUG == 'true') console.log('nearby click, newClickedRow:', newClickedRow, 'idField:', idField, 'row:', row);
-//     if (row.properties) row[infoField] = row.properties[infoField];
-//     const popup = document.getElementsByClassName('maplibregl-popup');
-//     if (popup.length) {
-//       popup[0].remove();
-//     }
-//     new maplibregl.Popup({ className: 'my-class' })
-//       .setLngLat(newClickedRow.lngLat)
-//       .setHTML(row[infoField] || row.properties[infoField])
-//       .setMaxWidth("300px")
-//       .addTo(map);
-//   }
-// );
-
-// for Nearby topic, watch the id of the circle marker that is hovered on to change the color of the circle
-// const hoveredStateId = computed(() => { return MainStore.hoveredStateId; })
-// watch(
-//   () => hoveredStateId.value,
-//   newHoveredStateId => {
-//     // if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue hoveredStateId watch, newHoveredStateId:', newHoveredStateId, 'map.getStyle().sources.nearby.data.features:', map.getStyle().sources.nearby.data.features);
-//     if (newHoveredStateId) {
-//       if (import.meta.env.VITE_DEBUG == 'true') console.log('map.getStyle().sources.nearby.data.features', map.getStyle().sources.nearby.data.features, 'newHoveredStateId:', newHoveredStateId);
-//       const feature = map.getStyle().sources.nearby.data.features.filter(feature => feature.properties.id === newHoveredStateId)[0];
-//       const index = map.getStyle().sources.nearby.data.features.indexOf(feature);
-//       if (import.meta.env.VITE_DEBUG == 'true') console.log('feature:', feature, 'index:', index, 'map.getStyle().sources.nearby.data.features:', map.getStyle().sources.nearby.data.features.filter(feature => feature.properties.id === newHoveredStateId)[0]);
-//       map.getStyle().sources.nearby.data.features.splice(index, 1);
-//       map.getStyle().sources.nearby.data.features.push(feature);
-//       console.log("map.getSource('nearby'):", map.getSource('nearby'), "map.getStyle().sources.nearby.data:", map.getStyle().sources.nearby.data);
-//       map.getSource('nearby').setData(map.getStyle().sources.nearby.data);
-//       // if (import.meta.env.VITE_DEBUG == 'true') console.log('map.getStyle().sources:', map.getStyle().sources.filter(source => source.id === 'nearby')[0]);
-//       map.setPaintProperty(
-//         'nearby',
-//         'circle-stroke-color',
-//         ['match',
-//         ['get', 'id'],
-//         newHoveredStateId,
-//         'black',
-//         'white',
-//         ]
-//       )
-//       map.setPaintProperty(
-//         'nearby', 
-//         'circle-color',
-//         ['match',
-//         ['get', 'id'],
-//         newHoveredStateId,
-//         "#F3D661",
-//         ['match',
-//         ['get', 'type'],
-//         'nearby311',
-//         '#FF0000',
-//         'city311',
-//         '#FF0000',
-//         'nearbyCrimeIncidents',
-//         '#0096FF',
-//         'nearbyZoningAppeals',
-//         '#009900',
-//         'nearbyVacantIndicatorPoints',
-//         '#9400c6',
-//         'nearbyConstructionPermits',
-//         '#FF0000',
-//         'nearbyDemolitionPermits',
-//         '#0096FF',
-//         'nearbyUnsafeBuildings',
-//         '#009900',
-//         /* other */ '#000000'
-//         ]
-//       ]
-//       );
-//     } else {
-//       map.setPaintProperty(
-//         'nearby',
-//         'circle-stroke-color',
-//         'white',
-//       )
-//       map.setPaintProperty(
-//         'nearby', 
-//         'circle-color', 
-//         ['match',
-//         ['get', 'type'],
-//         'nearby311',
-//         '#FF0000',
-//         'city311',
-//         '#FF0000',
-//         'nearbyCrimeIncidents',
-//         '#0096FF',
-//         'nearbyZoningAppeals',
-//         '#009900',
-//         'nearbyVacantIndicatorPoints',
-//         '#9400c6',
-//         'nearbyConstructionPermits',
-//         '#FF0000',
-//         'nearbyDemolitionPermits',
-//         '#0096FF',
-//         'nearbyUnsafeBuildings',
-//         '#009900',
-//         /* other */ '#000000'
-//         ]
-//       );
-//     }
-//   }
-// )
 
 const labelLayers = computed(() => { return MapStore.labelLayers; });
 

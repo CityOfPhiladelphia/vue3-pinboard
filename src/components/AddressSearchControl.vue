@@ -1,11 +1,12 @@
 <script setup>
 import { computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 import { useMainStore } from '@/stores/MainStore.js'
 const MainStore = useMainStore();
 
 const router = useRouter();
+const route = useRoute();
 
 defineProps({
   inputId: {
@@ -43,6 +44,13 @@ const yPosition = computed(() => {
   }
 });
 
+const setRoute = (address) => {
+  let query = {...route.query};
+  if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse expandLocation query:', query);
+  query.address = address;
+  router.push({ name: 'home', query });
+}
+
 </script>
 
 <template>
@@ -62,7 +70,7 @@ const yPosition = computed(() => {
           class="input address-input"
           type="text"
           placeholder="Search for an address, OPA account, or DOR number"
-          @keydown.enter="router.push({ name: 'home', query: { address: MainStore.addressSearchValue }})"
+          @keydown.enter="setRoute(MainStore.addressSearchValue)"
         >
       </div>
       <div class="control">
@@ -83,7 +91,7 @@ const yPosition = computed(() => {
           class="button is-info address-search-button"
           type="submit"
           title="Address Search Button"
-          @click="router.push({ name: 'home', query: { address: MainStore.addressSearchValue }})"
+          @click="setRoute(MainStore.addressSearchValue)"
         >
           <font-awesome-icon
             :icon="['fas', 'search']"

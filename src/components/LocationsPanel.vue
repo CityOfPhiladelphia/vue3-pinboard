@@ -12,6 +12,7 @@ import AddressSearchControl from '@/components/AddressSearchControl.vue';
 import ExpandCollapse from '@/components/ExpandCollapse.vue';
 
 import { useRoute } from 'vue-router';
+import ExpandCollapseContent from '@/app/components/ExpandCollapseContent.vue';
 
 const version = import.meta.env.VITE_VERSION;
 
@@ -68,9 +69,10 @@ const currentItems = computed(() => {
         :item="item"
         :is-map-visible="true"
       >
-        <!-- :is-map-visible="isMapVisible"
-        :checked="selectAllCheckbox" -->
-        <!-- @print-box-checked="printBoxChecked" -->
+        <ExpandCollapseContent
+          v-if="item._featureId == DataStore.selectedResource"
+          :item="item"
+        />
       </ExpandCollapse>
     </div>
   </div>

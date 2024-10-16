@@ -1,6 +1,7 @@
-<script>
+<script setup>
 
-import LocalSharedFunctions from './mixins/LocalSharedFunctions.vue';
+import useLocalSharedFunctions from '../composables/useLocalSharedFunctions.js';
+const { getPickupDetails, parseTimeRange, parseException } = useLocalSharedFunctions();
 
 import transforms from '../general/transforms.js';
 import { format } from 'date-fns';
@@ -14,255 +15,220 @@ import NdsSchoolCard from './NdsSchoolCard.vue';
 import GeneralSiteCard from './GeneralSiteCard.vue';
 import FridgeSiteCard from './FridgeSiteCard.vue';
 import PublicBenefitsSiteCard from './PublicBenefitsSiteCard.vue';
-// import RecreationCentersSchoolCard from './RecreationCentersSchoolCard.vue';
-// import SeniorMealSitePprCard from './SeniorMealSitePprCard.vue';
-// import CharterSchoolCard from './CharterSchoolCard.vue';
-// import PsdSchoolCard from './PsdSchoolCard.vue';
-// import OtherSchoolCard from './OtherSchoolCard.vue';
 
-// import PrintShareSection from '@phila/pinboard/src/components/PrintShareSection';
-// import {
-//   Callout,
-// } from '@phila/phila-ui';
+import { computed } from 'vue';
 
-export default {
-  name: 'ExpandCollapseContent',
-  components: {
-    SeniorMealSiteCard,
-    FoodSiteCard,
-    PprSchoolCard,
-    PhaSchoolCard,
-    PlaystreetsSchoolCard,
-    NdsSchoolCard,
-    GeneralSiteCard,
-    FridgeSiteCard,
-    PublicBenefitsSiteCard,
-    // PrintShareSection,
-    // Callout,
-    // RecreationCentersSchoolCard,
-    // SeniorMealSitePprCard,
-    // CharterSchoolCard,
-    // PsdSchoolCard,
-    // OtherSchoolCard,
-  },
-  mixins: [
-    // SharedFunctions,
-    // LocalSharedFunctions,
-  ],
-  props: {
-    item: {
-      type: Object,
-      default: function(){
-        return {};
-      },
+import $config from '@/app/main.js'
+
+const props = defineProps({
+  item: {
+    type: Object,
+    default: function(){
+      return {};
     },
-  },
-  computed: {
-    currentUnixDate() {
-      let currentYear = format(new Date(), 'yyyy');
-      let currentMonth = format(new Date(), 'MM');
-      let currentDay = format(new Date(), 'dd');
-      let dateStart = new Date(2023, 5, 8);
-      console.log('currentYear:', currentYear, 'currentMonth:', currentMonth, 'currentDay:', currentDay, 'dateStart:', dateStart, 'dateStartUnix:', parseInt(format(dateStart, 'T')));
-      return parseInt(format(dateStart, 'T'));
-    },
-    futureHolidayClosure() {
-      let holiday = this.$store.state.holiday;
-      if (holiday.coming_soon) {
-        return true;
-      } 
-      return false;
-    },
-    currentHolidayClosure() {
-      let holiday = this.$store.state.holiday;
-      if (holiday.current) {
-        return true;
-      } 
-      return false;
-    },
-    currentWeatherClosure() {
-      if (this.item.properties.close_weather_start != null && this.item.properties.close_weather_end != null) {
-        if (this.currentUnixDate >= this.item.properties.close_weather_start && this.currentUnixDate <= this.item.properties.close_weather_end) {
-          return true;
-        } 
-        return false;
-      } 
-      return false;
-    },
-    currentTemporaryClosure() {
-      if (this.item.properties.close_temporary_start != null && this.item.properties.close_temporary_end != null) {
-        if (this.currentUnixDate >= this.item.properties.close_temporary_start && this.currentUnixDate <= this.item.properties.close_temporary_end) {
-          return true;
-        } 
-        return false;
-      } 
-      return false;
-    },
-    closureMessage() {
-      let holiday = this.$store.state.holiday;
-      let message;
-      if (this.currentHolidayClosure) {
-        message = this.$t('holidayClosure') + holiday.holiday_label + ' ' + holiday.start_date;
-      } else if (this.futureHolidayClosure) {
-        message = this.$t('futureHolidayClosure') + holiday.holiday_label + ' ' + holiday.start_date;
-        // message = this.$t('futureHolidayClosure') + transforms.toLocaleDateString.transform(this.item.properties.close_holiday_start);
-      } else if (this.currentWeatherClosure) {
-        message = this.$t('weatherClosure');
-      } else if (this.currentTemporaryClosure) {
-        message = this.$t('temporaryClosure');
-      } else {
-        message = null;
-      }
-      return message;
-    },
-    transforms() {
-      return transforms;
-    },
-    subsections() {
-      return this.$config.subsections;
-    },
-    section() {
-      return this.subsections[this.$props.item.properties['category']];
-    },
-    subsection() {
-      return this.$props.item.properties.category;
-    },
-    address() {
-      let value;
-      if (this.$props.item._featureId.includes('covidFreeMealSites')) {
-        value = this.$props.item.properties.address;
-      } else if (this.$props.item._featureId.includes('parksSites')) {
-        value = transforms.titleCase.transform(this.$props.item.properties.site_name);
-      }
-      return value;
-    },
-    zipcode() {
-      let value;
-      if (this.$props.item.properties.zip_code) {
-        value = this.$props.item.properties.zip_code;
-      } else if (this.$props.item.properties.ZIP_CODE) {
-        value = this.$props.item.properties.ZIP_CODE;
-      }
-      return value;
-    },
-    daysKey() {
-      return {
-        'mon': 'monday',
-        'tues': 'tuesday',
-        'wed': 'wednesday',
-        'thurs': 'thursday',
-        'fri': 'friday',
-        'sat': 'saturday',
-        'sun': 'sunday',
-      };
-    },
-    exceptionsList() {
-      let days = [ 'mon', 'tues', 'wed', 'thurs', 'fri', 'sat', 'sun' ];
-      let exceptionsArray = [];
-      for (let day of days) {
-        let dayException = this.item.properties['hours_' + day + '_exceptions'];
-        if (dayException) {
-          exceptionsArray.push(dayException);
-        }
-      }
-      let exceptionsSet = new Set(exceptionsArray);
-      let exceptionsSetArray = [ ...exceptionsSet ];
-      return exceptionsSetArray;
-    },
-    exceptionsByDay() {
-      let days = [ 'mon', 'tues', 'wed', 'thurs', 'fri', 'sat', 'sun' ];
-      let exceptions = {};
-      for (let day of days) {
-        let dayException = this.item.properties['hours_' + day + '_exceptions'];
-        if (dayException) {
-          exceptions[day] = dayException;
-        }
-      }
-      return exceptions;
-    },
-    exceptionsWithCounter() {
-      let exceptionsWithCounter = {};
-      for (let day = 0; day < Object.keys(this.exceptionsByDay).length; day++) {
-        exceptionsWithCounter[Object.keys(this.exceptionsByDay)[day]] = {
-          value: Object.keys(this.exceptionsByDay)[day],
-          counter: 1+this.exceptionsList.indexOf(this.exceptionsByDay[Object.keys(this.exceptionsByDay)[day]]),
-        };
-      }
-      console.log('exceptionsWithCounter:', exceptionsWithCounter);
-      return exceptionsWithCounter;
-    },
-    pickupDetails() {
-      return this.getPickupDetails();
-    },
-  },
-  methods: {
-    parseAddress(address) {
-      const formattedAddress = address.replace(/(Phila.+)/g, city => `<div>${city}</div>`).replace(/^\d+\s[A-z]+\s[A-z]+/g, lineOne => `<div>${lineOne}</div>`).replace(/,/, '');
-      return formattedAddress;
-    },
-    getCategory(item) {
-      let value;
-      if (this.$config.categoryExceptions) {
-        if (this.$config.categoryExceptions.condition(item)) {
-          value = this.$config.categoryExceptions.value;
-          // console.log('getCategory is running, item:', item, 'value:', value);
-        } else {
-          value = item.properties.category;
-        }
-      } else {
-        value = item.properties.category;
-      }
-      return value;
-    },
-    makeValidUrl(url) {
-      let newUrl = window.decodeURIComponent(url);
-      newUrl = newUrl
-        .trim()
-        .replace(/\s/g, '');
-      if (/^(:\/\/)/.test(newUrl)) {
-        return `http${newUrl}`;
-      }
-      if (!/^(f|ht)tps?:\/\//i.test(newUrl)) {
-        return `http://${newUrl}`;
-      }
-      return newUrl;
-    },
-  },
+  }
+});
+
+const currentUnixDate = computed (() => {
+  let currentYear = format(new Date(), 'yyyy');
+  let currentMonth = format(new Date(), 'MM');
+  let currentDay = format(new Date(), 'dd');
+  let dateStart = new Date(2023, 5, 8);
+  // if (import.meta.env.VITEDEBUG) console.log('currentYear:', currentYear, 'currentMonth:', currentMonth, 'currentDay:', currentDay, 'dateStart:', dateStart, 'dateStartUnix:', parseInt(format(dateStart, 'T')));
+  return parseInt(format(dateStart, 'T'));
+});
+
+const futureHolidayClosure = computed (() => {
+  let holiday = this.$store.state.holiday;
+  if (holiday.coming_soon) {
+    return true;
+  } 
+  return false;
+});
+
+const currentHolidayClosure = computed (() => {
+  let holiday = this.$store.state.holiday;
+  if (holiday.current) {
+    return true;
+  } 
+  return false;
+});
+
+const currentWeatherClosure = computed (() => {
+  if (this.item.properties.close_weather_start != null && this.item.properties.close_weather_end != null) {
+    if (this.currentUnixDate >= this.item.properties.close_weather_start && this.currentUnixDate <= this.item.properties.close_weather_end) {
+      return true;
+    } 
+    return false;
+  } 
+  return false;
+});
+
+const currentTemporaryClosure = computed (() => {
+  if (this.item.properties.close_temporary_start != null && this.item.properties.close_temporary_end != null) {
+    if (this.currentUnixDate >= this.item.properties.close_temporary_start && this.currentUnixDate <= this.item.properties.close_temporary_end) {
+      return true;
+    } 
+    return false;
+  } 
+  return false;
+});
+
+const closureMessage = computed (() => {
+  let holiday = this.$store.state.holiday;
+  let message;
+  if (this.currentHolidayClosure) {
+    message = this.$t('holidayClosure') + holiday.holiday_label + ' ' + holiday.start_date;
+  } else if (this.futureHolidayClosure) {
+    message = this.$t('futureHolidayClosure') + holiday.holiday_label + ' ' + holiday.start_date;
+    // message = this.$t('futureHolidayClosure') + transforms.toLocaleDateString.transform(this.item.properties.close_holiday_start);
+  } else if (this.currentWeatherClosure) {
+    message = this.$t('weatherClosure');
+  } else if (this.currentTemporaryClosure) {
+    message = this.$t('temporaryClosure');
+  } else {
+    message = null;
+  }
+  return message;
+});
+
+// const transforms = computed(() => {
+//   return transforms;
+// });
+
+const subsections = computed(() => {
+  return $config.subsections;
+});
+
+const section = computed (() => {
+  return subsections.value[props.item.properties['category']];
+});
+
+const subsection = computed (() => {
+  return props.item.properties.category;
+});
+
+const address = computed (() => {
+  // let value;
+  // // if (props.item._featureId.includes('covidFreeMealSites')) {
+  // value = props.item.properties['address'];//.address;
+  // // } //else if (props.item._featureId.includes('parksSites')) {
+  // //   value = transforms.titleCase.transform(props.item.properties.site_name);
+  // // }
+  // return value;
+  if (props.item.properties) {
+    return props.item.properties.address;
+  }
+});
+
+const zipcode = computed (() => {
+  let value;
+  if (props.item.properties.zip_code) {
+    value = props.item.properties.zip_code;
+  } else if (props.item.properties.ZIP_CODE) {
+    value = props.item.properties.ZIP_CODE;
+  }
+  return value;
+});
+
+const daysKey = computed (() => {
+  return {
+    'mon': 'monday',
+    'tues': 'tuesday',
+    'wed': 'wednesday',
+    'thurs': 'thursday',
+    'fri': 'friday',
+    'sat': 'saturday',
+    'sun': 'sunday',
+  };
+});
+
+const exceptionsList = computed (() => {
+  let days = [ 'mon', 'tues', 'wed', 'thurs', 'fri', 'sat', 'sun' ];
+  let exceptionsArray = [];
+  for (let day of days) {
+    let dayException = props.item.properties['hours_' + day + '_exceptions'];
+    if (dayException) {
+      exceptionsArray.push(dayException);
+    }
+  }
+  let exceptionsSet = new Set(exceptionsArray);
+  let exceptionsSetArray = [ ...exceptionsSet ];
+  return exceptionsSetArray;
+});
+
+const exceptionsByDay = computed (() => {
+  let days = [ 'mon', 'tues', 'wed', 'thurs', 'fri', 'sat', 'sun' ];
+  let exceptions = {};
+  for (let day of days) {
+    let dayException = props.item.properties['hours_' + day + '_exceptions'];
+    if (dayException) {
+      exceptions[day] = dayException;
+    }
+  }
+  return exceptions;
+});
+
+const exceptionsWithCounter = computed (() => {
+  let exceptionsWithCounter = {};
+  for (let day = 0; day < Object.keys(exceptionsByDay.value).length; day++) {
+    exceptionsWithCounter[Object.keys(exceptionsByDay.value)[day]] = {
+      value: Object.keys(exceptionsByDay.value)[day],
+      counter: 1+exceptionsList.value.indexOf(exceptionsByDay.value[Object.keys(exceptionsByDay.value)[day]]),
+    };
+  }
+  // if (import.meta.env.VITEDEBUG) console.log('exceptionsWithCounter:', exceptionsWithCounter);
+  return exceptionsWithCounter;
+});
+
+const pickupDetails = computed (() => {
+  return getPickupDetails(props.item, daysKey.value, exceptionsWithCounter.value);
+});
+
+
+
+const parseAddress = (address) => {
+  const formattedAddress = address.replace(/(Phila.+)/g, city => `<div>${city}</div>`).replace(/^\d+\s[A-z]+\s[A-z]+/g, lineOne => `<div>${lineOne}</div>`).replace(/,/, '');
+  return formattedAddress;
+};
+
+const getCategory = (item) => {
+  let value;
+  if (this.$config.categoryExceptions) {
+    if (this.$config.categoryExceptions.condition(item)) {
+      value = this.$config.categoryExceptions.value;
+      // if (import.meta.env.VITEDEBUG) console.log('getCategory is running, item:', item, 'value:', value);
+    } else {
+      value = item.properties.category;
+    }
+  } else {
+    value = item.properties.category;
+  }
+  return value;
+};
+
+const makeValidUrl = (url) => {
+  let newUrl = window.decodeURIComponent(url);
+  newUrl = newUrl
+    .trim()
+    .replace(/\s/g, '');
+  if (/^(:\/\/)/.test(newUrl)) {
+    return `http${newUrl}`;
+  }
+  if (!/^(f|ht)tps?:\/\//i.test(newUrl)) {
+    return `http://${newUrl}`;
+  }
+  return newUrl;
 };
 
 </script>
 
 <template>
   <div>
-    <!-- <div :class="isMobile ? 'main-content-mobile' : 'main-content'"> -->
-      
-      
-    <!-- <div class="columns top-section">
-        <div class="column is-6">
-          <div
-            v-if="address"
-            class="columns is-mobile"
-          >
-            <div class="column is-1">
-              <font-awesome-icon icon="map-marker-alt" />
-            </div>
-            <div class="column">
-              {{ address }}<br>
-              Philadelphia, PA {{ zipcode }}<br>
-            </div>
-          </div>
-        </div> -->
-    <!-- <div> -->
     <div :class="isMobile ? 'main-content-mobile' : 'main-content'">
       <print-share-section
         :item="item"
       />
-
-      <!-- <callout
-        v-if="closureMessage != null"
-        :message="closureMessage"
-        type="warning"
-      /> -->
 
       <div class="columns">
         <div class="column is-6">

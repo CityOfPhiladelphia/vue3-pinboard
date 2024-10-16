@@ -12,6 +12,10 @@ const MapStore = useMapStore();
 import { useDataStore } from '@/stores/DataStore.js'
 const DataStore = useDataStore();
 
+import { useRoute, useRouter } from 'vue-router';
+const route = useRoute();
+const router = useRouter();
+
 import { ref, computed, defineProps, onMounted, watch } from 'vue';
 
 import $config from '@/app/main.js'
@@ -34,8 +38,6 @@ const props = defineProps({
   }
 });
   
-const locationOpen = ref(false);
-
 const printCheckboxes = computed(() => {
   return DataStore.printCheckboxes;
 })
@@ -137,24 +139,24 @@ const sectionColor = computed(() => {
   return sectionColor;
 });
 
-const selectedResources = computed(() => {
-  return DataStore.selectedResources;
+const selectedResource = computed(() => {
+  return DataStore.selectedResource;
 });
 
 const latestSelectedResourceFromMap = computed(() => {
   return MapStore.latestSelectedResourceFromMap;
 });
 
-
+const locationOpen = ref(selectedResource.value == props.item._featureId ? true : false)
 
 watch(
-  () => selectedResources,
-  nextSelectedResources => {
-    // console.log('watch selectedResources is running');
-    if (locationOpen.value || nextSelectedResources.includes(props.item._featureId)) {
+  () => selectedResource.value,
+  nextSelectedResource => {
+    // if (import.meta.env.VITE_DEBUG) console.log('watch selectedResource is running, nextSelectedResource:', nextSelectedResource);
+    if (locationOpen.value || nextSelectedResource == props.item._featureId) {
       if (locationOpen.value === false) {
         openLocation();
-      } else if (locationOpen.value && !nextSelectedResources.includes(props.item._featureId)) {
+      } else if (locationOpen.value && !nextSelectedResource != props.item._featureId) {
         locationOpen.value = false;
       }
     } else {
@@ -168,11 +170,11 @@ watch(
   nextIsMapVisible => {
     console.log('ExpandCollapse watch isMapVisible');
     if (!nextIsMapVisible) {
-      if (this.latestSelectedResourceFromMap) {
-        console.log('ExpandCollapse is reporting map is invisible and there is a this.latestSelectedResourceFromMap:', this.latestSelectedResourceFromMap);
-        if (this.latestSelectedResourceFromMap === props.item._featureId) {
-          const el = this.$el;
-          const visible = this.isElementInViewport(el);
+      if (latestSelectedResourceFromMap) {
+        console.log('ExpandCollapse is reporting map is invisible and there is a latestSelectedResourceFromMap:', latestSelectedResourceFromMap);
+        if (latestSelectedResourceFromMap === props.item._featureId) {
+          const el = $el;
+          const visible = isElementInViewport(el);
           if (!visible) {
             console.log('ExpandCollapse in if in if');
             el.scrollIntoView({ block: 'center' });
@@ -185,20 +187,20 @@ watch(
 
 onMounted(async () => {
     // console.log('ExpColl mounted:', evaluateSlot(slots.siteName));
-    if (selectedResources.value.includes(props.item._featureId)) {
+    if (selectedResource.value == props.item._featureId) {
       openLocation();
     }
 
     let values = []
-    // if (this.printCheckboxes.length) {
-    //   for (let checkbox of this.printCheckboxes) {
+    // if (printCheckboxes.length) {
+    //   for (let checkbox of printCheckboxes) {
     //     if (checkbox == props.item._featureId) {
     //       values.push(true);
     //     }
     //   }
     // }
     if (values.includes(true)) {
-      // console.log('ExpandCollapse mounted, values includes true, this.printCheckboxes:', this.printCheckboxes, 'props.item._featureId:', props.item._featureId, 'this.printCheckboxes.includes(props.item_featureId):', this.printCheckboxes.includes(props.item_featureId));
+      // console.log('ExpandCollapse mounted, values includes true, printCheckboxes:', printCheckboxes, 'props.item._featureId:', props.item._featureId, 'printCheckboxes.includes(props.item_featureId):', printCheckboxes.includes(props.item_featureId));
       document.getElementById('checkbox'+props.item._featureId).checked = true;
     }
 
@@ -214,31 +216,20 @@ onMounted(async () => {
     // function activate(e) {
     //   console.log('activate, e:', e, 'e.path[0]:', e.path[0]);
     //   if (e.type === 'keypress' && [ 13, 32 ].includes(e.keyCode) && e.srcElement.id == 'refine-top') {
-    //     this.expandRefine();
+    //     expandRefine();
     //   }
     // };
 });
 
 const clickCheckBox = (e) => {
   console.log('clickCheckBox is running, e:', e, 'props.item._featureId:', props.item._featureId);
-  this.$emit('print-box-checked', props.item._featureId);
+  $emit('print-box-checked', props.item._featureId);
 };
 
 const openPrintView = (e) => {
   e.stopPropagation();
   console.log('openPrintView is running, e:', e, 'props.item._featureId:', props.item._featureId);
   window.open('./resource-view/' + props.item._featureId, '_blank');
-};
-
-const openLocation = () => {
-  locationOpen.value = true;
-  const el = document.getElementsByClassName(props.item._featureId)[0];
-  console.log('ExpandCollapse openLocation is running, el:', el);
-  let visible = this.isElementInViewport(el);
-  console.log('ExpandCollapse visible 1:', visible)
-  if (!visible) {
-    el.scrollIntoView({ block: 'center' });
-  }
 };
 
 const isElementInViewport = (el) => {
@@ -264,26 +255,30 @@ const isElementInViewport = (el) => {
 };
 
 const expandLocation = () => {
-  let siteName = getSiteName(props.item);
-  // console.log('ExpandCollapse expandLocation is starting, siteName:', siteName);
-  locationOpen.value = !locationOpen.value;
-  const selectedResource = props.item._featureId;
-  const selectedResources = [];
-  let latestSelectedResourceFromExpand = null;
-  if (locationOpen.value) {
-    selectedResources.push(selectedResource);
-    latestSelectedResourceFromExpand = selectedResource;
-    // this.$gtag.event('list-click', {
-    //   'event_category': this.$store.state.gtag.category,
-    //   'event_label': siteName,
-    // });
+  // locationOpen.value = !locationOpen.value;
+  MainStore.lastSelectMethod = 'row';
+  const selectedResourceId = props.item._featureId;
+  let query = {...route.query};
+  if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse expandLocation query:', query);
+  if (!locationOpen.value) {
+    query['resource'] = selectedResourceId;
+    router.push({ name: 'home', query });
   } else {
-    selectedResources.splice(selectedResources.indexOf(selectedResource), 1);
+    delete query.resource;
+    router.push({ name: 'home', query });
   }
-  // console.log('ExpandCollapse expandLocation after selectedResources is defined');
+  if (import.meta.env.VITE_DEBUG == 'true') console.log('ExpandCollapse expandLocation after selectedResource is defined');
+};
 
-  this.$store.commit('setSelectedResources', selectedResources);
-  this.$store.commit('setLatestSelectedResourceFromExpand', latestSelectedResourceFromExpand);
+const openLocation = () => {
+  locationOpen.value = true;
+  const el = document.getElementsByClassName(props.item._featureId)[0];
+  if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse openLocation is running, el:', el);
+  let visible = isElementInViewport(el);
+  if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse visible 1:', visible)
+  if (!visible) {
+    el.scrollIntoView({ block: 'center' });
+  }
 };
 
 const makeID = (itemTitle) =>{
@@ -346,7 +341,7 @@ const makeID = (itemTitle) =>{
               :class="item._featureId"
               :aria-expanded="locationOpen"
             >
-              {{ getSiteName(item) }}
+              {{ getSiteName(item, route) }}
               <div
                 v-if="section && !i18nEnabled"
                 class="section-name"

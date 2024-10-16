@@ -30,6 +30,7 @@ import { onMounted, computed, getCurrentInstance, watch } from 'vue';
 // COMPONENTS
 import LocationsPanel from '@/components/LocationsPanel.vue';
 import MapPanel from '@/components/MapPanel.vue';
+// import RefinePanel from '@/components/RefinePanel.vue';
 
 const instance = getCurrentInstance();
 const locale = computed(() => instance.appContext.config.globalProperties.$i18n.locale);
@@ -149,7 +150,6 @@ const appTitle = computed(() => {
     </template>
     <template #lang-selector-nav>
       <lang-selector
-        v-show="MainStore.currentTopic == 'voting'"
         :languages="languages"
       />
     </template>
@@ -160,6 +160,7 @@ const appTitle = computed(() => {
     id="main"
     class="main invisible-scrollbar"
   >
+    <!-- <refine-panel /> -->
     <!-- TOPIC PANEL ON LEFT -->
     <div
       v-if="!isMobileDevice() && MainStore.windowDimensions.width > 768"

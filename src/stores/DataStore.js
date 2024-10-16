@@ -10,7 +10,8 @@ export const useDataStore = defineStore('DataStore', {
     return {
       covidFreeMealSites: {},
       printCheckboxes: [],
-      selectedResources: [],
+      selectedResource: null,
+      latestSelectedResourceFromExpand: null,
     };
   },
 
@@ -23,6 +24,7 @@ export const useDataStore = defineStore('DataStore', {
         // let features = data.features;
         for (let i=0; i<data.features.length; i++) {
           data.features[i]._featureId = 'covidFreeMealSites_' + i;
+          data.features[i].properties._featureId = 'covidFreeMealSites_' + i;
         }
         this.covidFreeMealSites = data;
       }

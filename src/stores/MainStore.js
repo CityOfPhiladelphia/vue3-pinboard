@@ -11,7 +11,7 @@ export const useMainStore = defineStore('MainStore', {
       publicPath: null,
       isMobileDevice: null,
       isMac: null,
-      lastSearchMethod: 'address',
+      lastSelectMethod: '',
       addressSearchValue: '',
       lastClickCoords: [0,0],
       currentParcelGeocodeParameter: '',
@@ -41,9 +41,9 @@ export const useMainStore = defineStore('MainStore', {
     setCurrentGeocodeParameter(value) {
       this.currentGeocodeParameter = value;
     },
-    setLastSearchMethod(searchMethod) {
-      this.lastSearchMethod = searchMethod;
-    },
+    // setLastSearchMethod(searchMethod) {
+    //   this.lastSearchMethod = searchMethod;
+    // },
     setCurrentNearbyDataType(data) {
       this.currentNearbyDataType = data;
     },
