@@ -12,6 +12,10 @@ export const useDataStore = defineStore('DataStore', {
       printCheckboxes: [],
       selectedResource: null,
       latestSelectedResourceFromExpand: null,
+      sources: {},
+      databaseWithoutHiddenItems: [],
+      currentData: [],
+      subsections: {},
     };
   },
 

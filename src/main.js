@@ -24,6 +24,7 @@ import MobileNav from "@phila/phila-ui-mobile-nav";
 import NavLink from "@phila/phila-ui-nav-link";
 import Textbox from "@phila/phila-ui-textbox";
 import LangSelector from "@phila/phila-ui-lang-selector";
+import Radio from "@phila/phila-ui-radio";
 
 import appConfig from './app/main.js';
 console.log('appConfig:', appConfig);
@@ -37,6 +38,7 @@ app.component("MobileNav", MobileNav);
 app.component("NavLink", NavLink);
 app.component("Textbox", Textbox);
 app.component("LangSelector", LangSelector);
+app.component("Radio", Radio);
 app.use(PhilaUICore);
 
 import { library } from '@fortawesome/fontawesome-svg-core';

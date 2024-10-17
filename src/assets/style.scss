@@ -30,8 +30,24 @@ a {
 .main {
   height: calc(100vh - 50px);
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   padding-top: 42px !important;
+  margin-top: 0px !important;
+}
+
+.main-column {
+  height: calc(100vh - 50px);
+  display: flex;
+  flex-direction: column;
+  padding-top: 42px !important;
+  margin-top: 0px !important;
+}
+
+.main-row {
+  height: calc(100vh - 350px);
+  display: flex;
+  flex-direction: row;
+  // padding-top: 42px !important;
   margin-top: 0px !important;
 }
 

@@ -30,7 +30,7 @@ import { onMounted, computed, getCurrentInstance, watch } from 'vue';
 // COMPONENTS
 import LocationsPanel from '@/components/LocationsPanel.vue';
 import MapPanel from '@/components/MapPanel.vue';
-// import RefinePanel from '@/components/RefinePanel.vue';
+import RefinePanel from '@/components/RefinePanel.vue';
 
 const instance = getCurrentInstance();
 const locale = computed(() => instance.appContext.config.globalProperties.$i18n.locale);
@@ -158,29 +158,32 @@ const appTitle = computed(() => {
   <!-- MAIN CONTENT -->
   <main
     id="main"
-    class="main invisible-scrollbar"
+    class="main-column invisible-scrollbar"
   >
-    <!-- <refine-panel /> -->
+    <refine-panel />
+
+    <div class="main-row">
     <!-- TOPIC PANEL ON LEFT -->
-    <div
-      v-if="!isMobileDevice() && MainStore.windowDimensions.width > 768"
-      class="topics-holder"
-    >
-      <locations-panel />
-    </div>
+      <div
+        v-if="!isMobileDevice() && MainStore.windowDimensions.width > 768"
+        class="topics-holder"
+      >
+        <locations-panel />
+      </div>
 
-    <!-- MAP PANEL ON RIGHT - right now only contains the address input -->
-    <div
-      class="map-panel-holder"
-    >
-      <map-panel />
-    </div>
+      <!-- MAP PANEL ON RIGHT - right now only contains the address input -->
+      <div
+        class="map-panel-holder"
+      >
+        <map-panel />
+      </div>
 
-    <div
-      v-if="isMobileDevice() || MainStore.windowDimensions.width <= 768"
-      class="topics-holder"
-    >
-      <locations-panel />
+      <div
+        v-if="isMobileDevice() || MainStore.windowDimensions.width <= 768"
+        class="topics-holder"
+      >
+        <locations-panel />
+      </div>
     </div>
   </main>
 

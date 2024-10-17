@@ -1,13 +1,22 @@
 import { defineStore } from 'pinia';
 import buffer from '@turf/buffer';
 import { point } from '@turf/helpers';
+import $config from '@/config.js';
 
 export const useMapStore = defineStore("MapStore", {
   state: () => {
     return {
       map: {},
+      searchDistance: $config.searchDistance,
       currentMapStyle: 'pwdDrawnMapStyle',
       currentAddressCoords: [],
+      zipcodeCenter: [],
+      bufferList: null,
+      zipcodeBufferShape: null,
+      bufferShape: null,
+      watchPositionOn: null,
+      
+      
       // currentTopicMapStyle: {},
       bufferForAddress: {},
       currentMarkersForTopic: [],

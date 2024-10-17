@@ -1,3 +1,161 @@
+<script setup>
+
+import { useMainStore } from '@/stores/MainStore.js'
+const MainStore = useMainStore();
+import { parse, format } from 'date-fns';
+// import greetingSection from './greetingSection.vue';
+
+// components: {
+//   greetingSection,
+// },
+import $config from '@/config.js';
+import appConfig from '@/app/main.js';
+
+import { onMounted, watch, ref, computed, defineEmits } from 'vue';
+
+const props = defineProps({
+  message: {
+    type: String,
+    default: function() {
+      return 'defaultMessage';
+    },
+  },
+})
+
+const sections = ref({});
+const subsections = ref({});
+
+
+const i18nEnabled = computed(() => {
+  if (appConfig.i18n) {
+    return true;
+  }
+  return false;
+
+});
+
+const database = computed(() => {
+  return DataStore.covidFreeMealSites.features;
+  
+  // if ($store.state.sources[$appType]) {
+  //   if ($store.state.sources[$appType].data) {
+  //     return $store.state.sources[$appType].data.rows || $store.state.sources[$appType].data.features || $store.state.sources[$appType].data;
+  //   }
+  // }
+  // return [];
+});
+
+const geocodeStatus = computed(() => {
+  if (GeocodeStore.aisData.features && GeocodeStore.aisData.features.length) {
+    return 'success';
+  } else {
+    return 'error';
+  } 
+});
+
+const allExceptions = computed(() => {
+  let exceptionsPreliminary = [];
+  let exceptionFields = [
+    'hours_mon_exceptions',
+    'hours_tues_exceptions',
+    'hours_wed_exceptions',
+    'hours_thurs_exceptions',
+    'hours_fri_exceptions',
+    'hours_sat_exceptions',
+    'hours_sun_exceptions',
+  ];
+  for (let location of database.value) {
+    if (location) {
+      // console.log('in loop, location:', location);
+      for (let field of exceptionFields) {
+        if (location.properties[field]) {
+          exceptionsPreliminary.push(location.properties[field]);
+        }
+      }
+    }
+  }
+  let exceptionsSet = new Set(exceptionsPreliminary);
+  let exceptionsArray = [ ...exceptionsSet ];
+
+  return exceptionsArray;
+});
+
+const hasError = computed(() => {
+  return geocodeStatus.value === 'error';
+});
+
+const errorMessage = computed(() => {
+  const input = GeocodeStore.aisData;
+  return `
+      <p>
+        We couldn't find
+        ${input ? '<strong>' + input + '</strong>' : 'that address'}.
+        Are you sure everything was spelled correctly?
+      </p>
+      <p>
+        Here are some examples of things you can search for:
+      </p>
+      <ul>
+        <li>1234 Market St</li>
+        <li>1001 Pine Street #201</li>
+        <li>12th & Market</li>
+        <li>883309050 (an OPA number with no hyphens or other characters)</li>
+      </ul>
+    `;
+});
+
+watch(
+  () => database,
+  async nextDatabase => {
+    // let subsections = getCounts();
+    subsections.value = getCounts();
+    // $store.commit('setSubsections', subsections);
+    MainStore.subsections = subsections.value;
+  },
+);
+
+onMounted(async () => {
+  sections.value = appConfig.sections;
+});
+
+// METHODS
+const getCounts = () => {
+  console.log('customGreeting.vue getCounts is running');
+  const refineData = database.value;
+  let service = '';
+
+  console.log('in getRefineSearchList, refineData:', refineData);
+  refineData.forEach((arrayElem) => {
+    // console.log('arrayElem:', arrayElem);
+    if (arrayElem.services_offered) {
+      service += `${arrayElem.services_offered},`;
+    } else if (arrayElem.properties.category) {
+      service += `${arrayElem.properties.category},`;
+    }
+  });
+
+  // TODO: break into smaller chunks
+  // let serviceArray = service.split(/(,|;)/);
+  let serviceArray = service.split(',');
+  serviceArray = serviceArray.map(s => s.trim());
+
+  let countObject = serviceArray.reduce(function (acc, curr) {
+    if (curr) {
+      if (typeof acc[curr] == 'undefined') {
+        // console.log('Object.keys(acc)', Object.keys(acc), 'curr', curr);
+        acc[curr] = 1;
+      } else {
+        acc[curr] += 1;
+      }
+    }
+    return acc;
+  }, {});
+
+  return countObject;
+}
+
+</script>
+
 <template>
   <div
     class="custom-greeting content"
@@ -26,7 +184,7 @@
     <!-- foodSites -->
     <div
       class="section-header"
-      :style="{ 'background-color': $config.sections.foodSites.color }"
+      :style="{ 'background-color': appConfig.sections.foodSites.color }"
     >
       <b>{{ $t('sections.foodSites.header') }}</b>
     </div>
@@ -63,7 +221,7 @@
     <!-- generalMealSites -->
     <div
       class="section-header"
-      :style="{ 'background-color': $config.sections.generalMealSites.color }"
+      :style="{ 'background-color': appConfig.sections.generalMealSites.color }"
     >
       <b>{{ $t('sections.generalMealSites.header') }}</b>
     </div>
@@ -94,7 +252,7 @@
     <!-- olderAdultMealSites -->
     <div
       class="section-header"
-      :style="{ 'background-color': $config.sections.olderAdultMealSites.color }"
+      :style="{ 'background-color': appConfig.sections.olderAdultMealSites.color }"
     >
       <b>{{ $t('sections.olderAdultMealSites.header') }}</b>
     </div>
@@ -131,7 +289,7 @@
     <!-- studentMealSites -->
     <div
       class="section-header"
-      :style="{ 'background-color': $config.sections.studentMealSites.color }"
+      :style="{ 'background-color': appConfig.sections.studentMealSites.color }"
     >
       <b>{{ $t('sections.studentMealSites.header') }}</b>
     </div>
@@ -184,7 +342,7 @@
     <!-- publicBenefits -->
     <div
       class="section-header"
-      :style="{ 'background-color': $config.sections.publicBenefits.color }"
+      :style="{ 'background-color': appConfig.sections.publicBenefits.color }"
     >
       <b>{{ $t('sections.publicBenefits.header') }}</b>
     </div>
@@ -229,146 +387,6 @@
     </div>
   </div>
 </template>
-
-<script>
-
-// import { parse, format } from 'date-fns';
-// import greetingSection from './greetingSection.vue';
-
-export default {
-  name: 'CustomGreeting',
-  components: {
-    // greetingSection,
-  },
-  props: {
-    'message': {
-      type: String,
-      default: function() {
-        return 'defaultMessage';
-      },
-    },
-  },
-  data() {
-    let data = {
-      sections: {},
-      subsections: {},
-    };
-    return data;
-  },
-  computed: {
-    i18nEnabled() {
-      if (this.$config.i18n) {
-        return true;
-      }
-      return false;
-
-    },
-    database() {
-      if (this.$store.state.sources[this.$appType]) {
-        if (this.$store.state.sources[this.$appType].data) {
-          return this.$store.state.sources[this.$appType].data.rows || this.$store.state.sources[this.$appType].data.features || this.$store.state.sources[this.$appType].data;
-        }
-      }
-      return [];
-    },
-    allExceptions() {
-      let exceptionsPreliminary = [];
-      let exceptionFields = [
-        'hours_mon_exceptions',
-        'hours_tues_exceptions',
-        'hours_wed_exceptions',
-        'hours_thurs_exceptions',
-        'hours_fri_exceptions',
-        'hours_sat_exceptions',
-        'hours_sun_exceptions',
-      ];
-      for (let location of this.database) {
-        if (location) {
-          // console.log('in loop, location:', location);
-          for (let field of exceptionFields) {
-            if (location.properties[field]) {
-              exceptionsPreliminary.push(location.properties[field]);
-            }
-          }
-        }
-      }
-      let exceptionsSet = new Set(exceptionsPreliminary);
-      let exceptionsArray = [ ...exceptionsSet ];
-
-      return exceptionsArray;
-    },
-    hasError() {
-      return this.$store.state.geocode.status === 'error';
-    },
-    errorMessage() {
-      const input = this.$store.state.geocode.input;
-      return `
-          <p>
-            We couldn't find
-            ${input ? '<strong>' + input + '</strong>' : 'that address'}.
-            Are you sure everything was spelled correctly?
-          </p>
-          <p>
-            Here are some examples of things you can search for:
-          </p>
-          <ul>
-            <li>1234 Market St</li>
-            <li>1001 Pine Street #201</li>
-            <li>12th & Market</li>
-            <li>883309050 (an OPA number with no hyphens or other characters)</li>
-          </ul>
-        `;
-    },
-  },
-  watch: {
-    database(nextDatabase) {
-      let subsections = this.getCounts();
-      this.subsections = subsections;
-      this.$store.commit('setSubsections', subsections);
-    },
-  },
-  mounted() {
-    this.sections = this.$config.sections;
-  },
-  methods: {
-    getCounts() {
-      console.log('customGreeting.vue getCounts is running');
-      const refineData = this.database;
-      let service = '';
-
-      console.log('in getRefineSearchList, refineData:', refineData);
-      refineData.forEach((arrayElem) => {
-        // console.log('arrayElem:', arrayElem);
-        if (arrayElem.services_offered) {
-          service += `${arrayElem.services_offered},`;
-        } else if (arrayElem.properties.category) {
-          service += `${arrayElem.properties.category},`;
-        }
-      });
-
-      // TODO: break this into smaller chunks
-      // let serviceArray = service.split(/(,|;)/);
-      let serviceArray = service.split(',');
-      serviceArray = serviceArray.map(s => s.trim());
-
-      let countObject = serviceArray.reduce(function (acc, curr) {
-        if (curr) {
-          if (typeof acc[curr] == 'undefined') {
-            // console.log('Object.keys(acc)', Object.keys(acc), 'curr', curr);
-            acc[curr] = 1;
-          } else {
-            acc[curr] += 1;
-          }
-        }
-        return acc;
-      }, {});
-
-      return countObject;
-    },
-  },
-};
-</script>
-
 
 <!-- @import "../../node_modules/@phila/pinboard/src/assets/scss/customGreeting.scss"; -->
 <style lang="scss" scoped>

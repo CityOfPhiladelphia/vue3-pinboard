@@ -86,7 +86,7 @@
   </div>
 </template>
 <script>
-import { inputMixins } from '@phila/phila-ui/src/utils/inputMixins';
+// import { inputMixins } from '@phila/phila-ui/src/utils/inputMixins';
 import IconToolTip from './IconToolTip.vue';
 
 /**
@@ -97,9 +97,9 @@ import IconToolTip from './IconToolTip.vue';
  */
 export default {
   name: 'Checkbox',
-  mixins: [
-    inputMixins,
-  ],
+  // mixins: [
+  //   inputMixins,
+  // ],
   inheritAttrs: false,
   components: {
     IconToolTip,
