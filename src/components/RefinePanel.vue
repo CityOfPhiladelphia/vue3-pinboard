@@ -1241,7 +1241,8 @@ const closeRefinePanel = () => {
               class="dropdown-checkbox-header"
               @click="expandCheckbox(ind)"
             >
-              {{ $t(ind + '.category') }}
+              <!-- {{ $t(ind + '.category') }} -->
+              test
             </div>
             <div
               v-if="refineList[ind].expanded"

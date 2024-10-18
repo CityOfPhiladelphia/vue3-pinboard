@@ -45,6 +45,7 @@ const router = createRouter({
 
 router.afterEach(async (to, from) => {
   const DataStore = useDataStore();
+  const MainStore = useMainStore();
   if (import.meta.env.VITE_DEBUG) console.log('router.afterEach to:', to, 'from:', from);
   if (to.query.resource && to.query.resource != from.query.resource) {
     DataStore.selectedResource = to.query.resource;
@@ -54,6 +55,12 @@ router.afterEach(async (to, from) => {
   if (to.query.address && to.query.address != from.query.address) {
     // DataStore.selectedAddress = to.query.address;
     getGeocodeAndPutInStore(to.query.address);
+  }
+  if (to.query.zipcode && to.query.zipcode != from.query.zipcode) {
+    MainStore.selectedZipcode = to.query.zipcode;
+  }
+  if (to.query.services && to.query.services != from.query.services) {
+    MainStore.selectedServices = to.query.services;
   }
   // DataStore.latestSelectedResourceFromExpand = selectedResource;
 });
