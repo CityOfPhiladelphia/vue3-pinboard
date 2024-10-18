@@ -1162,6 +1162,7 @@ const closeRefinePanel = () => {
           class="columns"
         >
           <radio
+            :id="'radio_'+ind"
             v-model="selectedList['radio_'+ind]"
             v-if="refineListTranslated[ind]['radio']"
             :options="refineListTranslated[ind]['radio']"
@@ -1216,7 +1217,7 @@ const closeRefinePanel = () => {
       </div>
     </div>
 
-    <!-- if using multipleFieldGroups option and NOT dropdownRefine -->
+    <!-- if using multipleFieldGroups option and dropdownRefine -->
     <div
       v-if="dataStatus === 'success' && refineType === 'multipleFieldGroups' && dropdownRefine"
       id="multiple-field-groups-dropdown-div"
@@ -1249,6 +1250,7 @@ const closeRefinePanel = () => {
               class="refine-dropdown"
             >
               <radio
+                :id="'radio_'+ind"
                 v-model="selectedList['radio_'+ind]"
                 v-if="refineListTranslated[ind]['radio']"
                 :options="refineListTranslated[ind]['radio']"
