@@ -160,8 +160,7 @@ const allowPrint = computed(() => {
 });
 
 const database = computed(() => {
-  // return databaseWithoutHiddenItems;
-  return DataStore.covidFreeMealSites.features;
+  return DataStore.sources[DataStore.appType].rows || DataStore.sources[DataStore.appType].features || DataStore.sources[DataStore.appType].data;
 });
 
 const databaseLength = computed(() => {
@@ -380,27 +379,19 @@ const selectedResource = computed(() => {
   return DataStore.selectedResource;
 });
 
-// const orgTitle = computed(() => {
-//   return 'agencyname';
-// });
-
-// const sources = computed(() => {
-//   return DataStore.sources;
-// })
-
 const currentData = computed(() => {
-  const locations = DataStore.covidFreeMealSites.features;
+  const locations = DataStore.sources[DataStore.appType].rows || DataStore.sources[DataStore.appType].features || DataStore.sources[DataStore.appType].data;
 
   let currentQuery = { ...route.query };
   let currentQueryKeys = Object.keys(currentQuery);
 
-  if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue currentData computed, currentQuery:', currentQuery, 'currentQueryKeys:', currentQueryKeys);
+  // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue currentData computed, currentQuery:', currentQuery, 'currentQueryKeys:', currentQueryKeys);
 
   let valOrGetter = locationInfo.value.siteName;
   const valOrGetterType = typeof valOrGetter;
   let val;
 
-  // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue, currentData, locations:', locations, 'valOrGetter:', valOrGetter, 'valOrGetterType:', valOrGetterType);
+  if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue, currentData, sortBy.value:', sortBy.value, 'locations:', locations, 'valOrGetter:', valOrGetter, 'valOrGetterType:', valOrGetterType);
 
   // if (currentQueryKeys.includes('address')) {
   if (sortBy.value == 'Distance') {
@@ -408,25 +399,21 @@ const currentData = computed(() => {
     val = 'distance';
     // if (import.meta.env.VITE_DEBUG) console.log('it includes address');
     locations.sort(function(a, b) {
-      // if (import.meta.env.VITE_DEBUG) console.log('a:', a, 'b:', b, 'val:', val);
-      // if (a[val] != null && b[val] != null) {
-      //   return a[val].localeCompare(b[val]);
-      // }
       if (a[val] < b[val]) {
-          return -1;
-        }
-        if (a[val] > b[val]) {
-          return 1;
-        }
-        return 0;
+        return -1;
+      }
+      if (a[val] > b[val]) {
+        return 1;
+      }
+      return 0;
     });
   } else {
     if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue currentData computed, sortBy.value:', sortBy.value);
     if (valOrGetterType === 'function') {
       const getter = valOrGetter;
       locations.sort(function(a, b) {
-        let valueA = getter(a, transforms);
-        let valueB = getter(b, transforms);
+        let valueA = getter(a);
+        let valueB = getter(b);
         // if (import.meta.env.VITE_DEBUG) console.log('valueA:', valueA, 'valueB:', valueB, 'value:', value);
         let value;
         if (valueA && valueB) {
@@ -458,7 +445,7 @@ const dataStatus = computed(() => {
     value = DataStore.sources[appConfig.app.type].status;
   }
   return 'success';
-});;
+});
 
 const locationInfo = computed(() => {
   return appConfig.locationInfo;
@@ -473,14 +460,6 @@ const copiedUrl = computed(() => {
 });
 
 
-
-
-
-
-
-
-
-// WATCH
 watch(
   () => i18nLocale,
   async nexti18nLocale => {

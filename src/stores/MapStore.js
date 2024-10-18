@@ -32,6 +32,7 @@ export const useMapStore = defineStore("MapStore", {
       stormwaterOpacity: 1,
       labelLayers: [],
       latestSelectedResourceFromMap: null,
+      shouldInitialize: true,
     };
   },
   actions: {

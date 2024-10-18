@@ -4,7 +4,6 @@ import { defineStore, acceptHMRUpdate } from 'pinia'
 export const useMainStore = defineStore('MainStore', {
   state: () => {
     return {
-      appVersion: 'atlas',
       refineOpen: true,
       selectedZipcode: null,
       refineList: {},

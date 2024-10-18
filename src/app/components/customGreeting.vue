@@ -13,6 +13,8 @@ import appConfig from '@/app/main.js';
 
 import { onMounted, watch, ref, computed, defineEmits } from 'vue';
 
+const $emit = defineEmits(['view-list']);
+
 const props = defineProps({
   message: {
     type: String,
@@ -35,14 +37,7 @@ const i18nEnabled = computed(() => {
 });
 
 const database = computed(() => {
-  return DataStore.covidFreeMealSites.features;
-  
-  // if ($store.state.sources[$appType]) {
-  //   if ($store.state.sources[$appType].data) {
-  //     return $store.state.sources[$appType].data.rows || $store.state.sources[$appType].data.features || $store.state.sources[$appType].data;
-  //   }
-  // }
-  // return [];
+  return DataStore.sources[DataStore.appType].data.rows || DataStore.sources[DataStore.appType].features || DataStore.sources[DataStore.appType].data;
 });
 
 const geocodeStatus = computed(() => {

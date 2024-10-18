@@ -6,8 +6,8 @@ console.log('appConfig:', appConfig);
 // import { library } from '@fortawesome/fontawesome-svg-core';
 import { findIconDefinition } from '@fortawesome/fontawesome-svg-core';
 
-import { useI18n } from 'vue-i18n'
-const { t } = useI18n()
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 // import Vue from 'vue';
 // import { mapState } from 'vuex';
@@ -46,20 +46,21 @@ const props = defineProps({
   },
 });
 
+console.log('instance.appContext.config.globalProperties.$i18n.availableLocales:', instance.appContext.config.globalProperties.$i18n.availableLocales);
+
 const $emit = defineEmits(['geolocate-control-fire', 'watched-submitted-checkbox-value' ]);
 
 const baseUrl = '/';
 const selected = ref([]);
-const selectedList = reactive({});
-
+const selectedList = ref({});
 
 const searchDistance = computed(() => {
   let value = MapStore.searchDistance;
   let word;
   if (value == 1) {
-    word = this.$i18n.messages[this.i18nLocale]['mile'];
+    word = t('mile');
   } else {
-    word = this.$i18n.messages[this.i18nLocale]['miles'];
+    word = t('miles');
   }
   return value + ' ' + word;
 });
@@ -107,7 +108,7 @@ const dropdownRefine = computed(() => {
 
 const isMobile = computed(() => {
   return MainStore.isMobileDevice;
-})
+});
 
 const NumRefineColumns = computed(() => {
   let value;
@@ -120,14 +121,14 @@ const NumRefineColumns = computed(() => {
 });
 
 const selectedListCompiled = computed(() => {
-  // console.log('selectedListCompiled computed is running');
-  let test = selectedList.value;
+  let test = {...selectedList.value};
+  if (import.meta.env.VITE_DEBUG) console.log('selectedListCompiled computed is running, test:', test);
   let compiled = [];
   for (let value of Object.keys(test)) {
-    // console.log('in selectedListCompiled computed, value:', value, value.split('_')[0]);
+    if (import.meta.env.VITE_DEBUG) console.log('in selectedListCompiled computed, value:', value, value.split('_')[0]);
     if (value.split('_')[0] == 'radio') {
       // console.log('radio button clicked!');
-      compiled.push(selectedList.value[value]);
+      compiled.push(test[value]);
     } else {
       for (let selected of selectedList.value[value]) {
         compiled.push(selected);
@@ -290,10 +291,6 @@ const refineType = computed(() => {
   }
 });
 
-const sources = computed(() => {
-  return DataStore.sources;
-});
-
 const geocode = computed(() => {
   return GeocodeStore.aisData;
 });
@@ -343,8 +340,12 @@ const dataStatus = computed(() => {
 });
 
 const database = computed(() => {
-  // return DataStore.databaseWithoutHiddenItems;
-  return DataStore.covidFreeMealSites.features;
+  let value = {}
+  if (DataStore.sources[DataStore.appType]) {
+    // if (import.meta.env.VITE_DEBUG) console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]);
+    value = DataStore.sources[DataStore.appType].rows || DataStore.sources[DataStore.appType].features || DataStore.sources[DataStore.appType].data;
+  }
+  return value;
 });
 
 const i18nLocale = computed(() => {
@@ -354,7 +355,7 @@ const i18nLocale = computed(() => {
 watch(
   () => props.submittedCheckboxValue,
   async nextSubmittedCheckboxValue => {
-    // console.log('RefinePanel watch submittedCheckboxValue, nextSubmittedCheckboxValue:', nextSubmittedCheckboxValue);
+    if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch submittedCheckboxValue, nextSubmittedCheckboxValue:', nextSubmittedCheckboxValue);
     if (nextSubmittedCheckboxValue == null) {
       return;
     }
@@ -364,14 +365,14 @@ watch(
         if (key2 === 'radio' || key2 === 'checkbox') {
           for (let key3 of Object.keys(refineList[key][key2])) {
             let unique_key = appConfig.refine.multipleFieldGroups[key][key2][key3].unique_key;
-            let i18nValue = this.$i18n.messages[this.i18nLocale][key][key3];
+            let i18nValue = t([key][key3]);
             // console.log('in watch submittedCheckboxValue, key:', key, 'key2:', key2, 'key3:', key3, 'unique_key:', unique_key, 'i18nValue:', i18nValue);
             if (i18nValue.toLowerCase() === nextSubmittedCheckboxValue.toLowerCase()) {
 
               selected.value.push(unique_key);
 
               let uniq = {};
-              let selected = {};
+              let selectedNow = {};
               for (let group of Object.keys(appConfig.refine.multipleFieldGroups)){
 
                 uniq[group] = { expanded: false };
@@ -402,23 +403,23 @@ watch(
                     for (let field of Object.keys(uniq[group][dep])) {
                       if (dep == 'checkbox' && selected.value.includes(uniq[group][dep][field].unique_key)) {
                         // console.log('RefinePanel end of getRefineSearchList, dependent, group:', group, 'dep:', dep, 'field:', field, 'uniq[group][dep][field].unique_key', uniq[group][dep][field].unique_key, 'selected.value:', selected.value);
-                        if (!selected[group]) {
-                          selected[group] = [];
+                        if (!selectedNow[group]) {
+                          selectedNow[group] = [];
                         }
-                        selected[group].push(uniq[group][dep][field].unique_key);
+                        selectedNow[group].push(uniq[group][dep][field].unique_key);
                       } else if (dep == 'radio' && selected.value.includes(uniq[group][dep][field].unique_key)) {
                         // console.log('RefinePanel end of getRefineSearchList, independent, selected:', selected, 'group:', group, 'dep:', dep, 'field:', field, 'uniq[group][dep][field].unique_key', uniq[group][dep][field].unique_key, 'selected.value:', selected.value);
-                        if (!selected['radio_'+group]) {
-                          selected['radio_'+group] = undefined;
+                        if (!selectedNow['radio_'+group]) {
+                          selectedNow['radio_'+group] = undefined;
                         }
-                        selected['radio_'+group] = uniq[group][dep][field].unique_key;
+                        selectedNow['radio_'+group] = uniq[group][dep][field].unique_key;
                       }
                     }
                   }
                 }
               }
 
-              selectedList.value = selected;
+              selectedList.value = selectedNow;
             }
           }
         }
@@ -470,7 +471,7 @@ watch(
       }
     }
     // console.log('watch selected is firing, nextSelected:', nextSelected, 'oldSelected:', oldSelected, 'newSelection:', newSelection);
-    MainStore.selectedServices = nextSelected;
+    // MainStore.selectedServices = nextSelected;
 
     if (refineType.value !== 'categoryField_value' && nextSelected.length) {
       router.push({ query: { ...route.query, ...{ services: nextSelected.join(',') }}});
@@ -481,29 +482,28 @@ watch(
 );
 
 watch(
-  () => selectedListCompiled,
+  () => selectedListCompiled.value,
   async nextSelected => {
-    window.theRouter = router;
-    // console.log('selectedListCompiled is firing, nextSelected:', nextSelected);
-    MainStore.selectedServices = nextSelected;
-    if (typeof nextSelected === 'string') {
-      nextSelected = [nextSelected];
-    }
-    // console.log('RefinePanel watch selectedListCompiled is firing, nextSelected', nextSelected);
-    if (!nextSelected.length) {
-      return;
-    }
+    // if (import.meta.env.VITE_DEBUG) console.log('selectedListCompiled is firing, nextSelected:', nextSelected);
+    // MainStore.selectedServices = nextSelected;
+    // if (typeof nextSelected === 'string') {
+    //   nextSelected = [nextSelected];
+    // }
+    // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedListCompiled is firing, nextSelected', nextSelected);
+    // if (!nextSelected.length) {
+    //   return;
+    // }
     router.push({ query: { ...route.query, ...{ services: nextSelected.join(',') }}});
   }
 );
 
-watch(
-  () => selectedServices,
-  async nextSelectedServices => {
-    // console.log('RefinePanel watch selectedServices is firing:', nextSelectedServices);
-    selected.value = nextSelectedServices;
-  }
-);
+// watch(
+//   () => selectedServices,
+//   async nextSelectedServices => {
+//     // console.log('RefinePanel watch selectedServices is firing:', nextSelectedServices);
+//     selected.value = nextSelectedServices;
+//   }
+// );
 
 onBeforeMount(async () => {
   if (route.query.services) {
@@ -532,33 +532,33 @@ onMounted(async () => {
 });
 
 
-const clickFirstBoxes = () => {
-  // console.log('clickFirstBoxes is running');
-  for (let value of Object.keys(appConfig.refine.multipleFieldGroups)) {
-    // console.log('clickFirstBoxes is running, appConfig.refine.multipleFieldGroups[value]:', appConfig.refine.multipleFieldGroups[value]);
-    if (Object.keys(appConfig.refine.multipleFieldGroups[value]).includes('checkbox')) {
-      let checkbox = appConfig.refine.multipleFieldGroups[value].checkbox;
-      let firstValue = Object.keys(checkbox)[0];
-      let unique_key = value+'_'+firstValue;
-      let element = document.querySelector('[value='+unique_key+']');
-      // console.log('clickFirstBoxes is running, element:', element, 'unique_key:', unique_key, 'value:', value, 'firstValue:', firstValue, 'appConfig.refine.multipleFieldGroups[value]:', appConfig.refine.multipleFieldGroups[value]);
-    }
-  }
-};
+// const clickFirstBoxes = () => {
+//   // console.log('clickFirstBoxes is running');
+//   for (let value of Object.keys(appConfig.refine.multipleFieldGroups)) {
+//     // console.log('clickFirstBoxes is running, appConfig.refine.multipleFieldGroups[value]:', appConfig.refine.multipleFieldGroups[value]);
+//     if (Object.keys(appConfig.refine.multipleFieldGroups[value]).includes('checkbox')) {
+//       let checkbox = appConfig.refine.multipleFieldGroups[value].checkbox;
+//       let firstValue = Object.keys(checkbox)[0];
+//       let unique_key = value+'_'+firstValue;
+//       let element = document.querySelector('[value='+unique_key+']');
+//       // console.log('clickFirstBoxes is running, element:', element, 'unique_key:', unique_key, 'value:', value, 'firstValue:', firstValue, 'appConfig.refine.multipleFieldGroups[value]:', appConfig.refine.multipleFieldGroups[value]);
+//     }
+//   }
+// };
 
-const manualSelectedListCompiled = (nextSelected) => {
-  window.theRouter = router;
-  console.log('manualSelectedListCompiled is firing, nextSelected:', nextSelected);
-  MainStore.selectedServices = nextSelected;
-  if (typeof nextSelected === 'string') {
-    nextSelected = [nextSelected];
-  }
-  console.log('RefinePanel manualSelectedListCompiled is firing, nextSelected', nextSelected);
-  if (!nextSelected.length) {
-    return;
-  }
-  router.push({ query: { ...route.query, ...{ services: nextSelected.join(',') }}});
-};
+// const manualSelectedListCompiled = (nextSelected) => {
+//   window.theRouter = router;
+//   console.log('manualSelectedListCompiled is firing, nextSelected:', nextSelected);
+//   MainStore.selectedServices = nextSelected;
+//   if (typeof nextSelected === 'string') {
+//     nextSelected = [nextSelected];
+//   }
+//   console.log('RefinePanel manualSelectedListCompiled is firing, nextSelected', nextSelected);
+//   if (!nextSelected.length) {
+//     return;
+//   }
+//   router.push({ query: { ...route.query, ...{ services: nextSelected.join(',') }}});
+// };
 
 const getCategoryFieldValue = (section) => {
   let sectionLower = section.toLowerCase().replaceAll(' ', '');

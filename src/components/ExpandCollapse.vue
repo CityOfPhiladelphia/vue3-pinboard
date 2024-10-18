@@ -21,6 +21,8 @@ import { ref, computed, defineProps, onMounted, watch } from 'vue';
 import $config from '@/app/main.js'
 // if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse.vue $config:', $config);
 
+const $emit = defineEmits(['print-box-checked']);
+
 const props = defineProps({
   // isMapVisible: Boolean,
   // item: Object,

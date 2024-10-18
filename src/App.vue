@@ -1,6 +1,8 @@
 <script setup>
 if (import.meta.env.VITE_DEBUG == 'true') console.log('App.vue setup is running in debug mode');
 
+import { RouterView } from 'vue-router'
+
 import isMobileDevice from './util/is-mobile-device';
 import isMac from './util/is-mac'; // this can probably be removed from App.vue, and only run in main.js
 
@@ -45,13 +47,15 @@ onMounted(async () => {
     router.push({ name: 'home' });
   }
 
-  const main = document.getElementById('main');
-  main.scrollTop = -main.scrollHeight;
+  // const main = document.getElementById('main');
+  // main.scrollTop = -main.scrollHeight;
 
   window.addEventListener('resize', handleWindowResize);
   handleWindowResize();
 
-  DataStore.fillCovidFreeMealSites();
+  DataStore.fillResources();
+  DataStore.fillHolidays();
+  DataStore.fillZipcodes();
 });
 
 const links = [
@@ -134,7 +138,8 @@ const appTitle = computed(() => {
 </script>
 
 <template>
-  <a
+  <router-view></router-view>
+  <!-- <a
     href="#main"
     class="skip-to-main-content-link"
   >Skip to main content</a>
@@ -155,7 +160,6 @@ const appTitle = computed(() => {
     </template>
   </app-header>
 
-  <!-- MAIN CONTENT -->
   <main
     id="main"
     class="main-column invisible-scrollbar"
@@ -163,7 +167,6 @@ const appTitle = computed(() => {
     <refine-panel />
 
     <div class="main-row">
-    <!-- TOPIC PANEL ON LEFT -->
       <div
         v-if="!isMobileDevice() && MainStore.windowDimensions.width > 768"
         class="topics-holder"
@@ -171,7 +174,6 @@ const appTitle = computed(() => {
         <locations-panel />
       </div>
 
-      <!-- MAP PANEL ON RIGHT - right now only contains the address input -->
       <div
         class="map-panel-holder"
       >
@@ -187,16 +189,14 @@ const appTitle = computed(() => {
     </div>
   </main>
 
-  <!-- FOOTER -->
   <app-footer
     :is-sticky="true"
     :is-hidden-mobile="true"
     :links="links"
-  />
+  /> -->
+
+  
 </template>
 
 <style>
-
-
-
 </style>

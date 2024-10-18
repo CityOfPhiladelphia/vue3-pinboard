@@ -51,7 +51,7 @@ const markerSrc = computed(() => {
 // })
 
 onMounted(async () => {
-  // if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue onMounted route.params.topic:', route.params.topic, 'route.params.address:', route.params.address);
+  // if (import.meta.env.VITE_DEBUG) console.log('Map.vue onMounted route.params.topic:', route.params.topic, 'route.params.address:', route.params.address);
   
   // create the maplibre map
   let currentTopicMapStyle = 'pwdDrawnMapStyle';
@@ -67,8 +67,7 @@ onMounted(async () => {
     attributionControl: false,
   });
 
-  console.log('import.meta.env.VITE_DEBUG:', import.meta.env.VITE_DEBUG);
-  if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue onMounted, DataStore.covidFreeMealSites.features:', DataStore.covidFreeMealSites.features);
+  if (import.meta.env.VITE_DEBUG) console.log('Map.vue onMounted, DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]);
 
   map.on('load', () => {
     let canvas = document.querySelector(".maplibregl-canvas");
@@ -87,8 +86,8 @@ onMounted(async () => {
         ]
       )
     };
-    if (DataStore.covidFreeMealSites.features) {
-      const dataPoint = DataStore.covidFreeMealSites.features.filter(item => item._featureId == DataStore.selectedResource)[0];
+    if (DataStore.sources[DataStore.appType]) {
+      const dataPoint = DataStore.sources[DataStore.appType].features.filter(item => item._featureId == DataStore.selectedResource)[0];
       if (import.meta.env.VITE_DEBUG) console.log('dataPoint:', dataPoint);
       map.setCenter(dataPoint.geometry.coordinates);
 
@@ -181,8 +180,8 @@ watch(
           ]
         )
       };
-      if (DataStore.covidFreeMealSites.features) {
-        const dataPoint = DataStore.covidFreeMealSites.features.filter(item => item._featureId == newSelectedResource)[0];
+      if (DataStore.sources[DataStore.appType].features) {
+        const dataPoint = DataStore.sources[DataStore.appType].features.filter(item => item._featureId == newSelectedResource)[0];
         if (import.meta.env.VITE_DEBUG) console.log('dataPoint:', dataPoint);
         if (MainStore.lastSelectMethod == 'row') {
           map.setCenter(dataPoint.geometry.coordinates);
@@ -203,10 +202,17 @@ watch(
   }
 )
 
+// TODO - this is going to need to be tested against all apps
+const database = computed(() => {
+  if (DataStore.sources[DataStore.appType]) {
+    return DataStore.sources[DataStore.appType].rows || DataStore.sources[DataStore.appType] || DataStore.sources[DataStore.appType].data;
+  }
+});
+
 watch(
-  () => DataStore.covidFreeMealSites,
+  () => database.value,
   async newData => {
-    if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue watch DataStore.covidFreeMealSites.features, newData:', newData);
+    if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue watch database, newData:', newData);
     let geojson = featureCollection(newData);
     if (import.meta.env.VITE_DEBUG == 'true') console.log('geojson:', geojson, 'map.getStyle().sources.resources.data:', map.getStyle().sources.resources.data);
     map.getSource('resources').setData(newData);

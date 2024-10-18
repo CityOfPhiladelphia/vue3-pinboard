@@ -74,17 +74,18 @@ export default {
     searchDistance: 1,
   },
   locationInfo: {
-    siteName: function(item, transforms) {
-      // console.log('in locationInfo.siteName, transforms:', transforms);
-      let value;
+    siteName: function(item) { return item.properties.site_name },
+    // siteName: function(item, transforms) {
+    //   // console.log('in locationInfo.siteName, transforms:', transforms);
+    //   let value;
 
-      if (item._featureId.includes('covidFreeMealSites')) {
-        value = item.properties.site_name;
-      } else if (item._featureId.includes('parksSites')) {
-        value = transforms.titleCase.transform(item.properties.site_name);
-      }
-      return value;
-    },
+    //   if (item._featureId.includes('covidFreeMealSites')) {
+    //     value = item.properties.site_name;
+    //   } else if (item._featureId.includes('parksSites')) {
+    //     value = transforms.titleCase.transform(item.properties.site_name);
+    //   }
+    //   return value;
+    // },
   },
   customComps,
   // hiddenRefine: {
