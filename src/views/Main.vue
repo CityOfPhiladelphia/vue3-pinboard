@@ -2,7 +2,7 @@
 
 import $config from '@/config.js';
 import appConfig from '@/app/main.js';
-if (import.meta.env.VITE_DEBUG) console.log('appConfig:', appConfig);
+// if (import.meta.env.VITE_DEBUG) console.log('appConfig:', appConfig);
 
 import proj4 from 'proj4';
 import { format } from 'date-fns';
@@ -34,6 +34,7 @@ import RefinePanel from '@/components/RefinePanel.vue';
 import { computed, onBeforeMount, onMounted, watch, ref, reactive, getCurrentInstance, nextTick } from 'vue';
 const instance = getCurrentInstance();
 const locale = computed(() => instance.appContext.config.globalProperties.$i18n.locale);
+// if (import.meta.env.VITE_DEBUG) console.log('instance.appContext.config.globalProperties.$i18n:', instance.appContext.config.globalProperties.$i18n);
 
 // STORES
 import { useMapStore } from '@/stores/MapStore.js';
@@ -50,14 +51,13 @@ import { useRouter, useRoute } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 
-
 const publicPath = ref('/');
 const isMapVisible = ref(false);
 const isModalOpen = ref(false);
 const isAlertModalOpen = ref(false);
 const isLarge = ref(true);
 const currentBuffer = ref(null);
-const buttonText = ref('Toggle to map');
+const buttonText = ref('app.viewMap');
 const appLink = ref('/');
 const myValue = ref('');
 const brandingImage = ref(null);
@@ -241,10 +241,10 @@ const appSubTitle = computed(() => {
 
 const i18nLanguages = computed(() => {
   let values = [];
+  // if (import.meta.env.VITE_DEBUG) console.log('i18nLanguages, appConfig.i18n:', appConfig.i18n);
   if (appConfig.i18n.languages) {
-    // if (import.meta.env.VITE_DEBUG) console.log('in if, appConfig.i18n.languages');
     values = appConfig.i18n.languages;
-  } else {
+  } // else {
     // for (let key of Object.keys($i18n.messages)) {
     //   let value = {};
     //   // if (import.meta.env.VITE_DEBUG) console.log('in loop, key:', key, '$i18n.locale:', $i18n.locale, '$i18n.messages[key]:', $i18n.messages[key]);
@@ -252,8 +252,8 @@ const i18nLanguages = computed(() => {
     //   value.title = $i18n.messages[key].language;
     //   values.push(value);
     // }
-    values = instance.appContext.config.globalProperties.$i18n.availableLocales;
-  }
+    // values = instance.appContext.config.globalProperties.$i18n.availableLocales;
+  // }
   // if (import.meta.env.VITE_DEBUG) console.log('end of i18nLanguages, values:', values);
   return values;
 });
@@ -772,7 +772,6 @@ watch(
   }
 );
 
-
 onMounted(async () => {
   let body = document.body;
   body.classList.remove('print-view');
@@ -781,7 +780,7 @@ onMounted(async () => {
   if (import.meta.env.VITE_DEBUG) console.log('in Main.vue mounted, route.query:', route.query);
 
   // store.commit('setLastSearchMethod', 'zipcode');
-  if (import.meta.env.VITE_DEBUG) console.log('in Main.vue mounted, appConfig:', appConfig, 'window.location.href:', window.location.href);
+  // if (import.meta.env.VITE_DEBUG) console.log('in Main.vue onMounted, appConfig:', appConfig, 'window.location.href:', window.location.href);
   appConfig.searchBar.searchTypes.forEach(item => {
     if (route.query[item]) {
       // if (import.meta.env.VITE_DEBUG) console.log('App.vue mounted item:', item, 'searchBarType:', searchBarType);
@@ -964,111 +963,111 @@ const compareArrays = (arr1, arr2) => {
   return finalArray;
 };
 
-const handleSubmit = (val) => {
-  let query;
-  // let searchBarType;
-  let valAsFloat = parseFloat(val.substring(0));
-  let valToString = valAsFloat.toString();
-  let checkVals = val === valToString;
-  if (import.meta.env.VITE_DEBUG) console.log('handleSubmit 1, val.substring(0):', val.substring(0), 'valAsFloat:', valAsFloat, 'checkVals:', checkVals, 'appConfig.searchBar.searchTypes:', appConfig.searchBar.searchTypes);
+// const handleSubmit = (val) => {
+//   let query;
+//   // let searchBarType;
+//   let valAsFloat = parseFloat(val.substring(0));
+//   let valToString = valAsFloat.toString();
+//   let checkVals = val === valToString;
+//   if (import.meta.env.VITE_DEBUG) console.log('handleSubmit 1, val.substring(0):', val.substring(0), 'valAsFloat:', valAsFloat, 'checkVals:', checkVals, 'appConfig.searchBar.searchTypes:', appConfig.searchBar.searchTypes);
   
-  let startQuery = { ...route.query };
+//   let startQuery = { ...route.query };
   
-  if (isNaN(valAsFloat)) {
-    if (!appConfig.searchBar.searchTypes.includes('keyword')) {
-      if (import.meta.env.VITE_DEBUG) console.log('cannot search keywords');
-      this.$warning(`Please search an address`, {
-        duration: 4000,
-        closeOnClick: true,
-      });
-      return;
-    } else {
-      if (import.meta.env.VITE_DEBUG) console.log('in handleSubmit, checking checkboxText');
-      if (checkboxText.value.includes(val.toLowerCase())) {
-        if (import.meta.env.VITE_DEBUG) console.log('in handleSubmit, checking checkboxText - its there');
-        // alert('There is already a checkbox or radio button for that search term');
-        submittedCheckboxValue.value = val;
-        if (MainStore.shouldShowGreeting && !isMobile.value) {
-          MainStore.refineOpen = true;
-        }
-        return;
-      }
-      MainStore.lastPinboardSearchMethod = 'keyword';
-      let startKeyword;
-      if (startQuery['keyword'] && startQuery['keyword'] != '') {
-        startKeyword = startQuery['keyword'];
-        val = startKeyword + ',' + val;
-      }
-      query = { ...startQuery, ...{ 'keyword': val }};
-      // this.searchBarType = 'keyword';
-      // searchBarType = 'keyword';
-    }
-  } else if (checkVals) {
-    if (import.meta.env.VITE_DEBUG) console.log('its a zipcode');
-    if (appConfig.allowZipcodeSearch) {
+//   if (isNaN(valAsFloat)) {
+//     if (!appConfig.searchBar.searchTypes.includes('keyword')) {
+//       if (import.meta.env.VITE_DEBUG) console.log('cannot search keywords');
+//       this.$warning(`Please search an address`, {
+//         duration: 4000,
+//         closeOnClick: true,
+//       });
+//       return;
+//     } else {
+//       if (import.meta.env.VITE_DEBUG) console.log('in handleSubmit, checking checkboxText');
+//       if (checkboxText.value.includes(val.toLowerCase())) {
+//         if (import.meta.env.VITE_DEBUG) console.log('in handleSubmit, checking checkboxText - its there');
+//         // alert('There is already a checkbox or radio button for that search term');
+//         submittedCheckboxValue.value = val;
+//         if (MainStore.shouldShowGreeting && !isMobile.value) {
+//           MainStore.refineOpen = true;
+//         }
+//         return;
+//       }
+//       MainStore.lastPinboardSearchMethod = 'keyword';
+//       let startKeyword;
+//       if (startQuery['keyword'] && startQuery['keyword'] != '') {
+//         startKeyword = startQuery['keyword'];
+//         val = startKeyword + ',' + val;
+//       }
+//       query = { ...startQuery, ...{ 'keyword': val }};
+//       // this.searchBarType = 'keyword';
+//       // searchBarType = 'keyword';
+//     }
+//   } else if (checkVals) {
+//     if (import.meta.env.VITE_DEBUG) console.log('its a zipcode');
+//     if (appConfig.allowZipcodeSearch) {
 
-      MapStore.watchPositionOn = false;
-      MainStore.lastPinboardSearchMethod = 'zipcode';
-      query = { 'zipcode': val };
-      // this.searchBarType = 'zipcode';
-      // searchBarType = 'zipcode';
-    } else if (appConfig.allowZipcodeInDataSearch) {
-      // query = { 'zipcode': val };
-      // this.searchBarType = 'zipcode';
-      // searchBarType = 'zipcode';
+//       MapStore.watchPositionOn = false;
+//       MainStore.lastPinboardSearchMethod = 'zipcode';
+//       query = { 'zipcode': val };
+//       // this.searchBarType = 'zipcode';
+//       // searchBarType = 'zipcode';
+//     } else if (appConfig.allowZipcodeInDataSearch) {
+//       // query = { 'zipcode': val };
+//       // this.searchBarType = 'zipcode';
+//       // searchBarType = 'zipcode';
 
-      MapStore.watchPositionOn = false;
-      MainStore.lastPinboardSearchMethod = 'zipcodeKeyword';
+//       MapStore.watchPositionOn = false;
+//       MainStore.lastPinboardSearchMethod = 'zipcodeKeyword';
 
-      clearGeocodeAndZipcode();
-      MapStore.bufferShape = null;
-      currentBuffer = null;
+//       clearGeocodeAndZipcode();
+//       MapStore.bufferShape = null;
+//       currentBuffer = null;
       
-      let startKeyword;
-      if (startQuery['keyword'] && startQuery['keyword'] != '') {
-        startKeyword = startQuery['keyword'];
-        val = startKeyword + ',' + val;
-      }
-      query = { ...startQuery, ...{ 'keyword': val }};
-      // this.searchBarType = 'keyword';
-      // searchBarType = 'keyword';
-    }
-  } else {
-    if (import.meta.env.VITE_DEBUG) console.log('its an address');
+//       let startKeyword;
+//       if (startQuery['keyword'] && startQuery['keyword'] != '') {
+//         startKeyword = startQuery['keyword'];
+//         val = startKeyword + ',' + val;
+//       }
+//       query = { ...startQuery, ...{ 'keyword': val }};
+//       // this.searchBarType = 'keyword';
+//       // searchBarType = 'keyword';
+//     }
+//   } else {
+//     if (import.meta.env.VITE_DEBUG) console.log('its an address');
 
-    if (lastPinboardSearchMethod.value == 'zipcodeKeyword') {
-      if (import.meta.env.VITE_DEBUG) console.log('startQuery:', startQuery);
-      delete startQuery['keyword'];
-      MainStore.selectedKeywords = [];
-    }
+//     if (lastPinboardSearchMethod.value == 'zipcodeKeyword') {
+//       if (import.meta.env.VITE_DEBUG) console.log('startQuery:', startQuery);
+//       delete startQuery['keyword'];
+//       MainStore.selectedKeywords = [];
+//     }
 
-    MapStore.watchPositionOn = false;
+//     MapStore.watchPositionOn = false;
 
-    query = { ...startQuery, ...{ 'address': val }};
-    MainStore.lastPinboardSearchMethod = 'geocode';
-    // this.searchBarType = 'address';
-    // searchBarType = 'address';
-  }
-  delete startQuery['address'];
-  delete startQuery['keyword'];
-  delete startQuery['zipcode'];
-  if (import.meta.env.VITE_DEBUG) console.log('handleSubmit is running, valAsFloat:', valAsFloat, 'startQuery:', startQuery, 'route.query:', route.query, 'query:', query, 'val:', val, 'val.substring(0, 1):', val.substring(0, 1));
-  router.push({ query: { ...startQuery, ...query }});
-  // searchString = query[this.searchBarType];
-  const searchCategory = Object.keys(query)[0];
-  const value = query[searchCategory];
-  // $gtag.event(searchBarType + '-search', {
-  //   'event_category': store.state.gtag.category,
-  //   'event_label': value,
-  // })
-  MainStore.currentSearch = value;
-  MapStore.zipcodeCenter = [];
-  // $controller.handleSearchFormSubmit(val, searchBarType);
+//     query = { ...startQuery, ...{ 'address': val }};
+//     MainStore.lastPinboardSearchMethod = 'geocode';
+//     // this.searchBarType = 'address';
+//     // searchBarType = 'address';
+//   }
+//   delete startQuery['address'];
+//   delete startQuery['keyword'];
+//   delete startQuery['zipcode'];
+//   if (import.meta.env.VITE_DEBUG) console.log('handleSubmit is running, valAsFloat:', valAsFloat, 'startQuery:', startQuery, 'route.query:', route.query, 'query:', query, 'val:', val, 'val.substring(0, 1):', val.substring(0, 1));
+//   router.push({ query: { ...startQuery, ...query }});
+//   // searchString = query[this.searchBarType];
+//   const searchCategory = Object.keys(query)[0];
+//   const value = query[searchCategory];
+//   // $gtag.event(searchBarType + '-search', {
+//   //   'event_category': store.state.gtag.category,
+//   //   'event_label': value,
+//   // })
+//   MainStore.currentSearch = value;
+//   MapStore.zipcodeCenter = [];
+//   // $controller.handleSearchFormSubmit(val, searchBarType);
 
-  // if (store.state.shouldShowGreeting && !isMobile.value) {
-  //   store.commit('setRefineOpen', true);
-  // }
-};
+//   // if (store.state.shouldShowGreeting && !isMobile.value) {
+//   //   store.commit('setRefineOpen', true);
+//   // }
+// };
 
 const clearSearchTriggered = () => {
   let startQuery = { ...route.query };
@@ -1615,10 +1614,6 @@ const toggleBodyClass = (className) => {
 </script>
 
 <template>
-  <!-- <div
-    id="app"
-    class="app"
-  > -->
   <PhilaModal
     v-show="isModalOpen"
     @close="closeModal"
@@ -1650,9 +1645,6 @@ const toggleBodyClass = (className) => {
     />
   </PhilaModal>
 
-    <!-- <div
-      class="header-holder"
-    > -->
   <app-header
     :app-title="appTitle"
     :app-subtitle="appSubTitle"
@@ -1684,7 +1676,6 @@ const toggleBodyClass = (className) => {
     </lang-selector> -->
 
   </app-header>
-  <!-- </div> -->
 
   <div
     v-if="showForceHolidayBanner || showAutomaticHolidayBanner && holiday.coming_soon || showAutomaticHolidayBanner && holiday.current"
@@ -1711,21 +1702,21 @@ const toggleBodyClass = (className) => {
       />
     </div> -->
 
-    <!-- <div
-      v-if="refineEnabled"
-      :class="refinePanelClass"
-    > -->
+    
   <main
     id="main"
     class="main-column invisible-scrollbar"
   >
+    <!-- <div
+      v-if="refineEnabled"
+      :class="refinePanelClass"
+    > -->
     <refine-panel
       :refine-title="refineTitle"
       :submitted-checkbox-value="submittedCheckboxValue"
       @watched-submitted-checkbox-value="watchedSubmittedCheckboxValue"
       @geolocate-control-fire="geolocateControlFire"
     />
-    <!-- </div> -->
 
     <div
       v-show="!isMobile || isMobile && !refineOpen"
@@ -1745,7 +1736,6 @@ const toggleBodyClass = (className) => {
         class="map-panel-holder"
       >
         <map-panel
-          @handle-search-form-submit="handleSubmit"
           @clear-search="clearSearchTriggered"
           @toggleMap="toggleMap"
           @geolocate-control-fire="geolocateControlFire"
@@ -1767,9 +1757,9 @@ const toggleBodyClass = (className) => {
   <!-- <div
     class="footer-holder"
   > -->
+  <!-- id="app-footer" -->
   <app-footer
-    id="app-footer"
-    :is-sticky="false"
+    :is-sticky="true"
     :is-hidden-mobile="true"
     :links="footerLinks"
   >
@@ -1782,11 +1772,6 @@ const toggleBodyClass = (className) => {
 
 <!-- @import "../assets/scss/main.scss"; -->
 <style lang="scss">
-
-// html, body {
-//   box-sizing: border-box;
-//   height: 100%;
-// }
 
 .skip-to-main-content-link {
   position: absolute;
@@ -1807,15 +1792,6 @@ const toggleBodyClass = (className) => {
 .skip-to-main-content-link:hover {
   color: white;
 }
-
-// #app {
-//   height: 100%;
-//   -webkit-font-smoothing: antialiased;
-//   -moz-osx-font-smoothing: grayscale;
-//   display: flex;
-//   display: -ms-flexbox;
-//   flex-direction: column;
-// }
 
 #app-header {
   .trusted-site-hidden {
@@ -1850,33 +1826,17 @@ const toggleBodyClass = (className) => {
   // }
 }
 
-// #app-footer {
-//   height: 33px !important;
-
-//   a {
-//     font-family: "Open Sans Semibold", "Open Sans", sans-serif !important;
-//     font-weight: 600 !important;
-//     font-size: 14px;
-//     // height: 33px !important;
-//     line-height: 33px !important;
-//   }
-
-//   ul li:after {
-//     font-weight: lighter !important;
-//   }
+// .search-bar-container-class {
+//   min-height: 4.5rem;
 // }
-
-.search-bar-container-class {
-  min-height: 4.5rem;
-}
 
 .capitalized {
   text-transform: uppercase;
 }
 
-.header-holder {
-  background-color: blue;
-}
+// .header-holder {
+//   background-color: blue;
+// }
 
 // .footer-holder {
 //   background-color: blue;
@@ -1897,20 +1857,20 @@ const toggleBodyClass = (className) => {
 //   }
 // }
 
+// #mobile-menu-close-bar {
+//   height: 50px;
+//   .button {
+//     bottom: 3px !important;
+//   }
+// }
+
+// #mobile-menu-wrap {
+//   height: calc(100% - 105px) !important;
+// }
+
 .mobile-refine-panel-holder-open {
   flex-grow: 1;
   background: #f0f0f0;
-}
-
-#mobile-menu-close-bar {
-  height: 50px;
-  .button {
-    bottom: 3px !important;
-  }
-}
-
-#mobile-menu-wrap {
-  height: calc(100% - 105px) !important;
 }
 
 .refine-panel-holder-open {
@@ -1999,12 +1959,12 @@ const toggleBodyClass = (className) => {
   height: 100vh;
 }
 
-.toggle-map{
-  position: fixed;
-  bottom:0;
-  width: 100%;
-  z-index: 1002;
-}
+// .toggle-map{
+//   position: fixed;
+//   bottom:0;
+//   width: 100%;
+//   z-index: 1002;
+// }
 
 @media print {
 

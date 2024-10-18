@@ -31,7 +31,7 @@ export const useMainStore = defineStore('MainStore', {
       isMac: null,
 
       addressSearchRunning: false,
-      addressSearchValue: '',
+      searchValue: '',
       windowDimensions: {},
       currentAddress: '',
       currentLang: null,

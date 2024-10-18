@@ -27,7 +27,7 @@ import LangSelector from "@phila/phila-ui-lang-selector";
 import Radio from "@phila/phila-ui-radio";
 
 import appConfig from './app/main.js';
-console.log('appConfig:', appConfig);
+// console.log('appConfig:', appConfig);
 
 const app = createApp(App);
 
@@ -94,7 +94,7 @@ app.use(VueGoodTablePlugin);
 import i18nFromFiles from './i18n/i18n.js';
 import i18nProject from './app/i18n/i18n.js';
 const messages = mergeDeep(i18nFromFiles.i18n.data.messages, i18nProject.i18n.data.messages);
-if (import.meta.env.VITE_DEBUG == 'true') console.log('i18nFromFiles:', i18nFromFiles, 'messages:', messages);
+// if (import.meta.env.VITE_DEBUG == 'true') console.log('i18nFromFiles:', i18nFromFiles, 'messages:', messages);
 const i18n = createI18n({
   legacy: false,
   globalInjection: true,

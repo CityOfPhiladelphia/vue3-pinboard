@@ -146,6 +146,7 @@ const appTitle = computed(() => {
 
   <app-header
     :app-title="appTitle"
+    :app-subtitle="'test'"
     app-link="/"
     :is-sticky="true"
     :is-fluid="true"
@@ -195,7 +196,7 @@ const appTitle = computed(() => {
     :links="links"
   /> -->
 
-  
+
 </template>
 
 <style>

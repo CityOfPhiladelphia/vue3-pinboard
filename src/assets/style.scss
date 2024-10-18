@@ -29,14 +29,14 @@ a {
 
 .main {
   height: calc(100vh - 50px);
-  display: flex;
-  flex-direction: column;
+  // display: flex;
+  // flex-direction: column;
   padding-top: 42px !important;
   margin-top: 0px !important;
 }
 
 .main-column {
-  height: calc(100vh - 50px);
+  height: calc(100vh - 100px);
   display: flex;
   flex-direction: column;
   padding-top: 42px !important;
@@ -44,7 +44,7 @@ a {
 }
 
 .main-row {
-  height: calc(100vh - 350px);
+  height: calc(100vh - 400px);
   display: flex;
   flex-direction: row;
   // padding-top: 42px !important;

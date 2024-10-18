@@ -5,12 +5,6 @@
 // (we might not need to use axios with new vue async tools)
 // if that is not needed, we can move this info to main.js
 
-// turn off console logging in production
-// if (process.env.NODE_ENV === 'production') {
-//   console.log = console.info = console.debug = console.error = function () {};
-// }
-// console.log('main.js process.env.NODE_ENV:', process.env.NODE_ENV, 'process.env.VUE_APP_PUBLICPATH:', process.env.VUE_APP_PUBLICPATH);
-
 import './assets/style.css';
 
 // Font Awesome Icons
@@ -50,7 +44,7 @@ const customComps = {
 };
 
 import i18n from './i18n/i18n';
-console.log('main.js i18n:', i18n);
+// if (import.meta.env.VITE_DEBUG) console.log('main.js i18n:', i18n);
 
 // pinboard({
 export default {
@@ -62,6 +56,7 @@ export default {
   },
   anySearch: true,
   allowZipcodeSearch: true,
+  allowZipcodeInDataSearch: false,
   allowPrint: true,
   showBuffers: true,
   resetDataOnGeocode: true,
@@ -254,7 +249,7 @@ export default {
                   st1.setHours(parseInt(startTime1Split[0]), parseInt(startTime1Split[1]), 0, 0);
                 }
                 if (st1 < noon) {
-                  console.log('st1:', st1, 'noon:', noon);
+                  // console.log('st1:', st1, 'noon:', noon);
                   dayAndTime = true;
                   break;
                 }
@@ -539,12 +534,12 @@ export default {
       attrs: {
         target: "_blank",
       },
-      text: "cityOfPhiladelphia",
+      text: "app.cityOfPhiladelphia",
     },
     {
       type: "native",
       href: "https://www.phila.gov/food/",
-      text: "about",
+      text: "app.about",
     },
     {
       type: "native",
@@ -552,7 +547,7 @@ export default {
       attrs: {
         target: "_blank",
       },
-      text: "feedback",
+      text: "app.feedback",
     },
     // {
     //   type: "native",

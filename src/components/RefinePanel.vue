@@ -2,7 +2,7 @@
 
 import $config from '@/config.js';
 import appConfig from '@/app/main.js';
-console.log('appConfig:', appConfig);
+// console.log('appConfig:', appConfig);
 // import { library } from '@fortawesome/fontawesome-svg-core';
 import { findIconDefinition } from '@fortawesome/fontawesome-svg-core';
 
@@ -46,7 +46,7 @@ const props = defineProps({
   },
 });
 
-console.log('instance.appContext.config.globalProperties.$i18n.availableLocales:', instance.appContext.config.globalProperties.$i18n.availableLocales);
+// console.log('instance.appContext.config.globalProperties.$i18n.availableLocales:', instance.appContext.config.globalProperties.$i18n.availableLocales);
 
 const $emit = defineEmits(['geolocate-control-fire', 'watched-submitted-checkbox-value' ]);
 
@@ -451,7 +451,7 @@ watch(
 watch(
   () => selected,
   async (nextSelected, oldSelected) => {
-    // console.log('watch selected is firing, nextSelected:', nextSelected, 'oldSelected:', oldSelected);
+    console.log('watch selected is firing, nextSelected:', nextSelected, 'oldSelected:', oldSelected);
     let newSelection;
     if (refineType.value !== 'categoryField_value') {
       newSelection = nextSelected.filter(x => !oldSelected.includes(x));
@@ -484,15 +484,15 @@ watch(
 watch(
   () => selectedListCompiled.value,
   async nextSelected => {
-    // if (import.meta.env.VITE_DEBUG) console.log('selectedListCompiled is firing, nextSelected:', nextSelected);
+    if (import.meta.env.VITE_DEBUG) console.log('watch selectedListCompiled is firing, nextSelected:', nextSelected);
     // MainStore.selectedServices = nextSelected;
     // if (typeof nextSelected === 'string') {
     //   nextSelected = [nextSelected];
     // }
     // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedListCompiled is firing, nextSelected', nextSelected);
-    // if (!nextSelected.length) {
-    //   return;
-    // }
+    if (!nextSelected.length) {
+      return;
+    }
     router.push({ query: { ...route.query, ...{ services: nextSelected.join(',') }}});
   }
 );

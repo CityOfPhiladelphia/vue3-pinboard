@@ -12,7 +12,7 @@ import transforms from '../app/util/transforms.js';
 
 import $config from '@/config.js';
 import appConfig from '@/app/main.js';
-if (import.meta.env.VITE_DEBUG) console.log('appConfig:', appConfig);
+// if (import.meta.env.VITE_DEBUG) console.log('appConfig:', appConfig);
 
 import { computed, onMounted, ref, getCurrentInstance, watch } from 'vue';
 import { useMainStore } from '@/stores/MainStore.js'
@@ -80,7 +80,7 @@ const selectAllCheckbox = ref(false);
 
 
 onMounted(async () => {
-  if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue mounted, appConfig:', appConfig, 'i18nLocale.value:', i18nLocale.value);
+  // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue mounted, appConfig:', appConfig, 'i18nLocale.value:', i18nLocale.value);
   if (!appConfig.greeting && (!appConfig.customComps || !appConfig.customComps.customGreeting)) {
     MainStore.shouldShowGreeting = false;
   }
