@@ -6,7 +6,7 @@ if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue $config:', $confi
 import { ref, onMounted, watch, watchEffect, computed } from 'vue';
 
 // PACKAGE IMPORTS
-import maplibregl from 'maplibre-gl/dist/maplibre-gl.js';
+import * as maplibregl from 'maplibre-gl/dist/maplibre-gl.js';
 import 'maplibre-gl/dist/maplibre-gl.css';
 // this was recommended by a comment in https://github.com/mapbox/mapbox-gl-js/issues/9114
 // the official mapbox-gl-draw was blocking map clicks
