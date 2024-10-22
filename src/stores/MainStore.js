@@ -4,7 +4,7 @@ import { defineStore, acceptHMRUpdate } from 'pinia'
 export const useMainStore = defineStore('MainStore', {
   state: () => {
     return {
-      refineOpen: true,
+      refineOpen: false,
       selectedZipcode: null,
       refineList: {},
       printCheckboxes: [],

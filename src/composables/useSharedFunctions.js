@@ -12,7 +12,7 @@ export default function useSharedFunctions() {
   
   const getSiteName = (item, route) => {
     // const route = useRoute();
-    // if (import.meta.env.VITE_DEBUG == 'true') console.log('route:', route);
+    if (import.meta.env.VITE_DEBUG) console.log('getSiteName, route:', route);
     if (!item) {
       return;
     }

@@ -941,6 +941,7 @@ const expandCheckbox = (ind) => {
 };
 
 const expandRefine = () => {
+  if (import.meta.env.VITE_DEBUG) console.log('expandRefine is running');
   let tagValue;
   if (MainStore.refineOpen) {
     tagValue = 'retract refine panel';
@@ -1175,6 +1176,7 @@ const closeRefinePanel = () => {
               :class="isMobile ? 'large-label': 'small-label'"
               slot="label"
             >
+              test
               {{ $t(ind + '.category') }}
             </div>
           </radio>
@@ -1242,8 +1244,7 @@ const closeRefinePanel = () => {
               class="dropdown-checkbox-header"
               @click="expandCheckbox(ind)"
             >
-              <!-- {{ $t(ind + '.category') }} -->
-              test
+              {{ $t(ind + '.category') }}
             </div>
             <div
               v-if="refineList[ind].expanded"

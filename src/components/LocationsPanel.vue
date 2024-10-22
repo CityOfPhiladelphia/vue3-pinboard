@@ -25,6 +25,7 @@ import { useDataStore } from '@/stores/DataStore.js'
 const DataStore = useDataStore();
 
 import AddressSearchControl from '@/components/AddressSearchControl.vue';
+import PrintShareSection from '@/components/PrintShareSection.vue';
 import ExpandCollapse from '@/components/ExpandCollapse.vue';
 
 import { useRoute, useRouter } from 'vue-router';
@@ -345,27 +346,34 @@ const geocodeStatus = computed(() => {
   }
 });
 
-// const sortDisabled = computed(() => {
-//   let value;
-//   let geocodeStatus = geocodeStatus.value;
-//   let zipcodeCenter = zipcodeCenter.value;
-//   let watchPositionOn = watchPositionOn.value;
-//   // if (import.meta.env.VITE_DEBUG) console.log('computed sortDisabled, geocodeStatus:', geocodeStatus, 'zipcodeCenter:', zipcodeCenter);
-//   if (geocodeStatus || zipcodeCenter[0] || watchPositionOn) {
-//     value = false;
-//   } else {
-//     value = true;
-//   }
-//   return value;
-// });
+const zipcodeCenter = computed(() => {
+  return MapStore.zipcodeCenter;
+});
+
+const sortDisabled = computed(() => {
+  let value;
+  let geocode, zipCenter, watchPos;
+  if (geocodeStatus.value) {
+    geocode = geocodeStatus.value;
+  }
+  if (zipcodeCenter.value) {
+    zipCenter = zipcodeCenter.value;
+  }
+  if (watchPositionOn.value) {
+    watchPos = watchPositionOn.value;
+  }
+  // if (import.meta.env.VITE_DEBUG) console.log('computed sortDisabled, geocode:', geocode, 'zipcodeCenter:', zipcodeCenter);
+  if (geocode || zipCenter[0] || watchPos) {
+    value = false;
+  } else {
+    value = true;
+  }
+  return value;
+});
 
 const isMobile = computed(() => {
   return MainStore.isMobileDevice;
 })
-
-const zipcodeCenter = computed(() => {
-  return MapStore.zipcodeCenter;
-});
 
 const selectedKeywords = computed(() => {
   return MainStore.selectedKeywords;
@@ -380,7 +388,14 @@ const selectedResource = computed(() => {
 });
 
 const currentData = computed(() => {
-  const locations = DataStore.sources[DataStore.appType].rows || DataStore.sources[DataStore.appType].features || DataStore.sources[DataStore.appType].data;
+  let locations;
+  if (DataStore.sources[DataStore.appType].rows) {
+    locations = [...DataStore.sources[DataStore.appType].rows];
+  } else if (DataStore.sources[DataStore.appType].features) {
+    locations = [...DataStore.sources[DataStore.appType].features];
+  } else if (DataStore.sources[DataStore.appType].data) {
+    locations = [...DataStore.sources[DataStore.appType].data];
+  }
 
   let currentQuery = { ...route.query };
   let currentQueryKeys = Object.keys(currentQuery);
@@ -399,6 +414,7 @@ const currentData = computed(() => {
     val = 'distance';
     // if (import.meta.env.VITE_DEBUG) console.log('it includes address');
     locations.sort(function(a, b) {
+      if (import.meta.env.VITE_DEBUG) console.log('a:', a, 'b:', b, 'val:', val);
       if (a[val] < b[val]) {
         return -1;
       }
@@ -414,12 +430,10 @@ const currentData = computed(() => {
       locations.sort(function(a, b) {
         let valueA = getter(a);
         let valueB = getter(b);
-        // if (import.meta.env.VITE_DEBUG) console.log('valueA:', valueA, 'valueB:', valueB, 'value:', value);
         let value;
         if (valueA && valueB) {
           value = valueA.localeCompare(valueB, undefined, { numeric: true });
         }
-        // return valueA.localeCompare(valueB);
         return value;
       });
     } else {

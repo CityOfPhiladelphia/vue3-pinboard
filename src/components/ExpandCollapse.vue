@@ -1,7 +1,7 @@
 <script setup>
 
 import useSharedFunctions from '@/composables/useSharedFunctions.js';
-const { getSiteName } = useSharedFunctions();
+// const { getSiteName } = useSharedFunctions();
 // import { library } from '@fortawesome/fontawesome-svg-core';
 import { findIconDefinition } from '@fortawesome/fontawesome-svg-core';
 
@@ -66,15 +66,15 @@ const locationClass = computed(() => {
   return value;
 });
 
-const plusIconWeight = computed(() => {
-  let value = 'fas';
-  let regularExists = findIconDefinition({ prefix: 'far', iconName: 'plus' });
-  // console.log('expandCollapse.vue computed, library:', library, 'regularExists:', regularExists);
-  if (regularExists) {
-    value = 'far';
-  }
-  return value;
-});
+// const plusIconWeight = computed(() => {
+//   let value = 'fas';
+//   let regularExists = findIconDefinition({ prefix: 'far', iconName: 'plus' });
+//   // console.log('expandCollapse.vue computed, library:', library, 'regularExists:', regularExists);
+//   if (regularExists) {
+//     value = 'far';
+//   }
+//   return value;
+// });
 
 const showLabels = computed(() => {
   let value = false;
@@ -187,8 +187,8 @@ watch(
   }
 )
 
-onMounted(async () => {
-    // console.log('ExpColl mounted:', evaluateSlot(slots.siteName));
+onMounted(() => {
+    if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse mounted');//, siteName);
     if (selectedResource.value == props.item._featureId) {
       openLocation();
     }
@@ -221,6 +221,59 @@ onMounted(async () => {
     //     expandRefine();
     //   }
     // };
+});
+
+const siteName = computed(() => {
+  // const route = useRoute();
+  if (import.meta.env.VITE_DEBUG) console.log('siteName computed');
+  if (!props.item) {
+    return;
+  }
+  let valOrGetter = $config.locationInfo.siteName;
+  const valOrGetterType = typeof valOrGetter;
+  let val;
+
+  let currentQuery = route.query;
+  let currentQueryKeys = Object.keys(currentQuery);
+
+  if (valOrGetterType === 'function') {
+    // const state = this.$store.state;
+    const getter = valOrGetter;
+    if (currentQueryKeys.includes('address') || currentQueryKeys.includes('zipcode')) {// || this.$store.state.map.watchPositionOn) {
+      // console.log('props.item:', props.item);
+      if (props.item && props.item.distance) {
+        val = '(' + props.item.distance.toFixed(2) + 'miles) ' + getter(props.item);
+        // val = '(' + props.item.distance.toFixed(2) + 'miles) ' + getter(props.item, transforms);
+        // val = '(' + props.item.distance.toFixed(2) + ' ' + this.$i18n.messages[this.i18nLocale]['miles'] + ') ' + getter(props.item, transforms);
+      } else {
+        // console.log('getSiteName else is running');
+        // val = '(' + props.item.distance.toFixed(2) + ' miles) ' + getter(state);
+        // val = getter(state);
+        // val = getter(props.item, transforms);
+        val = getter(props.item);
+      }
+    } else {
+      if (props.item) {
+        val = getter(props.item);
+        // val = getter(props.item, transforms);
+      } //else {
+      //   val = getter(state);
+      // }
+    }
+  } else {
+    if (currentQueryKeys.includes('address')) {
+      // console.log('props.item:', props.item);
+      if (props.item.distance) {
+        val = props.item.distance.toFixed(2) + ' miles - ' + props.item[valOrGetter];
+      } else {
+        val = props.item[valOrGetter];
+      }
+    } else {
+      val = props.item[valOrGetter];
+    }
+  }
+  // console.log('getSiteName val:', val);
+  return val;
 });
 
 const clickCheckBox = (e) => {
@@ -343,7 +396,7 @@ const makeID = (itemTitle) =>{
               :class="item._featureId"
               :aria-expanded="locationOpen"
             >
-              {{ getSiteName(item, route) }}
+              {{ siteName }}
               <div
                 v-if="section && !i18nEnabled"
                 class="section-name"
@@ -364,13 +417,15 @@ const makeID = (itemTitle) =>{
           <div class="location-icon column is-1">
             <font-awesome-icon
               v-if="!locationOpen"
-              :icon="[plusIconWeight, 'plus']"
               class="plus-icon"
-            />
-            <font-awesome-icon
+              :icon="['fas', 'plus']"
+              />
+              <!-- :icon="[plusIconWeight, 'plus']" -->
+              <font-awesome-icon
               v-if="locationOpen"
-              :icon="[plusIconWeight, 'minus']"
-            />
+              :icon="['fas', 'plus']"
+              />
+              <!-- :icon="[plusIconWeight, 'minus']" -->
           </div>
         </div>
       </div>

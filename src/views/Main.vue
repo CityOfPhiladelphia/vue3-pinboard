@@ -203,7 +203,7 @@ const footerLinks = computed(() => {
     for (let i of appConfig.footer) {
       let value = {}
       for (let j of Object.keys(i)) {
-        if (import.meta.env.VITE_DEBUG) console.log('i:', i, 'j:', j);
+        // if (import.meta.env.VITE_DEBUG) console.log('i:', i, 'j:', j);
         if (!i18nEnabled.value || j !== "text") {
           value[j] = i[j];
         } else {
@@ -221,7 +221,7 @@ const appTitle = computed(() => {
   if (appConfig.app.title) {
     value = appConfig.app.title;
   } else if (i18nEnabled.value) {
-    if (import.meta.env.VITE_DEBUG) console.log('t("app.title"):', t('app.title'));
+    // if (import.meta.env.VITE_DEBUG) console.log('t("app.title"):', t('app.title'));
     value = t('app.title');
   }
   return value;
@@ -233,7 +233,7 @@ const appSubTitle = computed(() => {
   if (appConfig.app.subtitle) {
     value = appConfig.app.subtitle;
   } else if (i18nEnabled.value) {
-    if (import.meta.env.VITE_DEBUG) console.log('t("app.subtitle"):', t('app.subtitle'));
+    // if (import.meta.env.VITE_DEBUG) console.log('t("app.subtitle"):', t('app.subtitle'));
     value = t('app.subtitle'); 
   }
   return value;
