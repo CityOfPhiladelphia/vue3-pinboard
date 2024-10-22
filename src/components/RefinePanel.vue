@@ -3,21 +3,17 @@
 import $config from '@/config.js';
 import appConfig from '@/app/main.js';
 // console.log('appConfig:', appConfig);
-// import { library } from '@fortawesome/fontawesome-svg-core';
 import { findIconDefinition } from '@fortawesome/fontawesome-svg-core';
 
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
-// import Vue from 'vue';
-// import { mapState } from 'vuex';
 import Checkbox from './Checkbox.vue';
-// import { Radio } from '@phila/phila-ui';
+// import Radio from '@phila/phila-ui-radio';
 
 import IconToolTip from './IconToolTip.vue';
 
 import { computed, onBeforeMount, onMounted, watch, ref, reactive, getCurrentInstance } from 'vue';
-
 const instance = getCurrentInstance();
 
 // STORES
@@ -120,12 +116,12 @@ const NumRefineColumns = computed(() => {
   return value;
 });
 
-const selectedListCompiled = computed(() => {
+const selectedArray = computed(() => {
   let test = {...selectedList.value};
-  if (import.meta.env.VITE_DEBUG) console.log('selectedListCompiled computed is running, test:', test);
+  if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, test:', test);
   let compiled = [];
   for (let value of Object.keys(test)) {
-    if (import.meta.env.VITE_DEBUG) console.log('in selectedListCompiled computed, value:', value, value.split('_')[0]);
+    if (import.meta.env.VITE_DEBUG) console.log('in selectedArray computed, value:', value, value.split('_')[0]);
     if (value.split('_')[0] == 'radio') {
       // console.log('radio button clicked!');
       compiled.push(test[value]);
@@ -348,9 +344,9 @@ const database = computed(() => {
   return value;
 });
 
-const i18nLocale = computed(() => {
-  return instance.appContext.config.globalProperties.$i18n.locale;
-});
+// const i18nLocale = computed(() => {
+//   return instance.appContext.config.globalProperties.$i18n.locale;
+// });
 
 watch(
   () => props.submittedCheckboxValue,
@@ -470,30 +466,62 @@ watch(
         // });
       }
     }
-    // console.log('watch selected is firing, nextSelected:', nextSelected, 'oldSelected:', oldSelected, 'newSelection:', newSelection);
-    // MainStore.selectedServices = nextSelected;
+  }
+);
 
-    if (refineType.value !== 'categoryField_value' && nextSelected.length) {
+const arraysEqual = (a, b) => {
+  if (a === b) return true;
+  if (a == null || b == null) return false;
+  if (a.length !== b.length) return false;
+
+  // If you don't care about the order of the elements inside
+  // the array, you should sort both arrays here.
+  // Please note that calling sort on an array will modify that array.
+  // you might want to clone your array first.
+
+  for (var i = 0; i < a.length; ++i) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
+
+watch(
+  () => selectedArray.value,
+  async (nextSelected, lastSelected) => {
+    if (import.meta.env.VITE_DEBUG) console.log('watch selectedArray is firing, nextSelected:', nextSelected, 'lastSelected:', lastSelected);
+    // MainStore.selectedServices = nextSelected;
+    // if (typeof nextSelected === 'string') {
+    //   nextSelected = [nextSelected];
+    // }
+    // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedArray is firing, nextSelected', nextSelected);
+    // if (!nextSelected.length) {
+    //   return;
+    // }
+    if (!arraysEqual(nextSelected, lastSelected)) {
       router.push({ query: { ...route.query, ...{ services: nextSelected.join(',') }}});
-    } else {
-      router.push({ query: { ...route.query, ...{ services: nextSelected }}});
     }
   }
 );
 
 watch(
-  () => selectedListCompiled.value,
-  async nextSelected => {
-    if (import.meta.env.VITE_DEBUG) console.log('watch selectedListCompiled is firing, nextSelected:', nextSelected);
-    // MainStore.selectedServices = nextSelected;
-    // if (typeof nextSelected === 'string') {
-    //   nextSelected = [nextSelected];
-    // }
-    // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedListCompiled is firing, nextSelected', nextSelected);
-    if (!nextSelected.length) {
-      return;
+  () => route.query,
+  async (newQuery, oldQuery) => {
+    if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch route.query is firing, newQuery:', newQuery, 'oldQuery:', oldQuery);
+    // if (newQuery.services) {
+    selectedList.value = {};
+    if (refineType.value !== 'categoryField_value') {
+      const newServices = newQuery.services.split(',');
+      if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch.query route is firing, newServices:', newServices, 'newQuery.services:', newQuery.services);
+      for (let service of newServices) {
+        if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch.query route is firing, service:', service);
+        let category = 'radio_' + service.split('_')[0];
+        selectedList.value[category] = service;
+      }
+    } else {
+      // this will need to be changed
+      selectedList.value = newQuery.services;
     }
-    router.push({ query: { ...route.query, ...{ services: nextSelected.join(',') }}});
+    // }
   }
 );
 
@@ -546,14 +574,14 @@ onMounted(async () => {
 //   }
 // };
 
-// const manualSelectedListCompiled = (nextSelected) => {
+// const manualselectedArray = (nextSelected) => {
 //   window.theRouter = router;
-//   console.log('manualSelectedListCompiled is firing, nextSelected:', nextSelected);
+//   console.log('manualselectedArray is firing, nextSelected:', nextSelected);
 //   MainStore.selectedServices = nextSelected;
 //   if (typeof nextSelected === 'string') {
 //     nextSelected = [nextSelected];
 //   }
-//   console.log('RefinePanel manualSelectedListCompiled is firing, nextSelected', nextSelected);
+//   console.log('RefinePanel manualselectedArray is firing, nextSelected', nextSelected);
 //   if (!nextSelected.length) {
 //     return;
 //   }
@@ -719,25 +747,24 @@ const closeBox = (box) => {
 const clearAll = (e) => {
   e.stopPropagation();
   console.log('RefinePanel clearAll is running, e:', e);
-  if (refineType.value === 'multipleFieldGroups' || refineType.value === 'multipleDependentFieldGroups') {
-    for (let checkbox of Object.keys(selectedList.value)) {
-      console.log('selectedList.value[checkbox]:', selectedList.value[checkbox]);
-      if (Array.isArray(selectedList.value[checkbox])) {
-        selectedList.value[checkbox].splice(0);
-      } else {
-        const { [checkbox]: removedProperty, ...exceptBoth } = selectedList.value;
-        selectedList.value = exceptBoth;
-      }
-    }
-  } else {
-    selected.value = [];
-  }
-  MainStore.selectedKeywords = [];
-  MainStore.selectedZipcode = null;
-  MapStore.zipcodeCenter = [];
-  // $controller.resetGeocode();
-  MainStore.currentSearch = null;
-  MapStore.bufferShape = null;
+  // if (refineType.value === 'multipleFieldGroups' || refineType.value === 'multipleDependentFieldGroups') {
+  //   for (let checkbox of Object.keys(selectedList.value)) {
+  //     console.log('selectedList.value[checkbox]:', selectedList.value[checkbox]);
+  //     if (Array.isArray(selectedList.value[checkbox])) {
+  //       selectedList.value[checkbox].splice(0);
+  //     } else {
+  //       const { [checkbox]: removedProperty, ...exceptBoth } = selectedList.value;
+  //       selectedList.value = exceptBoth;
+  //     }
+  //   }
+  // } else {
+  //   selected.value = [];
+  // }
+  // MainStore.selectedKeywords = [];
+  // MainStore.selectedZipcode = null;
+  // MapStore.zipcodeCenter = [];
+  // MainStore.currentSearch = null;
+  // MapStore.bufferShape = null;
   let startQuery = { ...route.query };
   delete startQuery['address'];
   delete startQuery['zipcode'];
@@ -1016,7 +1043,7 @@ const closeRefinePanel = () => {
       </div>
 
       <button
-        v-if="!i18nEnabled && (selected.length || anyValueEntered)"
+        v-if="!i18nEnabled && (selectedArray.length || anyValueEntered)"
         class="clear-all"
         @click.prevent="clearAll"
       >
@@ -1024,7 +1051,7 @@ const closeRefinePanel = () => {
       </button>
 
       <button
-        v-if="i18nEnabled && (selected.length || anyValueEntered)"
+        v-if="i18nEnabled && (selectedArray.length || anyValueEntered)"
         class="clear-all"
         @click.prevent="clearAll"
         v-html="$t('refinePanel.clearAll')"
@@ -1075,7 +1102,7 @@ const closeRefinePanel = () => {
 
         <button
           v-if="refineType !== 'categoryField_value'"
-          v-for="box in selected"
+          v-for="box in selectedArray"
           class="box-value column is-narrow"
           @click="closeBox(box)"
         >

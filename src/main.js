@@ -52,6 +52,7 @@ import { faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { faBuilding } from '@fortawesome/free-solid-svg-icons';
 import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
+import { faAngleUp } from '@fortawesome/free-solid-svg-icons';
 import { faAngleDown } from '@fortawesome/free-solid-svg-icons';
 import { faCaretLeft } from '@fortawesome/free-solid-svg-icons';
 import { faCaretRight } from '@fortawesome/free-solid-svg-icons';
@@ -74,6 +75,7 @@ library.add(
   faSpinner,
   faBuilding,
   faExternalLinkAlt,
+  faAngleUp,
   faAngleDown,
   faCaretLeft,
   faCaretRight,

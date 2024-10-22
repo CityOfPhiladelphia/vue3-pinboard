@@ -105,12 +105,12 @@ if (appConfig.app.logoLink && appConfig.app.logoLink == 'none') {
   // }
 }
 
-window.addEventListener("popstate", (event) => {
-  if (import.meta.env.VITE_DEBUG) console.log('popstate event:', document.location, event.state);
-  // handlePopStateChange();
-  // filterPoints();
-  location.reload();
-});
+// window.addEventListener("popstate", (event) => {
+//   if (import.meta.env.VITE_DEBUG) console.log('popstate event:', document.location, event.state);
+//   // handlePopStateChange();
+//   // filterPoints();
+//   location.reload();
+// });
 
 if (appConfig.refineEnabled === false) {
   refineEnabled.value = false;
@@ -663,7 +663,7 @@ watch(
       runZipcodeBuffer(geo);
     } else {
       if (import.meta.env.VITE_DEBUG) console.log('watch zipcodeData setting currentBuffer to null');
-      currentBuffer = null;
+      currentBuffer.value = null;
     }
   }
 );
@@ -711,7 +711,7 @@ watch(
     if (nextGeocodeStatus === 'success') {
       runBuffer();
     } else if (nextGeocodeStatus === null && lastPinboardSearchMethod.value != 'zipcode' && lastPinboardSearchMethod.value != 'zipcodeKeyword') {
-      currentBuffer = null;
+      currentBuffer.value = null;
     } else if (nextGeocodeStatus === 'error') {
       if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch geocodeStatus, nextGeocodeStatus is an error:', nextGeocodeStatus);
       geocodeFailed();
@@ -720,9 +720,9 @@ watch(
 );
 
 watch(
-  () => currentBuffer,
+  () => currentBuffer.value,
   async => {
-    if (import.meta.env.VITE_DEBUG) console.log('watch currentBuffer is calling filterPoints');
+    if (import.meta.env.VITE_DEBUG) console.log('watch currentBuffer.value is calling filterPoints');
     filterPoints();
   }
 );
@@ -910,9 +910,9 @@ const geolocateControlFire = async(e) => {
     }
     
   } else {
-    // if (import.meta.env.VITE_DEBUG) console.log('Main.vue geolocateControlFire is running, remove currentBuffer');
+    // if (import.meta.env.VITE_DEBUG) console.log('Main.vue geolocateControlFire is running, remove currentBuffer.value');
     MapStore.bufferShape = null;
-    currentBuffer = null;
+    currentBuffer.value = null;
   }
 };
 
@@ -1021,7 +1021,7 @@ const compareArrays = (arr1, arr2) => {
 
 //       clearGeocodeAndZipcode();
 //       MapStore.bufferShape = null;
-//       currentBuffer = null;
+//       currentBuffer.value = null;
       
 //       let startKeyword;
 //       if (startQuery['keyword'] && startQuery['keyword'] != '') {
@@ -1129,12 +1129,12 @@ const runBuffer = (coords) => {
   if (coords && coords.coordinates[0] != null) {
     const geocodePoint = point(coords.coordinates);
     const pointBuffer = buffer(geocodePoint, searchDistance, { units: 'miles' });
-    currentBuffer = pointBuffer;
+    currentBuffer.value = pointBuffer;
     MapStore.bufferShape = pointBuffer;
   } else if (geocodeGeom.value) {
     const geocodePoint = point(geocodeGeom.value.coordinates);
     const pointBuffer = buffer(geocodePoint, searchDistance, { units: 'miles' });
-    currentBuffer = pointBuffer;
+    currentBuffer.value = pointBuffer;
     MapStore.bufferShape = pointBuffer;
   }
 };
@@ -1143,7 +1143,7 @@ const runZipcodeBuffer = (geo) => {
   if (import.meta.env.VITE_DEBUG) console.log('Main.vue runZipcodeBuffer is running, geo:', geo);
   let searchDistance = searchDistance.value;
   const polygonBuffer = buffer(geo, searchDistance, { units: 'miles' });
-  currentBuffer = polygonBuffer;
+  currentBuffer.value = polygonBuffer;
   MapStore.zipcodeBufferShape = polygonBuffer;
 };
 
@@ -1346,8 +1346,8 @@ const filterPoints = () => {
 
     // if (import.meta.env.VITE_DEBUG) console.log('about to do buffer stuff, row:', row);
     let booleanBuffer = false;
-    if (!currentBuffer) {
-      // if (import.meta.env.VITE_DEBUG) console.log('!currentBuffer');
+    if (!currentBuffer.value) {
+      // if (import.meta.env.VITE_DEBUG) console.log('!currentBuffer.value');
       booleanBuffer = true;
     } else if (row.latlng) {
       if (import.meta.env.VITE_DEBUG) console.log('row.latlng:', row.latlng);
@@ -1373,7 +1373,7 @@ const filterPoints = () => {
         //   theDistance = distance(geocodedPoint, rowPoint, options);
         //   row.distance = theDistance;
         // }
-        // if (import.meta.env.VITE_DEBUG) console.log('rowPoint:', rowPoint, 'currentBuffer:', currentBuffer, 'booleanPointInPolygon(rowPoint, currentBuffer):', booleanPointInPolygon(rowPoint, currentBuffer));
+        // if (import.meta.env.VITE_DEBUG) console.log('rowPoint:', rowPoint, 'currentBuffer.value:', currentBuffer.value, 'booleanPointInPolygon(rowPoint, currentBuffer.value):', booleanPointInPolygon(rowPoint, currentBuffer.value));
         if (booleanPointInPolygon(rowPoint, buffer)) {
           booleanBuffer = true;
         }
@@ -1381,7 +1381,7 @@ const filterPoints = () => {
       } else if (typeof row.latlng[0] === 'string' && row.latlng[0] !== null) {
         // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 1 ELSE IF');
         const rowPoint = point([ parseFloat(row.latlng[1]), parseFloat(row.latlng[0]) ]);
-        if (booleanPointInPolygon(rowPoint, currentBuffer)) {
+        if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
           booleanBuffer = true;
         }
       }
@@ -1398,7 +1398,7 @@ const filterPoints = () => {
           lnglat = [ row.lon, row.lat ];
         }
         const rowPoint = point(lnglat);
-        if (booleanPointInPolygon(rowPoint, currentBuffer)) {
+        if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
           booleanBuffer = true;
         }
         // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 2 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
@@ -1431,7 +1431,7 @@ const filterPoints = () => {
           row.distance = theDistance;
         }
 
-        if (booleanPointInPolygon(rowPoint, currentBuffer)) {
+        if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
           booleanBuffer = true;
         }
         // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
@@ -1464,7 +1464,7 @@ const filterPoints = () => {
           row.distance = theDistance;
         }
 
-        if (booleanPointInPolygon(rowPoint, currentBuffer)) {
+        if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
           booleanBuffer = true;
         }
         // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
