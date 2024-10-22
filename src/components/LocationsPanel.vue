@@ -10,28 +10,28 @@ import transforms from '../app/util/transforms.js';
 // import SingleCheckbox from './SingleCheckbox.vue';
 // import PrintShareSection from '@phila/pinboard/src/components/PrintShareSection';
 
-import $config from '@/config.js';
-import appConfig from '@/app/main.js';
+// import $config from '@/config.js';
+import appConfig from '../app/main.js';
 // if (import.meta.env.VITE_DEBUG) console.log('appConfig:', appConfig);
 
 import { computed, onMounted, ref, getCurrentInstance, watch } from 'vue';
-import { useMainStore } from '@/stores/MainStore.js'
+import { useMainStore } from '../stores/MainStore.js'
 const MainStore = useMainStore();
-import { useMapStore } from '@/stores/MapStore.js'
+import { useMapStore } from '../stores/MapStore.js'
 const MapStore = useMapStore();
-import { useGeocodeStore } from '@/stores/GeocodeStore.js'
+import { useGeocodeStore } from '../stores/GeocodeStore.js'
 const GeocodeStore = useGeocodeStore();
-import { useDataStore } from '@/stores/DataStore.js'
+import { useDataStore } from '../stores/DataStore.js'
 const DataStore = useDataStore();
 
-import AddressSearchControl from '@/components/AddressSearchControl.vue';
-import PrintShareSection from '@/components/PrintShareSection.vue';
-import ExpandCollapse from '@/components/ExpandCollapse.vue';
+import AddressSearchControl from './AddressSearchControl.vue';
+import PrintShareSection from './PrintShareSection.vue';
+import ExpandCollapse from './ExpandCollapse.vue';
 
 import { useRoute, useRouter } from 'vue-router';
-import ExpandCollapseContent from '@/app/components/ExpandCollapseContent.vue';
+import ExpandCollapseContent from '../app/components/ExpandCollapseContent.vue';
 
-import CustomGreeting from '@/app/components/customGreeting.vue';
+import CustomGreeting from '../app/components/customGreeting.vue';
 
 const version = import.meta.env.VITE_VERSION;
 

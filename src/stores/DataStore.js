@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import axios from 'axios';
 
-import appConfig from '@/app/main.js';
+import appConfig from '../app/main.js';
 // if (import.meta.env.VITE_DEBUG) console.log('appConfig:', appConfig);
 // if (import.meta.env.VITE_DEBUG) console.log('appConfig.dataSources:', appConfig.dataSources);
 

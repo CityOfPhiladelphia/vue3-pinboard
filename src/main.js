@@ -95,19 +95,24 @@ app.use(VueGoodTablePlugin);
 
 import i18nFromFiles from './i18n/i18n.js';
 import i18nProject from './app/i18n/i18n.js';
-const messages = mergeDeep(i18nFromFiles.i18n.data.messages, i18nProject.i18n.data.messages);
-// if (import.meta.env.VITE_DEBUG == 'true') console.log('i18nFromFiles:', i18nFromFiles, 'messages:', messages);
-const i18n = createI18n({
-  legacy: false,
-  globalInjection: true,
-  locale: 'en-US',
-  fallbackLocale: 'en-US',
-  messages: messages
-})
 
-app.use(i18n)
 
-app.use(createPinia())
-app.use(router)
+export default function pinboard(config) {
+  const messages = mergeDeep(i18nFromFiles.i18n.data.messages, i18nProject.i18n.data.messages);
+  // if (import.meta.env.VITE_DEBUG == 'true') console.log('i18nFromFiles:', i18nFromFiles, 'messages:', messages);
+  const i18n = createI18n({
+    legacy: false,
+    globalInjection: true,
+    locale: 'en-US',
+    fallbackLocale: 'en-US',
+    messages: messages
+  })
+  app.config.globalProperties.appConfig = config;
 
-app.mount('#app')
+  app.use(i18n)
+
+  app.use(createPinia())
+  app.use(router)
+
+  app.mount('#app')
+};

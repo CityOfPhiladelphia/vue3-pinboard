@@ -5,7 +5,7 @@
   "author": "City of Philadelphia <maps@phila.gov>",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CityOfPhiladelphia/pinboard.git"
+    "url": "git+https://github.com/CityOfPhiladelphia/vue3-pinboard.git"
   },
   "license": "MIT",
   "private": false,

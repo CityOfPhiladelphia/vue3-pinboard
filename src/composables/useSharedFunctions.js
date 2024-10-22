@@ -1,6 +1,6 @@
 
 import transforms from '../util/transforms.js';
-import $config from '@/app/main.js';
+import $config from '../app/main.js';
 // import { getCurrentInstance } from 'vue';
 
 export default function useSharedFunctions() {

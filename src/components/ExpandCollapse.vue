@@ -1,15 +1,15 @@
 <script setup>
 
-import useSharedFunctions from '@/composables/useSharedFunctions.js';
+import useSharedFunctions from '../composables/useSharedFunctions.js';
 // const { getSiteName } = useSharedFunctions();
 // import { library } from '@fortawesome/fontawesome-svg-core';
 import { findIconDefinition } from '@fortawesome/fontawesome-svg-core';
 
-import { useMainStore } from '@/stores/MainStore.js'
+import { useMainStore } from '../stores/MainStore.js'
 const MainStore = useMainStore();
-import { useMapStore } from '@/stores/MapStore.js'
+import { useMapStore } from '../stores/MapStore.js'
 const MapStore = useMapStore();
-import { useDataStore } from '@/stores/DataStore.js'
+import { useDataStore } from '../stores/DataStore.js'
 const DataStore = useDataStore();
 
 import { useRoute, useRouter } from 'vue-router';
@@ -18,7 +18,7 @@ const router = useRouter();
 
 import { ref, computed, defineProps, onMounted, watch } from 'vue';
 
-import $config from '@/app/main.js'
+import $config from '../app/main.js'
 // if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse.vue $config:', $config);
 
 const $emit = defineEmits(['print-box-checked']);

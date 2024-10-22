@@ -1,6 +1,6 @@
 <script setup>
 
-import { useMainStore } from '@/stores/MainStore.js'
+import { useMainStore } from '../../stores/MainStore.js'
 const MainStore = useMainStore();
 import { parse, format } from 'date-fns';
 // import greetingSection from './greetingSection.vue';
@@ -8,8 +8,8 @@ import { parse, format } from 'date-fns';
 // components: {
 //   greetingSection,
 // },
-import $config from '@/config.js';
-import appConfig from '@/app/main.js';
+// import $config from '@/config.js';
+// import appConfig from '@/app/main.js';
 
 import { onMounted, watch, ref, computed, defineEmits } from 'vue';
 

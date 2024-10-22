@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import buffer from '@turf/buffer';
 import { point } from '@turf/helpers';
-import $config from '@/config.js';
+import $config from '../config.js';
 
 export const useMapStore = defineStore("MapStore", {
   state: () => {

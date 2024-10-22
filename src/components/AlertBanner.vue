@@ -1,6 +1,6 @@
 <script setup>
 
-import appConfig from '@/app/main.js';
+import appConfig from '../app/main.js';
 
 import { getCurrentInstance } from 'vue';
 const instance = getCurrentInstance();

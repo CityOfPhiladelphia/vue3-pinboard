@@ -1,6 +1,6 @@
 <script setup>
 
-import $config from '@/config';
+import $config from '../../config';
 if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue $config:', $config);
 
 import { ref, onMounted, watch, watchEffect, computed } from 'vue';
@@ -10,21 +10,21 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 // this was recommended by a comment in https://github.com/mapbox/mapbox-gl-js/issues/9114
 // the official mapbox-gl-draw was blocking map clicks
-import '@/assets/mapbox-gl-draw.min.js'
-import '@/assets/maplibre-gl-draw.css';
+import '../../assets/mapbox-gl-draw.min.js'
+import '../../assets/maplibre-gl-draw.css';
 import destination from '@turf/destination';
 import { point, polygon, multiPolygon, feature, featureCollection } from '@turf/helpers';
 import bbox from '@turf/bbox';
 import buffer from '@turf/buffer';
 
 // STORES
-import { useMapStore } from '@/stores/MapStore.js';
+import { useMapStore } from '../../stores/MapStore.js';
 const MapStore = useMapStore();
-import { useMainStore } from '@/stores/MainStore.js'
+import { useMainStore } from '../../stores/MainStore.js'
 const MainStore = useMainStore();
-import { useGeocodeStore } from '@/stores/GeocodeStore.js'
+import { useGeocodeStore } from '../../stores/GeocodeStore.js'
 const GeocodeStore = useGeocodeStore();
-import { useDataStore } from '@/stores/DataStore.js'
+import { useDataStore } from '../../stores/DataStore.js'
 const DataStore = useDataStore();
 
 // ROUTER
@@ -33,7 +33,7 @@ const route = useRoute();
 const router = useRouter();
 
 // COMPONENTS
-import AddressSearchControl from '@/components/AddressSearchControl.vue';
+import AddressSearchControl from '../AddressSearchControl.vue';
 // import ImageryToggleControl from '@/components/map/ImageryToggleControl.vue';
 // import ImageryDropdownControl from '@/components/map/ImageryDropdownControl.vue';
 

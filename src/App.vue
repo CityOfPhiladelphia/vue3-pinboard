@@ -10,9 +10,9 @@ import i18nFromFiles from './i18n/i18n.js';
 const languages = i18nFromFiles.i18n.languages;
 
 // STORES
-import { useDataStore } from '@/stores/DataStore.js'
+import { useDataStore } from './stores/DataStore.js'
 const DataStore = useDataStore();
-import { useMainStore } from '@/stores/MainStore.js'
+import { useMainStore } from './stores/MainStore.js'
 const MainStore = useMainStore();
 
 if (!import.meta.env.VITE_PUBLICPATH) {
@@ -30,9 +30,9 @@ const router = useRouter();
 import { onMounted, computed, getCurrentInstance, watch } from 'vue';
 
 // COMPONENTS
-import LocationsPanel from '@/components/LocationsPanel.vue';
-import MapPanel from '@/components/MapPanel.vue';
-import RefinePanel from '@/components/RefinePanel.vue';
+import LocationsPanel from './components/LocationsPanel.vue';
+import MapPanel from './components/MapPanel.vue';
+import RefinePanel from './components/RefinePanel.vue';
 
 const instance = getCurrentInstance();
 const locale = computed(() => instance.appContext.config.globalProperties.$i18n.locale);

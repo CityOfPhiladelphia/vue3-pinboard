@@ -2,9 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router';
 import App from '../App.vue';
 import Main from '../views/Main.vue';
 
-import { useDataStore } from '@/stores/DataStore.js';
-import { useGeocodeStore } from '@/stores/GeocodeStore.js';
-import { useMainStore } from '@/stores/MainStore.js';
+import { useDataStore } from '../stores/DataStore.js';
+import { useGeocodeStore } from '../stores/GeocodeStore.js';
+import { useMainStore } from '../stores/MainStore.js';
 
 const getGeocodeAndPutInStore = async(address) => {
   const GeocodeStore = useGeocodeStore();

@@ -1,7 +1,7 @@
 <script setup>
 
-import $config from '@/config.js';
-import appConfig from '@/app/main.js';
+// import $config from '@/config.js';
+import appConfig from '../app/main.js';
 // if (import.meta.env.VITE_DEBUG) console.log('appConfig:', appConfig);
 
 import proj4 from 'proj4';
@@ -27,9 +27,9 @@ import isMobileDevice from '../util/is-mobile-device';
 import isMac from '../util/is-mac'; // this can probably be removed from App.vue, and only run in main.js
 
 // COMPONENTS
-import LocationsPanel from '@/components/LocationsPanel.vue';
-import MapPanel from '@/components/MapPanel.vue';
-import RefinePanel from '@/components/RefinePanel.vue';
+import LocationsPanel from '../components/LocationsPanel.vue';
+import MapPanel from '../components/MapPanel.vue';
+import RefinePanel from '../components/RefinePanel.vue';
 
 import { computed, onBeforeMount, onMounted, watch, ref, reactive, getCurrentInstance, nextTick } from 'vue';
 const instance = getCurrentInstance();
@@ -37,13 +37,13 @@ const locale = computed(() => instance.appContext.config.globalProperties.$i18n.
 // if (import.meta.env.VITE_DEBUG) console.log('instance.appContext.config.globalProperties.$i18n:', instance.appContext.config.globalProperties.$i18n);
 
 // STORES
-import { useMapStore } from '@/stores/MapStore.js';
+import { useMapStore } from '../stores/MapStore.js';
 const MapStore = useMapStore();
-import { useMainStore } from '@/stores/MainStore.js'
+import { useMainStore } from '../stores/MainStore.js'
 const MainStore = useMainStore();
-import { useGeocodeStore } from '@/stores/GeocodeStore.js'
+import { useGeocodeStore } from '../stores/GeocodeStore.js'
 const GeocodeStore = useGeocodeStore();
-import { useDataStore } from '@/stores/DataStore.js'
+import { useDataStore } from '../stores/DataStore.js'
 const DataStore = useDataStore();
 
 // ROUTER

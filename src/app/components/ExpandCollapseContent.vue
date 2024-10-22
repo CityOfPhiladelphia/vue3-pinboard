@@ -18,7 +18,7 @@ import PublicBenefitsSiteCard from './PublicBenefitsSiteCard.vue';
 
 import { computed } from 'vue';
 
-import $config from '@/app/main.js'
+// import $config from '@/app/main.js'
 
 const props = defineProps({
   item: {

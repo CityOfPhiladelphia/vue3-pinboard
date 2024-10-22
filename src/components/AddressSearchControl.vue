@@ -1,12 +1,12 @@
 <script setup>
 
-import appConfig from '@/app/main.js';
+import appConfig from '../app/main.js';
 import { computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 
-import { useMainStore } from '@/stores/MainStore.js'
+import { useMainStore } from '../stores/MainStore.js'
 const MainStore = useMainStore();
-import { useMapStore } from '@/stores/MapStore.js'
+import { useMapStore } from '../stores/MapStore.js'
 const MapStore = useMapStore();
 
 const router = useRouter();

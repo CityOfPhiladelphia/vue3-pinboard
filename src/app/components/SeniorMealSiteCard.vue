@@ -1,7 +1,7 @@
 <script setup>
 
 import { computed } from 'vue';
-import $config from '@/app/main.js'
+import $config from '../main.js'
 
 const props = defineProps({
   item: {

@@ -1,7 +1,7 @@
 <script setup>
 
-import $config from '@/config.js';
-import appConfig from '@/app/main.js';
+// import $config from '@/config.js';
+import appConfig from '../app/main.js';
 // console.log('appConfig:', appConfig);
 import { findIconDefinition } from '@fortawesome/fontawesome-svg-core';
 
@@ -17,13 +17,13 @@ import { computed, onBeforeMount, onMounted, watch, ref, reactive, getCurrentIns
 const instance = getCurrentInstance();
 
 // STORES
-import { useMapStore } from '@/stores/MapStore.js';
+import { useMapStore } from '../stores/MapStore.js';
 const MapStore = useMapStore();
-import { useMainStore } from '@/stores/MainStore.js'
+import { useMainStore } from '../stores/MainStore.js'
 const MainStore = useMainStore();
-import { useGeocodeStore } from '@/stores/GeocodeStore.js'
+import { useGeocodeStore } from '../stores/GeocodeStore.js'
 const GeocodeStore = useGeocodeStore();
-import { useDataStore } from '@/stores/DataStore.js'
+import { useDataStore } from '../stores/DataStore.js'
 const DataStore = useDataStore();
 
 // ROUTER
