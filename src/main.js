@@ -116,3 +116,5 @@ export default function pinboard(config) {
 
   app.mount('#app')
 };
+
+// pinboard(appConfig);
