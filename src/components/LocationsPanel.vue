@@ -1,18 +1,9 @@
 
 <script setup>
 
-// import { mapState } from 'vuex';
-// import ExpandCollapse from './ExpandCollapse.vue';
-import transforms from '../app/util/transforms.js';
-
 // import { Dropdown } from '@phila/phila-ui';
-
 // import SingleCheckbox from './SingleCheckbox.vue';
 // import PrintShareSection from '@phila/pinboard/src/components/PrintShareSection';
-
-// import $config from '@/config.js';
-import appConfig from '../app/main.js';
-// if (import.meta.env.VITE_DEBUG) console.log('appConfig:', appConfig);
 
 import { computed, onMounted, ref, getCurrentInstance, watch } from 'vue';
 import { useMainStore } from '../stores/MainStore.js'
@@ -24,17 +15,19 @@ const GeocodeStore = useGeocodeStore();
 import { useDataStore } from '../stores/DataStore.js'
 const DataStore = useDataStore();
 
-import AddressSearchControl from './AddressSearchControl.vue';
+// import AddressSearchControl from './AddressSearchControl.vue';
 import PrintShareSection from './PrintShareSection.vue';
 import ExpandCollapse from './ExpandCollapse.vue';
 
-import { useRoute, useRouter } from 'vue-router';
-import ExpandCollapseContent from '../app/components/ExpandCollapseContent.vue';
-
-import CustomGreeting from '../app/components/customGreeting.vue';
+import { useConfigStore } from '../stores/ConfigStore.js'
+const ConfigStore = useConfigStore();
+const $config = ConfigStore.config;
+const ExpandCollapseContent = $config.customComps.ExpandCollapseContent;
+const CustomGreeting = $config.customComps.customGreeting;
 
 const version = import.meta.env.VITE_VERSION;
 
+import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 
@@ -46,7 +39,6 @@ const { t } = useI18n()
 
 const $emit = defineEmits([ 'clear-bad-address' ]);
 
-
 // const zipCode = computed(() => {
 //   if (GeocodeStore.aisData && GeocodeStore.aisData.features) {
 //     return GeocodeStore.aisData.features[0].properties.zip_code + '-' + GeocodeStore.aisData.features[0].properties.zip_4;
@@ -57,14 +49,6 @@ const $emit = defineEmits([ 'clear-bad-address' ]);
 const currentItems = computed(() => {
   return DataStore.covidFreeMealSites.features;
 });
-
-
-// components: {
-//   ExpandCollapse,
-//   Dropdown,
-//   SingleCheckbox,
-//   PrintShareSection,
-// },
 
 const props = defineProps({
   isMapVisible: {
@@ -79,18 +63,17 @@ const sortBy = ref('Alphabetically');
 const printCheckboxes = ref([]);
 const selectAllCheckbox = ref(false);
 
-
 onMounted(async () => {
-  // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue mounted, appConfig:', appConfig, 'i18nLocale.value:', i18nLocale.value);
-  if (!appConfig.greeting && (!appConfig.customComps || !appConfig.customComps.customGreeting)) {
+  // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue mounted, $config:', $config, 'i18nLocale.value:', i18nLocale.value);
+  if (!$config.greeting && (!$config.customComps || !$config.customComps.customGreeting)) {
     MainStore.shouldShowGreeting = false;
   }
 
   let value, valueWithMiles;
-  if (appConfig.searchBar.searchDistance && appConfig.searchBar.searchDistance != 1) {
-    value = appConfig.searchBar.searchDistance;
-    // valueWithMiles = appConfig.searchBar.searchDistance + ' ' + $i18n.messages[i18nLocale.value]['miles'];
-    valueWithMiles = appConfig.searchBar.searchDistance + ' ' + t('miles');
+  if ($config.searchBar.searchDistance && $config.searchBar.searchDistance != 1) {
+    value = $config.searchBar.searchDistance;
+    // valueWithMiles = $config.searchBar.searchDistance + ' ' + $i18n.messages[i18nLocale.value]['miles'];
+    valueWithMiles = $config.searchBar.searchDistance + ' ' + t('miles');
   } else {
     value = 1;
     // valueWithMiles = 1 + ' ' + $i18n.messages[i18nLocale.value]['mile'];
@@ -108,8 +91,8 @@ onMounted(async () => {
 // COMPUTED
 const tagsPhrase = computed(() => {
   let value;
-  if (appConfig.locationInfo.tagsPhrase) {
-    value = appConfig.locationInfo.tagsPhrase;
+  if ($config.locationInfo.tagsPhrase) {
+    value = $config.locationInfo.tagsPhrase;
   } else {
     value = 'Tags';
   }
@@ -129,8 +112,8 @@ const searchDistanceOptions = computed(() => {
 
 const anySearch = computed(() => {
   let value = true;
-  if (Object.keys(appConfig).includes('anySearch')) {
-    value = appConfig.anySearch
+  if (Object.keys($config).includes('anySearch')) {
+    value = $config.anySearch
   } //else {
   //   value = true;
   // }
@@ -154,7 +137,7 @@ const sortByOptions = computed(() => {
 
 const allowPrint = computed(() => {
   let value = false;
-  if (appConfig.allowPrint) {
+  if ($config.allowPrint) {
     value = true;
   }
   return value;
@@ -296,7 +279,7 @@ const shouldShowGreeting = computed(() => {
 
 const i18nEnabled = computed(() => {
   let value;
-  if (appConfig.i18n && appConfig.i18n.enabled) {
+  if ($config.i18n && $config.i18n.enabled) {
     value = true;
   } else {
     value = false;
@@ -306,16 +289,16 @@ const i18nEnabled = computed(() => {
 
 const hasCustomGreeting = computed(() => {
   let value = false;
-  if (appConfig.customComps) {
-    value = Object.keys(appConfig.customComps).includes('customGreeting');
+  if ($config.customComps) {
+    value = Object.keys($config.customComps).includes('customGreeting');
   }
   return value;
 });
 
 const greetingText = computed(() => {
   let value;
-  if (appConfig.greeting) {
-    value = appConfig.greeting.message;
+  if ($config.greeting) {
+    value = $config.greeting.message;
   } else {
     value = null;
   }
@@ -324,8 +307,8 @@ const greetingText = computed(() => {
 
 const greetingOptions = computed(() => {
   let value;
-  if (appConfig.greeting) {
-    value = appConfig.greeting.options;
+  if ($config.greeting) {
+    value = $config.greeting.options;
   } else {
     value = {};
   }
@@ -455,14 +438,14 @@ const currentDataList = computed(() => {
 
 const dataStatus = computed(() => {
   let value;
-  if (DataStore.sources[appConfig.app.type]) {
-    value = DataStore.sources[appConfig.app.type].status;
+  if (DataStore.sources[$config.app.type]) {
+    value = DataStore.sources[$config.app.type].status;
   }
   return 'success';
 });
 
 const locationInfo = computed(() => {
-  return appConfig.locationInfo;
+  return $config.locationInfo;
 });
 
 const noLocations = computed(() => {
@@ -646,7 +629,7 @@ const clickedViewList = () => {
 };
 
 const getLocationsList = () => {
-  const locations = sources.value[appConfig.app.type].data.rows;
+  const locations = sources.value[$config.app.type].data.rows;
   return locations;
 };
 
@@ -855,13 +838,13 @@ const makeValidUrl = (url) => {
           >
 
             <expand-collapse-content
-              v-if="appConfig.customComps && Object.keys(appConfig.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource"
+              v-if="$config.customComps && Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource"
               :item="item"
               :is-map-visible="isMapVisible"
             />
 
             <div
-              v-if="!appConfig.customComps || !Object.keys(appConfig.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource"
+              v-if="!$config.customComps || !Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource"
               :class="isMobile ? 'main-content-mobile' : 'main-content'"
             >
               <print-share-section

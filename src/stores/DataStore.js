@@ -1,13 +1,7 @@
-import { defineStore } from 'pinia'
+import { defineStore } from 'pinia';
 import axios from 'axios';
 
-import appConfig from '../app/main.js';
-// if (import.meta.env.VITE_DEBUG) console.log('appConfig:', appConfig);
-// if (import.meta.env.VITE_DEBUG) console.log('appConfig.dataSources:', appConfig.dataSources);
-
-const appType = appConfig.app.type;
-const data = appConfig.dataSources[appType];
-const params = data.options.params;
+import { useConfigStore } from './ConfigStore.js';
 
 export const useDataStore = defineStore('DataStore', {
   state: () => {
@@ -15,7 +9,7 @@ export const useDataStore = defineStore('DataStore', {
       // printCheckboxes: [],
       selectedResource: null,
       latestSelectedResourceFromExpand: null,
-      appType: appType,
+      appType: null,
       sources: {},
       databaseWithoutHiddenItems: [],
       currentData: [],
@@ -26,7 +20,15 @@ export const useDataStore = defineStore('DataStore', {
   },
 
   actions: {
+    async fillAppType() {
+      const ConfigStore = useConfigStore();
+      this.appType = ConfigStore.config.app.type;
+    },
     async fillResources() {
+      const ConfigStore = useConfigStore();
+      const appType = ConfigStore.config.app.type;
+      const data = ConfigStore.config.dataSources[appType];
+      const params = data.options.params;
       if (import.meta.env.VITE_DEBUG) console.log('data:', data, 'params:', params);
       const response = await axios.get(data.url, { params });
       if (response.status === 200) {

@@ -1,13 +1,13 @@
 import { defineStore } from 'pinia';
 import buffer from '@turf/buffer';
 import { point } from '@turf/helpers';
-import $config from '../config.js';
+import $mapConfig from '../mapConfig.js';
 
 export const useMapStore = defineStore("MapStore", {
   state: () => {
     return {
       map: {},
-      searchDistance: $config.searchDistance,
+      searchDistance: $mapConfig.searchDistance,
       currentMapStyle: 'pwdDrawnMapStyle',
       currentAddressCoords: [],
       zipcodeCenter: [],

@@ -1,7 +1,6 @@
 
 import transforms from '../util/transforms.js';
-import $config from '../app/main.js';
-// import { getCurrentInstance } from 'vue';
+import { useConfigStore } from '../stores/ConfigStore.js'
 
 export default function useSharedFunctions() {
   
@@ -11,6 +10,8 @@ export default function useSharedFunctions() {
   // console.log('instance:', instance, 'locale:', locale);
   
   const getSiteName = (item, route) => {
+    const ConfigStore = useConfigStore();
+    const $config = ConfigStore.config;
     // const route = useRoute();
     if (import.meta.env.VITE_DEBUG) console.log('getSiteName, route:', route);
     if (!item) {

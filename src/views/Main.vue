@@ -1,8 +1,9 @@
 <script setup>
 
-// import $config from '@/config.js';
-import appConfig from '../app/main.js';
-// if (import.meta.env.VITE_DEBUG) console.log('appConfig:', appConfig);
+import { useConfigStore } from '../stores/ConfigStore.js'
+const ConfigStore = useConfigStore();
+const $config = ConfigStore.config;
+// if (import.meta.env.VITE_DEBUG) console.log('$config:', $config);
 
 import proj4 from 'proj4';
 import { format } from 'date-fns';
@@ -31,7 +32,7 @@ import LocationsPanel from '../components/LocationsPanel.vue';
 import MapPanel from '../components/MapPanel.vue';
 import RefinePanel from '../components/RefinePanel.vue';
 
-import { computed, onBeforeMount, onMounted, watch, ref, reactive, getCurrentInstance, nextTick } from 'vue';
+import { computed, onMounted, watch, ref, getCurrentInstance, nextTick } from 'vue';
 const instance = getCurrentInstance();
 const locale = computed(() => instance.appContext.config.globalProperties.$i18n.locale);
 // if (import.meta.env.VITE_DEBUG) console.log('instance.appContext.config.globalProperties.$i18n:', instance.appContext.config.globalProperties.$i18n);
@@ -79,28 +80,28 @@ const showAutomaticHolidayBanner = ref(false);
 // let root = document.getElementsByTagName( 'html' )[0]; // '0' to assign the first (and only `HTML` tag)
 // root.setAttribute( 'class', 'invisible-scrollbar' );
 
-// if (import.meta.env.VITE_DEBUG) console.log('Pinboard Main.vue created, appConfig:', appConfig);
-if (appConfig.map) {
-  if (appConfig.map.shouldInitialize === false) {
+// if (import.meta.env.VITE_DEBUG) console.log('Pinboard Main.vue created, $config:', $config);
+if ($config.map) {
+  if ($config.map.shouldInitialize === false) {
     MapStore.shouldInitialize = false
   }
 }
 
-if (appConfig.app.logoSrc) {
+if ($config.app.logoSrc) {
   brandingImage.value = {
-    src: appConfig.app.logoSrc,
-    alt: appConfig.app.logoAlt,
-    width: appConfig.app.logoWidth || "200px",
+    src: $config.app.logoSrc,
+    alt: $config.app.logoAlt,
+    width: $config.app.logoWidth || "200px",
   }
 }
 
-if (appConfig.app.logoLink && appConfig.app.logoLink == 'none') {
+if ($config.app.logoLink && $config.app.logoLink == 'none') {
   brandingLink.value = {
     style: 'pointer-events: none',
   }
 } else {
   // brandingLink.value = {
-  //   href: appConfig.app.logoLink,
+  //   href: $config.app.logoLink,
   //   target: '_blank',
   // }
 }
@@ -112,7 +113,7 @@ if (appConfig.app.logoLink && appConfig.app.logoLink == 'none') {
 //   location.reload();
 // });
 
-if (appConfig.refineEnabled === false) {
+if ($config.refineEnabled === false) {
   refineEnabled.value = false;
 }
 
@@ -168,7 +169,7 @@ const zipcodeData = computed(() => {
 });
 
 const refineTitle = computed(() => {
-  return appConfig.refine.title;
+  return $config.refine.title;
 });
 
 const projection4326 = computed(() => {
@@ -198,9 +199,9 @@ const shouldShowGreeting = computed(() => {
 // });
 
 const footerLinks = computed(() => {
-  if (appConfig.footer) {
+  if ($config.footer) {
     let newValues = []
-    for (let i of appConfig.footer) {
+    for (let i of $config.footer) {
       let value = {}
       for (let j of Object.keys(i)) {
         // if (import.meta.env.VITE_DEBUG) console.log('i:', i, 'j:', j);
@@ -218,8 +219,8 @@ const footerLinks = computed(() => {
 
 const appTitle = computed(() => {
   let value;
-  if (appConfig.app.title) {
-    value = appConfig.app.title;
+  if ($config.app.title) {
+    value = $config.app.title;
   } else if (i18nEnabled.value) {
     // if (import.meta.env.VITE_DEBUG) console.log('t("app.title"):', t('app.title'));
     value = t('app.title');
@@ -230,8 +231,8 @@ const appTitle = computed(() => {
 const appSubTitle = computed(() => {
   let value;
   
-  if (appConfig.app.subtitle) {
-    value = appConfig.app.subtitle;
+  if ($config.app.subtitle) {
+    value = $config.app.subtitle;
   } else if (i18nEnabled.value) {
     // if (import.meta.env.VITE_DEBUG) console.log('t("app.subtitle"):', t('app.subtitle'));
     value = t('app.subtitle'); 
@@ -241,9 +242,9 @@ const appSubTitle = computed(() => {
 
 const i18nLanguages = computed(() => {
   let values = [];
-  // if (import.meta.env.VITE_DEBUG) console.log('i18nLanguages, appConfig.i18n:', appConfig.i18n);
-  if (appConfig.i18n.languages) {
-    values = appConfig.i18n.languages;
+  // if (import.meta.env.VITE_DEBUG) console.log('i18nLanguages, $config.i18n:', $config.i18n);
+  if ($config.i18n.languages) {
+    values = $config.i18n.languages;
   } // else {
     // for (let key of Object.keys($i18n.messages)) {
     //   let value = {};
@@ -260,8 +261,8 @@ const i18nLanguages = computed(() => {
 
 const feedbackLink = computed(() => {
   let value;
-  if (appConfig.footer && appConfig.footer.feedback && appConfig.footer.feedback.link) {
-    value = appConfig.footer.feedback.link;
+  if ($config.footer && $config.footer.feedback && $config.footer.feedback.link) {
+    value = $config.footer.feedback.link;
   }
   return value;
 });
@@ -272,30 +273,30 @@ const alertResponse = computed(() => {
 
 // const shouldShowHeaderAlert = computed(() => {
 //   let value = false;
-//   if (appConfig.alerts && appConfig.alerts.header) {
-//     value = appConfig.alerts.header.enabled(store.state);
+//   if ($config.alerts && $config.alerts.header) {
+//     value = $config.alerts.header.enabled(store.state);
 //   }
 //   return value;
 // });
 
 const alertModalHeader = computed(() => {
   let value = '';
-  if (appConfig.alerts && appConfig.alerts.modal && appConfig.alerts.modal.header) {
-    value = appConfig.alerts.modal.header;
+  if ($config.alerts && $config.alerts.modal && $config.alerts.modal.header) {
+    value = $config.alerts.modal.header;
   }
   return value;
 });
 
 const alertModalBody = computed(() => {
   let value = '';
-  if (appConfig.alerts && appConfig.alerts.modal && appConfig.alerts.modal.body) {
-    value = appConfig.alerts.modal.body;
+  if ($config.alerts && $config.alerts.modal && $config.alerts.modal.body) {
+    value = $config.alerts.modal.body;
   }
   return value;
 });
 
 const i18nEnabled = computed(() => {
-  if (appConfig.i18n && appConfig.i18n.enabled) {
+  if ($config.i18n && $config.i18n.enabled) {
     return true;
   } else {
     return false;
@@ -303,7 +304,7 @@ const i18nEnabled = computed(() => {
 });
 
 const i18nSelectorHidden = computed(() => {
-  if (appConfig.i18n && appConfig.i18n.selectorHidden) {
+  if ($config.i18n && $config.i18n.selectorHidden) {
     return true;
   } else {
     return false;
@@ -342,8 +343,8 @@ const selectedServices = computed(() => {
 
 const dataStatus = computed(() => {
   let value;
-  if (DataStore.sources[appConfig.app.type]) {
-    value = DataStore.sources[appConfig.app.type].status;
+  if (DataStore.sources[$config.app.type]) {
+    value = DataStore.sources[$config.app.type].status;
   }
   return 'success';
 });
@@ -360,9 +361,9 @@ const database = computed(() => {
 
 //     for (let [key, value] of Object.entries(database)) {
 
-//       if (appConfig.hiddenRefine) {
-//         for (let field in appConfig.hiddenRefine) {
-//           let getter = appConfig.hiddenRefine[field];
+//       if ($config.hiddenRefine) {
+//         for (let field in $config.hiddenRefine) {
+//           let getter = $config.hiddenRefine[field];
 //           let val = getter(value);
 //           if (val === false) {
 //             delete database[key];
@@ -401,7 +402,7 @@ const database = computed(() => {
 // });
 
 // const shouldLoadCyclomediaWidget = computed(() => {
-//   return appConfig.cyclomedia && appConfig.cyclomedia.enabled && !isMobile.value;
+//   return $config.cyclomedia && $config.cyclomedia.enabled && !isMobile.value;
 // });
 
 // const cyclomediaActive = computed(() => {
@@ -413,7 +414,7 @@ const database = computed(() => {
 //     const xyz = store.state.cyclomedia.orientation.xyz;
 //     return [ xyz[1], xyz[0] ];
 //   }
-//   const center = appConfig.map.center;
+//   const center = $config.map.center;
 //   return center;
 // });
 
@@ -548,8 +549,8 @@ const closureMessage = computed(() => {
 const closureMessageAllSites = computed(() => {
   let holiday = MainStore.holiday;
   let message;
-  if (appConfig.holidays && appConfig.holidays.forceBannerMessage) {
-    message = t(appConfig.holidays.forceBannerMessage);
+  if ($config.holidays && $config.holidays.forceBannerMessage) {
+    message = t($config.holidays.forceBannerMessage);
   } else if (currentHolidayClosure.value) {
     message = t(holiday.holiday_label) + ' - ' + t('holidayClosureAllSites');// + holiday.holiday_label + ' ' + format(parseISO(holiday.start_date), 'MM/dd/yyyy');
   } else if (futureHolidayClosure.value) {
@@ -780,8 +781,8 @@ onMounted(async () => {
   if (import.meta.env.VITE_DEBUG) console.log('in Main.vue mounted, route.query:', route.query);
 
   // store.commit('setLastSearchMethod', 'zipcode');
-  // if (import.meta.env.VITE_DEBUG) console.log('in Main.vue onMounted, appConfig:', appConfig, 'window.location.href:', window.location.href);
-  appConfig.searchBar.searchTypes.forEach(item => {
+  // if (import.meta.env.VITE_DEBUG) console.log('in Main.vue onMounted, $config:', $config, 'window.location.href:', window.location.href);
+  $config.searchBar.searchTypes.forEach(item => {
     if (route.query[item]) {
       // if (import.meta.env.VITE_DEBUG) console.log('App.vue mounted item:', item, 'searchBarType:', searchBarType);
       // $controller.handleSearchFormSubmit(route.query[item], item);
@@ -806,7 +807,7 @@ onMounted(async () => {
     i18nLocale.value = route.query.lang;
   }
 
-  if (appConfig.searchBar) {
+  if ($config.searchBar) {
     let routeQuery = Object.keys(route.query);
     // if (import.meta.env.VITE_DEBUG) console.log('App.vue mounted in searchTypes section, route:', route, 'routeQuery:', routeQuery, 'Object.keys(route.query)[0]', Object.keys(route.query)[0]);
     let value;
@@ -817,17 +818,17 @@ onMounted(async () => {
     }
     MainStore.currentSearch = value
 
-    addressInputPlaceholder.value = appConfig.searchBar.placeholder;
+    addressInputPlaceholder.value = $config.searchBar.placeholder;
   }
 
-  if (appConfig.appLink) {
-    appLink.value = appConfig.appLink;
+  if ($config.appLink) {
+    appLink.value = $config.appLink;
   } else {
     appLink.value = '.';
   }
 
-  // if (import.meta.env.VITE_DEBUG) console.log('Main.vue mounted store.state.sources[appConfig.app.type].data:', store.state.sources[appConfig.app.type].data, 'Object.keys(store.state.sources):', Object.keys(store.state.sources));
-  // if (!store.state.sources[appConfig.app.type].data && appConfig.dataSources) {
+  // if (import.meta.env.VITE_DEBUG) console.log('Main.vue mounted store.state.sources[$config.app.type].data:', store.state.sources[$config.app.type].data, 'Object.keys(store.state.sources):', Object.keys(store.state.sources));
+  // if (!store.state.sources[$config.app.type].data && $config.dataSources) {
   //   $controller.dataManager.fetchData();
   // }
 
@@ -837,29 +838,29 @@ onMounted(async () => {
     buttonText.value = isMapVisible.value ? 'app.viewList' : 'app.viewMap';
   }
 
-  if (appConfig.alerts && appConfig.alerts.modal && appConfig.alerts.modal.enabled) {
+  if ($config.alerts && $config.alerts.modal && $config.alerts.modal.enabled) {
     isAlertModalOpen.value = true;
   }
 
-  // if (appConfig.gtag && appConfig.gtag.category) {
-  //   store.commit('setGtagCategory', appConfig.gtag.category);
+  // if ($config.gtag && $config.gtag.category) {
+  //   store.commit('setGtagCategory', $config.gtag.category);
   // }
 
-  if (appConfig.app.trustedSite && appConfig.app.trustedSite === 'hidden') {
+  if ($config.app.trustedSite && $config.app.trustedSite === 'hidden') {
     let trusted = document.getElementById('trusted-site');
     if (import.meta.env.VITE_DEBUG) console.log('trusted:', trusted);
     trusted.classList.add("trusted-site-hidden");
   }
 
-  if (appConfig.app.skipGreeting) {
+  if ($config.app.skipGreeting) {
     MainStore.shouldShowGreeting = false;
   }
 
-  if (appConfig.holidays && appConfig.holidays.automaticBanner) {
+  if ($config.holidays && $config.holidays.automaticBanner) {
     showAutomaticHolidayBanner.value = true;
   }
 
-  if (appConfig.holidays && appConfig.holidays.forceBanner) {
+  if ($config.holidays && $config.holidays.forceBanner) {
     showForceHolidayBanner.value = true;
   }
 
@@ -969,12 +970,12 @@ const compareArrays = (arr1, arr2) => {
 //   let valAsFloat = parseFloat(val.substring(0));
 //   let valToString = valAsFloat.toString();
 //   let checkVals = val === valToString;
-//   if (import.meta.env.VITE_DEBUG) console.log('handleSubmit 1, val.substring(0):', val.substring(0), 'valAsFloat:', valAsFloat, 'checkVals:', checkVals, 'appConfig.searchBar.searchTypes:', appConfig.searchBar.searchTypes);
+//   if (import.meta.env.VITE_DEBUG) console.log('handleSubmit 1, val.substring(0):', val.substring(0), 'valAsFloat:', valAsFloat, 'checkVals:', checkVals, '$config.searchBar.searchTypes:', $config.searchBar.searchTypes);
   
 //   let startQuery = { ...route.query };
   
 //   if (isNaN(valAsFloat)) {
-//     if (!appConfig.searchBar.searchTypes.includes('keyword')) {
+//     if (!$config.searchBar.searchTypes.includes('keyword')) {
 //       if (import.meta.env.VITE_DEBUG) console.log('cannot search keywords');
 //       this.$warning(`Please search an address`, {
 //         duration: 4000,
@@ -1004,14 +1005,14 @@ const compareArrays = (arr1, arr2) => {
 //     }
 //   } else if (checkVals) {
 //     if (import.meta.env.VITE_DEBUG) console.log('its a zipcode');
-//     if (appConfig.allowZipcodeSearch) {
+//     if ($config.allowZipcodeSearch) {
 
 //       MapStore.watchPositionOn = false;
 //       MainStore.lastPinboardSearchMethod = 'zipcode';
 //       query = { 'zipcode': val };
 //       // this.searchBarType = 'zipcode';
 //       // searchBarType = 'zipcode';
-//     } else if (appConfig.allowZipcodeInDataSearch) {
+//     } else if ($config.allowZipcodeInDataSearch) {
 //       // query = { 'zipcode': val };
 //       // this.searchBarType = 'zipcode';
 //       // searchBarType = 'zipcode';
@@ -1097,18 +1098,18 @@ const clearSearchTriggered = () => {
 //   }
 //   let keys = Object.keys(theSources);
 //   if (keys.length > 1) {
-//     if (import.meta.env.VITE_DEBUG) console.log('theSources:', theSources, 'appConfig.dataSources:', appConfig.dataSources);
+//     if (import.meta.env.VITE_DEBUG) console.log('theSources:', theSources, '$config.dataSources:', $config.dataSources);
 //     for (let key of keys) {
 //       if (import.meta.env.VITE_DEBUG) console.log('source:', key);
-//       if (theSources[key].features && appConfig.dataSources[key].compile) {
+//       if (theSources[key].features && $config.dataSources[key].compile) {
 //         for (let point of theSources[key].features) {
 //           // if (import.meta.env.VITE_DEBUG) console.log('point:', point);
 //           compiled.data.push(point);
 //         }
-//       } else if (theSources[key].records && appConfig.dataSources[key].compile) {
+//       } else if (theSources[key].records && $config.dataSources[key].compile) {
 //         for (let point of theSources[key].records) {
 //           let featureId = point._featureId.split('-')[1];
-//           if (appConfig.app.categorizeCompiled) {
+//           if ($config.app.categorizeCompiled) {
 //             point.fields.category_type = featureId;
 //           }
 //           // if (import.meta.env.VITE_DEBUG) console.log('point:', point);
@@ -1167,7 +1168,7 @@ const filterPoints = () => {
     const selectedServices = MainStore.selectedServices;
     // if (import.meta.env.VITE_DEBUG) console.log('row.services_offered:', row.services_offered);
 
-    if (appConfig.refine && appConfig.refine.type && ['multipleFields', 'multipleFieldGroups', 'multipleDependentFieldGroups'].includes(appConfig.refine.type)) {
+    if ($config.refine && $config.refine.type && ['multipleFields', 'multipleFieldGroups', 'multipleDependentFieldGroups'].includes($config.refine.type)) {
       let booleanConditions = [];
 
       if (selectedServices.length === 0) {
@@ -1175,16 +1176,16 @@ const filterPoints = () => {
       } else {
 
         // if refine.type = multipleFields
-        if (appConfig.refine.type === 'multipleFields') {
-          for (let field in appConfig.refine.multipleFields) {
+        if ($config.refine.type === 'multipleFields') {
+          for (let field in $config.refine.multipleFields) {
             if (selectedServices.includes(field)) {
 
-              let getter = appConfig.refine.multipleFields[field];
+              let getter = $config.refine.multipleFields[field];
               let val = getter(row);
               booleanConditions.push(val);
             }
           }
-        } else if (appConfig.refine.type === 'multipleFieldGroups') {
+        } else if ($config.refine.type === 'multipleFieldGroups') {
           // if refine.type = multipleFieldGroups
           let selectedGroups = [];
           for (let value of selectedServices) {
@@ -1203,11 +1204,11 @@ const filterPoints = () => {
             let groupBooleanConditions = [];
             for (let service of selectedServices) {
               if (import.meta.env.VITE_DEBUG) console.log('App.vue filterPoints loop, service:', service);
-              if (group !== 'keyword' && service.split('_', 1)[0] === group && appConfig.refine.multipleFieldGroups[group]['radio']) {
-                // if (import.meta.env.VITE_DEBUG) console.log('group:', group, 'appConfig.refine.multipleFieldGroups[group]["radio"]:', appConfig.refine.multipleFieldGroups[group]['radio']);
-                let dependentGroups = appConfig.refine.multipleFieldGroups[group]['radio'][service.split('_')[1]]['dependentGroups'] || [];
-                // if (import.meta.env.VITE_DEBUG) console.log('dependentGroup:', dependentGroup, 'service.split("_", 1)[0]:', service.split('_', 1)[0], 'service.split("_")[1]:', service.split('_')[1], 'group', group, 'appConfig.refine.multipleFieldsGroups[group]', appConfig.refine.multipleFieldsGroups[group], 'appConfig.refine.multipleFieldsGroups[group][service.split("_")[1]]:', appConfig.refine.multipleFieldsGroups[group][service.split('_')[1]]);
-                let getter = appConfig.refine.multipleFieldGroups[group]['radio'][service.split('_')[1]]['value'];
+              if (group !== 'keyword' && service.split('_', 1)[0] === group && $config.refine.multipleFieldGroups[group]['radio']) {
+                // if (import.meta.env.VITE_DEBUG) console.log('group:', group, '$config.refine.multipleFieldGroups[group]["radio"]:', $config.refine.multipleFieldGroups[group]['radio']);
+                let dependentGroups = $config.refine.multipleFieldGroups[group]['radio'][service.split('_')[1]]['dependentGroups'] || [];
+                // if (import.meta.env.VITE_DEBUG) console.log('dependentGroup:', dependentGroup, 'service.split("_", 1)[0]:', service.split('_', 1)[0], 'service.split("_")[1]:', service.split('_')[1], 'group', group, '$config.refine.multipleFieldsGroups[group]', $config.refine.multipleFieldsGroups[group], '$config.refine.multipleFieldsGroups[group][service.split("_")[1]]:', $config.refine.multipleFieldsGroups[group][service.split('_')[1]]);
+                let getter = $config.refine.multipleFieldGroups[group]['radio'][service.split('_')[1]]['value'];
                 let dependentServices = [];
                 for (let service of selectedServices) {
                   if (dependentGroups.length && dependentGroups.includes(service.split('_')[0])) {
@@ -1218,11 +1219,11 @@ const filterPoints = () => {
                 let val = getter(row, dependentServices);
                 groupBooleanConditions.push(val);
               }
-              if (group !== 'keyword' && service.split('_', 1)[0] === group && appConfig.refine.multipleFieldGroups[group]['checkbox']) {
-                // if (import.meta.env.VITE_DEBUG) console.log('group:', group, 'appConfig.refine.multipleFieldGroups[group]["dependent"]:', appConfig.refine.multipleFieldGroups[group]['dependent']);
-                let dependentGroups = appConfig.refine.multipleFieldGroups[group]['checkbox'][service.split('_')[1]]['dependentGroups'] || [];
-                // if (import.meta.env.VITE_DEBUG) console.log('dependentGroup:', dependentGroup, 'service.split("_", 1)[0]:', service.split('_', 1)[0], 'service.split("_")[1]:', service.split('_')[1], 'group', group, 'appConfig.refine.multipleFieldsGroups[group]', appConfig.refine.multipleFieldsGroups[group], 'appConfig.refine.multipleFieldsGroups[group][service.split("_")[1]]:', appConfig.refine.multipleFieldsGroups[group][service.split('_')[1]]);
-                let getter = appConfig.refine.multipleFieldGroups[group]['checkbox'][service.split('_')[1]]['value'];
+              if (group !== 'keyword' && service.split('_', 1)[0] === group && $config.refine.multipleFieldGroups[group]['checkbox']) {
+                // if (import.meta.env.VITE_DEBUG) console.log('group:', group, '$config.refine.multipleFieldGroups[group]["dependent"]:', $config.refine.multipleFieldGroups[group]['dependent']);
+                let dependentGroups = $config.refine.multipleFieldGroups[group]['checkbox'][service.split('_')[1]]['dependentGroups'] || [];
+                // if (import.meta.env.VITE_DEBUG) console.log('dependentGroup:', dependentGroup, 'service.split("_", 1)[0]:', service.split('_', 1)[0], 'service.split("_")[1]:', service.split('_')[1], 'group', group, '$config.refine.multipleFieldsGroups[group]', $config.refine.multipleFieldsGroups[group], '$config.refine.multipleFieldsGroups[group][service.split("_")[1]]:', $config.refine.multipleFieldsGroups[group][service.split('_')[1]]);
+                let getter = $config.refine.multipleFieldGroups[group]['checkbox'][service.split('_')[1]]['value'];
                 let dependentServices = [];
                 for (let service of selectedServices) {
                   if (dependentGroups.length && dependentGroups.includes(service.split('_')[0])) {
@@ -1234,15 +1235,15 @@ const filterPoints = () => {
                 groupBooleanConditions.push(val);
               }
             }
-            // if (import.meta.env.VITE_DEBUG) console.log('appConfig.refine.andOr:', appConfig.refine.andOr, 'group:', group, 'groupBooleanConditions:', groupBooleanConditions);
-            if (appConfig.refine.andOr) {
-              if (appConfig.refine.andOr == 'and') {
+            // if (import.meta.env.VITE_DEBUG) console.log('$config.refine.andOr:', $config.refine.andOr, 'group:', group, 'groupBooleanConditions:', groupBooleanConditions);
+            if ($config.refine.andOr) {
+              if ($config.refine.andOr == 'and') {
                 if (groupBooleanConditions.includes(false)) {
                   booleanConditions.push(false);
                 } else {
                   booleanConditions.push(true);
                 }
-              } else if (appConfig.refine.andOr == 'or') {
+              } else if ($config.refine.andOr == 'or') {
                 if (groupBooleanConditions.includes(true)) {
                   booleanConditions.push(true);
                 } else {
@@ -1272,12 +1273,12 @@ const filterPoints = () => {
             let groupBooleanConditions = [];
             for (let service of selectedServices) {
               if (service.split('_', 1)[0] === group) {
-                let ind = appConfig.refine.multipleDependentFieldGroups[group]['independent'];
+                let ind = $config.refine.multipleDependentFieldGroups[group]['independent'];
                 let serviceEnd = service.split('_')[1];
                 // if (import.meta.env.VITE_DEBUG) console.log('ind:', ind, 'serviceEnd:', serviceEnd, 'selectedServices:', selectedServices);
                 let getter;
-                if (appConfig.refine.multipleDependentFieldGroups[group]['dependent'][service.split('_')[1]]) {
-                  getter = appConfig.refine.multipleDependentFieldGroups[group]['dependent'][service.split('_')[1]]['value'];
+                if ($config.refine.multipleDependentFieldGroups[group]['dependent'][service.split('_')[1]]) {
+                  getter = $config.refine.multipleDependentFieldGroups[group]['dependent'][service.split('_')[1]]['value'];
                   let dependentServices = [];
                   if (ind) {
                     for (let service of selectedServices) {
@@ -1307,11 +1308,11 @@ const filterPoints = () => {
       }
 
     // if refine.type = categoryField_value
-    } else if (appConfig.refine && appConfig.refine.type === 'categoryField_value') {
+    } else if ($config.refine && $config.refine.type === 'categoryField_value') {
       if (selectedServices.length === 0) {
         booleanServices = true;
       } else {
-        let value = appConfig.refine.value(row);
+        let value = $config.refine.value(row);
         booleanServices = selectedServices.includes(value);
       }
 
@@ -1319,8 +1320,8 @@ const filterPoints = () => {
       // the original default version, or refine.type = 'categoryField_array'
       // if (import.meta.env.VITE_DEBUG) console.log('in else, row:', row, 'row.services_offered:', row.services_offered);
       let servicesSplit;
-      if (appConfig.refine) {
-        servicesSplit = appConfig.refine.value(row);
+      if ($config.refine) {
+        servicesSplit = $config.refine.value(row);
       } else if (row.services_offered) {
         servicesSplit = row.services_offered;
       }
@@ -1475,7 +1476,7 @@ const filterPoints = () => {
     }
 
     let booleanKeywords = true;
-    // if (import.meta.env.VITE_DEBUG) console.log('row:', row, 'appConfig.tags', appConfig.tags, 'selectedKeywords.value:', selectedKeywords.value, 'selectedKeywords.value.length:', selectedKeywords.value.length);
+    // if (import.meta.env.VITE_DEBUG) console.log('row:', row, '$config.tags', $config.tags, 'selectedKeywords.value:', selectedKeywords.value, 'selectedKeywords.value.length:', selectedKeywords.value.length);
     if (selectedKeywords.value.length > 0) {
       booleanKeywords = false;
       let description = [];
@@ -1483,14 +1484,14 @@ const filterPoints = () => {
         description = row.tags;
       } else if (row.tags) {
         description = row.tags.split(', ');
-      } else if (appConfig.tags && appConfig.tags.type == 'tagLocation') {
-        if (Array.isArray(appConfig.tags.location(row))) {
-          description = appConfig.tags.location(row);
-        } else if (appConfig.tags.location(row)) {
-          description = appConfig.tags.location(row).split(', ');
+      } else if ($config.tags && $config.tags.type == 'tagLocation') {
+        if (Array.isArray($config.tags.location(row))) {
+          description = $config.tags.location(row);
+        } else if ($config.tags.location(row)) {
+          description = $config.tags.location(row).split(', ');
         }
-      } else if (appConfig.tags && appConfig.tags.type == 'fieldValues') {
-        for (let tag of appConfig.tags.tags) {
+      } else if ($config.tags && $config.tags.type == 'fieldValues') {
+        for (let tag of $config.tags.tags) {
           // if (import.meta.env.VITE_DEBUG) console.log('tag:', tag, 'tag.field:', tag.field, 'row.attributes[tag.field]:', row.attributes[tag.field]);
           if (tag.type == 'boolean' && row.attributes[tag.field] == 'Yes') {
             description.push(tag.value);
@@ -1506,8 +1507,8 @@ const filterPoints = () => {
       // if (import.meta.env.VITE_DEBUG) console.log('still going, selectedKeywords.value[0]:', selectedKeywords.value[0], 'row.tags:', row.tags, 'description:', description);
 
       let threshold = 0.2;
-      if (appConfig.searchBar.fuseThreshold) {
-        threshold = appConfig.searchBar.fuseThreshold;
+      if ($config.searchBar.fuseThreshold) {
+        threshold = $config.searchBar.fuseThreshold;
       };
 
       const options = {
@@ -1534,7 +1535,7 @@ const filterPoints = () => {
       let results = {};
       for (let keyword of selectedKeywords.value) {
         // if (import.meta.env.VITE_DEBUG) console.log('in selectedKeywords loop, keyword.toString():', keyword.toString(), 'description:', description);//'description[0].split(","):', description[0].split(','));
-        if (appConfig.skipFuse) {
+        if ($config.skipFuse) {
           let keywordString = '' + keyword;
           // if (import.meta.env.VITE_DEBUG) console.log('skipFuse, keywordString:', keywordString);
           if (description.includes(keywordString)) {
@@ -1691,7 +1692,7 @@ const toggleBodyClass = (className) => {
   </div>
 
     <!-- <div
-      v-show="isMobile && !appConfig.searchBar.hide"
+      v-show="isMobile && !$config.searchBar.hide"
       class="search-bar-container-class"
     >
       <phila-ui-address-input

@@ -18,7 +18,9 @@ const router = useRouter();
 
 import { ref, computed, defineProps, onMounted, watch } from 'vue';
 
-import $config from '../app/main.js'
+import { useConfigStore } from '../stores/ConfigStore.js'
+const ConfigStore = useConfigStore();
+const $config = ConfigStore.config;
 // if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse.vue $config:', $config);
 
 const $emit = defineEmits(['print-box-checked']);

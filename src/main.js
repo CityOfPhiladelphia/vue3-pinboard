@@ -1,5 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import { useConfigStore } from './stores/ConfigStore.js';
+
 import { createI18n } from 'vue-i18n'
 
 import App from './App.vue'
@@ -25,9 +27,6 @@ import NavLink from "@phila/phila-ui-nav-link";
 import Textbox from "@phila/phila-ui-textbox";
 import LangSelector from "@phila/phila-ui-lang-selector";
 import Radio from "@phila/phila-ui-radio";
-
-import appConfig from './app/main.js';
-// console.log('appConfig:', appConfig);
 
 const app = createApp(App);
 
@@ -62,8 +61,8 @@ import { faClone } from '@fortawesome/free-solid-svg-icons';
 import { faPhone } from '@fortawesome/free-solid-svg-icons';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { faMinus } from '@fortawesome/free-solid-svg-icons';
+import { faSlidersH } from '@fortawesome/free-solid-svg-icons';
 
-// import { faBars } from '@fortawesome/free-solid-svg-icons';
 library.add(
   faSearch,
   faHome,
@@ -85,6 +84,7 @@ library.add(
   faPhone,
   faPlus,
   faMinus,
+  faSlidersH,
 );
 
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
@@ -94,11 +94,10 @@ import VueGoodTablePlugin from 'vue-good-table-next';
 app.use(VueGoodTablePlugin);
 
 import i18nFromFiles from './i18n/i18n.js';
-import i18nProject from './app/i18n/i18n.js';
-
 
 export default function pinboard(config) {
-  const messages = mergeDeep(i18nFromFiles.i18n.data.messages, i18nProject.i18n.data.messages);
+  const i18nProject = config.i18n.data.messages;
+  const messages = mergeDeep(i18nFromFiles.i18n.data.messages, i18nProject);
   // if (import.meta.env.VITE_DEBUG == 'true') console.log('i18nFromFiles:', i18nFromFiles, 'messages:', messages);
   const i18n = createI18n({
     legacy: false,
@@ -107,11 +106,14 @@ export default function pinboard(config) {
     fallbackLocale: 'en-US',
     messages: messages
   })
-  app.config.globalProperties.appConfig = config;
-
   app.use(i18n)
 
   app.use(createPinia())
+
+  const ConfigStore = useConfigStore();
+  console.log('ConfigStore:', ConfigStore);
+  ConfigStore.config = config;
+
   app.use(router)
 
   app.mount('#app')

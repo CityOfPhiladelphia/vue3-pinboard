@@ -1,14 +1,16 @@
 <script setup>
 
-import appConfig from '../app/main.js';
 import { computed } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { useConfigStore } from '../stores/ConfigStore.js'
+const ConfigStore = useConfigStore();
+const $config = ConfigStore.config;
 
 import { useMainStore } from '../stores/MainStore.js'
 const MainStore = useMainStore();
 import { useMapStore } from '../stores/MapStore.js'
 const MapStore = useMapStore();
 
+import { useRouter, useRoute } from 'vue-router';
 const router = useRouter();
 const route = useRoute();
 
@@ -62,12 +64,12 @@ const handleSubmit = (val) => {
   let valAsFloat = parseFloat(val.substring(0));
   let valToString = valAsFloat.toString();
   let checkVals = val === valToString;
-  if (import.meta.env.VITE_DEBUG) console.log('handleSubmit 1, val.substring(0):', val.substring(0), 'valAsFloat:', valAsFloat, 'checkVals:', checkVals, 'appConfig.searchBar.searchTypes:', appConfig.searchBar.searchTypes);
+  if (import.meta.env.VITE_DEBUG) console.log('handleSubmit 1, val.substring(0):', val.substring(0), 'valAsFloat:', valAsFloat, 'checkVals:', checkVals, '$config.searchBar.searchTypes:', $config.searchBar.searchTypes);
   
   let startQuery = { ...route.query };
   
   if (isNaN(valAsFloat)) {
-    if (!appConfig.searchBar.searchTypes.includes('keyword')) {
+    if (!$config.searchBar.searchTypes.includes('keyword')) {
       if (import.meta.env.VITE_DEBUG) console.log('cannot search keywords');
       this.$warning(`Please search an address`, {
         duration: 4000,
@@ -97,14 +99,14 @@ const handleSubmit = (val) => {
     }
   } else if (checkVals) {
     if (import.meta.env.VITE_DEBUG) console.log('its a zipcode');
-    if (appConfig.allowZipcodeSearch) {
+    if ($config.allowZipcodeSearch) {
 
       MapStore.watchPositionOn = false;
       MainStore.lastPinboardSearchMethod = 'zipcode';
       query = { 'zipcode': val };
       // this.searchBarType = 'zipcode';
       // searchBarType = 'zipcode';
-    } else if (appConfig.allowZipcodeInDataSearch) {
+    } else if ($config.allowZipcodeInDataSearch) {
       // query = { 'zipcode': val };
       // this.searchBarType = 'zipcode';
       // searchBarType = 'zipcode';

@@ -1,8 +1,5 @@
 <script setup>
 
-// import $config from '@/config.js';
-import appConfig from '../app/main.js';
-// console.log('appConfig:', appConfig);
 import { findIconDefinition } from '@fortawesome/fontawesome-svg-core';
 
 import { useI18n } from 'vue-i18n';
@@ -13,8 +10,10 @@ import Checkbox from './Checkbox.vue';
 
 import IconToolTip from './IconToolTip.vue';
 
-import { computed, onBeforeMount, onMounted, watch, ref, reactive, getCurrentInstance } from 'vue';
-const instance = getCurrentInstance();
+import { computed, onBeforeMount, onMounted, watch, ref } from 'vue';
+import { useConfigStore } from '../stores/ConfigStore.js'
+const ConfigStore = useConfigStore();
+const $config = ConfigStore.config;
 
 // STORES
 import { useMapStore } from '../stores/MapStore.js';
@@ -41,8 +40,6 @@ const props = defineProps({
     default: null,
   },
 });
-
-// console.log('instance.appContext.config.globalProperties.$i18n.availableLocales:', instance.appContext.config.globalProperties.$i18n.availableLocales);
 
 const $emit = defineEmits(['geolocate-control-fire', 'watched-submitted-checkbox-value' ]);
 
@@ -94,7 +91,7 @@ const timesIconWeight = computed(() => {
 
 const dropdownRefine = computed(() => {
   let value;
-  if (appConfig.dropdownRefine) {
+  if ($config.dropdownRefine) {
     value = true;
   } else {
     value = false;
@@ -236,7 +233,7 @@ const refineListTranslated = computed(() => {
 
 const retractable = computed(() => {
   let value = false;
-  if (appConfig.retractableRefine) {
+  if ($config.retractableRefine) {
     value = true;
   }
   return value;
@@ -264,7 +261,7 @@ const refinePanelClass = computed(() => {
     } else if (refineOpen.value) {
       value = 'refine-panel refine-retractable-open refine-panel-non-mobile invisible-scrollbar';
     }
-  } else if (appConfig.dropdownRefine) {
+  } else if ($config.dropdownRefine) {
     console.log('dropdownRefine is used');
     value = 'refine-panel refine-dropdown-closed refine-panel-non-mobile-closed invisible-scrollbar';
   } else {
@@ -275,15 +272,15 @@ const refinePanelClass = computed(() => {
 
 const infoCircles = computed(() => {
   let value = {};
-  if (appConfig.infoCircles) {
-    value = appConfig.infoCircles;
+  if ($config.infoCircles) {
+    value = $config.infoCircles;
   }
   return value;
 });
 
 const refineType = computed(() => {
-  if (appConfig.refine) {
-    return appConfig.refine.type;
+  if ($config.refine) {
+    return $config.refine.type;
   }
 });
 
@@ -300,7 +297,7 @@ const refineOpen = computed (() => {
 });
 
 const i18nEnabled = computed(() => {
-  if (appConfig.i18n && appConfig.i18n.enabled) {
+  if ($config.i18n && $config.i18n.enabled) {
     return true;
   } else {
     return false;
@@ -329,8 +326,8 @@ const keywordsEntered = computed(() => {
 
 const dataStatus = computed(() => {
   let value;
-  if (DataStore.sources[appConfig.app.type]) {
-    value = DataStore.sources[appConfig.app.type].status;
+  if (DataStore.sources[$config.app.type]) {
+    value = DataStore.sources[$config.app.type].status;
   }
   return 'success';
 });
@@ -344,10 +341,6 @@ const database = computed(() => {
   return value;
 });
 
-// const i18nLocale = computed(() => {
-//   return instance.appContext.config.globalProperties.$i18n.locale;
-// });
-
 watch(
   () => props.submittedCheckboxValue,
   async nextSubmittedCheckboxValue => {
@@ -360,7 +353,7 @@ watch(
       for (let key2 of Object.keys(refineList[key])) {
         if (key2 === 'radio' || key2 === 'checkbox') {
           for (let key3 of Object.keys(refineList[key][key2])) {
-            let unique_key = appConfig.refine.multipleFieldGroups[key][key2][key3].unique_key;
+            let unique_key = $config.refine.multipleFieldGroups[key][key2][key3].unique_key;
             let i18nValue = t([key][key3]);
             // console.log('in watch submittedCheckboxValue, key:', key, 'key2:', key2, 'key3:', key3, 'unique_key:', unique_key, 'i18nValue:', i18nValue);
             if (i18nValue.toLowerCase() === nextSubmittedCheckboxValue.toLowerCase()) {
@@ -369,26 +362,26 @@ watch(
 
               let uniq = {};
               let selectedNow = {};
-              for (let group of Object.keys(appConfig.refine.multipleFieldGroups)){
+              for (let group of Object.keys($config.refine.multipleFieldGroups)){
 
                 uniq[group] = { expanded: false };
-                for (let dep of Object.keys(appConfig.refine.multipleFieldGroups[group])){
+                for (let dep of Object.keys($config.refine.multipleFieldGroups[group])){
                   // console.log('middle loop, dep:', dep, 'group:', group);
                   if (dep !== 'tooltip') {
                     uniq[group][dep] = {};
-                    for (let field of Object.keys(appConfig.refine.multipleFieldGroups[group][dep])){
+                    for (let field of Object.keys($config.refine.multipleFieldGroups[group][dep])){
                       uniq[group][dep][field] = {};
-                      // console.log('field:', field, 'selected:', selected, 'appConfig.refine.multipleFieldGroups[group][field].unique_key:', appConfig.refine.multipleFieldGroups[group][field].unique_key);
-                      if (appConfig.refine.multipleFieldGroups[group][dep][field].i18n_key) {
-                        uniq[group][dep][field].box_label = appConfig.refine.multipleFieldGroups[group][dep][field].i18n_key;
+                      // console.log('field:', field, 'selected:', selected, '$config.refine.multipleFieldGroups[group][field].unique_key:', $config.refine.multipleFieldGroups[group][field].unique_key);
+                      if ($config.refine.multipleFieldGroups[group][dep][field].i18n_key) {
+                        uniq[group][dep][field].box_label = $config.refine.multipleFieldGroups[group][dep][field].i18n_key;
                       } else {
                         uniq[group][dep][field].box_label = field;
                       }
-                      uniq[group][dep][field].unique_key = appConfig.refine.multipleFieldGroups[group][dep][field].unique_key;
-                      uniq[group][dep][field].tooltip = appConfig.refine.multipleFieldGroups[group][dep][field].tooltip;
+                      uniq[group][dep][field].unique_key = $config.refine.multipleFieldGroups[group][dep][field].unique_key;
+                      uniq[group][dep][field].tooltip = $config.refine.multipleFieldGroups[group][dep][field].tooltip;
                     }
                   } else {
-                    uniq[group][dep] = appConfig.refine.multipleFieldGroups[group][dep];
+                    uniq[group][dep] = $config.refine.multipleFieldGroups[group][dep];
                   }
                 }
               }
@@ -509,7 +502,7 @@ watch(
     if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch route.query is firing, newQuery:', newQuery, 'oldQuery:', oldQuery);
     // if (newQuery.services) {
     selectedList.value = {};
-    if (refineType.value !== 'categoryField_value') {
+    if (newQuery.services && refineType.value !== 'categoryField_value') {
       const newServices = newQuery.services.split(',');
       if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch.query route is firing, newServices:', newServices, 'newQuery.services:', newQuery.services);
       for (let service of newServices) {
@@ -562,14 +555,14 @@ onMounted(async () => {
 
 // const clickFirstBoxes = () => {
 //   // console.log('clickFirstBoxes is running');
-//   for (let value of Object.keys(appConfig.refine.multipleFieldGroups)) {
-//     // console.log('clickFirstBoxes is running, appConfig.refine.multipleFieldGroups[value]:', appConfig.refine.multipleFieldGroups[value]);
-//     if (Object.keys(appConfig.refine.multipleFieldGroups[value]).includes('checkbox')) {
-//       let checkbox = appConfig.refine.multipleFieldGroups[value].checkbox;
+//   for (let value of Object.keys($config.refine.multipleFieldGroups)) {
+//     // console.log('clickFirstBoxes is running, $config.refine.multipleFieldGroups[value]:', $config.refine.multipleFieldGroups[value]);
+//     if (Object.keys($config.refine.multipleFieldGroups[value]).includes('checkbox')) {
+//       let checkbox = $config.refine.multipleFieldGroups[value].checkbox;
 //       let firstValue = Object.keys(checkbox)[0];
 //       let unique_key = value+'_'+firstValue;
 //       let element = document.querySelector('[value='+unique_key+']');
-//       // console.log('clickFirstBoxes is running, element:', element, 'unique_key:', unique_key, 'value:', value, 'firstValue:', firstValue, 'appConfig.refine.multipleFieldGroups[value]:', appConfig.refine.multipleFieldGroups[value]);
+//       // console.log('clickFirstBoxes is running, element:', element, 'unique_key:', unique_key, 'value:', value, 'firstValue:', firstValue, '$config.refine.multipleFieldGroups[value]:', $config.refine.multipleFieldGroups[value]);
 //     }
 //   }
 // };
@@ -616,15 +609,15 @@ const getBoxValue = (box) => {
 };
 
 const calculateColumns = (ind, indName) => {
-  // console.log('calculateColumns is running, indName:', indName, 'ind:', ind, 'appConfig.refine.columns', appConfig.refine.columns, 'appConfig.refine.multipleFieldGroups', appConfig.refine.multipleFieldGroups);
+  // console.log('calculateColumns is running, indName:', indName, 'ind:', ind, '$config.refine.columns', $config.refine.columns, '$config.refine.multipleFieldGroups', $config.refine.multipleFieldGroups);
   let value;
-  // if (isMobile.value || appConfig.refine.columns) {
+  // if (isMobile.value || $config.refine.columns) {
   if (isMobile.value) {
     value = 1;
-  } else if (appConfig.refine.columns) {
-    if (appConfig.refine.multipleFieldGroups[indName].columns) {
-      // console.log('calculateColumns is running, appConfig.refine.multipleFieldGroups[indName].columns:', appConfig.refine.multipleFieldGroups[indName].columns);
-      value = appConfig.refine.multipleFieldGroups[indName].columns;
+  } else if ($config.refine.columns) {
+    if ($config.refine.multipleFieldGroups[indName].columns) {
+      // console.log('calculateColumns is running, $config.refine.multipleFieldGroups[indName].columns:', $config.refine.multipleFieldGroups[indName].columns);
+      value = $config.refine.multipleFieldGroups[indName].columns;
     } else {
       value = 1;
     }
@@ -790,12 +783,12 @@ const getRefineSearchList = () => {
   let uniqPrep;
   let selected;
 
-  if (!appConfig.refine || appConfig.refine && ['categoryField_array', 'categoryField_value'].includes(appConfig.refine.type)) {
+  if (!$config.refine || $config.refine && ['categoryField_array', 'categoryField_value'].includes($config.refine.type)) {
     console.log('in getRefineSearchList, refineData:', refineData);
     if(refineData) {
       refineData.forEach((item) => {
-        if (appConfig.refine) {
-          let value = appConfig.refine.value(item);
+        if ($config.refine) {
+          let value = $config.refine.value(item);
           service += `${value},`;
         } else if (item.services_offered) {
           service += `${item.services_offered},`;
@@ -826,8 +819,8 @@ const getRefineSearchList = () => {
 
     for (let value of uniqPrep) {
       let theTooltip;
-      if (appConfig.infoCircles && Object.keys(appConfig.infoCircles).includes(value)) {
-        theTooltip = appConfig.infoCircles[value];
+      if ($config.infoCircles && Object.keys($config.infoCircles).includes(value)) {
+        theTooltip = $config.infoCircles[value];
       }
       uniq.push({
         data: value,
@@ -842,43 +835,43 @@ const getRefineSearchList = () => {
     selected.sort();
     console.log('uniq:', uniq, 'uniqPrep:', uniqPrep, 'uniqArray:', uniqArray, 'selected:', selected);
 
-  } else if (appConfig.refine && appConfig.refine.type === 'multipleFields') {
-    uniq = Object.keys(appConfig.refine.multipleFields);
+  } else if ($config.refine && $config.refine.type === 'multipleFields') {
+    uniq = Object.keys($config.refine.multipleFields);
     uniq.sort();
 
-    selected = Object.keys(appConfig.refine.multipleFields);
+    selected = Object.keys($config.refine.multipleFields);
     selected.sort();
   }
 
   if (import.meta.env.VITE_DEBUG) console.log('getRefineSearchList is still running');
-  if (appConfig.refine && appConfig.refine.type === 'multipleFieldGroups') {
+  if ($config.refine && $config.refine.type === 'multipleFieldGroups') {
     uniq = {};
     selected = {};
-    for (let group of Object.keys(appConfig.refine.multipleFieldGroups)){
+    for (let group of Object.keys($config.refine.multipleFieldGroups)){
 
-      // if (Object.keys(appConfig.refine.multipleFieldGroups[group]).includes('checkbox')) {
-      //   console.log('selectedList.value:', selectedList.value, 'Object.keys(appConfig.refine.multipleFieldGroups[group]):', Object.keys(appConfig.refine.multipleFieldGroups[group]));
+      // if (Object.keys($config.refine.multipleFieldGroups[group]).includes('checkbox')) {
+      //   console.log('selectedList.value:', selectedList.value, 'Object.keys($config.refine.multipleFieldGroups[group]):', Object.keys($config.refine.multipleFieldGroups[group]));
       //   selectedList.value[group] = []
       // }
       if (import.meta.env.VITE_DEBUG) console.log('group:', group);
       uniq[group] = { expanded: false };
-      for (let dep of Object.keys(appConfig.refine.multipleFieldGroups[group])){
+      for (let dep of Object.keys($config.refine.multipleFieldGroups[group])){
         // console.log('middle loop, dep:', dep, 'group:', group);
         if (dep !== 'tooltip') {
           uniq[group][dep] = {};
-          for (let field of Object.keys(appConfig.refine.multipleFieldGroups[group][dep])){
+          for (let field of Object.keys($config.refine.multipleFieldGroups[group][dep])){
             uniq[group][dep][field] = {};
-            // console.log('field:', field, 'selected:', selected, 'appConfig.refine.multipleFieldGroups[group][field].unique_key:', appConfig.refine.multipleFieldGroups[group][field].unique_key);
-            if (appConfig.refine.multipleFieldGroups[group][dep][field].i18n_key) {
-              uniq[group][dep][field].box_label = appConfig.refine.multipleFieldGroups[group][dep][field].i18n_key;
+            // console.log('field:', field, 'selected:', selected, '$config.refine.multipleFieldGroups[group][field].unique_key:', $config.refine.multipleFieldGroups[group][field].unique_key);
+            if ($config.refine.multipleFieldGroups[group][dep][field].i18n_key) {
+              uniq[group][dep][field].box_label = $config.refine.multipleFieldGroups[group][dep][field].i18n_key;
             } else {
               uniq[group][dep][field].box_label = field;
             }
-            uniq[group][dep][field].unique_key = appConfig.refine.multipleFieldGroups[group][dep][field].unique_key;
-            uniq[group][dep][field].tooltip = appConfig.refine.multipleFieldGroups[group][dep][field].tooltip;
+            uniq[group][dep][field].unique_key = $config.refine.multipleFieldGroups[group][dep][field].unique_key;
+            uniq[group][dep][field].tooltip = $config.refine.multipleFieldGroups[group][dep][field].tooltip;
           }
         } else {
-          uniq[group][dep] = appConfig.refine.multipleFieldGroups[group][dep];
+          uniq[group][dep] = $config.refine.multipleFieldGroups[group][dep];
         }
       }
     }
@@ -909,24 +902,24 @@ const getRefineSearchList = () => {
     selectedList.value = selected;
   }
 
-  if (appConfig.refine && appConfig.refine.type === 'multipleDependentFieldGroups') {
+  if ($config.refine && $config.refine.type === 'multipleDependentFieldGroups') {
     uniq = {};
     selected = {};
-    for (let group of Object.keys(appConfig.refine.multipleDependentFieldGroups)){
+    for (let group of Object.keys($config.refine.multipleDependentFieldGroups)){
       // console.log('outer loop, group:', group);
       uniq[group] = {};
-      for (let dep of Object.keys(appConfig.refine.multipleDependentFieldGroups[group])){
+      for (let dep of Object.keys($config.refine.multipleDependentFieldGroups[group])){
         // console.log('middle loop, dep:', dep, 'group:', group);
         uniq[group][dep] = {};
-        for (let field of Object.keys(appConfig.refine.multipleDependentFieldGroups[group][dep])){
+        for (let field of Object.keys($config.refine.multipleDependentFieldGroups[group][dep])){
           uniq[group][dep][field] = {};
-          // console.log('inner loop field:', field, 'selected:', selected, 'appConfig.refine.multipleDependentFieldGroups[group][field].unique_key:', appConfig.refine.multipleDependentFieldGroups[group][field].unique_key);
-          if (appConfig.refine.multipleDependentFieldGroups[group][dep][field].i18n_key) {
-            uniq[group][dep][field].box_label = appConfig.refine.multipleDependentFieldGroups[group][dep][field].i18n_key;
+          // console.log('inner loop field:', field, 'selected:', selected, '$config.refine.multipleDependentFieldGroups[group][field].unique_key:', $config.refine.multipleDependentFieldGroups[group][field].unique_key);
+          if ($config.refine.multipleDependentFieldGroups[group][dep][field].i18n_key) {
+            uniq[group][dep][field].box_label = $config.refine.multipleDependentFieldGroups[group][dep][field].i18n_key;
           } else {
             uniq[group][dep][field].box_label = field;
           }
-          uniq[group][dep][field].unique_key = appConfig.refine.multipleDependentFieldGroups[group][dep][field].unique_key;
+          uniq[group][dep][field].unique_key = $config.refine.multipleDependentFieldGroups[group][dep][field].unique_key;
         }
       }
     }

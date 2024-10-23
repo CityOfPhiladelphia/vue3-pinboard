@@ -53,6 +53,7 @@ onMounted(async () => {
   window.addEventListener('resize', handleWindowResize);
   handleWindowResize();
 
+  DataStore.fillAppType();
   DataStore.fillResources();
   DataStore.fillHolidays();
   DataStore.fillZipcodes();

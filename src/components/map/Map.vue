@@ -1,7 +1,7 @@
 <script setup>
 
-import $config from '../../config';
-if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue $config:', $config);
+import $mapConfig from '../../mapConfig';
+if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue $mapConfig:', $mapConfig);
 
 import { ref, onMounted, watch, watchEffect, computed } from 'vue';
 
@@ -59,8 +59,8 @@ onMounted(async () => {
 
   map = new maplibregl.Map({
     container: 'map',
-    style: $config[currentTopicMapStyle],
-    center: $config.cityCenterCoords,
+    style: $mapConfig[currentTopicMapStyle],
+    center: $mapConfig.cityCenterCoords,
     zoom: zoom,
     minZoom: 6,
     maxZoom: 22,
@@ -311,12 +311,12 @@ const setLabelLayers = (newLabelLayers) => {
     /> -->
     <!-- <OverlayLegend
       v-show="!MapStore.imageryOn && ['stormwater'].includes(MainStore.currentTopic)"
-      :items="$config.stormwaterLegendData"
+      :items="$mapConfig.stormwaterLegendData"
       :options="{ shape: 'square' }"
     />
     <OverlayLegend
       v-show="!MapStore.imageryOn && ['deeds', 'zoning'].includes(MainStore.currentTopic)"
-      :items="$config.dorLegendData"
+      :items="$mapConfig.dorLegendData"
       :options="{ shape: 'square' }"
     /> -->
   </div>
