@@ -83,7 +83,7 @@ onMounted(async () => {
       )
     };
     if (DataStore.sources[DataStore.appType]) {
-      const dataPoint = DataStore.sources[DataStore.appType].features.filter(item => item._featureId == DataStore.selectedResource)[0];
+      const dataPoint = DataStore.sources[DataStore.appType].data.features.filter(item => item._featureId == DataStore.selectedResource)[0];
       if (import.meta.env.VITE_DEBUG) console.log('dataPoint:', dataPoint);
       map.setCenter(dataPoint.geometry.coordinates);
 
@@ -176,8 +176,8 @@ watch(
           ]
         )
       };
-      if (DataStore.sources[DataStore.appType].features) {
-        const dataPoint = DataStore.sources[DataStore.appType].features.filter(item => item._featureId == newSelectedResource)[0];
+      if (DataStore.sources[DataStore.appType].data.features) {
+        const dataPoint = DataStore.sources[DataStore.appType].data.features.filter(item => item._featureId == newSelectedResource)[0];
         if (import.meta.env.VITE_DEBUG) console.log('dataPoint:', dataPoint);
         if (MainStore.lastSelectMethod == 'row') {
           map.setCenter(dataPoint.geometry.coordinates);
@@ -198,20 +198,16 @@ watch(
   }
 )
 
-// TODO - this is going to need to be tested against all apps
-const database = computed(() => {
-  if (DataStore.sources[DataStore.appType]) {
-    return DataStore.sources[DataStore.appType].rows || DataStore.sources[DataStore.appType] || DataStore.sources[DataStore.appType].data;
-  }
-});
+// const database = computed(() => {
+//   return DataStore.currentData;
+// });
 
 watch(
-  () => database.value,
+  () => DataStore.currentData,
   async newData => {
-    if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue watch database, newData:', newData);
     let geojson = featureCollection(newData);
-    if (import.meta.env.VITE_DEBUG == 'true') console.log('geojson:', geojson, 'map.getStyle().sources.resources.data:', map.getStyle().sources.resources.data);
-    map.getSource('resources').setData(newData);
+    // if (import.meta.env.VITE_DEBUG == 'true') console.log('geojson:', geojson, 'map.getStyle().sources.resources.data:', map.getStyle().sources.resources.data);
+    map.getSource('resources').setData(geojson);
   }
 )
 

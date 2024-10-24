@@ -70,7 +70,6 @@ const submittedCheckboxValue = ref(null);
 const showForceHolidayBanner = ref(false);
 const showAutomaticHolidayBanner = ref(false);
 
-
 // OLD ONCREATED
 // let root = document.getElementsByTagName( 'html' )[0]; // '0' to assign the first (and only `HTML` tag)
 // root.setAttribute( 'class', 'invisible-scrollbar' );
@@ -111,8 +110,6 @@ if ($config.app.logoLink && $config.app.logoLink == 'none') {
 if ($config.refineEnabled === false) {
   refineEnabled.value = false;
 }
-
-
 
 // computed
 
@@ -339,13 +336,31 @@ const selectedServices = computed(() => {
 const dataStatus = computed(() => {
   let value;
   if (DataStore.sources[$config.app.type]) {
-    value = DataStore.sources[$config.app.type].status;
+    if (DataStore.sources[$config.app.type].status === 200) {
+      value = 'success';
+    } else if (DataStore.sources[$config.app.type].status === 404) {
+      value = 'error';
+    } else {
+      value = null;
+    }
   }
-  return 'success';
+  // return 'success';
+  return value;
 });
 
 const database = computed(() => {
-  return DataStore.sources[DataStore.appType].rows || DataStore.sources[DataStore.appType].features || DataStore.sources[DataStore.appType].data;
+  console.log('DataStore.appType:', DataStore.appType);
+  // console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources:', DataStore.sources);
+  if (DataStore.appType) {
+    if (DataStore.sources[DataStore.appType].data.rows) {
+      return DataStore.sources[DataStore.appType].data.rows;
+    } else if (DataStore.sources[DataStore.appType].data.features) {
+      return DataStore.sources[DataStore.appType].data.features;
+    } else if (DataStore.sources[DataStore.appType].data) {
+      return DataStore.sources[DataStore.appType].data;
+    }
+  }
+  // return DataStore.sources[DataStore.appType].data.rows || DataStore.sources[DataStore.appType].data.features || DataStore.sources[DataStore.appType].data;
 });
 
 // const database = computed(() => {
@@ -762,8 +777,9 @@ watch(
 );
 
 watch(
-  () => dataStatus,
+  () => dataStatus.value,
   async nextDataStatus => {
+    console.log('nextDataStatus:', nextDataStatus);
     if (nextDataStatus === 'success') {
       filterPoints();
     }
@@ -775,14 +791,11 @@ onMounted(async () => {
   body.classList.remove('print-view');
   body.classList.add('main-view');
 
-  if (import.meta.env.VITE_DEBUG) console.log('in Main.vue mounted, route.query:', route.query);
-
-  // store.commit('setLastSearchMethod', 'zipcode');
+  // if (import.meta.env.VITE_DEBUG) console.log('in Main.vue mounted, route.query:', route.query);
   // if (import.meta.env.VITE_DEBUG) console.log('in Main.vue onMounted, $config:', $config, 'window.location.href:', window.location.href);
   $config.searchBar.searchTypes.forEach(item => {
     if (route.query[item]) {
       // if (import.meta.env.VITE_DEBUG) console.log('App.vue mounted item:', item, 'searchBarType:', searchBarType);
-      // $controller.handleSearchFormSubmit(route.query[item], item);
       searchString.value = route.query[item];
     }
   });
@@ -824,11 +837,6 @@ onMounted(async () => {
     appLink.value = '.';
   }
 
-  // if (import.meta.env.VITE_DEBUG) console.log('Main.vue mounted store.state.sources[$config.app.type].data:', store.state.sources[$config.app.type].data, 'Object.keys(store.state.sources):', Object.keys(store.state.sources));
-  // if (!store.state.sources[$config.app.type].data && $config.dataSources) {
-  //   $controller.dataManager.fetchData();
-  // }
-
   if (!i18nEnabled.value) {
     buttonText.value = isMapVisible.value ? 'Toggle to resource list' : 'Toggle to map';
   } else {
@@ -861,23 +869,9 @@ onMounted(async () => {
     showForceHolidayBanner.value = true;
   }
 
-  // let currentYear = format(new Date(), 'yyyy');
-  // let currentMonth = format(new Date(), 'MM');
-  // let currentDay = format(new Date(), 'dd');
-  // // let dateStart = new Date(currentYear, currentMonth-1, currentDay);
-  // let dateStart = new Date(2023, 5, 8);
-  // if (import.meta.env.VITE_DEBUG) console.log('currentYear:', currentYear, 'currentMonth:', currentMonth, 'currentDay:', currentDay, 'dateStart:', dateStart, 'dateStartUnix:', parseInt(format(dateStart, 'T')));
-  // let currentUnixDate = parseInt(format(dateStart, 'T'));
-
-  // let holidays = store.state.sources.holidays;
-
-  // if (import.meta.env.VITE_DEBUG) console.log('Main.vue mounted, currentUnixDate:', currentUnixDate, 'holidays:', holidays);
-
-
-  // if (import.meta.env.VITE_DEBUG) console.log('Main.vue mounted, store.state.sources[$appType].data.features:', store.state.sources[$appType].data.features)
 });
 
-// methods
+// METHODS
 const closeHolidayBanner = () => {
   showAutomaticHolidayBanner.value = false;
   showForceHolidayBanner.value = false;
@@ -890,10 +884,6 @@ const closeHolidayBanner = () => {
   // store.commit('setHoliday', holiday);
 };
 
-// handlePopStateChange() {
-//   if (import.meta.env.VITE_DEBUG) console.log('Main.vue handlePopStateChange is running');
-//   location.reload();
-// },
 const geolocateControlFire = async(e) => {
   // if (import.meta.env.VITE_DEBUG) console.log('Pinboard Main.vue geolocateControlFire is running, e.coords.latitude:', e.coords.latitude, 'e.coords.longitude:', e.coords.longitude);
   if (e.lng != null) {

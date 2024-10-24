@@ -139,7 +139,7 @@ const allowPrint = computed(() => {
 });
 
 const database = computed(() => {
-  return DataStore.sources[DataStore.appType].rows || DataStore.sources[DataStore.appType].features || DataStore.sources[DataStore.appType].data;
+  return DataStore.sources[DataStore.appType].data.rows || DataStore.sources[DataStore.appType].data.features || DataStore.sources[DataStore.appType].data;
 });
 
 const databaseLength = computed(() => {
@@ -367,14 +367,14 @@ const selectedResource = computed(() => {
 });
 
 const currentData = computed(() => {
-  let locations;
-  if (DataStore.sources[DataStore.appType].rows) {
-    locations = [...DataStore.sources[DataStore.appType].rows];
-  } else if (DataStore.sources[DataStore.appType].features) {
-    locations = [...DataStore.sources[DataStore.appType].features];
-  } else if (DataStore.sources[DataStore.appType].data) {
-    locations = [...DataStore.sources[DataStore.appType].data];
-  }
+  let locations = [...DataStore.currentData];
+  // if (DataStore.sources[DataStore.appType].data.rows) {
+  //   locations = [...DataStore.sources[DataStore.appType].data.rows];
+  // } else if (DataStore.sources[DataStore.appType].data.features) {
+  //   locations = [...DataStore.sources[DataStore.appType].data.features];
+  // } else if (DataStore.sources[DataStore.appType].data) {
+  //   locations = [...DataStore.sources[DataStore.appType].data];
+  // }
 
   let valOrGetter = locationInfo.value.siteName;
   const valOrGetterType = typeof valOrGetter;

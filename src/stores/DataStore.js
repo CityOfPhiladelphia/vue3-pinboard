@@ -55,7 +55,7 @@ export const useDataStore = defineStore('DataStore', {
           data.features[i]._featureId = appType + '_' + i;
           data.features[i].properties._featureId = appType + '_' + i;
         }
-        this.sources[appType] = data;
+        this.sources[appType] = response;
       }
     },
     async fillZipcodes() {
