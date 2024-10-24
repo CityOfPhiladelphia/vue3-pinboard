@@ -13,6 +13,7 @@ export default defineConfig({
     vueDevTools(),
     AutoImport({
       imports: ['vue',
+        'vue-router',
         {
           'pinia': [ 'defineStore', 'storeToRefs', 'acceptHMRUpdate' ],
         }

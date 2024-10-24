@@ -11,7 +11,6 @@ import Checkbox from './Checkbox.vue';
 
 import IconToolTip from './IconToolTip.vue';
 
-import { computed, onBeforeMount, onMounted, watch, ref } from 'vue';
 const ConfigStore = useConfigStore();
 const $config = ConfigStore.config;
 
@@ -22,7 +21,6 @@ const GeocodeStore = useGeocodeStore();
 const DataStore = useDataStore();
 
 // ROUTER
-import { useRouter, useRoute } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 

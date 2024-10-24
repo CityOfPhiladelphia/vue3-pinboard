@@ -1,7 +1,5 @@
 <script setup>
 
-import { computed, defineProps } from 'vue';
-
 const props = defineProps({
   'position': {
     type: String,

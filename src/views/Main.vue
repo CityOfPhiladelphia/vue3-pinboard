@@ -31,7 +31,6 @@ import LocationsPanel from '../components/LocationsPanel.vue';
 import MapPanel from '../components/MapPanel.vue';
 import RefinePanel from '../components/RefinePanel.vue';
 
-import { computed, onMounted, watch, ref, getCurrentInstance, nextTick } from 'vue';
 const instance = getCurrentInstance();
 const locale = computed(() => instance.appContext.config.globalProperties.$i18n.locale);
 // if (import.meta.env.VITE_DEBUG) console.log('instance.appContext.config.globalProperties.$i18n:', instance.appContext.config.globalProperties.$i18n);
@@ -43,7 +42,6 @@ const GeocodeStore = useGeocodeStore();
 const DataStore = useDataStore();
 
 // ROUTER
-import { useRouter, useRoute } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 
@@ -99,13 +97,6 @@ if ($config.app.logoLink && $config.app.logoLink == 'none') {
   //   target: '_blank',
   // }
 }
-
-// window.addEventListener("popstate", (event) => {
-//   if (import.meta.env.VITE_DEBUG) console.log('popstate event:', document.location, event.state);
-//   // handlePopStateChange();
-//   // filterPoints();
-//   location.reload();
-// });
 
 if ($config.refineEnabled === false) {
   refineEnabled.value = false;
@@ -1149,7 +1140,6 @@ const getProjection = (item) => {
     
 
     if (valOrGetterType === 'function') {
-      // const state = this.$store.state;
       const getter = valOrGetter;
       if (item) {
         val = getter(item);
@@ -1207,12 +1197,12 @@ const filterPoints = () => {
               selectedGroups.push(valueGroup)
             }
           }
-          if (import.meta.env.VITE_DEBUG) console.log('App.vue filterPoints is running on multipleFieldGroups, selectedServices:', selectedServices, 'selectedGroups:', selectedGroups);
+          // if (import.meta.env.VITE_DEBUG) console.log('App.vue filterPoints is running on multipleFieldGroups, selectedServices:', selectedServices, 'selectedGroups:', selectedGroups);
           let groupValues = [];
           for (let group of selectedGroups) {
             let groupBooleanConditions = [];
             for (let service of selectedServices) {
-              if (import.meta.env.VITE_DEBUG) console.log('App.vue filterPoints loop, service:', service);
+              // if (import.meta.env.VITE_DEBUG) console.log('App.vue filterPoints loop, service:', service);
               if (group !== 'keyword' && service.split('_', 1)[0] === group && $config.refine.multipleFieldGroups[group]['radio']) {
                 // if (import.meta.env.VITE_DEBUG) console.log('group:', group, '$config.refine.multipleFieldGroups[group]["radio"]:', $config.refine.multipleFieldGroups[group]['radio']);
                 let dependentGroups = $config.refine.multipleFieldGroups[group]['radio'][service.split('_')[1]]['dependentGroups'] || [];

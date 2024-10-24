@@ -5,7 +5,6 @@
 // import SingleCheckbox from './SingleCheckbox.vue';
 // import PrintShareSection from '@phila/pinboard/src/components/PrintShareSection';
 
-import { computed, onMounted, ref, getCurrentInstance, watch } from 'vue';
 const MainStore = useMainStore();
 const MapStore = useMapStore();
 const GeocodeStore = useGeocodeStore();
@@ -22,7 +21,6 @@ const CustomGreeting = $config.customComps.customGreeting;
 
 const version = import.meta.env.VITE_VERSION;
 
-import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 
@@ -368,19 +366,12 @@ const selectedResource = computed(() => {
 
 const currentData = computed(() => {
   let locations = [...DataStore.currentData];
-  // if (DataStore.sources[DataStore.appType].data.rows) {
-  //   locations = [...DataStore.sources[DataStore.appType].data.rows];
-  // } else if (DataStore.sources[DataStore.appType].data.features) {
-  //   locations = [...DataStore.sources[DataStore.appType].data.features];
-  // } else if (DataStore.sources[DataStore.appType].data) {
-  //   locations = [...DataStore.sources[DataStore.appType].data];
-  // }
 
   let valOrGetter = locationInfo.value.siteName;
   const valOrGetterType = typeof valOrGetter;
   let val;
 
-  if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue, currentData, sortBy.value:', sortBy.value, 'locations:', locations, 'valOrGetter:', valOrGetter, 'valOrGetterType:', valOrGetterType);
+  // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue, currentData, sortBy.value:', sortBy.value, 'locations:', locations, 'valOrGetter:', valOrGetter, 'valOrGetterType:', valOrGetterType);
 
   if (sortBy.value == 'Distance') {
     if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue currentData computed, sortBy.value:', sortBy.value);

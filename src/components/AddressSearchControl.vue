@@ -1,13 +1,11 @@
 <script setup>
 
-import { computed } from 'vue';
 const ConfigStore = useConfigStore();
 const $config = ConfigStore.config;
 
 const MainStore = useMainStore();
 const MapStore = useMapStore();
 
-import { useRouter, useRoute } from 'vue-router';
 const router = useRouter();
 const route = useRoute();
 

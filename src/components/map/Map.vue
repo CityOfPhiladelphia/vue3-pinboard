@@ -3,8 +3,6 @@
 import $mapConfig from '../../mapConfig';
 if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue $mapConfig:', $mapConfig);
 
-import { ref, onMounted, watch, watchEffect, computed } from 'vue';
-
 // PACKAGE IMPORTS
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -24,7 +22,6 @@ const GeocodeStore = useGeocodeStore();
 const DataStore = useDataStore();
 
 // ROUTER
-import { useRouter, useRoute } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 
@@ -84,7 +81,7 @@ onMounted(async () => {
     };
     if (DataStore.sources[DataStore.appType]) {
       const dataPoint = DataStore.sources[DataStore.appType].data.features.filter(item => item._featureId == DataStore.selectedResource)[0];
-      if (import.meta.env.VITE_DEBUG) console.log('dataPoint:', dataPoint);
+      // if (import.meta.env.VITE_DEBUG) console.log('dataPoint:', dataPoint);
       map.setCenter(dataPoint.geometry.coordinates);
 
       const popup = document.getElementsByClassName('maplibregl-popup');
@@ -197,10 +194,6 @@ watch(
     }
   }
 )
-
-// const database = computed(() => {
-//   return DataStore.currentData;
-// });
 
 watch(
   () => DataStore.currentData,

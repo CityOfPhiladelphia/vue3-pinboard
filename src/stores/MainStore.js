@@ -1,4 +1,3 @@
-import { ref, computed } from 'vue'
 import { defineStore, acceptHMRUpdate } from 'pinia'
 
 export const useMainStore = defineStore('MainStore', {
@@ -29,30 +28,11 @@ export const useMainStore = defineStore('MainStore', {
       publicPath: null,
       isMobileDevice: null,
       isMac: null,
-
       addressSearchRunning: false,
       searchValue: '',
       windowDimensions: {},
       currentAddress: '',
       currentLang: null,
-
-      // pageTitle: '',
-      // datafetchRunning: false,
-      // lastClickCoords: [0,0],
-      // currentParcelGeocodeParameter: '',
-      // otherParcelGeocodeParameter: '',
-      // currentParcelAddress:'',
-      // otherParcelAddress:'',
-      // currentTopic: 'property',
-      // currentNearbyDataType: null,
-      // currentNearbyTimeInterval: {},
-      // dataSourcesLoadedArray: [],
-      // clickedRow: [],
-      // clickedMarkerId: null,
-      // hoveredStateId: null,
-      // selectedParcelId: null,
-      // fullScreenMapEnabled: false,
-      // fullScreenTopicsEnabled: false,
     };
   },
 

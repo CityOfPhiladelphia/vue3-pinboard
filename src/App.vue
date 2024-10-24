@@ -21,11 +21,8 @@ if (!import.meta.env.VITE_PUBLICPATH) {
 if (import.meta.env.VITE_DEBUG == 'true') console.log('import.meta.env.VITE_PUBLICPATH:', import.meta.env.VITE_PUBLICPATH, 'MainStore.publicPath:', MainStore.publicPath);
 
 // ROUTER
-import { useRouter, useRoute } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
-
-import { onMounted, computed, getCurrentInstance, watch } from 'vue';
 
 // COMPONENTS
 import LocationsPanel from './components/LocationsPanel.vue';

@@ -1,10 +1,6 @@
 <script setup>
 
-import { useMapStore } from '../stores/MapStore.js'
-const MapStore = useMapStore();
 import Map from './map/Map.vue';
-
-import { computed } from 'vue';
 
 const mapPanelClass = computed(() => {
   return 'map-panel';
