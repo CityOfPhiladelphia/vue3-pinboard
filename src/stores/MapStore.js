@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia';
+import { defineStore, acceptHMRUpdate } from 'pinia';
 import buffer from '@turf/buffer';
 import { point } from '@turf/helpers';
 import $mapConfig from '../mapConfig.js';
@@ -52,3 +52,8 @@ export const useMapStore = defineStore("MapStore", {
   },
 
 });
+
+// this is from https://pinia.vuejs.org/cookbook/hot-module-replacement.html
+if (import.meta.hot) {
+  import.meta.hot.accept(acceptHMRUpdate(useMapStore, import.meta.hot))
+};

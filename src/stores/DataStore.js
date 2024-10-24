@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia';
+import { defineStore, acceptHMRUpdate } from 'pinia';
 import axios from 'axios';
 
 import { useConfigStore } from './ConfigStore.js';
@@ -97,3 +97,8 @@ export const useDataStore = defineStore('DataStore', {
     },
   },
 });
+
+// this is from https://pinia.vuejs.org/cookbook/hot-module-replacement.html
+if (import.meta.hot) {
+  import.meta.hot.accept(acceptHMRUpdate(useDataStore, import.meta.hot))
+};

@@ -1,6 +1,5 @@
 <script setup>
 
-import { useConfigStore } from '../stores/ConfigStore.js'
 const ConfigStore = useConfigStore();
 const $config = ConfigStore.config;
 // if (import.meta.env.VITE_DEBUG) console.log('$config:', $config);
@@ -38,13 +37,9 @@ const locale = computed(() => instance.appContext.config.globalProperties.$i18n.
 // if (import.meta.env.VITE_DEBUG) console.log('instance.appContext.config.globalProperties.$i18n:', instance.appContext.config.globalProperties.$i18n);
 
 // STORES
-import { useMapStore } from '../stores/MapStore.js';
 const MapStore = useMapStore();
-import { useMainStore } from '../stores/MainStore.js'
 const MainStore = useMainStore();
-import { useGeocodeStore } from '../stores/GeocodeStore.js'
 const GeocodeStore = useGeocodeStore();
-import { useDataStore } from '../stores/DataStore.js'
 const DataStore = useDataStore();
 
 // ROUTER
@@ -729,9 +724,11 @@ watch(
 );
 
 watch(
-  () => selectedServices,
+  () => selectedServices.value,
   async => {
+    if (import.meta.env.VITE_DEBUG) console.log('watch selectedServices is firing');
     if (database.value) {
+      if (import.meta.env.VITE_DEBUG) console.log('watch selectedServices is calling filterPoints');
       filterPoints();
     }
   }
@@ -1154,8 +1151,30 @@ const runZipcodeFindCenter = (geo) => {
   MapStore.zipcodeCenter = zipcodeCenter.geometry.coordinates;
 };
 
+const getProjection = (item) => {
+  let val;
+  if ($config && $config.projection) {
+    let valOrGetter = $config.projection;
+    const valOrGetterType = typeof valOrGetter;
+    
+
+    if (valOrGetterType === 'function') {
+      // const state = this.$store.state;
+      const getter = valOrGetter;
+      if (item) {
+        val = getter(item);
+      } //else {
+        // val = getter(state);
+      // }
+    } else {
+      val = valOrGetter;
+    }
+  }
+  return val;
+};
+
 const filterPoints = () => {
-  if (import.meta.env.VITE_DEBUG) console.log('App.vue filterPoints is running, database.value:', database.value);
+  if (import.meta.env.VITE_DEBUG) console.log('Main.vue filterPoints is running, database.value:', database.value);
   const filteredRows = [];
 
   if (!database.value) {

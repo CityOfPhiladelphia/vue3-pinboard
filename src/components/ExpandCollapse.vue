@@ -1,34 +1,22 @@
 <script setup>
 
-import useSharedFunctions from '../composables/useSharedFunctions.js';
-// const { getSiteName } = useSharedFunctions();
 // import { library } from '@fortawesome/fontawesome-svg-core';
-import { findIconDefinition } from '@fortawesome/fontawesome-svg-core';
+// import { findIconDefinition } from '@fortawesome/fontawesome-svg-core';
 
-import { useMainStore } from '../stores/MainStore.js'
 const MainStore = useMainStore();
-import { useMapStore } from '../stores/MapStore.js'
 const MapStore = useMapStore();
-import { useDataStore } from '../stores/DataStore.js'
 const DataStore = useDataStore();
 
 import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 
-import { ref, computed, defineProps, onMounted, watch } from 'vue';
-
-import { useConfigStore } from '../stores/ConfigStore.js'
 const ConfigStore = useConfigStore();
 const $config = ConfigStore.config;
-// if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse.vue $config:', $config);
 
 const $emit = defineEmits(['print-box-checked']);
 
 const props = defineProps({
-  // isMapVisible: Boolean,
-  // item: Object,
-  // checked: Boolean,
   isMapVisible: {
     type: Boolean,
     default: true,
@@ -239,7 +227,6 @@ const siteName = computed(() => {
   let currentQueryKeys = Object.keys(currentQuery);
 
   if (valOrGetterType === 'function') {
-    // const state = this.$store.state;
     const getter = valOrGetter;
     if (currentQueryKeys.includes('address') || currentQueryKeys.includes('zipcode')) {// || this.$store.state.map.watchPositionOn) {
       // console.log('props.item:', props.item);
@@ -425,7 +412,7 @@ const makeID = (itemTitle) =>{
               <!-- :icon="[plusIconWeight, 'plus']" -->
               <font-awesome-icon
               v-if="locationOpen"
-              :icon="['fas', 'plus']"
+              :icon="['fas', 'minus']"
               />
               <!-- :icon="[plusIconWeight, 'minus']" -->
           </div>

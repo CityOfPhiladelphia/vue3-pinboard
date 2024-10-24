@@ -6,23 +6,18 @@
 // import PrintShareSection from '@phila/pinboard/src/components/PrintShareSection';
 
 import { computed, onMounted, ref, getCurrentInstance, watch } from 'vue';
-import { useMainStore } from '../stores/MainStore.js'
 const MainStore = useMainStore();
-import { useMapStore } from '../stores/MapStore.js'
 const MapStore = useMapStore();
-import { useGeocodeStore } from '../stores/GeocodeStore.js'
 const GeocodeStore = useGeocodeStore();
-import { useDataStore } from '../stores/DataStore.js'
 const DataStore = useDataStore();
 
 // import AddressSearchControl from './AddressSearchControl.vue';
 import PrintShareSection from './PrintShareSection.vue';
 import ExpandCollapse from './ExpandCollapse.vue';
 
-import { useConfigStore } from '../stores/ConfigStore.js'
 const ConfigStore = useConfigStore();
 const $config = ConfigStore.config;
-const ExpandCollapseContent = $config.customComps.ExpandCollapseContent;
+const ExpandCollapseContent = $config.customComps.expandCollapseContent;
 const CustomGreeting = $config.customComps.customGreeting;
 
 const version = import.meta.env.VITE_VERSION;
@@ -151,6 +146,10 @@ const databaseLength = computed(() => {
   return database.value.length
 });
 
+const refineList = computed(() => {
+  return MainStore.refineList;
+});
+
 const summarySentenceStart = computed(() => {
   let sentence = t('showing') + ' ' + currentData.value.length + ' ' + t('outOf') + ' ' + databaseLength.value + ' ' + t('results');
   if (selectedKeywords.value.length || zipcodeEntered.value || addressEntered.value || selectedServices.value.length) {
@@ -219,13 +218,14 @@ const summarySentenceEnd = computed(() => {
       } else {
         for (let service of selectedServices.value) {
           // if (import.meta.env.VITE_DEBUG) console.log('in summarySentenceEnd, if else for service:', service);
-          let refineList = refineList.value;
+          let refineList = MainStore.refineList;
           for (let key of Object.keys(refineList)) {
             for (let key2 of Object.keys(refineList[key])) {
               if (key2 === 'radio' || key2 === 'checkbox') {
                 for (let key3 of Object.keys(refineList[key][key2])) {
                   if (refineList[key][key2][key3].unique_key == service) {
-                    sentence += t([key][key3]);//.toLowerCase();
+                    // if (import.meta.env.VITE_DEBUG) console.log('key:', key, 'key3:', key3, 'key[key3]:', key[key3]);
+                    sentence += t(key+"."+key3);//.toLowerCase();
                   }
                 }
               }
@@ -239,10 +239,6 @@ const summarySentenceEnd = computed(() => {
     }
   }
   return sentence;
-});
-
-const refineList = computed(() => {
-  return MainStore.refineList;
 });
 
 const i18nLocale = computed(() => {
@@ -380,18 +376,12 @@ const currentData = computed(() => {
     locations = [...DataStore.sources[DataStore.appType].data];
   }
 
-  let currentQuery = { ...route.query };
-  let currentQueryKeys = Object.keys(currentQuery);
-
-  // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue currentData computed, currentQuery:', currentQuery, 'currentQueryKeys:', currentQueryKeys);
-
   let valOrGetter = locationInfo.value.siteName;
   const valOrGetterType = typeof valOrGetter;
   let val;
 
   if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue, currentData, sortBy.value:', sortBy.value, 'locations:', locations, 'valOrGetter:', valOrGetter, 'valOrGetterType:', valOrGetterType);
 
-  // if (currentQueryKeys.includes('address')) {
   if (sortBy.value == 'Distance') {
     if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue currentData computed, sortBy.value:', sortBy.value);
     val = 'distance';
@@ -837,8 +827,9 @@ const makeValidUrl = (url) => {
             @print-box-checked="printBoxChecked"
           >
 
+          <!-- v-if="$config.customComps && Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource" -->
             <expand-collapse-content
-              v-if="$config.customComps && Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource"
+              v-if="item._featureId == DataStore.selectedResource"
               :item="item"
               :is-map-visible="isMapVisible"
             />

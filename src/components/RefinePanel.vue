@@ -2,6 +2,7 @@
 
 import { findIconDefinition } from '@fortawesome/fontawesome-svg-core';
 
+const instance = getCurrentInstance();
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
@@ -11,18 +12,13 @@ import Checkbox from './Checkbox.vue';
 import IconToolTip from './IconToolTip.vue';
 
 import { computed, onBeforeMount, onMounted, watch, ref } from 'vue';
-import { useConfigStore } from '../stores/ConfigStore.js'
 const ConfigStore = useConfigStore();
 const $config = ConfigStore.config;
 
 // STORES
-import { useMapStore } from '../stores/MapStore.js';
 const MapStore = useMapStore();
-import { useMainStore } from '../stores/MainStore.js'
 const MainStore = useMainStore();
-import { useGeocodeStore } from '../stores/GeocodeStore.js'
 const GeocodeStore = useGeocodeStore();
-import { useDataStore } from '../stores/DataStore.js'
 const DataStore = useDataStore();
 
 // ROUTER
@@ -56,6 +52,10 @@ const searchDistance = computed(() => {
     word = t('miles');
   }
   return value + ' ' + word;
+});
+
+const i18nLocale = computed(() => {
+  return instance.appContext.config.globalProperties.$i18n.locale;
 });
 
 const refineList = computed(() => {
@@ -423,8 +423,8 @@ watch(
 //   () => refineOpen,
 //   async nextRefineOpen => {
 //     // console.log('RefinePanel.vue watch refineOpen is firing');
-//     this.$nextTick(() => {
-//       this.$store.map.resize();
+//     $nextTick(() => {
+//       $store.map.resize();
 //     });
 //   }
 // );
@@ -510,7 +510,7 @@ watch(
         let category = 'radio_' + service.split('_')[0];
         selectedList.value[category] = service;
       }
-    } else {
+    } else if (newQuery.services) {
       // this will need to be changed
       selectedList.value = newQuery.services;
     }
@@ -583,7 +583,8 @@ onMounted(async () => {
 
 const getCategoryFieldValue = (section) => {
   let sectionLower = section.toLowerCase().replaceAll(' ', '');
-  let i18nCategories = Object.keys(this.$i18n.messages[this.i18nLocale].sections);
+  let i18nCategories = Object.keys(ConfigStore.config.i18n.data.messages[i18nLocale].sections);
+  console.log('18nCategories:', i18nCategories);
   let selectedCategory;
   for (let category of i18nCategories) {
     let categoryLower = category.toLowerCase().replaceAll(' ', '');

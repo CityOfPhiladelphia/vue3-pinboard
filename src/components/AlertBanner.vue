@@ -2,7 +2,6 @@
 
 import { getCurrentInstance } from 'vue';
 const instance = getCurrentInstance();
-import { useConfigStore } from '../stores/ConfigStore.js'
 const ConfigStore = useConfigStore();
 const $config = ConfigStore.config;
 

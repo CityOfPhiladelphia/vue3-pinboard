@@ -10,9 +10,7 @@ import i18nFromFiles from './i18n/i18n.js';
 const languages = i18nFromFiles.i18n.languages;
 
 // STORES
-import { useDataStore } from './stores/DataStore.js'
 const DataStore = useDataStore();
-import { useMainStore } from './stores/MainStore.js'
 const MainStore = useMainStore();
 
 if (!import.meta.env.VITE_PUBLICPATH) {

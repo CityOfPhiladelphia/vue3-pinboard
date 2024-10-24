@@ -1,13 +1,10 @@
 <script setup>
 
 import { computed } from 'vue';
-import { useConfigStore } from '../stores/ConfigStore.js'
 const ConfigStore = useConfigStore();
 const $config = ConfigStore.config;
 
-import { useMainStore } from '../stores/MainStore.js'
 const MainStore = useMainStore();
-import { useMapStore } from '../stores/MapStore.js'
 const MapStore = useMapStore();
 
 import { useRouter, useRoute } from 'vue-router';
@@ -26,28 +23,12 @@ const clearSearch = () => {
   MainStore.searchValue = '';
 }
 
-// const fullScreenTopicsEnabled = computed(() => {
-//   return MainStore.fullScreenTopicsEnabled;
-// });
-  
-// const fullScreenMapEnabled = computed(() => {
-//   return MainStore.fullScreenMapEnabled;
-// });
-    
 const holderWidth = computed(() => {
-  // if (fullScreenTopicsEnabled.value || fullScreenMapEnabled.value) {
-  //   return '40%';
-  // } else {
-    return '70%';
-  // }
+  return '70%';
 });
 
 const yPosition = computed(() => {
-  // if (fullScreenTopicsEnabled.value) {
-  //   return '88px';
-  // } else {
-    return '10px';
-  // }
+  return '10px';
 });
 
 const setRoute = (input) => {
@@ -167,7 +148,7 @@ const handleSubmit = (val) => {
 
 <template>
   <div
-    :class="fullScreenTopicsEnabled ? 'holder holder-topics' : 'holder holder-map'"
+    class="holder holder-map"
     :style="{ top: yPosition, width: holderWidth }"
   >
     <div class="field has-addons" :style="{ width: '100%' }">

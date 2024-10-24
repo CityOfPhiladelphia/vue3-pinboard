@@ -18,13 +18,9 @@ import bbox from '@turf/bbox';
 import buffer from '@turf/buffer';
 
 // STORES
-import { useMapStore } from '../../stores/MapStore.js';
 const MapStore = useMapStore();
-import { useMainStore } from '../../stores/MainStore.js'
 const MainStore = useMainStore();
-import { useGeocodeStore } from '../../stores/GeocodeStore.js'
 const GeocodeStore = useGeocodeStore();
-import { useDataStore } from '../../stores/DataStore.js'
 const DataStore = useDataStore();
 
 // ROUTER
