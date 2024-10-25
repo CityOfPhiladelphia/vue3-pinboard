@@ -5,6 +5,7 @@ import { useMapStore } from './stores/MapStore.js';
 import { useGeocodeStore } from './stores/GeocodeStore.js';
 import { useDataStore } from './stores/DataStore.js';
 import { useConfigStore } from './stores/ConfigStore.js';
+import { useRoute, useRouter } from 'vue-router';
 
 if (import.meta.env.VITE_DEBUG == 'true') console.log('App.vue setup is running in debug mode, useDataStore:', useDataStore);
 
@@ -26,6 +27,8 @@ if (!import.meta.env.VITE_PUBLICPATH) {
   MainStore.publicPath = import.meta.env.VITE_PUBLICPATH;
 }
 if (import.meta.env.VITE_DEBUG == 'true') console.log('import.meta.env.VITE_PUBLICPATH:', import.meta.env.VITE_PUBLICPATH, 'MainStore.publicPath:', MainStore.publicPath);
+
+const test = ref(null);
 
 // ROUTER
 const route = useRoute();
