@@ -13,6 +13,8 @@ import mergeDeep from './util/merge-deep';
 import 'vue-good-table-next/dist/vue-good-table-next.css'
 import "bulma";
 import '@phila/phila-ui-core/dist/styles/scss/all.scss';
+import "@fortawesome/fontawesome-pro/css/fontawesome.min.css";
+import "@fortawesome/fontawesome-pro/css/solid.min.css";
 // import './assets/main.scss'
 import './assets/main_pin.scss'
 import './assets/style.scss'
