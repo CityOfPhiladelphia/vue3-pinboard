@@ -5,6 +5,8 @@ import { useMapStore } from '../stores/MapStore.js';
 import { useGeocodeStore } from '../stores/GeocodeStore.js';
 import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
+import { useRoute, useRouter } from 'vue-router';
+import { ref, computed, getCurrentInstance, onBeforeMount, onMounted, watch } from 'vue';
 
 import { findIconDefinition } from '@fortawesome/fontawesome-svg-core';
 

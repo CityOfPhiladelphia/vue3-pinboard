@@ -6,6 +6,7 @@ import { useGeocodeStore } from './stores/GeocodeStore.js';
 import { useDataStore } from './stores/DataStore.js';
 import { useConfigStore } from './stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
+import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
 
 if (import.meta.env.VITE_DEBUG == 'true') console.log('App.vue setup is running in debug mode, useDataStore:', useDataStore);
 
@@ -28,7 +29,7 @@ if (!import.meta.env.VITE_PUBLICPATH) {
 }
 if (import.meta.env.VITE_DEBUG == 'true') console.log('import.meta.env.VITE_PUBLICPATH:', import.meta.env.VITE_PUBLICPATH, 'MainStore.publicPath:', MainStore.publicPath);
 
-const test = ref(null);
+// const test = ref(null);
 
 // ROUTER
 const route = useRoute();

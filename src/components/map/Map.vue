@@ -5,6 +5,8 @@ import { useMapStore } from '../../stores/MapStore.js';
 import { useGeocodeStore } from '../../stores/GeocodeStore.js';
 import { useDataStore } from '../../stores/DataStore.js';
 import { useConfigStore } from '../../stores/ConfigStore.js';
+import { useRoute, useRouter } from 'vue-router';
+import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
 
 import $mapConfig from '../../mapConfig';
 if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue $mapConfig:', $mapConfig);

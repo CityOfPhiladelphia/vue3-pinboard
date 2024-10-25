@@ -1,5 +1,7 @@
 <script setup>
 
+import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
+
 import Map from './map/Map.vue';
 
 const mapPanelClass = computed(() => {
