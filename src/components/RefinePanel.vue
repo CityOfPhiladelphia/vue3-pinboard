@@ -1159,8 +1159,9 @@ const closeRefinePanel = () => {
         text-key="text"
         value-key="value"
         :numOfColumns="NumRefineColumns"
-        :small="!isMobile"
-      >
+        >
+        <!-- :small="false" -->
+      <!-- :small="!isMobile" -->
       </radio>
     </div>
 

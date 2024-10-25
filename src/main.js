@@ -12,7 +12,8 @@ import mergeDeep from './util/merge-deep';
 
 import 'vue-good-table-next/dist/vue-good-table-next.css'
 import "bulma";
-import './assets/main.scss'
+import '@phila/phila-ui-core/dist/styles/scss/all.scss';
+// import './assets/main.scss'
 import './assets/main_pin.scss'
 import './assets/style.scss'
 if (isMac()) {
@@ -27,18 +28,7 @@ import NavLink from "@phila/phila-ui-nav-link";
 import Textbox from "@phila/phila-ui-textbox";
 import LangSelector from "@phila/phila-ui-lang-selector";
 import Radio from "@phila/phila-ui-radio";
-
-const app = createApp(App);
-
-app.component("AppHeader", AppHeader);
-app.component("AppFooter", AppFooter);
-app.component("Dropdown", Dropdown);
-app.component("MobileNav", MobileNav);
-app.component("NavLink", NavLink);
-app.component("Textbox", Textbox);
-app.component("LangSelector", LangSelector);
-app.component("Radio", Radio);
-app.use(PhilaUICore);
+if (import.meta.env.VITE_DEBUG) console.log('Radio:', Radio);
 
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
@@ -94,14 +84,26 @@ library.add(
 );
 
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-app.component('FontAwesomeIcon', FontAwesomeIcon)
-
 import VueGoodTablePlugin from 'vue-good-table-next';
-app.use(VueGoodTablePlugin);
-
 import i18nFromFiles from './i18n/i18n.js';
 
 export default function pinboard(config) {
+  const app = createApp(App);
+  if (import.meta.env.VITE_DEBUG) console.log('app:', app);
+
+  app.component("AppHeader", AppHeader);
+  app.component("AppFooter", AppFooter);
+  app.component("Dropdown", Dropdown);
+  app.component("MobileNav", MobileNav);
+  app.component("NavLink", NavLink);
+  app.component("Textbox", Textbox);
+  app.component("LangSelector", LangSelector);
+  app.component("Radio", Radio);
+  app.use(PhilaUICore);
+
+  app.component('FontAwesomeIcon', FontAwesomeIcon)
+  app.use(VueGoodTablePlugin);
+
   const i18nProject = config.i18n.data.messages;
   const messages = mergeDeep(i18nFromFiles.i18n.data.messages, i18nProject);
   if (import.meta.env.VITE_DEBUG == 'true') console.log('i18nFromFiles:', i18nFromFiles, 'messages:', messages);
