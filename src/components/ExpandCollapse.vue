@@ -1,5 +1,11 @@
 <script setup>
 
+import { useMainStore } from '../stores/MainStore.js';
+import { useMapStore } from '../stores/MapStore.js';
+import { useGeocodeStore } from '../stores/GeocodeStore.js';
+import { useDataStore } from '../stores/DataStore.js';
+import { useConfigStore } from '../stores/ConfigStore.js';
+
 // import { library } from '@fortawesome/fontawesome-svg-core';
 // import { findIconDefinition } from '@fortawesome/fontawesome-svg-core';
 

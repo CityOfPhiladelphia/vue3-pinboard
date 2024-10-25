@@ -1,5 +1,12 @@
 <script setup>
-if (import.meta.env.VITE_DEBUG == 'true') console.log('App.vue setup is running in debug mode');
+
+import { useMainStore } from './stores/MainStore.js';
+import { useMapStore } from './stores/MapStore.js';
+import { useGeocodeStore } from './stores/GeocodeStore.js';
+import { useDataStore } from './stores/DataStore.js';
+import { useConfigStore } from './stores/ConfigStore.js';
+
+if (import.meta.env.VITE_DEBUG == 'true') console.log('App.vue setup is running in debug mode, useDataStore:', useDataStore);
 
 import { RouterView } from 'vue-router'
 

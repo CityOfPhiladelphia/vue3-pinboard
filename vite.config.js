@@ -18,9 +18,9 @@ export default defineConfig({
           'pinia': [ 'defineStore', 'storeToRefs', 'acceptHMRUpdate' ],
         }
       ],
-      dirs: [
-        './src/stores',
-      ],
+      // dirs: [
+      //   './src/stores',
+      // ],
     }),
   ],
   resolve: {

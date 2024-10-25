@@ -1,6 +1,12 @@
 
 <script setup>
 
+import { useMainStore } from '../stores/MainStore.js';
+import { useMapStore } from '../stores/MapStore.js';
+import { useGeocodeStore } from '../stores/GeocodeStore.js';
+import { useDataStore } from '../stores/DataStore.js';
+import { useConfigStore } from '../stores/ConfigStore.js';
+
 // import { Dropdown } from '@phila/phila-ui';
 // import SingleCheckbox from './SingleCheckbox.vue';
 // import PrintShareSection from '@phila/pinboard/src/components/PrintShareSection';
