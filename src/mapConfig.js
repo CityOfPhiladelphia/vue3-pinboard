@@ -42,6 +42,26 @@ const pwdDrawnMapStyle = {
         features: []
       },
     },
+    buffer: {
+      type: 'geojson',
+      data: {
+        type: 'Feature',
+        geometry: {
+          type: 'Polygon',
+          coordinates: [[[]]],
+        }
+      }
+    },
+    zipcode: {
+      type: 'geojson',
+      data: {
+        type: 'Feature',
+        geometry: {
+          type: 'Polygon',
+          coordinates: [[[]]],
+        }
+      }
+    },
   },
   layers: [
     {
@@ -55,17 +75,26 @@ const pwdDrawnMapStyle = {
       type: 'raster',
     },
     {
-      id: 'addressMarker',
-      source: 'addressMarker',
-      type: 'symbol',
-      layout: {
-        'icon-image': 'marker-blue',
-        'icon-rotate': 180,
-        'icon-anchor': 'bottom',
-        'icon-size': .05,
-        "icon-allow-overlap" : true,
-        "text-allow-overlap": true,
-      },
+      id: 'buffer',
+      type: 'fill',
+      source: 'buffer',
+      layout: {},
+      paint: {
+        'fill-color': '#9e9ac8',
+        'fill-opacity': 0.4,
+        'fill-outline-color': '#9e9ac8',
+      }
+    },
+    {
+      id: 'zipcode',
+      type: 'fill',
+      source: 'zipcode',
+      layout: {},
+      paint: {
+        'fill-color': '#9e9ac8',
+        'fill-opacity': 0.4,
+        'fill-outline-color': '#9e9ac8',
+      }
     },
     {
       id: 'resources',
@@ -90,6 +119,19 @@ const pwdDrawnMapStyle = {
         ],
         'circle-stroke-width': 1,
         'circle-stroke-color': 'white',
+      },
+    },
+    {
+      id: 'addressMarker',
+      source: 'addressMarker',
+      type: 'symbol',
+      layout: {
+        'icon-image': 'marker-blue',
+        'icon-rotate': 180,
+        'icon-anchor': 'bottom',
+        'icon-size': .05,
+        "icon-allow-overlap" : true,
+        "text-allow-overlap": true,
       },
     },
   ],

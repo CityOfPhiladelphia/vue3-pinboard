@@ -1,13 +1,16 @@
 import { defineStore, acceptHMRUpdate } from 'pinia';
 import buffer from '@turf/buffer';
 import { point } from '@turf/helpers';
-import $mapConfig from '../mapConfig.js';
+import { useConfigStore } from './ConfigStore';
+import { useGeocodeStore } from './GeocodeStore';
 
 export const useMapStore = defineStore("MapStore", {
   state: () => {
+    const ConfigStore = useConfigStore();
+    const $config = ConfigStore.config;
     return {
-      map: {},
-      searchDistance: $mapConfig.searchDistance,
+      // map: {},
+      searchDistance: $config.searchBar.searchDistance,
       currentMapStyle: 'pwdDrawnMapStyle',
       currentAddressCoords: [],
       zipcodeCenter: [],
@@ -36,18 +39,14 @@ export const useMapStore = defineStore("MapStore", {
     };
   },
   actions: {
-    setMap(map) {
-      if (import.meta.env.VITE_DEBUG == 'true') console.log('MapStore.setMap is running, map:', map);
-      this.map = map;
-    },
-    setMapStyle(style) {
-      this.currentMapStyle = style;
-    },
-    async fillBufferForAddress(lng, lat) {
-      let thePoint = point([lng, lat])
-      let theBuffer = buffer(thePoint, 750, {units: 'feet'});
-      if (import.meta.env.VITE_DEBUG == 'true') console.log('fillBufferForAddress is running, thePoint:', thePoint, 'theBuffer:', theBuffer, 'lng:', lng, 'lat:', lat);
-      this.bufferForAddress = theBuffer.geometry.coordinates;
+    async fillBufferForAddress() {
+      const GeocodeStore = useGeocodeStore();
+      if (import.meta.env.VITE_DEBUG) console.log('fillBufferForAddress is running, GeocodeStore.aisData.features:', GeocodeStore.aisData.features);
+      // let addressPoint = point([lng, lat])
+      let addressPoint = point(GeocodeStore.aisData.features[0].geometry.coordinates);
+      let addressBuffer = buffer(addressPoint, this.searchDistance, {units: 'miles'});
+      // if (import.meta.env.VITE_DEBUG == 'true') console.log('fillBufferForAddress is running, addressPoint:', addressPoint, 'addressBuffer:', addressBuffer, 'lng:', lng, 'lat:', lat);
+      this.bufferForAddress = addressBuffer;
     }
   },
 

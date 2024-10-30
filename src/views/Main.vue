@@ -6,7 +6,7 @@ import { useGeocodeStore } from '../stores/GeocodeStore.js';
 import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
-import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
+import { ref, computed, getCurrentInstance, onMounted, watch, onBeforeMount } from 'vue';
 
 const ConfigStore = useConfigStore();
 const $config = ConfigStore.config;
@@ -149,11 +149,11 @@ const selectedZipcode = computed(() => {
 
 const zipcodeData = computed(() => {
   let zipcode;
-  if (DataStore.zipcodes) {
+  if (DataStore.zipcodes.features) {
     let zipcodesData = DataStore.zipcodes;
-    let selectedZipcode = selectedZipcode.value;
+    let theSelectedZipcode = selectedZipcode.value;
     if (zipcodesData && selectedZipcode) {
-      zipcode = zipcodesData.features.filter(test => test.attributes.CODE == selectedZipcode)[0];
+      zipcode = zipcodesData.features.filter(item => item.properties.CODE == theSelectedZipcode)[0];
     }
   }
   return zipcode;
@@ -348,18 +348,12 @@ const dataStatus = computed(() => {
 });
 
 const database = computed(() => {
-  console.log('DataStore.appType:', DataStore.appType);
-  // console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources:', DataStore.sources);
-  if (DataStore.appType) {
-    if (DataStore.sources[DataStore.appType].data.rows) {
-      return DataStore.sources[DataStore.appType].data.rows;
-    } else if (DataStore.sources[DataStore.appType].data.features) {
-      return DataStore.sources[DataStore.appType].data.features;
-    } else if (DataStore.sources[DataStore.appType].data) {
-      return DataStore.sources[DataStore.appType].data;
-    }
+  let value = {}
+  if (DataStore.sources[DataStore.appType]) {
+    // if (import.meta.env.VITE_DEBUG) console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]);
+    value = DataStore.sources[DataStore.appType].data.rows || DataStore.sources[DataStore.appType].data.features || DataStore.sources[DataStore.appType].data;
   }
-  // return DataStore.sources[DataStore.appType].data.rows || DataStore.sources[DataStore.appType].data.features || DataStore.sources[DataStore.appType].data;
+  return value;
 });
 
 // const database = computed(() => {
@@ -632,7 +626,7 @@ watch(
 );
 
 watch(
-  () => searchDistance,
+  () => searchDistance.value,
   async nextSearchDistance => {
     // if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch searchDistance, nextSearchDistance:', nextSearchDistance);
     if (lastPinboardSearchMethod.value == 'geocode') {
@@ -715,19 +709,19 @@ watch(
 //   }
 // );
 
-watch(
-  () => geocodeStatus,
-  async nextGeocodeStatus => {
-    if (nextGeocodeStatus === 'success') {
-      runBuffer();
-    } else if (nextGeocodeStatus === null && lastPinboardSearchMethod.value != 'zipcode' && lastPinboardSearchMethod.value != 'zipcodeKeyword') {
-      currentBuffer.value = null;
-    } else if (nextGeocodeStatus === 'error') {
-      if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch geocodeStatus, nextGeocodeStatus is an error:', nextGeocodeStatus);
-      geocodeFailed();
-    }
-  }
-);
+// watch(
+//   () => geocodeStatus,
+//   async nextGeocodeStatus => {
+//     if (nextGeocodeStatus === 'success') {
+//       runBuffer();
+//     } else if (nextGeocodeStatus === null && lastPinboardSearchMethod.value != 'zipcode' && lastPinboardSearchMethod.value != 'zipcodeKeyword') {
+//       currentBuffer.value = null;
+//     } else if (nextGeocodeStatus === 'error') {
+//       if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch geocodeStatus, nextGeocodeStatus is an error:', nextGeocodeStatus);
+//       geocodeFailed();
+//     }
+//   }
+// );
 
 watch(
   () => currentBuffer.value,
@@ -784,6 +778,12 @@ watch(
     }
   }
 );
+
+// onBeforeMount(async () => {
+//   if (route.query || !$config.greeting && (!$config.customComps || !$config.customComps.customGreeting)) {
+//     MainStore.shouldShowGreeting = false;
+//   }
+// })
 
 onMounted(async () => {
   let body = document.body;
@@ -1111,16 +1111,16 @@ const clearSearchTriggered = () => {
 // };
 
 const runBuffer = (coords) => {
-  let searchDistance = searchDistance.value;
+  let theSearchDistance = searchDistance.value;
   if (import.meta.env.VITE_DEBUG) console.log('runBuffer is running, coords:', coords, 'searchDistance.value:', searchDistance.value, 'geocodeGeom.value:', geocodeGeom.value);
   if (coords && coords.coordinates[0] != null) {
     const geocodePoint = point(coords.coordinates);
-    const pointBuffer = buffer(geocodePoint, searchDistance, { units: 'miles' });
+    const pointBuffer = buffer(geocodePoint, theSearchDistance, { units: 'miles' });
     currentBuffer.value = pointBuffer;
     MapStore.bufferShape = pointBuffer;
   } else if (geocodeGeom.value) {
     const geocodePoint = point(geocodeGeom.value.coordinates);
-    const pointBuffer = buffer(geocodePoint, searchDistance, { units: 'miles' });
+    const pointBuffer = buffer(geocodePoint, theSearchDistance, { units: 'miles' });
     currentBuffer.value = pointBuffer;
     MapStore.bufferShape = pointBuffer;
   }
@@ -1161,6 +1161,402 @@ const getProjection = (item) => {
   return val;
 };
 
+const checkServices = (index, row) => {
+  const selectedServices = MainStore.selectedServices;
+  if ($config.refine && $config.refine.type && ['multipleFields', 'multipleFieldGroups', 'multipleDependentFieldGroups'].includes($config.refine.type)) {
+    let booleanConditions = [];
+
+    if (selectedServices.length === 0) {
+      booleanConditions.push(true);
+    } else {
+
+      // if refine.type = multipleFields
+      if ($config.refine.type === 'multipleFields') {
+        for (let field in $config.refine.multipleFields) {
+          if (selectedServices.includes(field)) {
+
+            let getter = $config.refine.multipleFields[field];
+            let val = getter(row);
+            booleanConditions.push(val);
+          }
+        }
+      } else if ($config.refine.type === 'multipleFieldGroups') {
+        // if refine.type = multipleFieldGroups
+        let selectedGroups = [];
+        for (let value of selectedServices) {
+          // if (import.meta.env.VITE_DEBUG) console.log('Main.vue checkServices value:', value);
+          let valueGroup;
+          if (value) {
+            valueGroup = value.split('_', 1)[0];
+          }
+          if (valueGroup && !selectedGroups.includes(valueGroup)) {
+            selectedGroups.push(valueGroup)
+          }
+        }
+        // if (import.meta.env.VITE_DEBUG) console.log('Main.vue checkServices is running on multipleFieldGroups, selectedServices:', selectedServices, 'selectedGroups:', selectedGroups);
+        let groupValues = [];
+        for (let group of selectedGroups) {
+          let groupBooleanConditions = [];
+          for (let service of selectedServices) {
+            // if (import.meta.env.VITE_DEBUG) console.log('Main.vue checkServices loop, service:', service);
+            if (group !== 'keyword' && service.split('_', 1)[0] === group && $config.refine.multipleFieldGroups[group]['radio']) {
+              // if (import.meta.env.VITE_DEBUG) console.log('group:', group, '$config.refine.multipleFieldGroups[group]["radio"]:', $config.refine.multipleFieldGroups[group]['radio']);
+              let dependentGroups = $config.refine.multipleFieldGroups[group]['radio'][service.split('_')[1]]['dependentGroups'] || [];
+              // if (import.meta.env.VITE_DEBUG) console.log('dependentGroup:', dependentGroup, 'service.split("_", 1)[0]:', service.split('_', 1)[0], 'service.split("_")[1]:', service.split('_')[1], 'group', group, '$config.refine.multipleFieldsGroups[group]', $config.refine.multipleFieldsGroups[group], '$config.refine.multipleFieldsGroups[group][service.split("_")[1]]:', $config.refine.multipleFieldsGroups[group][service.split('_')[1]]);
+              let getter = $config.refine.multipleFieldGroups[group]['radio'][service.split('_')[1]]['value'];
+              let dependentServices = [];
+              for (let service of selectedServices) {
+                if (dependentGroups.length && dependentGroups.includes(service.split('_')[0])) {
+                  dependentServices.push(service.split('_')[1]);
+                }
+              }
+              // if (import.meta.env.VITE_DEBUG) console.log('getter:', getter, 'dependentGroups:', dependentGroups, 'selectedServices:', selectedServices, 'dependentServices:', dependentServices);
+              let val = getter(row, dependentServices);
+              groupBooleanConditions.push(val);
+            }
+            if (group !== 'keyword' && service.split('_', 1)[0] === group && $config.refine.multipleFieldGroups[group]['checkbox']) {
+              // if (import.meta.env.VITE_DEBUG) console.log('group:', group, '$config.refine.multipleFieldGroups[group]["dependent"]:', $config.refine.multipleFieldGroups[group]['dependent']);
+              let dependentGroups = $config.refine.multipleFieldGroups[group]['checkbox'][service.split('_')[1]]['dependentGroups'] || [];
+              // if (import.meta.env.VITE_DEBUG) console.log('dependentGroup:', dependentGroup, 'service.split("_", 1)[0]:', service.split('_', 1)[0], 'service.split("_")[1]:', service.split('_')[1], 'group', group, '$config.refine.multipleFieldsGroups[group]', $config.refine.multipleFieldsGroups[group], '$config.refine.multipleFieldsGroups[group][service.split("_")[1]]:', $config.refine.multipleFieldsGroups[group][service.split('_')[1]]);
+              let getter = $config.refine.multipleFieldGroups[group]['checkbox'][service.split('_')[1]]['value'];
+              let dependentServices = [];
+              for (let service of selectedServices) {
+                if (dependentGroups.length && dependentGroups.includes(service.split('_')[0])) {
+                  dependentServices.push(service.split('_')[1]);
+                }
+              }
+              // if (import.meta.env.VITE_DEBUG) console.log('getter:', getter, 'dependentGroups:', dependentGroups, 'selectedServices:', selectedServices, 'dependentServices:', dependentServices);
+              let val = getter(row, dependentServices);
+              groupBooleanConditions.push(val);
+            }
+          }
+          // if (import.meta.env.VITE_DEBUG) console.log('$config.refine.andOr:', $config.refine.andOr, 'group:', group, 'groupBooleanConditions:', groupBooleanConditions);
+          if ($config.refine.andOr) {
+            if ($config.refine.andOr == 'and') {
+              if (groupBooleanConditions.includes(false)) {
+                booleanConditions.push(false);
+              } else {
+                booleanConditions.push(true);
+              }
+            } else if ($config.refine.andOr == 'or') {
+              if (groupBooleanConditions.includes(true)) {
+                booleanConditions.push(true);
+              } else {
+                booleanConditions.push(false);
+              }
+            }
+          } else {
+            if (groupBooleanConditions.includes(true)) {
+              booleanConditions.push(true);
+            } else if (groupBooleanConditions.length) {
+              booleanConditions.push(false);
+            }
+          }
+        }
+      } else {
+        // if refine.type = multipleDependentFieldGroups
+        let selectedGroups = [];
+        for (let value of selectedServices) {
+          let valueGroup = value.split('_', 1)[0]
+          if (!selectedGroups.includes(valueGroup)) {
+            selectedGroups.push(valueGroup)
+          }
+        }
+        // if (import.meta.env.VITE_DEBUG) console.log('Main.vue checkServices is running on multipleDependentFieldGroups, selectedServices:', selectedServices, 'selectedGroups:', selectedGroups);
+        let groupValues = [];
+        for (let group of selectedGroups) {
+          let groupBooleanConditions = [];
+          for (let service of selectedServices) {
+            if (service.split('_', 1)[0] === group) {
+              let ind = $config.refine.multipleDependentFieldGroups[group]['independent'];
+              let serviceEnd = service.split('_')[1];
+              // if (import.meta.env.VITE_DEBUG) console.log('ind:', ind, 'serviceEnd:', serviceEnd, 'selectedServices:', selectedServices);
+              let getter;
+              if ($config.refine.multipleDependentFieldGroups[group]['dependent'][service.split('_')[1]]) {
+                getter = $config.refine.multipleDependentFieldGroups[group]['dependent'][service.split('_')[1]]['value'];
+                let dependentServices = [];
+                if (ind) {
+                  for (let service of selectedServices) {
+                    if (Object.keys(ind).includes(service.split('_')[1])) {
+                      dependentServices.push(service.split('_')[1]);
+                    }
+                  }
+                }
+                let val = getter(row, dependentServices);
+                // if (import.meta.env.VITE_DEBUG) console.log('getter:', getter, 'selectedServices:', selectedServices, 'dependentServices:', dependentServices, 'val:', val);
+                groupBooleanConditions.push(val);
+              }
+            }
+          }
+          // if (import.meta.env.VITE_DEBUG) console.log('groupBooleanConditions:', groupBooleanConditions);
+          if (groupBooleanConditions.includes(true) || !groupBooleanConditions.length) {
+            booleanConditions.push(true);
+          } else {
+            booleanConditions.push(false);
+          }
+        }
+      }
+    }
+    // if (import.meta.env.VITE_DEBUG) console.log('booleanConditions:', booleanConditions);
+    if (!booleanConditions.includes(false)) {
+      return true
+    }
+
+  // if refine.type = categoryField_value
+  } else if ($config.refine && $config.refine.type === 'categoryField_value') {
+    if (selectedServices.length === 0) {
+      return true;
+    } else {
+      let value = $config.refine.value(row);
+      return selectedServices.includes(value);
+    }
+
+  } else {
+    // the original default version, or refine.type = 'categoryField_array'
+    // if (import.meta.env.VITE_DEBUG) console.log('in else, row:', row, 'row.services_offered:', row.services_offered);
+    let servicesSplit;
+    if ($config.refine) {
+      servicesSplit = $config.refine.value(row);
+    } else if (row.services_offered) {
+      servicesSplit = row.services_offered;
+    }
+
+    // if (import.meta.env.VITE_DEBUG) console.log('1 servicesSplit:', servicesSplit, 'typeof servicesSplit:', typeof servicesSplit);
+    if (typeof servicesSplit === 'string') {
+      servicesSplit = servicesSplit.split(',');
+    }
+    // if (import.meta.env.VITE_DEBUG) console.log('2 servicesSplit:', servicesSplit, 'typeof servicesSplit:', typeof servicesSplit);
+
+    if (selectedServices.length === 0) {
+      return true;
+    } else {
+      let servicesFiltered = [];
+      if (servicesSplit) {
+        servicesFiltered = servicesSplit.filter(f => selectedServices.includes(f));
+      }
+      // if (import.meta.env.VITE_DEBUG) console.log('servicesFiltered:', servicesFiltered, 'selectedServices:', selectedServices);
+      return servicesFiltered.length == selectedServices.length;
+    }
+    // if (import.meta.env.VITE_DEBUG) console.log('services else is running, row:', row, 'selectedServices:', selectedServices, 'booleanServices:', booleanServices);
+  }
+};
+
+const checkBuffer = (row) => {
+  if (!currentBuffer.value) {
+    // if (import.meta.env.VITE_DEBUG) console.log('!currentBuffer.value');
+    return true;
+  } else if (row.latlng) {
+    if (import.meta.env.VITE_DEBUG) console.log('row.latlng:', row.latlng);
+    if (import.meta.env.VITE_DEBUG) console.log('buffer else if 1 is running, row:', row, 'booleanBuffer:', booleanBuffer, 'typeof row.latlng[0]:', typeof row.latlng[0], 'MapStore.zipcodeCenter:', MapStore.zipcodeCenter);
+    if (typeof row.latlng[0] === 'number' && row.latlng[0] !== null) {
+      const rowPoint = point([ row.latlng[1], row.latlng[0] ]);
+      let geocodedPoint, options, theDistance;
+      if (GeocodeStore.aisData) {
+        geocodedPoint = point(GeocodeStore.aisData.features[0].geometry.coordinates);
+        options = { units: 'miles' };
+        theDistance = distance(geocodedPoint, rowPoint, options);
+        row.distance = theDistance;
+      } else if (MapStore.zipcodeCenter[0]) {
+        // if (import.meta.env.VITE_DEBUG) console.log('inside zipcode center else if');
+        let zipcodeCenter = point(MapStore.zipcodeCenter);
+        options = { units: 'miles' };
+        theDistance = distance(zipcodeCenter, rowPoint, options);
+        row.distance = theDistance;
+      } //else if (MapStore.watchPositionOn) {
+      //   if (import.meta.env.VITE_DEBUG) console.log('inside watchPositionOn else if');
+      //   geocodedPoint = point([ store.state.map.location.lng, store.state.map.location.lat ]);
+      //   options = { units: 'miles' };
+      //   theDistance = distance(geocodedPoint, rowPoint, options);
+      //   row.distance = theDistance;
+      // }
+      // if (import.meta.env.VITE_DEBUG) console.log('rowPoint:', rowPoint, 'currentBuffer.value:', currentBuffer.value, 'booleanPointInPolygon(rowPoint, currentBuffer.value):', booleanPointInPolygon(rowPoint, currentBuffer.value));
+      if (booleanPointInPolygon(rowPoint, buffer)) {
+        return true;
+      }
+      // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 1 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
+    } else if (typeof row.latlng[0] === 'string' && row.latlng[0] !== null) {
+      // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 1 ELSE IF');
+      const rowPoint = point([ parseFloat(row.latlng[1]), parseFloat(row.latlng[0]) ]);
+      if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
+        return true;
+      }
+    }
+  } else if (row.lat && row.lon) {
+    // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 2 is running, row:', row, 'booleanBuffer:', booleanBuffer);
+    if (typeof row.lat === 'number' && typeof row.lon === 'number') {
+      let projection = getProjection(row);
+      let lnglat;
+      if (projection === '3857') {
+        lnglat = proj4(projection3857, projection4326, [ row.lon, row.lat ]);
+      } else if (projection === '2272') {
+        lnglat = proj4(projection2272, projection4326, [ row.lon, row.lat ]);
+      } else {
+        lnglat = [ row.lon, row.lat ];
+      }
+      const rowPoint = point(lnglat);
+      if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
+        return true;
+      }
+      // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 2 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
+    }
+  } else if (row.geo && row.geo.coordinates) {
+    // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 is running, row:', row, 'booleanBuffer:', booleanBuffer);
+    if (typeof row.geo.coordinates[0] === 'number' && typeof row.geo.coordinates[1] === 'number') {
+      let projection = getProjection(row);
+      let lnglat;
+      if (projection === '3857') {
+        lnglat = proj4(projection3857, projection4326, [ row.geo.coordinates[0], row.geo.coordinates[1] ]);
+      } else if (projection === '2272') {
+        lnglat = proj4(projection2272, projection4326, [ row.geo.coordinates[0], row.geo.coordinates[1] ]);
+      } else {
+        lnglat = [ row.geo.coordinates[0], row.geo.coordinates[1] ];
+      }
+      const rowPoint = point(lnglat);
+
+      let geocodedPoint, options, theDistance;
+      if (GeocodeStore.aisData) {
+        geocodedPoint = point(GeocodeStore.aisData.features[0].geometry.coordinates);
+        options = { units: 'miles' };
+        theDistance = distance(geocodedPoint, rowPoint, options);
+        row.distance = theDistance;
+      } else if (MapStore.zipcodeCenter[0]) {
+        // if (import.meta.env.VITE_DEBUG) console.log('inside zipcode center else if');
+        let zipcodeCenter = point(MapStore.zipcodeCenter);
+        options = { units: 'miles' };
+        theDistance = distance(zipcodeCenter, rowPoint, options);
+        row.distance = theDistance;
+      }
+
+      if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
+        return true;
+      }
+      // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
+    }
+  } else if (row.geometry && row.geometry.x) {
+    // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 is running, row:', row, 'booleanBuffer:', booleanBuffer);
+    if (typeof row.geometry.x === 'number' && typeof row.geometry.y === 'number') {
+      let projection = getProjection(row);
+      let lnglat;
+      if (projection === '3857') {
+        lnglat = proj4(projection3857, projection4326, [ row.geometry.x, row.geometry.y ]);
+      } else if (projection === '2272') {
+        lnglat = proj4(projection2272, projection4326, [ row.geometry.x, row.geometry.y ]);
+      } else {
+        lnglat = [ row.geometry.x, row.geometry.y ];
+      }
+      const rowPoint = point(lnglat);
+
+      let geocodedPoint, options, theDistance;
+      if (GeocodeStore.aisData) {
+        geocodedPoint = point(GeocodeStore.aisData.features[0].geometry.coordinates);
+        options = { units: 'miles' };
+        theDistance = distance(geocodedPoint, rowPoint, options);
+        row.distance = theDistance;
+      } else if (MapStore.zipcodeCenter[0]) {
+        // if (import.meta.env.VITE_DEBUG) console.log('inside zipcode center else if');
+        let zipcodeCenter = point(MapStore.zipcodeCenter);
+        options = { units: 'miles' };
+        theDistance = distance(zipcodeCenter, rowPoint, options);
+        row.distance = theDistance;
+      }
+
+      if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
+        return true;
+      }
+      // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
+    }
+  }
+};
+
+const checkKeywords = (row) => {
+  // if (import.meta.env.VITE_DEBUG) console.log('row:', row, '$config.tags', $config.tags, 'selectedKeywords.value:', selectedKeywords.value, 'selectedKeywords.value.length:', selectedKeywords.value.length);
+  let booleanKeywords;
+  if (selectedKeywords.value.length > 0) {
+    booleanKeywords = false;
+    let description = [];
+    if (Array.isArray(row.tags)) {
+      description = row.tags;
+    } else if (row.tags) {
+      description = row.tags.split(', ');
+    } else if ($config.tags && $config.tags.type == 'tagLocation') {
+      if (Array.isArray($config.tags.location(row))) {
+        description = $config.tags.location(row);
+      } else if ($config.tags.location(row)) {
+        description = $config.tags.location(row).split(', ');
+      }
+    } else if ($config.tags && $config.tags.type == 'fieldValues') {
+      for (let tag of $config.tags.tags) {
+        // if (import.meta.env.VITE_DEBUG) console.log('tag:', tag, 'tag.field:', tag.field, 'row.attributes[tag.field]:', row.attributes[tag.field]);
+        if (tag.type == 'boolean' && row.attributes[tag.field] == 'Yes') {
+          description.push(tag.value);
+        } else if (tag.type == 'value' && row.attributes[tag.field] !== null && row.attributes[tag.field] != ' ') {
+          // if (import.meta.env.VITE_DEBUG) console.log('in else if, row.attributes[tag.field]:', row.attributes[tag.field]);
+          // description.push(row.attributes[tag.field].charAt(0) + row.attributes[tag.field].substring(1).toLowerCase());
+          let value = row.attributes[tag.field].toLowerCase();
+          // if (import.meta.env.VITE_DEBUG) console.log('value.split(","):', value.split(','));
+          description = description.concat(value.split(','));
+        }
+      }
+    }
+    // if (import.meta.env.VITE_DEBUG) console.log('still going, selectedKeywords.value[0]:', selectedKeywords.value[0], 'row.tags:', row.tags, 'description:', description);
+
+    let threshold = 0.2;
+    if ($config.searchBar.fuseThreshold) {
+      threshold = $config.searchBar.fuseThreshold;
+    };
+
+    const options = {
+      // isCaseSensitive: false,
+      // includeScore: false,
+      // shouldSort: true,
+      // includeMatches: false,
+      // findAllMatches: true,
+      minMatchCharLength: 3,
+      location: 0,
+      threshold: threshold,
+      // distance: 100,
+      // useExtendedSearch: false,
+      // ignoreLocation: false,
+      // ignoreFieldNorm: false,
+
+      // keys: [
+      //   "title",
+      //   "author.firstName"
+      // ]
+    };
+
+    const fuse = new Fuse(description, options);
+    let results = {};
+    for (let keyword of selectedKeywords.value) {
+      // if (import.meta.env.VITE_DEBUG) console.log('in selectedKeywords loop, keyword.toString():', keyword.toString(), 'description:', description);//'description[0].split(","):', description[0].split(','));
+      if ($config.skipFuse) {
+        let keywordString = '' + keyword;
+        // if (import.meta.env.VITE_DEBUG) console.log('skipFuse, keywordString:', keywordString);
+        if (description.includes(keywordString)) {
+          // if (import.meta.env.VITE_DEBUG) console.log('19148 is in description');
+          results[keyword] = ['true'];
+        }
+      } else {
+        // if (import.meta.env.VITE_DEBUG) console.log('fuse.search(keyword):', fuse.search(keyword), 'description:', description);
+        results[keyword] = fuse.search(keyword);
+      }
+    }
+    // const result = fuse.search(selectedKeywords.value[0]);
+    // if (import.meta.env.VITE_DEBUG) console.log('App.vue filterPoints booleanKeywords section, result:', result, 'results:', results);
+    // if (result.length > 0) {
+    //   booleanKeywords = true;
+    // }
+    for (let keyword of Object.keys(results)) {
+      if (results[keyword].length > 0) {
+        booleanKeywords = true;
+      }
+    }
+  } else {
+    booleanKeywords = true;
+  }
+  return booleanKeywords;
+}
+
 const filterPoints = () => {
   if (import.meta.env.VITE_DEBUG) console.log('Main.vue filterPoints is running, database.value:', database.value);
   const filteredRows = [];
@@ -1168,402 +1564,26 @@ const filterPoints = () => {
   if (!database.value) {
     return;
   }
+  let startQuery = { ...route.query };
+  if (!Object.keys(startQuery)) {
+    if (import.meta.env.VITE_DEBUG) console.log('Main.vue filterPoints is running, no startQuery');
+    DataStore.currentData = database.value;
+    return;
+  }
 
   for (const [index, row] of [ ...database.value.entries() ]) {
     // if (import.meta.env.VITE_DEBUG) console.log('row:', row, 'index:', index);
-    let booleanServices;
-    const selectedServices = MainStore.selectedServices;
     // if (import.meta.env.VITE_DEBUG) console.log('row.services_offered:', row.services_offered);
 
-    if ($config.refine && $config.refine.type && ['multipleFields', 'multipleFieldGroups', 'multipleDependentFieldGroups'].includes($config.refine.type)) {
-      let booleanConditions = [];
-
-      if (selectedServices.length === 0) {
-        booleanConditions.push(true);
-      } else {
-
-        // if refine.type = multipleFields
-        if ($config.refine.type === 'multipleFields') {
-          for (let field in $config.refine.multipleFields) {
-            if (selectedServices.includes(field)) {
-
-              let getter = $config.refine.multipleFields[field];
-              let val = getter(row);
-              booleanConditions.push(val);
-            }
-          }
-        } else if ($config.refine.type === 'multipleFieldGroups') {
-          // if refine.type = multipleFieldGroups
-          let selectedGroups = [];
-          for (let value of selectedServices) {
-            // if (import.meta.env.VITE_DEBUG) console.log('App.vue filterPoints value:', value);
-            let valueGroup;
-            if (value) {
-              valueGroup = value.split('_', 1)[0];
-            }
-            if (valueGroup && !selectedGroups.includes(valueGroup)) {
-              selectedGroups.push(valueGroup)
-            }
-          }
-          // if (import.meta.env.VITE_DEBUG) console.log('App.vue filterPoints is running on multipleFieldGroups, selectedServices:', selectedServices, 'selectedGroups:', selectedGroups);
-          let groupValues = [];
-          for (let group of selectedGroups) {
-            let groupBooleanConditions = [];
-            for (let service of selectedServices) {
-              // if (import.meta.env.VITE_DEBUG) console.log('App.vue filterPoints loop, service:', service);
-              if (group !== 'keyword' && service.split('_', 1)[0] === group && $config.refine.multipleFieldGroups[group]['radio']) {
-                // if (import.meta.env.VITE_DEBUG) console.log('group:', group, '$config.refine.multipleFieldGroups[group]["radio"]:', $config.refine.multipleFieldGroups[group]['radio']);
-                let dependentGroups = $config.refine.multipleFieldGroups[group]['radio'][service.split('_')[1]]['dependentGroups'] || [];
-                // if (import.meta.env.VITE_DEBUG) console.log('dependentGroup:', dependentGroup, 'service.split("_", 1)[0]:', service.split('_', 1)[0], 'service.split("_")[1]:', service.split('_')[1], 'group', group, '$config.refine.multipleFieldsGroups[group]', $config.refine.multipleFieldsGroups[group], '$config.refine.multipleFieldsGroups[group][service.split("_")[1]]:', $config.refine.multipleFieldsGroups[group][service.split('_')[1]]);
-                let getter = $config.refine.multipleFieldGroups[group]['radio'][service.split('_')[1]]['value'];
-                let dependentServices = [];
-                for (let service of selectedServices) {
-                  if (dependentGroups.length && dependentGroups.includes(service.split('_')[0])) {
-                    dependentServices.push(service.split('_')[1]);
-                  }
-                }
-                // if (import.meta.env.VITE_DEBUG) console.log('getter:', getter, 'dependentGroups:', dependentGroups, 'selectedServices:', selectedServices, 'dependentServices:', dependentServices);
-                let val = getter(row, dependentServices);
-                groupBooleanConditions.push(val);
-              }
-              if (group !== 'keyword' && service.split('_', 1)[0] === group && $config.refine.multipleFieldGroups[group]['checkbox']) {
-                // if (import.meta.env.VITE_DEBUG) console.log('group:', group, '$config.refine.multipleFieldGroups[group]["dependent"]:', $config.refine.multipleFieldGroups[group]['dependent']);
-                let dependentGroups = $config.refine.multipleFieldGroups[group]['checkbox'][service.split('_')[1]]['dependentGroups'] || [];
-                // if (import.meta.env.VITE_DEBUG) console.log('dependentGroup:', dependentGroup, 'service.split("_", 1)[0]:', service.split('_', 1)[0], 'service.split("_")[1]:', service.split('_')[1], 'group', group, '$config.refine.multipleFieldsGroups[group]', $config.refine.multipleFieldsGroups[group], '$config.refine.multipleFieldsGroups[group][service.split("_")[1]]:', $config.refine.multipleFieldsGroups[group][service.split('_')[1]]);
-                let getter = $config.refine.multipleFieldGroups[group]['checkbox'][service.split('_')[1]]['value'];
-                let dependentServices = [];
-                for (let service of selectedServices) {
-                  if (dependentGroups.length && dependentGroups.includes(service.split('_')[0])) {
-                    dependentServices.push(service.split('_')[1]);
-                  }
-                }
-                // if (import.meta.env.VITE_DEBUG) console.log('getter:', getter, 'dependentGroups:', dependentGroups, 'selectedServices:', selectedServices, 'dependentServices:', dependentServices);
-                let val = getter(row, dependentServices);
-                groupBooleanConditions.push(val);
-              }
-            }
-            // if (import.meta.env.VITE_DEBUG) console.log('$config.refine.andOr:', $config.refine.andOr, 'group:', group, 'groupBooleanConditions:', groupBooleanConditions);
-            if ($config.refine.andOr) {
-              if ($config.refine.andOr == 'and') {
-                if (groupBooleanConditions.includes(false)) {
-                  booleanConditions.push(false);
-                } else {
-                  booleanConditions.push(true);
-                }
-              } else if ($config.refine.andOr == 'or') {
-                if (groupBooleanConditions.includes(true)) {
-                  booleanConditions.push(true);
-                } else {
-                  booleanConditions.push(false);
-                }
-              }
-            } else {
-              if (groupBooleanConditions.includes(true)) {
-                booleanConditions.push(true);
-              } else if (groupBooleanConditions.length) {
-                booleanConditions.push(false);
-              }
-            }
-          }
-        } else {
-          // if refine.type = multipleDependentFieldGroups
-          let selectedGroups = [];
-          for (let value of selectedServices) {
-            let valueGroup = value.split('_', 1)[0]
-            if (!selectedGroups.includes(valueGroup)) {
-              selectedGroups.push(valueGroup)
-            }
-          }
-          // if (import.meta.env.VITE_DEBUG) console.log('App.vue filterPoints is running on multipleDependentFieldGroups, selectedServices:', selectedServices, 'selectedGroups:', selectedGroups);
-          let groupValues = [];
-          for (let group of selectedGroups) {
-            let groupBooleanConditions = [];
-            for (let service of selectedServices) {
-              if (service.split('_', 1)[0] === group) {
-                let ind = $config.refine.multipleDependentFieldGroups[group]['independent'];
-                let serviceEnd = service.split('_')[1];
-                // if (import.meta.env.VITE_DEBUG) console.log('ind:', ind, 'serviceEnd:', serviceEnd, 'selectedServices:', selectedServices);
-                let getter;
-                if ($config.refine.multipleDependentFieldGroups[group]['dependent'][service.split('_')[1]]) {
-                  getter = $config.refine.multipleDependentFieldGroups[group]['dependent'][service.split('_')[1]]['value'];
-                  let dependentServices = [];
-                  if (ind) {
-                    for (let service of selectedServices) {
-                      if (Object.keys(ind).includes(service.split('_')[1])) {
-                        dependentServices.push(service.split('_')[1]);
-                      }
-                    }
-                  }
-                  let val = getter(row, dependentServices);
-                  // if (import.meta.env.VITE_DEBUG) console.log('getter:', getter, 'selectedServices:', selectedServices, 'dependentServices:', dependentServices, 'val:', val);
-                  groupBooleanConditions.push(val);
-                }
-              }
-            }
-            // if (import.meta.env.VITE_DEBUG) console.log('groupBooleanConditions:', groupBooleanConditions);
-            if (groupBooleanConditions.includes(true) || !groupBooleanConditions.length) {
-              booleanConditions.push(true);
-            } else {
-              booleanConditions.push(false);
-            }
-          }
-        }
-      }
-      // if (import.meta.env.VITE_DEBUG) console.log('booleanConditions:', booleanConditions);
-      if (!booleanConditions.includes(false)) {
-        booleanServices = true
-      }
-
-    // if refine.type = categoryField_value
-    } else if ($config.refine && $config.refine.type === 'categoryField_value') {
-      if (selectedServices.length === 0) {
-        booleanServices = true;
-      } else {
-        let value = $config.refine.value(row);
-        booleanServices = selectedServices.includes(value);
-      }
-
-    } else {
-      // the original default version, or refine.type = 'categoryField_array'
-      // if (import.meta.env.VITE_DEBUG) console.log('in else, row:', row, 'row.services_offered:', row.services_offered);
-      let servicesSplit;
-      if ($config.refine) {
-        servicesSplit = $config.refine.value(row);
-      } else if (row.services_offered) {
-        servicesSplit = row.services_offered;
-      }
-
-      // if (import.meta.env.VITE_DEBUG) console.log('1 servicesSplit:', servicesSplit, 'typeof servicesSplit:', typeof servicesSplit);
-      if (typeof servicesSplit === 'string') {
-        servicesSplit = servicesSplit.split(',');
-      }
-      // if (import.meta.env.VITE_DEBUG) console.log('2 servicesSplit:', servicesSplit, 'typeof servicesSplit:', typeof servicesSplit);
-
-      if (selectedServices.length === 0) {
-        booleanServices = true;
-      } else {
-        let servicesFiltered = [];
-        if (servicesSplit) {
-          servicesFiltered = servicesSplit.filter(f => selectedServices.includes(f));
-        }
-        // if (import.meta.env.VITE_DEBUG) console.log('servicesFiltered:', servicesFiltered, 'selectedServices:', selectedServices);
-        booleanServices = servicesFiltered.length == selectedServices.length;
-      }
-      // if (import.meta.env.VITE_DEBUG) console.log('services else is running, row:', row, 'selectedServices:', selectedServices, 'booleanServices:', booleanServices);
-    }
-
-    // if (import.meta.env.VITE_DEBUG) console.log('about to do buffer stuff, row:', row);
-    let booleanBuffer = false;
-    if (!currentBuffer.value) {
-      // if (import.meta.env.VITE_DEBUG) console.log('!currentBuffer.value');
-      booleanBuffer = true;
-    } else if (row.latlng) {
-      if (import.meta.env.VITE_DEBUG) console.log('row.latlng:', row.latlng);
-      if (import.meta.env.VITE_DEBUG) console.log('buffer else if 1 is running, row:', row, 'booleanBuffer:', booleanBuffer, 'typeof row.latlng[0]:', typeof row.latlng[0], 'MapStore.zipcodeCenter:', MapStore.zipcodeCenter);
-      if (typeof row.latlng[0] === 'number' && row.latlng[0] !== null) {
-        const rowPoint = point([ row.latlng[1], row.latlng[0] ]);
-        let geocodedPoint, options, theDistance;
-        if (GeocodeStore.aisData) {
-          geocodedPoint = point(GeocodeStore.aisData.features[0].geometry.coordinates);
-          options = { units: 'miles' };
-          theDistance = distance(geocodedPoint, rowPoint, options);
-          row.distance = theDistance;
-        } else if (MapStore.zipcodeCenter[0]) {
-          // if (import.meta.env.VITE_DEBUG) console.log('inside zipcode center else if');
-          let zipcodeCenter = point(MapStore.zipcodeCenter);
-          options = { units: 'miles' };
-          theDistance = distance(zipcodeCenter, rowPoint, options);
-          row.distance = theDistance;
-        } //else if (MapStore.watchPositionOn) {
-        //   if (import.meta.env.VITE_DEBUG) console.log('inside watchPositionOn else if');
-        //   geocodedPoint = point([ store.state.map.location.lng, store.state.map.location.lat ]);
-        //   options = { units: 'miles' };
-        //   theDistance = distance(geocodedPoint, rowPoint, options);
-        //   row.distance = theDistance;
-        // }
-        // if (import.meta.env.VITE_DEBUG) console.log('rowPoint:', rowPoint, 'currentBuffer.value:', currentBuffer.value, 'booleanPointInPolygon(rowPoint, currentBuffer.value):', booleanPointInPolygon(rowPoint, currentBuffer.value));
-        if (booleanPointInPolygon(rowPoint, buffer)) {
-          booleanBuffer = true;
-        }
-        // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 1 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
-      } else if (typeof row.latlng[0] === 'string' && row.latlng[0] !== null) {
-        // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 1 ELSE IF');
-        const rowPoint = point([ parseFloat(row.latlng[1]), parseFloat(row.latlng[0]) ]);
-        if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
-          booleanBuffer = true;
-        }
-      }
-    } else if (row.lat && row.lon) {
-      // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 2 is running, row:', row, 'booleanBuffer:', booleanBuffer);
-      if (typeof row.lat === 'number' && typeof row.lon === 'number') {
-        let projection = getProjection(row);
-        let lnglat;
-        if (projection === '3857') {
-          lnglat = proj4(projection3857, projection4326, [ row.lon, row.lat ]);
-        } else if (projection === '2272') {
-          lnglat = proj4(projection2272, projection4326, [ row.lon, row.lat ]);
-        } else {
-          lnglat = [ row.lon, row.lat ];
-        }
-        const rowPoint = point(lnglat);
-        if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
-          booleanBuffer = true;
-        }
-        // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 2 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
-      }
-    } else if (row.geo && row.geo.coordinates) {
-      // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 is running, row:', row, 'booleanBuffer:', booleanBuffer);
-      if (typeof row.geo.coordinates[0] === 'number' && typeof row.geo.coordinates[1] === 'number') {
-        let projection = getProjection(row);
-        let lnglat;
-        if (projection === '3857') {
-          lnglat = proj4(projection3857, projection4326, [ row.geo.coordinates[0], row.geo.coordinates[1] ]);
-        } else if (projection === '2272') {
-          lnglat = proj4(projection2272, projection4326, [ row.geo.coordinates[0], row.geo.coordinates[1] ]);
-        } else {
-          lnglat = [ row.geo.coordinates[0], row.geo.coordinates[1] ];
-        }
-        const rowPoint = point(lnglat);
-
-        let geocodedPoint, options, theDistance;
-        if (GeocodeStore.aisData) {
-          geocodedPoint = point(GeocodeStore.aisData.features[0].geometry.coordinates);
-          options = { units: 'miles' };
-          theDistance = distance(geocodedPoint, rowPoint, options);
-          row.distance = theDistance;
-        } else if (MapStore.zipcodeCenter[0]) {
-          // if (import.meta.env.VITE_DEBUG) console.log('inside zipcode center else if');
-          let zipcodeCenter = point(MapStore.zipcodeCenter);
-          options = { units: 'miles' };
-          theDistance = distance(zipcodeCenter, rowPoint, options);
-          row.distance = theDistance;
-        }
-
-        if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
-          booleanBuffer = true;
-        }
-        // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
-      }
-    } else if (row.geometry && row.geometry.x) {
-      // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 is running, row:', row, 'booleanBuffer:', booleanBuffer);
-      if (typeof row.geometry.x === 'number' && typeof row.geometry.y === 'number') {
-        let projection = getProjection(row);
-        let lnglat;
-        if (projection === '3857') {
-          lnglat = proj4(projection3857, projection4326, [ row.geometry.x, row.geometry.y ]);
-        } else if (projection === '2272') {
-          lnglat = proj4(projection2272, projection4326, [ row.geometry.x, row.geometry.y ]);
-        } else {
-          lnglat = [ row.geometry.x, row.geometry.y ];
-        }
-        const rowPoint = point(lnglat);
-
-        let geocodedPoint, options, theDistance;
-        if (GeocodeStore.aisData) {
-          geocodedPoint = point(GeocodeStore.aisData.features[0].geometry.coordinates);
-          options = { units: 'miles' };
-          theDistance = distance(geocodedPoint, rowPoint, options);
-          row.distance = theDistance;
-        } else if (MapStore.zipcodeCenter[0]) {
-          // if (import.meta.env.VITE_DEBUG) console.log('inside zipcode center else if');
-          let zipcodeCenter = point(MapStore.zipcodeCenter);
-          options = { units: 'miles' };
-          theDistance = distance(zipcodeCenter, rowPoint, options);
-          row.distance = theDistance;
-        }
-
-        if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
-          booleanBuffer = true;
-        }
-        // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
-      }
-    } else {
-      // if (import.meta.env.VITE_DEBUG) console.log('neither ran');
-      // booleanBuffer = true;
-    }
-
+    let booleanBuffer = true;
     let booleanKeywords = true;
-    // if (import.meta.env.VITE_DEBUG) console.log('row:', row, '$config.tags', $config.tags, 'selectedKeywords.value:', selectedKeywords.value, 'selectedKeywords.value.length:', selectedKeywords.value.length);
-    if (selectedKeywords.value.length > 0) {
-      booleanKeywords = false;
-      let description = [];
-      if (Array.isArray(row.tags)) {
-        description = row.tags;
-      } else if (row.tags) {
-        description = row.tags.split(', ');
-      } else if ($config.tags && $config.tags.type == 'tagLocation') {
-        if (Array.isArray($config.tags.location(row))) {
-          description = $config.tags.location(row);
-        } else if ($config.tags.location(row)) {
-          description = $config.tags.location(row).split(', ');
-        }
-      } else if ($config.tags && $config.tags.type == 'fieldValues') {
-        for (let tag of $config.tags.tags) {
-          // if (import.meta.env.VITE_DEBUG) console.log('tag:', tag, 'tag.field:', tag.field, 'row.attributes[tag.field]:', row.attributes[tag.field]);
-          if (tag.type == 'boolean' && row.attributes[tag.field] == 'Yes') {
-            description.push(tag.value);
-          } else if (tag.type == 'value' && row.attributes[tag.field] !== null && row.attributes[tag.field] != ' ') {
-            // if (import.meta.env.VITE_DEBUG) console.log('in else if, row.attributes[tag.field]:', row.attributes[tag.field]);
-            // description.push(row.attributes[tag.field].charAt(0) + row.attributes[tag.field].substring(1).toLowerCase());
-            let value = row.attributes[tag.field].toLowerCase();
-            // if (import.meta.env.VITE_DEBUG) console.log('value.split(","):', value.split(','));
-            description = description.concat(value.split(','));
-          }
-        }
-      }
-      // if (import.meta.env.VITE_DEBUG) console.log('still going, selectedKeywords.value[0]:', selectedKeywords.value[0], 'row.tags:', row.tags, 'description:', description);
 
-      let threshold = 0.2;
-      if ($config.searchBar.fuseThreshold) {
-        threshold = $config.searchBar.fuseThreshold;
-      };
-
-      const options = {
-        // isCaseSensitive: false,
-        // includeScore: false,
-        // shouldSort: true,
-        // includeMatches: false,
-        // findAllMatches: true,
-        minMatchCharLength: 3,
-        location: 0,
-        threshold: threshold,
-        // distance: 100,
-        // useExtendedSearch: false,
-        // ignoreLocation: false,
-        // ignoreFieldNorm: false,
-
-        // keys: [
-        //   "title",
-        //   "author.firstName"
-        // ]
-      };
-
-      const fuse = new Fuse(description, options);
-      let results = {};
-      for (let keyword of selectedKeywords.value) {
-        // if (import.meta.env.VITE_DEBUG) console.log('in selectedKeywords loop, keyword.toString():', keyword.toString(), 'description:', description);//'description[0].split(","):', description[0].split(','));
-        if ($config.skipFuse) {
-          let keywordString = '' + keyword;
-          // if (import.meta.env.VITE_DEBUG) console.log('skipFuse, keywordString:', keywordString);
-          if (description.includes(keywordString)) {
-            // if (import.meta.env.VITE_DEBUG) console.log('19148 is in description');
-            results[keyword] = ['true'];
-          }
-        } else {
-          // if (import.meta.env.VITE_DEBUG) console.log('fuse.search(keyword):', fuse.search(keyword), 'description:', description);
-          results[keyword] = fuse.search(keyword);
-        }
-      }
-      // const result = fuse.search(selectedKeywords.value[0]);
-      // if (import.meta.env.VITE_DEBUG) console.log('App.vue filterPoints booleanKeywords section, result:', result, 'results:', results);
-      // if (result.length > 0) {
-      //   booleanKeywords = true;
-      // }
-      for (let keyword of Object.keys(results)) {
-        if (results[keyword].length > 0) {
-          booleanKeywords = true;
-        }
-      }
+    let booleanServices = checkServices(index, row);
+    if (booleanServices) {
+      booleanBuffer = checkBuffer(row);
+    }
+    if (booleanServices && booleanBuffer) {
+      booleanKeywords = checkKeywords(row);
     }
 
     // if (import.meta.env.VITE_DEBUG) console.log('booleanServices:', booleanServices, 'booleanBuffer:', booleanBuffer, 'booleanKeywords:', booleanKeywords);

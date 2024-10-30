@@ -497,7 +497,12 @@ watch(
     //   return;
     // }
     if (!arraysEqual(nextSelected, lastSelected)) {
-      router.push({ query: { ...route.query, ...{ services: nextSelected.join(',') }}});
+      if (nextSelected.length) {
+        // console.log('RefinePanel watch selectedArray is firing, nextSelected', nextSelected);
+        router.push({ query: { ...route.query, ...{ services: nextSelected.join(',') }}});
+      } else {
+        router.push({ query: { ...route.query }});
+      }
     }
   }
 );
@@ -727,11 +732,11 @@ const closeBox = (box) => {
     selectedList.value[section].splice(boxIndex, 1);
     // $emit('watched-submitted-checkbox-value');
   } else if (selectedList.value['radio_' + section]) {
-    // console.log('1 it\'s there in selectedList WITH radio, box:', box, 'selectedList.value["radio_" + section]:', selectedList.value['radio_' + section]);
+    if (import.meta.env.VITE_DEBUG) console.log('1 it\'s there in selectedList WITH radio, box:', box, 'selectedList.value["radio_" + section]:', selectedList.value['radio_' + section]);
     let test = 'radio_' + section;
     const { [test]: removedProperty, ...exceptBoth } = selectedList.value;
+    console.log('2 exceptBoth:', exceptBoth, 'it\'s there in selectedList WITH radio, box:', box, 'selectedList.value["radio_" + section]:', selectedList.value['radio_' + section]);
     selectedList.value = exceptBoth;
-    // console.log('2 exceptBoth:', exceptBoth, 'it\'s there in selectedList WITH radio, box:', box, 'selectedList.value["radio_" + section]:', selectedList.value['radio_' + section]);
     // $emit('watched-submitted-checkbox-value');
   } else if (selected.value.includes(section)) {
     // console.log('its in the array');
@@ -766,9 +771,12 @@ const clearAll = (e) => {
   // MainStore.currentSearch = null;
   // MapStore.bufferShape = null;
   let startQuery = { ...route.query };
+  if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, startQuery1:', startQuery);
   delete startQuery['address'];
   delete startQuery['zipcode'];
   delete startQuery['keyword'];
+  delete startQuery['services'];
+  if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, startQuery2:', startQuery);
   router.push({ query: { ...startQuery }});
   MapStore.watchPositionOn = false;
   const payload = {
@@ -1804,7 +1812,7 @@ const closeRefinePanel = () => {
 
 .open-close-icon {
   padding-top: 8px;
-  font-size: 26px;
+  font-size: 24px;
 }
 
 </style>

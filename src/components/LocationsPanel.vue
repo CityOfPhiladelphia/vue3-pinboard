@@ -7,7 +7,7 @@ import { useGeocodeStore } from '../stores/GeocodeStore.js';
 import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
-import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
+import { ref, computed, getCurrentInstance, onMounted, watch, onBeforeMount } from 'vue';
 
 // import { Dropdown } from '@phila/phila-ui';
 // import SingleCheckbox from './SingleCheckbox.vue';
@@ -64,9 +64,15 @@ const sortBy = ref('Alphabetically');
 const printCheckboxes = ref([]);
 const selectAllCheckbox = ref(false);
 
+// onBeforeMount(async () => {
+//   if (route.query || !$config.greeting && (!$config.customComps || !$config.customComps.customGreeting)) {
+//     MainStore.shouldShowGreeting = false;
+//   }
+// })
+
 onMounted(async () => {
-  // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue mounted, $config:', $config, 'i18nLocale.value:', i18nLocale.value);
-  if (!$config.greeting && (!$config.customComps || !$config.customComps.customGreeting)) {
+  if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue mounted, $config:', $config, 'i18nLocale.value:', i18nLocale.value, 'route.query:', route.query);
+  if (Object.keys(route.query).length || !$config.greeting && (!$config.customComps || !$config.customComps.customGreeting)) {
     MainStore.shouldShowGreeting = false;
   }
 
@@ -145,8 +151,28 @@ const allowPrint = computed(() => {
 });
 
 const database = computed(() => {
-  return DataStore.sources[DataStore.appType].data.rows || DataStore.sources[DataStore.appType].data.features || DataStore.sources[DataStore.appType].data;
+  let value = {}
+  if (DataStore.sources[DataStore.appType]) {
+    // if (import.meta.env.VITE_DEBUG) console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]);
+    value = DataStore.sources[DataStore.appType].data.rows || DataStore.sources[DataStore.appType].data.features || DataStore.sources[DataStore.appType].data;
+  }
+  return value;
 });
+
+// const database = computed(() => {
+//   console.log('DataStore.appType:', DataStore.appType);
+//   // console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources:', DataStore.sources);
+//   if (DataStore.appType) {
+//     if (DataStore.sources[DataStore.appType].data.rows) {
+//       return DataStore.sources[DataStore.appType].data.rows;
+//     } else if (DataStore.sources[DataStore.appType].data.features) {
+//       return DataStore.sources[DataStore.appType].data.features;
+//     } else if (DataStore.sources[DataStore.appType].data) {
+//       return DataStore.sources[DataStore.appType].data;
+//     }
+//   }
+//   // return DataStore.sources[DataStore.appType].data.rows || DataStore.sources[DataStore.appType].data.features || DataStore.sources[DataStore.appType].data;
+// });
 
 const databaseLength = computed(() => {
   return database.value.length
@@ -445,6 +471,9 @@ const copiedUrl = computed(() => {
   return t('copiedUrl');
 });
 
+const loadingSources = computed(() => {
+  return DataStore.loadingSources;
+});
 
 watch(
   () => i18nLocale,
@@ -460,9 +489,13 @@ watch(
 );
 
 watch(
-  () => searchDistance,
+  () => searchDistance.value,
   async nextSearchDistance => {
+    if (import.meta.env.VITE_DEBUG) console.log('watch searchDistance, nextSearchDistance:', nextSearchDistance, 'parseInt(nextSearchDistance):', parseInt(nextSearchDistance));
     MapStore.searchDistance = parseInt(nextSearchDistance);
+    // if (GeocodeStore.aisData.features) {
+    //   MapStore.fillBufferForAddress();
+    // }
   }
 );
 
@@ -490,16 +523,24 @@ watch(
 );
 
 watch(
-  () => zipcode,
-  async nextZipcode => {
+  () => route.query,
+  async nextRoute => {
+    if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel watch route, nextRoute:', nextRoute);
     MainStore.shouldShowGreeting = false;
   }
-);
+)
+
+// watch(
+//   () => zipcode,
+//   async nextZipcode => {
+//     MainStore.shouldShowGreeting = false;
+//   }
+// );
 
 watch(
   () => geocodeStatus,
   async nextGeocodeStatus => {
-    MainStore.shouldShowGreeting = false;
+    // MainStore.shouldShowGreeting = false;
     if (nextGeocodeStatus == null) {
       sortBy.value = 'Alphabetically';
     } else {
@@ -519,31 +560,31 @@ watch(
   }
 );
 
-watch(
-  () => selectedKeywords,
-  async nextSelectedKeywords => {
-    // if (import.meta.env.VITE_DEBUG) console.log('watch, nextSelectedKeywords:', nextSelectedKeywords);
-    MainStore.shouldShowGreeting = false;
-  }
-);
+// watch(
+//   () => selectedKeywords,
+//   async nextSelectedKeywords => {
+//     // if (import.meta.env.VITE_DEBUG) console.log('watch, nextSelectedKeywords:', nextSelectedKeywords);
+//     MainStore.shouldShowGreeting = false;
+//   }
+// );
 
-watch(
-  () => selectedServices,
-  async nextSelectedServices => {
-    // if (import.meta.env.VITE_DEBUG) console.log('watch, nextSelectedServices:', nextSelectedServices);
-    if (nextSelectedServices.length) {
-      MainStore.shouldShowGreeting = false;
-    }
-  }
-);
+// watch(
+//   () => selectedServices,
+//   async nextSelectedServices => {
+//     // if (import.meta.env.VITE_DEBUG) console.log('watch, nextSelectedServices:', nextSelectedServices);
+//     if (nextSelectedServices.length) {
+//       MainStore.shouldShowGreeting = false;
+//     }
+//   }
+// );
 
-watch(
-  () => selectedResource,
-  async nextselectedResource => {
-    // if (import.meta.env.VITE_DEBUG) console.log('watch, nextselectedResource:', nextselectedResource);
-    MainStore.shouldShowGreeting = false;
-  }
-);
+// watch(
+//   () => selectedResource,
+//   async nextselectedResource => {
+//     // if (import.meta.env.VITE_DEBUG) console.log('watch, nextselectedResource:', nextselectedResource);
+//     MainStore.shouldShowGreeting = false;
+//   }
+// );
 
 
 // METHODS
@@ -665,11 +706,26 @@ const makeValidUrl = (url) => {
         v-if="shouldShowGreeting && hasCustomGreeting"
         @view-list="clickedViewList"
       />
-
+      
     </div>
 
     <div
-      v-if="!shouldShowGreeting && dataStatus === 'success'"
+      v-if="!shouldShowGreeting && loadingSources"
+      class="columns is-vcentered is-align-content-center has-text-centered loading-data"
+    >
+      <!-- Loading Data -->
+      <div class="column">
+        <font-awesome-icon
+          icon="fa-solid fa-spinner"
+          class="fa-6x center-spinner"
+          spin
+        />
+      </div>
+      <!-- <div>Loading Data</div> -->
+    </div>
+
+    <div
+      v-if="!shouldShowGreeting && !loadingSources && dataStatus === 'success'"
       class="summary-and-location-container"
     >
       
@@ -1015,6 +1071,10 @@ const makeValidUrl = (url) => {
 </template>
 
 <style lang="scss">
+
+.loading-data {
+  height: 100%;
+}
 
 .mobile-dropdown-container {
   // margin-left: -10px;

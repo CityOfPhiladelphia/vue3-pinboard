@@ -20,6 +20,7 @@ import '../../assets/mapbox-gl-draw.min.js'
 import '../../assets/maplibre-gl-draw.css';
 import destination from '@turf/destination';
 import { point, polygon, multiPolygon, feature, featureCollection } from '@turf/helpers';
+import centerOfMass from '@turf/center-of-mass';
 import bbox from '@turf/bbox';
 import buffer from '@turf/buffer';
 
@@ -51,16 +52,30 @@ const markerSrc = computed(() => {
 //   return MainStore.publicPath + 'images/camera.png';
 // })
 
+// watch(
+//   () => DataStore.sources[DataStore.appType],
+//   async newData => {
+    
 onMounted(async () => {
-  // if (import.meta.env.VITE_DEBUG) console.log('Map.vue onMounted route.params.topic:', route.params.topic, 'route.params.address:', route.params.address);
+  if (import.meta.env.VITE_DEBUG) console.log('Map.vue onMounted route.params.topic:', route.params.topic, 'route.params.address:', route.params.address);
   
   // create the maplibre map
   let currentTopicMapStyle = 'pwdDrawnMapStyle';
   let zoom = route.params.address ? 17 : 12;
+  // let center;
+  // if (route.query.address) {
+  //   center = GeocodeStore.aisData.features[0].geometry.coordinates;
+  // } else if (route.query.resource) {
+  //   // const dataPoint = DataStore.sources[DataStore.appType].data.features.filter(item => item._featureId == route.query.resource)[0];
+  //   // center = dataPoint.geometry.coordinates;
+  // } else {
+  //   center = $mapConfig.cityCenterCoords;
+  // }
 
   map = new maplibregl.Map({
     container: 'map',
     style: $mapConfig[currentTopicMapStyle],
+    // center: center,
     center: $mapConfig.cityCenterCoords,
     zoom: zoom,
     minZoom: 6,
@@ -68,13 +83,13 @@ onMounted(async () => {
     attributionControl: false,
   });
 
-  if (import.meta.env.VITE_DEBUG) console.log('Map.vue onMounted, DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]);
+  // if (import.meta.env.VITE_DEBUG) console.log('Map.vue onMounted, DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]);
 
   map.on('load', () => {
     let canvas = document.querySelector(".maplibregl-canvas");
     canvas.setAttribute('tabindex', -1);
 
-    if (import.meta.env.VITE_DEBUG) console.log('map on load, map.getSource("resources"):', map.getSource('resources'));
+    // if (import.meta.env.VITE_DEBUG) console.log('map on load, map.getSource("resources"):', map.getSource('resources'));
     if (map.getSource('resources') && DataStore.selectedResource) {
       map.setPaintProperty(
         'resources',
@@ -87,21 +102,27 @@ onMounted(async () => {
         ]
       )
     };
+    // if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 2, DataStore.selectedResource:', DataStore.selectedResource);
     if (DataStore.sources[DataStore.appType]) {
       const dataPoint = DataStore.sources[DataStore.appType].data.features.filter(item => item._featureId == DataStore.selectedResource)[0];
-      // if (import.meta.env.VITE_DEBUG) console.log('dataPoint:', dataPoint);
-      map.setCenter(dataPoint.geometry.coordinates);
-
-      const popup = document.getElementsByClassName('maplibregl-popup');
-      if (popup.length) {
-        popup[0].remove();
+      if (import.meta.env.VITE_DEBUG) console.log('dataPoint:', dataPoint);
+      if (dataPoint) {
+        const popup = document.getElementsByClassName('maplibregl-popup');
+        if (popup.length) {
+          popup[0].remove();
+        }
+        new maplibregl.Popup({ className: 'my-class' })
+          .setLngLat(dataPoint.geometry.coordinates)
+          .setHTML(dataPoint.properties.site_name)
+          .setMaxWidth("300px")
+          .addTo(map);
+        
+        if (!route.query.address) {
+          map.setCenter(dataPoint.geometry.coordinates);
+        }
       }
-      new maplibregl.Popup({ className: 'my-class' })
-        .setLngLat(dataPoint.geometry.coordinates)
-        .setHTML(dataPoint.properties.site_name)
-        .setMaxWidth("300px")
-        .addTo(map);
     }
+    // if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 3, map.getStyle().layers:', map.getStyle().layers);
   })
 
   // add the address marker and camera icon sources
@@ -115,10 +136,11 @@ onMounted(async () => {
 
   // if the L&I topic is selected, and a building footprint is clicked, set the selected building number in the LiStore
   map.on('click', 'resources', (e) => {
+    // if (import.meta.env.VITE_DEBUG) console.log('Map.vue map click event, e:', e);
     MainStore.lastSelectMethod = 'map';
     const feature = e.features[0];
     const properties = e.features[0].properties;
-    if (import.meta.env.VITE_DEBUG == 'true') console.log('click, e:', e, 'feature:', feature, 'properties:', properties);
+    // if (import.meta.env.VITE_DEBUG == 'true') console.log('click, e:', e, 'feature:', feature, 'properties:', properties);
     const selectedResourceId = e.features[0].properties._featureId;
     let query = {...route.query};
     if (import.meta.env.VITE_DEBUG) console.log('Map click query:', query);
@@ -145,60 +167,54 @@ onMounted(async () => {
   map.on('style.load', () => {
     if (import.meta.env.VITE_DEBUG) console.log('Map.vue map style.load event');
   })
-
 });
 
-watch(
-  () => DataStore.selectedResource,
-  async (newSelectedResource, oldSelectedResource) => {
-    if (import.meta.env.VITE_DEBUG) console.log('newSelectedResource:', newSelectedResource, 'oldSelectedResource:', oldSelectedResource);
-    if (oldSelectedResource) {
-      map.setPaintProperty(
-          'resources',
-          'circle-radius',
-          ['match',
-          ['get', '_featureId'],
-          oldSelectedResource,
-          7,
-          7,
-          ]
-        )
-      const popup = document.getElementsByClassName('maplibregl-popup');
-      if (popup.length) {
-        popup[0].remove();
-      }
-    }
-    if (newSelectedResource) {
-      if (map.getSource('resources')) {
-        map.setPaintProperty(
-          'resources',
-          'circle-radius',
-          ['match',
-          ['get', '_featureId'],
-          newSelectedResource,
-          12,
-          7,
-          ]
-        )
-      };
-      if (DataStore.sources[DataStore.appType].data.features) {
-        const dataPoint = DataStore.sources[DataStore.appType].data.features.filter(item => item._featureId == newSelectedResource)[0];
-        if (import.meta.env.VITE_DEBUG) console.log('dataPoint:', dataPoint);
-        if (MainStore.lastSelectMethod == 'row') {
-          map.setCenter(dataPoint.geometry.coordinates);
-        }
-        // map.setZoom(15);
+// const bufferForAddress = computed(() => { 
+//   if (MapStore.bufferForAddress) {
+//     return MapStore.bufferForAddress;
+//   } else {
+//     return [[0,0], [0,1], [1,1], [1,0], [0,0]];
+//   }
+// });
 
-        const popup = document.getElementsByClassName('maplibregl-popup');
-        if (popup.length) {
-          popup[0].remove();
-        }
-        new maplibregl.Popup({ className: 'my-class' })
-          .setLngLat(dataPoint.geometry.coordinates)
-          .setHTML(dataPoint.properties.site_name)
-          .setMaxWidth("300px")
-          .addTo(map);
-      }
+// watch(
+//   () => MapStore.searchDistance,
+//   async () => {
+//     MapStore.fillBufferForAddress();
+//   }
+// )
+
+// watch(
+//   () => searchDistance,
+//   async nextSearchDistance => {
+//     // if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch searchDistance, nextSearchDistance:', nextSearchDistance);
+//     if (lastPinboardSearchMethod.value == 'geocode') {
+//       runBuffer();
+//     // } else if (MapStore.watchPositionOn) {
+//     //   runBuffer({coordinates: [ store.state.map.location.lng, store.state.map.location.lat ]});
+//     } else if (lastPinboardSearchMethod.value == 'zipcode') {
+//       if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch searchDistance and lastPinboardSearchMethod is zipcode');
+//       let nextZipcodeData = zipcodeData.value;
+//       if (nextZipcodeData) {
+//         let geo = {
+//           geometry: {
+//             coordinates: nextZipcodeData.geometry.rings,
+//             type: "Polygon"
+//           },
+//           type: "Feature",
+//         };
+//         runZipcodeBuffer(geo);
+//       }
+//     }
+//   }
+// );
+
+watch(
+  () => MapStore.bufferForAddress,
+  async newBuffer => {
+    // if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue bufferForAddress watch, newBuffer:', newBuffer);
+    if (newBuffer) {
+      map.getSource('buffer').setData(newBuffer);
     }
   }
 )
@@ -206,9 +222,66 @@ watch(
 watch(
   () => DataStore.currentData,
   async newData => {
-    let geojson = featureCollection(newData);
+  let geojson = featureCollection(newData);
     // if (import.meta.env.VITE_DEBUG == 'true') console.log('geojson:', geojson, 'map.getStyle().sources.resources.data:', map.getStyle().sources.resources.data);
-    map.getSource('resources').setData(geojson);
+  map.getSource('resources').setData(geojson);
+
+});
+
+watch(
+  () => DataStore.selectedResource,
+  async (newSelectedResource, oldSelectedResource) => {
+    if (import.meta.env.VITE_DEBUG) console.log('map.isStyleLoaded():', map.isStyleLoaded(), 'newSelectedResource:', newSelectedResource, 'oldSelectedResource:', oldSelectedResource);
+    if (map.isStyleLoaded()) {
+      if (oldSelectedResource) {
+        map.setPaintProperty(
+            'resources',
+            'circle-radius',
+            ['match',
+            ['get', '_featureId'],
+            oldSelectedResource,
+            7,
+            7,
+            ]
+          )
+        const popup = document.getElementsByClassName('maplibregl-popup');
+        if (popup.length) {
+          popup[0].remove();
+        }
+      }
+      if (newSelectedResource) {
+        if (map.getSource('resources')) {
+          map.setPaintProperty(
+            'resources',
+            'circle-radius',
+            ['match',
+            ['get', '_featureId'],
+            newSelectedResource,
+            12,
+            7,
+            ]
+          )
+        };
+        if (DataStore.sources[DataStore.appType].data.features) {
+          const dataPoint = DataStore.sources[DataStore.appType].data.features.filter(item => item._featureId == newSelectedResource)[0];
+          if (import.meta.env.VITE_DEBUG) console.log('dataPoint:', dataPoint);
+          if (MainStore.lastSelectMethod == 'row') {
+            map.setCenter(dataPoint.geometry.coordinates);
+          }
+          // map.setZoom(15);
+
+          const popup = document.getElementsByClassName('maplibregl-popup');
+          if (popup.length) {
+            popup[0].remove();
+          }
+          new maplibregl.Popup({ className: 'my-class' })
+            .setLngLat(dataPoint.geometry.coordinates)
+            .setHTML(dataPoint.properties.site_name)
+            .setMaxWidth("300px")
+            .addTo(map);
+        }
+      }
+    }
   }
 )
 
@@ -219,10 +292,8 @@ watch(
     if (import.meta.env.VITE_DEBUG == 'true') console.log('MapStore aisData watch, newAddress:', newAddress);
     if (newAddress.features && newAddress.features[0].geometry.coordinates.length) {
       const newCoords = newAddress.features[0].geometry.coordinates;
-      // if (MainStore.lastSearchMethod !== 'mapClick') {
       map.setCenter(newCoords);
       map.setZoom(14);
-      // }
       MapStore.currentAddressCoords = newCoords;
   
       const popup = document.getElementsByClassName('maplibregl-popup');
@@ -261,6 +332,34 @@ watch(
   },
   { deep: true }
 )
+
+// watch(
+//   () => zipcodeData,
+//   async nextZipcodeData => {
+//     if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch zipcodeData, nextZipcodeData:', nextZipcodeData);
+//     if (nextZipcodeData) {
+//       if (import.meta.env.VITE_DEBUG) console.log('watch zipcodeData setting currentBuffer to shape');
+//       let geo = {
+//         geometry: {
+//           coordinates: nextZipcodeData.geometry.rings,
+//           type: "Polygon"
+//         },
+//         type: "Feature",
+//       };
+//       runZipcodeFindCenter(geo);
+//       runZipcodeBuffer(geo);
+//     } else {
+//       if (import.meta.env.VITE_DEBUG) console.log('watch zipcodeData setting currentBuffer to null');
+//       currentBuffer.value = null;
+//     }
+//   }
+// );
+
+const runZipcodeFindCenter = (geo) => {
+  let zipcodeCenter = centerOfMass(geo);
+  if (import.meta.env.VITE_DEBUG) console.log('Main.vue runZipcodeFindCenter is running, geo:', geo, 'zipcodeCenter:', zipcodeCenter);
+  MapStore.zipcodeCenter = zipcodeCenter.geometry.coordinates;
+};
 
 const setLabelLayers = (newLabelLayers) => {
   if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue setLabelLayers, newLabelLayers:', newLabelLayers, 'map.getStyle().layers:', map.getStyle().layers);

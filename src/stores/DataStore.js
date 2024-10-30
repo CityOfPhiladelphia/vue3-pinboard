@@ -16,6 +16,7 @@ export const useDataStore = defineStore('DataStore', {
       subsections: {},
       zipcodes: {},
       holidays: {},
+      loadingSources: true,
     };
   },
 
@@ -56,6 +57,7 @@ export const useDataStore = defineStore('DataStore', {
           data.features[i].properties._featureId = appType + '_' + i;
         }
         this.sources[appType] = response;
+        this.loadingSources = false;
       }
     },
     async fillZipcodes() {
@@ -64,7 +66,7 @@ export const useDataStore = defineStore('DataStore', {
         let params = {
           where: '1=1',
           outFields: '*',
-          f: 'pjson',
+          f: 'geojson',
           outSR: 4326,
         };
 

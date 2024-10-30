@@ -48,6 +48,8 @@ const router = createRouter({
 router.afterEach(async (to, from) => {
   const DataStore = useDataStore();
   const MainStore = useMainStore();
+  const MapStore = useMapStore();
+  const GeocodeStore = useGeocodeStore();
   if (import.meta.env.VITE_DEBUG) console.log('router.afterEach to:', to, 'from:', from);
   if (to.query.resource && to.query.resource != from.query.resource) {
     DataStore.selectedResource = to.query.resource;
@@ -56,13 +58,19 @@ router.afterEach(async (to, from) => {
   }
   if (to.query.address && to.query.address != from.query.address) {
     // DataStore.selectedAddress = to.query.address;
-    getGeocodeAndPutInStore(to.query.address);
+    await getGeocodeAndPutInStore(to.query.address);
+    if (import.meta.env.VITE_DEBUG) console.log('router.afterEach is calling MapStore.fillBufferForAddress');
+    MapStore.fillBufferForAddress();
   }
   if (to.query.zipcode && to.query.zipcode != from.query.zipcode) {
     MainStore.selectedZipcode = to.query.zipcode;
   }
-  if (to.query.services && to.query.services != from.query.services) {
-    MainStore.selectedServices = to.query.services.split(',');
+  if (to.query.services != from.query.services) {
+    if (to.query.services && to.query.services.length) {
+      MainStore.selectedServices = to.query.services.split(',');
+    } else {
+      MainStore.selectedServices = [];
+    }
   }
   // DataStore.latestSelectedResourceFromExpand = selectedResource;
 });
