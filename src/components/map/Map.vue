@@ -9,7 +9,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
 
 import $mapConfig from '../../mapConfig';
-if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue $mapConfig:', $mapConfig);
+if (import.meta.env.VITE_DEBUG) console.log('Map.vue $mapConfig:', $mapConfig);
 
 // PACKAGE IMPORTS
 import maplibregl from 'maplibre-gl';
@@ -52,30 +52,16 @@ const markerSrc = computed(() => {
 //   return MainStore.publicPath + 'images/camera.png';
 // })
 
-// watch(
-//   () => DataStore.sources[DataStore.appType],
-//   async newData => {
-    
 onMounted(async () => {
   if (import.meta.env.VITE_DEBUG) console.log('Map.vue onMounted route.params.topic:', route.params.topic, 'route.params.address:', route.params.address);
   
   // create the maplibre map
   let currentTopicMapStyle = 'pwdDrawnMapStyle';
   let zoom = route.params.address ? 17 : 12;
-  // let center;
-  // if (route.query.address) {
-  //   center = GeocodeStore.aisData.features[0].geometry.coordinates;
-  // } else if (route.query.resource) {
-  //   // const dataPoint = DataStore.sources[DataStore.appType].data.features.filter(item => item._featureId == route.query.resource)[0];
-  //   // center = dataPoint.geometry.coordinates;
-  // } else {
-  //   center = $mapConfig.cityCenterCoords;
-  // }
 
   map = new maplibregl.Map({
     container: 'map',
     style: $mapConfig[currentTopicMapStyle],
-    // center: center,
     center: $mapConfig.cityCenterCoords,
     zoom: zoom,
     minZoom: 6,
@@ -121,6 +107,18 @@ onMounted(async () => {
           map.setCenter(dataPoint.geometry.coordinates);
         }
       }
+    }
+
+    if (Object.keys(MapStore.bufferForAddressOrZipcode).length) {
+      map.getSource('buffer').setData(MapStore.bufferForAddressOrZipcode);
+    }
+    if (DataStore.zipcodes && MainStore.selectedZipcode) {
+
+      if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 3, DataStore.zipcodes:', DataStore.zipcodes, 'MainStore.selectedZipcode:', MainStore.selectedZipcode);
+      const zipcodeData = DataStore.zipcodes.features.filter(item => item.properties.CODE == MainStore.selectedZipcode)[0];
+      map.getSource('zipcode').setData(zipcodeData);
+      const center = centerOfMass(zipcodeData);
+      map.setCenter(center.geometry.coordinates);
     }
     // if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 3, map.getStyle().layers:', map.getStyle().layers);
   })
@@ -169,50 +167,17 @@ onMounted(async () => {
   })
 });
 
-// const bufferForAddress = computed(() => { 
-//   if (MapStore.bufferForAddress) {
-//     return MapStore.bufferForAddress;
-//   } else {
-//     return [[0,0], [0,1], [1,1], [1,0], [0,0]];
-//   }
-// });
-
-// watch(
-//   () => MapStore.searchDistance,
-//   async () => {
-//     MapStore.fillBufferForAddress();
-//   }
-// )
-
-// watch(
-//   () => searchDistance,
-//   async nextSearchDistance => {
-//     // if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch searchDistance, nextSearchDistance:', nextSearchDistance);
-//     if (lastPinboardSearchMethod.value == 'geocode') {
-//       runBuffer();
-//     // } else if (MapStore.watchPositionOn) {
-//     //   runBuffer({coordinates: [ store.state.map.location.lng, store.state.map.location.lat ]});
-//     } else if (lastPinboardSearchMethod.value == 'zipcode') {
-//       if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch searchDistance and lastPinboardSearchMethod is zipcode');
-//       let nextZipcodeData = zipcodeData.value;
-//       if (nextZipcodeData) {
-//         let geo = {
-//           geometry: {
-//             coordinates: nextZipcodeData.geometry.rings,
-//             type: "Polygon"
-//           },
-//           type: "Feature",
-//         };
-//         runZipcodeBuffer(geo);
-//       }
-//     }
-//   }
-// );
+watch(
+  () => MapStore.searchDistance,
+  async () => {
+    MapStore.fillBufferForAddressOrZipcode();
+  }
+)
 
 watch(
-  () => MapStore.bufferForAddress,
+  () => MapStore.bufferForAddressOrZipcode,
   async newBuffer => {
-    // if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue bufferForAddress watch, newBuffer:', newBuffer);
+    if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue bufferForAddressOrZipcode watch, newBuffer:', newBuffer);
     if (newBuffer) {
       map.getSource('buffer').setData(newBuffer);
     }
@@ -323,59 +288,72 @@ watch(
   }
 });
 
-const labelLayers = computed(() => { return MapStore.labelLayers; });
-
-watch(
-  () => labelLayers,
-  (newLabelLayers) => {
-    setLabelLayers(newLabelLayers.value);
-  },
-  { deep: true }
-)
+// const labelLayers = computed(() => { return MapStore.labelLayers; });
 
 // watch(
-//   () => zipcodeData,
-//   async nextZipcodeData => {
-//     if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch zipcodeData, nextZipcodeData:', nextZipcodeData);
-//     if (nextZipcodeData) {
-//       if (import.meta.env.VITE_DEBUG) console.log('watch zipcodeData setting currentBuffer to shape');
-//       let geo = {
-//         geometry: {
-//           coordinates: nextZipcodeData.geometry.rings,
-//           type: "Polygon"
-//         },
-//         type: "Feature",
-//       };
-//       runZipcodeFindCenter(geo);
-//       runZipcodeBuffer(geo);
-//     } else {
-//       if (import.meta.env.VITE_DEBUG) console.log('watch zipcodeData setting currentBuffer to null');
-//       currentBuffer.value = null;
-//     }
-//   }
-// );
+//   () => labelLayers,
+//   (newLabelLayers) => {
+//     setLabelLayers(newLabelLayers.value);
+//   },
+//   { deep: true }
+// )
 
-const runZipcodeFindCenter = (geo) => {
-  let zipcodeCenter = centerOfMass(geo);
-  if (import.meta.env.VITE_DEBUG) console.log('Main.vue runZipcodeFindCenter is running, geo:', geo, 'zipcodeCenter:', zipcodeCenter);
-  MapStore.zipcodeCenter = zipcodeCenter.geometry.coordinates;
-};
+const selectedZipcode = computed(() => {
+  return MainStore.selectedZipcode;
+});
 
-const setLabelLayers = (newLabelLayers) => {
-  if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue setLabelLayers, newLabelLayers:', newLabelLayers, 'map.getStyle().layers:', map.getStyle().layers);
-    if (newLabelLayers.length) {
-      newLabelLayers.forEach(layer => {
-        if (!map.getSource(layer.id)) {
-          // if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue setLabelLayers, NOT THERE, layer:', layer, 'layer.id:', layer.id, 'JSON.parse(JSON.stringify(layer.source)):', JSON.parse(JSON.stringify(layer.source)));
-          map.addSource(layer.id, JSON.parse(JSON.stringify(layer.source)));
-        } else {
-          // if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue setLabelLayers, YES THERE, layer:', layer, 'layer.id:', layer.id, 'JSON.parse(JSON.stringify(layer.source)):', JSON.parse(JSON.stringify(layer.source)));
-          map.getSource(layer.id).setData(layer.source.data);
-        }
-      })
+const zipcodeData = computed(() => {
+  let zipcode;
+  if (DataStore.zipcodes.features) {
+    let zipcodesData = DataStore.zipcodes;
+    let theSelectedZipcode = selectedZipcode.value;
+    if (zipcodesData && selectedZipcode) {
+      zipcode = zipcodesData.features.filter(item => item.properties.CODE == theSelectedZipcode)[0];
     }
-    // if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue setLabelLayers, map.getStyle:', map.getStyle(), 'map.getStyle().layers:', map.getStyle().layers, 'map.getStyle().sources:', map.getStyle().sources);
-}
+  }
+  return zipcode;
+});
+
+watch(
+  () => zipcodeData.value,
+  async newZipcodeData => {
+    map.getSource('zipcode').setData(newZipcodeData);
+  }
+)
+
+const zipcodeCenter = computed(() => {
+  let center;
+  if (zipcodeData.value) {
+    center = centerOfMass(zipcodeData.value);
+  }
+  return center;
+});
+
+watch(
+  () => zipcodeCenter.value,
+  async newZipcodeCenter => {
+    if (import.meta.env.VITE_DEBUG) console.log('Map.vue zipcodeCenter watch, newZipcodeCenter:', newZipcodeCenter);
+    if (newZipcodeCenter) {
+      map.setCenter(newZipcodeCenter.geometry.coordinates);
+    }
+  }
+)
+
+// const setLabelLayers = (newLabelLayers) => {
+//   if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue setLabelLayers, newLabelLayers:', newLabelLayers, 'map.getStyle().layers:', map.getStyle().layers);
+//     if (newLabelLayers.length) {
+//       newLabelLayers.forEach(layer => {
+//         if (!map.getSource(layer.id)) {
+//           // if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue setLabelLayers, NOT THERE, layer:', layer, 'layer.id:', layer.id, 'JSON.parse(JSON.stringify(layer.source)):', JSON.parse(JSON.stringify(layer.source)));
+//           map.addSource(layer.id, JSON.parse(JSON.stringify(layer.source)));
+//         } else {
+//           // if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue setLabelLayers, YES THERE, layer:', layer, 'layer.id:', layer.id, 'JSON.parse(JSON.stringify(layer.source)):', JSON.parse(JSON.stringify(layer.source)));
+//           map.getSource(layer.id).setData(layer.source.data);
+//         }
+//       })
+//     }
+//     // if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue setLabelLayers, map.getStyle:', map.getStyle(), 'map.getStyle().layers:', map.getStyle().layers, 'map.getStyle().sources:', map.getStyle().sources);
+// }
 
 </script>
 

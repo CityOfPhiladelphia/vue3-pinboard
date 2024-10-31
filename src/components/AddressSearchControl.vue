@@ -1,9 +1,9 @@
 <script setup>
 
 import { useMainStore } from '../stores/MainStore.js';
-import { useMapStore } from '../stores/MapStore.js';
-import { useGeocodeStore } from '../stores/GeocodeStore.js';
-import { useDataStore } from '../stores/DataStore.js';
+// import { useMapStore } from '../stores/MapStore.js';
+// import { useGeocodeStore } from '../stores/GeocodeStore.js';
+// import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
 import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
@@ -12,7 +12,7 @@ const ConfigStore = useConfigStore();
 const $config = ConfigStore.config;
 
 const MainStore = useMainStore();
-const MapStore = useMapStore();
+// const MapStore = useMapStore();
 
 const router = useRouter();
 const route = useRoute();
@@ -37,17 +37,16 @@ const yPosition = computed(() => {
   return '10px';
 });
 
-const setRoute = (input) => {
-  let query = {...route.query};
-  if (import.meta.env.VITE_DEBUG) console.log('query:', query);
-  query.address = address;
-  router.push({ name: 'home', query });
-}
+// const setRoute = (input) => {
+//   let query = {...route.query};
+//   if (import.meta.env.VITE_DEBUG) console.log('query:', query);
+//   query.address = address;
+//   router.push({ name: 'home', query });
+// }
 
 const handleSubmit = (val) => {
   if (import.meta.env.VITE_DEBUG) console.log('handleSubmit is running, val:', val);
   let query;
-  // let searchBarType;
   let valAsFloat = parseFloat(val.substring(0));
   let valToString = valAsFloat.toString();
   let checkVals = val === valToString;
@@ -81,38 +80,22 @@ const handleSubmit = (val) => {
         val = startKeyword + ',' + val;
       }
       query = { ...startQuery, ...{ 'keyword': val }};
-      // this.searchBarType = 'keyword';
-      // searchBarType = 'keyword';
     }
   } else if (checkVals) {
     if (import.meta.env.VITE_DEBUG) console.log('its a zipcode');
     if ($config.allowZipcodeSearch) {
-
-      MapStore.watchPositionOn = false;
+      // MapStore.watchPositionOn = false;
       MainStore.lastPinboardSearchMethod = 'zipcode';
       query = { 'zipcode': val };
-      // this.searchBarType = 'zipcode';
-      // searchBarType = 'zipcode';
     } else if ($config.allowZipcodeInDataSearch) {
-      // query = { 'zipcode': val };
-      // this.searchBarType = 'zipcode';
-      // searchBarType = 'zipcode';
-
-      MapStore.watchPositionOn = false;
+      // MapStore.watchPositionOn = false;
       MainStore.lastPinboardSearchMethod = 'zipcodeKeyword';
-
-      clearGeocodeAndZipcode();
-      MapStore.bufferShape = null;
-      currentBuffer = null;
-      
       let startKeyword;
       if (startQuery['keyword'] && startQuery['keyword'] != '') {
         startKeyword = startQuery['keyword'];
         val = startKeyword + ',' + val;
       }
       query = { ...startQuery, ...{ 'keyword': val }};
-      // this.searchBarType = 'keyword';
-      // searchBarType = 'keyword';
     }
   } else {
     if (import.meta.env.VITE_DEBUG) console.log('its an address');
@@ -122,20 +105,15 @@ const handleSubmit = (val) => {
       delete startQuery['keyword'];
       MainStore.selectedKeywords = [];
     }
-
-    MapStore.watchPositionOn = false;
-
-    query = { ...startQuery, ...{ 'address': val }};
+    // MapStore.watchPositionOn = false;
+    query = { 'address': val };
     MainStore.lastPinboardSearchMethod = 'geocode';
-    // this.searchBarType = 'address';
-    // searchBarType = 'address';
   }
   delete startQuery['address'];
   delete startQuery['keyword'];
   delete startQuery['zipcode'];
   if (import.meta.env.VITE_DEBUG) console.log('handleSubmit is running, valAsFloat:', valAsFloat, 'startQuery:', startQuery, 'route.query:', route.query, 'query:', query, 'val:', val, 'val.substring(0, 1):', val.substring(0, 1));
   router.push({ query: { ...startQuery, ...query }});
-  // searchString = query[this.searchBarType];
   const searchCategory = Object.keys(query)[0];
   const value = query[searchCategory];
   // $gtag.event(searchBarType + '-search', {
@@ -143,11 +121,6 @@ const handleSubmit = (val) => {
   //   'event_label': value,
   // })
   MainStore.currentSearch = value;
-  MapStore.zipcodeCenter = [];
-
-  // if (store.state.shouldShowGreeting && !isMobile.value) {
-  //   store.commit('setRefineOpen', true);
-  // }
 };
 
 </script>

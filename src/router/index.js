@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import App from '../App.vue';
+// import App from '../App.vue';
 import Main from '../views/Main.vue';
 
 import { useMainStore } from '../stores/MainStore.js';
@@ -35,7 +35,16 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: Main
+      component: Main,
+      beforeEnter: async (to, from) => {
+        if (import.meta.env.VITE_DEBUG) console.log('router beforeEnter is running to:', to, 'from:', from);
+        const DataStore = useDataStore();
+        // await DataStore.fillAppType();
+        // await DataStore.fillResources();
+        // await DataStore.fillHolidays();
+        await DataStore.fillZipcodes();
+        if (import.meta.env.VITE_DEBUG) console.log('router beforeEnter is running, DataStore.zipcodes:', DataStore.zipcodes);
+      }
     },
     {
       path: '/not-found',
@@ -57,13 +66,14 @@ router.afterEach(async (to, from) => {
     DataStore.selectedResource = null;
   }
   if (to.query.address && to.query.address != from.query.address) {
-    // DataStore.selectedAddress = to.query.address;
     await getGeocodeAndPutInStore(to.query.address);
-    if (import.meta.env.VITE_DEBUG) console.log('router.afterEach is calling MapStore.fillBufferForAddress');
-    MapStore.fillBufferForAddress();
+    // if (import.meta.env.VITE_DEBUG) console.log('router.afterEach is calling MapStore.fillBufferForAddressOrZipcode');
+    MapStore.fillBufferForAddressOrZipcode();
   }
   if (to.query.zipcode && to.query.zipcode != from.query.zipcode) {
+    if (import.meta.env.VITE_DEBUG) console.log('router.afterEach has zipcode and is calling MapStore.fillBufferForAddressOrZipcode');
     MainStore.selectedZipcode = to.query.zipcode;
+    MapStore.fillBufferForAddressOrZipcode();
   }
   if (to.query.services != from.query.services) {
     if (to.query.services && to.query.services.length) {

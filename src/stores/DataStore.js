@@ -30,10 +30,10 @@ export const useDataStore = defineStore('DataStore', {
       const appType = ConfigStore.config.app.type;
       const data = ConfigStore.config.dataSources[appType];
       const params = data.options.params;
-      if (import.meta.env.VITE_DEBUG) console.log('data:', data, 'params:', params);
       const response = await axios.get(data.url, { params });
       if (response.status === 200) {
         let data = await response.data;
+        if (import.meta.env.VITE_DEBUG) console.log('data:', data, 'params:', params);
 
         // if (this.$config.hiddenRefine) {
         //   for (let field in this.$config.hiddenRefine) {
@@ -58,6 +58,7 @@ export const useDataStore = defineStore('DataStore', {
         }
         this.sources[appType] = response;
         this.loadingSources = false;
+        return;
       }
     },
     async fillZipcodes() {
@@ -74,6 +75,8 @@ export const useDataStore = defineStore('DataStore', {
         if (response.status === 200) {
           let data = await response.data;
           this.zipcodes = data;
+          if (import.meta.env.VITE_DEBUG) console.log('fillZipcodes complete, data:', data);
+          return;
           // this.loadingRcos = false;
         } else {
           // this.loadingRcos = false;

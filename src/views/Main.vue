@@ -25,7 +25,7 @@ const { t } = useI18n();
 
 import { point } from '@turf/helpers';
 import buffer from '@turf/buffer';
-import centerOfMass from '@turf/center-of-mass';
+// import centerOfMass from '@turf/center-of-mass';
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import distance from '@turf/distance';
 import AlertBanner from '../components/AlertBanner.vue';
@@ -70,7 +70,6 @@ const brandingLink = ref(null);
 // });
 const searchString = ref(null);
 const refineEnabled = ref(true);
-const searchBarType = ref('address');
 const addressInputPlaceholder = ref(null);
 const submittedCheckboxValue = ref(null);
 const showForceHolidayBanner = ref(false);
@@ -81,11 +80,11 @@ const showAutomaticHolidayBanner = ref(false);
 // root.setAttribute( 'class', 'invisible-scrollbar' );
 
 // if (import.meta.env.VITE_DEBUG) console.log('Pinboard Main.vue created, $config:', $config);
-if ($config.map) {
-  if ($config.map.shouldInitialize === false) {
-    MapStore.shouldInitialize = false
-  }
-}
+// if ($config.map) {
+//   if ($config.map.shouldInitialize === false) {
+//     MapStore.shouldInitialize = false
+//   }
+// }
 
 if ($config.app.logoSrc) {
   brandingImage.value = {
@@ -143,21 +142,21 @@ const printCheckboxes = computed(() => {
   return MainStore.printCheckboxes;
 });
 
-const selectedZipcode = computed(() => {
-  return MainStore.selectedZipcode;
-});
+// const selectedZipcode = computed(() => {
+//   return MainStore.selectedZipcode;
+// });
 
-const zipcodeData = computed(() => {
-  let zipcode;
-  if (DataStore.zipcodes.features) {
-    let zipcodesData = DataStore.zipcodes;
-    let theSelectedZipcode = selectedZipcode.value;
-    if (zipcodesData && selectedZipcode) {
-      zipcode = zipcodesData.features.filter(item => item.properties.CODE == theSelectedZipcode)[0];
-    }
-  }
-  return zipcode;
-});
+// const zipcodeData = computed(() => {
+//   let zipcode;
+//   if (DataStore.zipcodes.features) {
+//     let zipcodesData = DataStore.zipcodes;
+//     let theSelectedZipcode = selectedZipcode.value;
+//     if (zipcodesData && selectedZipcode) {
+//       zipcode = zipcodesData.features.filter(item => item.properties.CODE == theSelectedZipcode)[0];
+//     }
+//   }
+//   return zipcode;
+// });
 
 const refineTitle = computed(() => {
   return $config.refine.title;
@@ -433,23 +432,23 @@ const selectedResource = computed(() => {
   return DataStore.selectedResource;
 });
 
-const sourcesWatched = computed(() => {
-  let sources = Object.keys(DataStore.sources);
-  const index = sources.indexOf('compiled');
-  if (index > -1) {
-    sources.splice(index, 1);
+// const sourcesWatched = computed(() => {
+//   let sources = Object.keys(DataStore.sources);
+//   const index = sources.indexOf('compiled');
+//   if (index > -1) {
+//     sources.splice(index, 1);
 
-    // let sourcesWatched = [];
-    let sourcesWatched = {};
+//     // let sourcesWatched = [];
+//     let sourcesWatched = {};
 
-    for (let source of sources) {
-      sourcesWatched[source] = DataStore.sources[source].data;
-    }
-    return sourcesWatched;
-  } else {
-    return null
-  }
-});
+//     for (let source of sources) {
+//       sourcesWatched[source] = DataStore.sources[source].data;
+//     }
+//     return sourcesWatched;
+//   } else {
+//     return null
+//   }
+// });
 
 const layoutDescription = computed(() => {
   let value;
@@ -625,52 +624,52 @@ watch(
   }
 );
 
-watch(
-  () => searchDistance.value,
-  async nextSearchDistance => {
-    // if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch searchDistance, nextSearchDistance:', nextSearchDistance);
-    if (lastPinboardSearchMethod.value == 'geocode') {
-      runBuffer();
-    // } else if (MapStore.watchPositionOn) {
-    //   runBuffer({coordinates: [ store.state.map.location.lng, store.state.map.location.lat ]});
-    } else if (lastPinboardSearchMethod.value == 'zipcode') {
-      if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch searchDistance and lastPinboardSearchMethod is zipcode');
-      let nextZipcodeData = zipcodeData.value;
-      if (nextZipcodeData) {
-        let geo = {
-          geometry: {
-            coordinates: nextZipcodeData.geometry.rings,
-            type: "Polygon"
-          },
-          type: "Feature",
-        };
-        runZipcodeBuffer(geo);
-      }
-    }
-  }
-);
+// watch(
+//   () => searchDistance.value,
+//   async nextSearchDistance => {
+//     // if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch searchDistance, nextSearchDistance:', nextSearchDistance);
+//     if (lastPinboardSearchMethod.value == 'geocode') {
+//       runBuffer();
+//     // } else if (MapStore.watchPositionOn) {
+//     //   runBuffer({coordinates: [ store.state.map.location.lng, store.state.map.location.lat ]});
+//     } else if (lastPinboardSearchMethod.value == 'zipcode') {
+//       if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch searchDistance and lastPinboardSearchMethod is zipcode');
+//       let nextZipcodeData = zipcodeData.value;
+//       if (nextZipcodeData) {
+//         let geo = {
+//           geometry: {
+//             coordinates: nextZipcodeData.geometry.rings,
+//             type: "Polygon"
+//           },
+//           type: "Feature",
+//         };
+//         runZipcodeBuffer(geo);
+//       }
+//     }
+//   }
+// );
 
-watch(
-  () => zipcodeData,
-  async nextZipcodeData => {
-    if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch zipcodeData, nextZipcodeData:', nextZipcodeData);
-    if (nextZipcodeData) {
-      if (import.meta.env.VITE_DEBUG) console.log('watch zipcodeData setting currentBuffer to shape');
-      let geo = {
-        geometry: {
-          coordinates: nextZipcodeData.geometry.rings,
-          type: "Polygon"
-        },
-        type: "Feature",
-      };
-      runZipcodeFindCenter(geo);
-      runZipcodeBuffer(geo);
-    } else {
-      if (import.meta.env.VITE_DEBUG) console.log('watch zipcodeData setting currentBuffer to null');
-      currentBuffer.value = null;
-    }
-  }
-);
+// watch(
+//   () => zipcodeData,
+//   async nextZipcodeData => {
+//     if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch zipcodeData, nextZipcodeData:', nextZipcodeData);
+//     if (nextZipcodeData) {
+//       if (import.meta.env.VITE_DEBUG) console.log('watch zipcodeData setting currentBuffer to shape');
+//       let geo = {
+//         geometry: {
+//           coordinates: nextZipcodeData.geometry.rings,
+//           type: "Polygon"
+//         },
+//         type: "Feature",
+//       };
+//       runZipcodeFindCenter(geo);
+//       runZipcodeBuffer(geo);
+//     } else {
+//       if (import.meta.env.VITE_DEBUG) console.log('watch zipcodeData setting currentBuffer to null');
+//       currentBuffer.value = null;
+//     }
+//   }
+// );
 
 watch(
   () => i18nLocale,
@@ -742,24 +741,6 @@ watch(
   }
 );
 
-// this seems unnecessary because it will now follow the router, instead of set it
-// watch(
-//   () => selectedResource,
-//   async nextselectedResource => {
-//     let startQuery = { ...route.query };
-//     if (import.meta.env.VITE_DEBUG) console.log('watch selectedResource fired, startQuery:', startQuery, 'nextselectedResource:', nextselectedResource, 'nextselectedResource.length:', nextselectedResource.length);
-
-//     delete startQuery['resource'];
-
-//     if (nextselectedResource) {
-//       let query = { 'resource': nextselectedResource };
-//       router.push({ query: { ...startQuery, ...query }});
-//     } else {
-//       router.push({ query: { ...startQuery }});
-//     }
-//   }
-// );
-
 watch(
   () => selectedKeywords,
   async => {
@@ -779,12 +760,6 @@ watch(
   }
 );
 
-// onBeforeMount(async () => {
-//   if (route.query || !$config.greeting && (!$config.customComps || !$config.customComps.customGreeting)) {
-//     MainStore.shouldShowGreeting = false;
-//   }
-// })
-
 onMounted(async () => {
   let body = document.body;
   body.classList.remove('print-view');
@@ -794,7 +769,6 @@ onMounted(async () => {
   // if (import.meta.env.VITE_DEBUG) console.log('in Main.vue onMounted, $config:', $config, 'window.location.href:', window.location.href);
   $config.searchBar.searchTypes.forEach(item => {
     if (route.query[item]) {
-      // if (import.meta.env.VITE_DEBUG) console.log('App.vue mounted item:', item, 'searchBarType:', searchBarType);
       searchString.value = route.query[item];
     }
   });
@@ -933,128 +907,23 @@ const clearBadAddress = () => {
   MainStore.currentSearch = null;
 };
 
-const geocodeFailed = () => {
-  if (import.meta.env.VITE_DEBUG) console.log('geocodeFailed is running');
-  MapStore.bufferShape = null;
-};
-
-const compareArrays = (arr1, arr2) => {
-  const finalArray = [];
-  arr1.forEach((e1) => arr2.forEach((e2) =>
-    {
-      if (e1 === e2) {
-        finalArray.push(e1);
-      }
-    }
-  ));
-  return finalArray;
-};
-
-// const handleSubmit = (val) => {
-//   let query;
-//   // let searchBarType;
-//   let valAsFloat = parseFloat(val.substring(0));
-//   let valToString = valAsFloat.toString();
-//   let checkVals = val === valToString;
-//   if (import.meta.env.VITE_DEBUG) console.log('handleSubmit 1, val.substring(0):', val.substring(0), 'valAsFloat:', valAsFloat, 'checkVals:', checkVals, '$config.searchBar.searchTypes:', $config.searchBar.searchTypes);
-  
-//   let startQuery = { ...route.query };
-  
-//   if (isNaN(valAsFloat)) {
-//     if (!$config.searchBar.searchTypes.includes('keyword')) {
-//       if (import.meta.env.VITE_DEBUG) console.log('cannot search keywords');
-//       this.$warning(`Please search an address`, {
-//         duration: 4000,
-//         closeOnClick: true,
-//       });
-//       return;
-//     } else {
-//       if (import.meta.env.VITE_DEBUG) console.log('in handleSubmit, checking checkboxText');
-//       if (checkboxText.value.includes(val.toLowerCase())) {
-//         if (import.meta.env.VITE_DEBUG) console.log('in handleSubmit, checking checkboxText - its there');
-//         // alert('There is already a checkbox or radio button for that search term');
-//         submittedCheckboxValue.value = val;
-//         if (MainStore.shouldShowGreeting && !isMobile.value) {
-//           MainStore.refineOpen = true;
-//         }
-//         return;
-//       }
-//       MainStore.lastPinboardSearchMethod = 'keyword';
-//       let startKeyword;
-//       if (startQuery['keyword'] && startQuery['keyword'] != '') {
-//         startKeyword = startQuery['keyword'];
-//         val = startKeyword + ',' + val;
-//       }
-//       query = { ...startQuery, ...{ 'keyword': val }};
-//       // this.searchBarType = 'keyword';
-//       // searchBarType = 'keyword';
-//     }
-//   } else if (checkVals) {
-//     if (import.meta.env.VITE_DEBUG) console.log('its a zipcode');
-//     if ($config.allowZipcodeSearch) {
-
-//       MapStore.watchPositionOn = false;
-//       MainStore.lastPinboardSearchMethod = 'zipcode';
-//       query = { 'zipcode': val };
-//       // this.searchBarType = 'zipcode';
-//       // searchBarType = 'zipcode';
-//     } else if ($config.allowZipcodeInDataSearch) {
-//       // query = { 'zipcode': val };
-//       // this.searchBarType = 'zipcode';
-//       // searchBarType = 'zipcode';
-
-//       MapStore.watchPositionOn = false;
-//       MainStore.lastPinboardSearchMethod = 'zipcodeKeyword';
-
-//       clearGeocodeAndZipcode();
-//       MapStore.bufferShape = null;
-//       currentBuffer.value = null;
-      
-//       let startKeyword;
-//       if (startQuery['keyword'] && startQuery['keyword'] != '') {
-//         startKeyword = startQuery['keyword'];
-//         val = startKeyword + ',' + val;
-//       }
-//       query = { ...startQuery, ...{ 'keyword': val }};
-//       // this.searchBarType = 'keyword';
-//       // searchBarType = 'keyword';
-//     }
-//   } else {
-//     if (import.meta.env.VITE_DEBUG) console.log('its an address');
-
-//     if (lastPinboardSearchMethod.value == 'zipcodeKeyword') {
-//       if (import.meta.env.VITE_DEBUG) console.log('startQuery:', startQuery);
-//       delete startQuery['keyword'];
-//       MainStore.selectedKeywords = [];
-//     }
-
-//     MapStore.watchPositionOn = false;
-
-//     query = { ...startQuery, ...{ 'address': val }};
-//     MainStore.lastPinboardSearchMethod = 'geocode';
-//     // this.searchBarType = 'address';
-//     // searchBarType = 'address';
-//   }
-//   delete startQuery['address'];
-//   delete startQuery['keyword'];
-//   delete startQuery['zipcode'];
-//   if (import.meta.env.VITE_DEBUG) console.log('handleSubmit is running, valAsFloat:', valAsFloat, 'startQuery:', startQuery, 'route.query:', route.query, 'query:', query, 'val:', val, 'val.substring(0, 1):', val.substring(0, 1));
-//   router.push({ query: { ...startQuery, ...query }});
-//   // searchString = query[this.searchBarType];
-//   const searchCategory = Object.keys(query)[0];
-//   const value = query[searchCategory];
-//   // $gtag.event(searchBarType + '-search', {
-//   //   'event_category': store.state.gtag.category,
-//   //   'event_label': value,
-//   // })
-//   MainStore.currentSearch = value;
-//   MapStore.zipcodeCenter = [];
-//   // $controller.handleSearchFormSubmit(val, searchBarType);
-
-//   // if (store.state.shouldShowGreeting && !isMobile.value) {
-//   //   store.commit('setRefineOpen', true);
-//   // }
+// const geocodeFailed = () => {
+//   if (import.meta.env.VITE_DEBUG) console.log('geocodeFailed is running');
+//   MapStore.bufferShape = null;
 // };
+
+// const compareArrays = (arr1, arr2) => {
+//   const finalArray = [];
+//   arr1.forEach((e1) => arr2.forEach((e2) =>
+//     {
+//       if (e1 === e2) {
+//         finalArray.push(e1);
+//       }
+//     }
+//   ));
+//   return finalArray;
+// };
+
 
 const clearSearchTriggered = () => {
   let startQuery = { ...route.query };
@@ -1110,35 +979,35 @@ const clearSearchTriggered = () => {
 //   // if (import.meta.env.VITE_DEBUG) console.log('end of setUpData, store.state.sources:', store.state.sources);
 // };
 
-const runBuffer = (coords) => {
-  let theSearchDistance = searchDistance.value;
-  if (import.meta.env.VITE_DEBUG) console.log('runBuffer is running, coords:', coords, 'searchDistance.value:', searchDistance.value, 'geocodeGeom.value:', geocodeGeom.value);
-  if (coords && coords.coordinates[0] != null) {
-    const geocodePoint = point(coords.coordinates);
-    const pointBuffer = buffer(geocodePoint, theSearchDistance, { units: 'miles' });
-    currentBuffer.value = pointBuffer;
-    MapStore.bufferShape = pointBuffer;
-  } else if (geocodeGeom.value) {
-    const geocodePoint = point(geocodeGeom.value.coordinates);
-    const pointBuffer = buffer(geocodePoint, theSearchDistance, { units: 'miles' });
-    currentBuffer.value = pointBuffer;
-    MapStore.bufferShape = pointBuffer;
-  }
-};
+// const runBuffer = (coords) => {
+//   let theSearchDistance = searchDistance.value;
+//   if (import.meta.env.VITE_DEBUG) console.log('runBuffer is running, coords:', coords, 'searchDistance.value:', searchDistance.value, 'geocodeGeom.value:', geocodeGeom.value);
+//   if (coords && coords.coordinates[0] != null) {
+//     const geocodePoint = point(coords.coordinates);
+//     const pointBuffer = buffer(geocodePoint, theSearchDistance, { units: 'miles' });
+//     currentBuffer.value = pointBuffer;
+//     MapStore.bufferShape = pointBuffer;
+//   } else if (geocodeGeom.value) {
+//     const geocodePoint = point(geocodeGeom.value.coordinates);
+//     const pointBuffer = buffer(geocodePoint, theSearchDistance, { units: 'miles' });
+//     currentBuffer.value = pointBuffer;
+//     MapStore.bufferShape = pointBuffer;
+//   }
+// };
 
-const runZipcodeBuffer = (geo) => {
-  if (import.meta.env.VITE_DEBUG) console.log('Main.vue runZipcodeBuffer is running, geo:', geo);
-  let searchDistance = searchDistance.value;
-  const polygonBuffer = buffer(geo, searchDistance, { units: 'miles' });
-  currentBuffer.value = polygonBuffer;
-  MapStore.zipcodeBufferShape = polygonBuffer;
-};
+// const runZipcodeBuffer = (geo) => {
+//   if (import.meta.env.VITE_DEBUG) console.log('Main.vue runZipcodeBuffer is running, geo:', geo);
+//   let searchDistance = searchDistance.value;
+//   const polygonBuffer = buffer(geo, searchDistance, { units: 'miles' });
+//   currentBuffer.value = polygonBuffer;
+//   MapStore.zipcodeBufferShape = polygonBuffer;
+// };
 
-const runZipcodeFindCenter = (geo) => {
-  let zipcodeCenter = centerOfMass(geo);
-  if (import.meta.env.VITE_DEBUG) console.log('Main.vue runZipcodeFindCenter is running, geo:', geo, 'zipcodeCenter:', zipcodeCenter);
-  MapStore.zipcodeCenter = zipcodeCenter.geometry.coordinates;
-};
+// const runZipcodeFindCenter = (geo) => {
+//   let zipcodeCenter = centerOfMass(geo);
+//   if (import.meta.env.VITE_DEBUG) console.log('Main.vue runZipcodeFindCenter is running, geo:', geo, 'zipcodeCenter:', zipcodeCenter);
+//   MapStore.zipcodeCenter = zipcodeCenter.geometry.coordinates;
+// };
 
 const getProjection = (item) => {
   let val;
@@ -1763,11 +1632,13 @@ const toggleBodyClass = (className) => {
         v-show="mapPanelVisible"
         class="map-panel-holder"
       >
+        <!-- <Suspense> -->
         <map-panel
           @clear-search="clearSearchTriggered"
           @toggleMap="toggleMap"
           @geolocate-control-fire="geolocateControlFire"
         />
+        <!-- </Suspense> -->
       </div>
     </div>
   </main>

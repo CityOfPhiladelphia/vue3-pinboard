@@ -6,7 +6,7 @@ import { useGeocodeStore } from './stores/GeocodeStore.js';
 import { useDataStore } from './stores/DataStore.js';
 import { useConfigStore } from './stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
-import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
+import { ref, computed, getCurrentInstance, onMounted, onBeforeMount, watch } from 'vue';
 
 if (import.meta.env.VITE_DEBUG == 'true') console.log('App.vue setup is running in debug mode, useDataStore:', useDataStore);
 
@@ -43,7 +43,7 @@ import RefinePanel from './components/RefinePanel.vue';
 const instance = getCurrentInstance();
 const locale = computed(() => instance.appContext.config.globalProperties.$i18n.locale);
 
-onMounted(async () => {
+onBeforeMount(async () => {
   MainStore.appVersion = import.meta.env.VITE_VERSION;
   MainStore.isMobileDevice = isMobileDevice();
   MainStore.isMac = isMac();
@@ -59,10 +59,10 @@ onMounted(async () => {
   window.addEventListener('resize', handleWindowResize);
   handleWindowResize();
 
+  // DataStore.fillZipcodes();
   DataStore.fillAppType();
   DataStore.fillResources();
   DataStore.fillHolidays();
-  DataStore.fillZipcodes();
 });
 
 const links = [
