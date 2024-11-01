@@ -54,7 +54,7 @@ const markerSrc = computed(() => {
 // })
 
 onMounted(async () => {
-  if (import.meta.env.VITE_DEBUG) console.log('Map.vue onMounted route.params.topic:', route.params.topic, 'route.params.address:', route.params.address);
+  if (import.meta.env.VITE_DEBUG) console.log('Map.vue onMounted');
   
   // create the maplibre map
   let currentTopicMapStyle = 'pwdDrawnMapStyle';
@@ -95,7 +95,7 @@ onMounted(async () => {
         ]
       )
     };
-    // if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 2, DataStore.selectedResource:', DataStore.selectedResource);
+    if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 2, DataStore.selectedResource:', DataStore.selectedResource);
     if (DataStore.sources[DataStore.appType]) {
       const dataPoint = DataStore.sources[DataStore.appType].data.features.filter(item => item._featureId == DataStore.selectedResource)[0];
       if (import.meta.env.VITE_DEBUG) console.log('dataPoint:', dataPoint);
@@ -115,21 +115,23 @@ onMounted(async () => {
         }
       }
     }
-
+    
+    if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 3, MapStore.bufferForAddressOrZipcode:', MapStore.bufferForAddressOrZipcode);
     if (Object.keys(MapStore.bufferForAddressOrZipcode).length) {
       map.getSource('buffer').setData(MapStore.bufferForAddressOrZipcode);
     }
+    if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 4');
     if (DataStore.zipcodes && MainStore.selectedZipcode) {
 
-      if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 3, DataStore.zipcodes:', DataStore.zipcodes, 'MainStore.selectedZipcode:', MainStore.selectedZipcode);
+      if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 5, DataStore.zipcodes:', DataStore.zipcodes, 'MainStore.selectedZipcode:', MainStore.selectedZipcode);
       const zipcodeData = DataStore.zipcodes.features.filter(item => item.properties.CODE == MainStore.selectedZipcode)[0];
       map.getSource('zipcode').setData(zipcodeData);
       const center = centerOfMass(zipcodeData);
       map.setCenter(center.geometry.coordinates);
-      MapStore.zipcodeCenter = center.geometry.coordinates;
+      MapStore.zipcodeCenter = center;
     }
 
-    // if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 3, map.getStyle().layers:', map.getStyle().layers);
+    if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 6, map.getStyle().layers:', map.getStyle().layers);
   })
 
   // add the address marker and camera icon sources
@@ -318,8 +320,8 @@ const selectedZipcode = computed(() => {
 });
 
 const zipcodeData = computed(() => {
-  let zipcode;
-  if (DataStore.zipcodes.features) {
+  let zipcode = featureCollection([]);
+  if (selectedZipcode.value && DataStore.zipcodes.features) {
     let zipcodesData = DataStore.zipcodes;
     let theSelectedZipcode = selectedZipcode.value;
     if (zipcodesData && selectedZipcode) {
@@ -333,7 +335,8 @@ watch(
   () => zipcodeData.value,
   async newZipcodeData => {
     map.getSource('zipcode').setData(newZipcodeData);
-    MapStore.zipcodeCenter = centerOfMass(zipcodeData.value);
+    // MapStore.zipcodeCenter = centerOfMass(newZipcodeData);
+    if (import.meta.env.VITE_DEBUG) console.log('watch zipcodeData.value, newZipcodeData:', newZipcodeData, 'MapStore.zipcodeCenter:', MapStore.zipcodeCenter);
   }
 )
 
@@ -350,8 +353,7 @@ watch(
   async newZipcodeCenter => {
     if (import.meta.env.VITE_DEBUG) console.log('Map.vue zipcodeCenter watch, newZipcodeCenter:', newZipcodeCenter);
     if (newZipcodeCenter) {
-      // map.setCenter(newZipcodeCenter.geometry.coordinates);
-      map.setCenter(newZipcodeCenter);
+      map.setCenter(newZipcodeCenter.geometry.coordinates);
     }
   }
 )

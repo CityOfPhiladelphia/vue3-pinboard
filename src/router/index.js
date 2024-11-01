@@ -37,6 +37,7 @@ const clearGeocode = async() => {
   GeocodeStore.aisData = {};
   MainStore.currentAddress = null;
   MapStore.bufferForAddressOrZipcode = null;
+  MainStore.selectedZipcode = null;
   // MapStore.bufferForAddressOrZipcode = point([]);
 }
 

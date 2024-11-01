@@ -1,5 +1,6 @@
 import { defineStore, acceptHMRUpdate } from 'pinia';
 import buffer from '@turf/buffer';
+import centerOfMass from '@turf/center-of-mass';
 import { point } from '@turf/helpers';
 import { useConfigStore } from './ConfigStore';
 import { useGeocodeStore } from './GeocodeStore';
@@ -29,9 +30,7 @@ export const useMapStore = defineStore("MapStore", {
   actions: {
     async fillBufferForAddressOrZipcode() {
       const MainStore = useMainStore();
-      // const route = {...useRoute()};
-      // const route = useRoute();
-      // if (import.meta.env.VITE_DEBUG) console.log('fillBufferForAddressOrZipcode is running, route:', route);
+      if (import.meta.env.VITE_DEBUG) console.log('fillBufferForAddressOrZipcode is running');
       // if (route.query.address) {
       if (MainStore.lastPinboardSearchMethod == 'geocode') {
         const GeocodeStore = useGeocodeStore();
@@ -39,10 +38,11 @@ export const useMapStore = defineStore("MapStore", {
         let addressPoint = point(GeocodeStore.aisData.features[0].geometry.coordinates);
         // if (import.meta.env.VITE_DEBUG == 'true') console.log('fillBufferForAddressOrZipcode is running, addressPoint:', addressPoint, 'addressBuffer:', addressBuffer, 'lng:', lng, 'lat:', lat);
         this.bufferForAddressOrZipcode = buffer(addressPoint, this.searchDistance, {units: 'miles'});
-      } else if (MainStore.lastPinboardSearchMethod == 'zipcode') {
+      // } else if (MainStore.lastPinboardSearchMethod == 'zipcode') {
+      } else if (MainStore.selectedZipcode) {
       // } else if (route.query.zipcode) {
         const DataStore = useDataStore();
-        if (import.meta.env.VITE_DEBUG) console.log('fillBufferForAddressOrZipcode is running, DataStore.zipcodes.features:', DataStore.zipcodes.features);
+        if (import.meta.env.VITE_DEBUG) console.log('fillBufferForAddressOrZipcode is running, MainStore.selectedZipcode:', MainStore.selectedZipcode, 'DataStore.zipcodes.features:', DataStore.zipcodes.features);
         // if (DataStore.zipcodes.features) {
           let zipcodesData = DataStore.zipcodes;
           let theSelectedZipcode = MainStore.selectedZipcode;
@@ -50,6 +50,7 @@ export const useMapStore = defineStore("MapStore", {
           if (zipcodesData && theSelectedZipcode) {
             zipcode = zipcodesData.features.filter(item => item.properties.CODE == theSelectedZipcode)[0];
           }
+          this.zipcodeCenter = centerOfMass(zipcode);
           this.bufferForAddressOrZipcode= buffer(zipcode, this.searchDistance, {units: 'miles'});
         // }
       }
