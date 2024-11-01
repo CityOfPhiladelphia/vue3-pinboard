@@ -80,7 +80,7 @@ onMounted(async () => {
     console.log('geojson:', geojson);
     map.getSource('resources').setData(geojson);
 
-    map.addLayer($config.mapLayer);
+    map.addLayer($config.mapLayer, 'addressMarker');
 
     if (import.meta.env.VITE_DEBUG) console.log('map on load, map.getSource("resources"):', map.getSource('resources'));
     if (map.getSource('resources') && DataStore.selectedResource) {

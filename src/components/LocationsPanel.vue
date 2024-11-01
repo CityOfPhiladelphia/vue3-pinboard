@@ -357,24 +357,24 @@ const geocodeStatus = computed(() => {
   }
 });
 
-const zipcodeCenter = computed(() => {
-  return MapStore.zipcodeCenter;
-});
+// const zipcodeCenter = computed(() => {
+//   return MapStore.zipcodeCenter;
+// });
 
 const sortDisabled = computed(() => {
   let value;
-  let geocode, zipCenter, watchPos;
-  if (geocodeStatus.value) {
-    geocode = geocodeStatus.value;
+  let geocode, zip, watchPos;
+  if (geocodeStatus.value && geocodeStatus == 'success') {
+    geocode = true;
   }
-  if (zipcodeCenter.value) {
-    zipCenter = zipcodeCenter.value;
+  if (MainStore.selectedZipcode) {
+    zip = true;
   }
   if (watchPositionOn.value) {
     watchPos = watchPositionOn.value;
   }
   // if (import.meta.env.VITE_DEBUG) console.log('computed sortDisabled, geocode:', geocode, 'zipcodeCenter:', zipcodeCenter);
-  if (geocode || zipCenter[0] || watchPos) {
+  if (geocode || zip || watchPos) {
     value = false;
   } else {
     value = true;
@@ -538,10 +538,10 @@ watch(
 // );
 
 watch(
-  () => geocodeStatus,
+  () => geocodeStatus.value,
   async nextGeocodeStatus => {
     // MainStore.shouldShowGreeting = false;
-    if (nextGeocodeStatus == null) {
+    if (nextGeocodeStatus != 'success') {
       sortBy.value = 'Alphabetically';
     } else {
       sortBy.value = 'Distance';
@@ -550,9 +550,9 @@ watch(
 )
 
 watch(
-  () => zipcodeCenter,
-  async nextZipcodeCenter => {
-    if (nextZipcodeCenter[0]) {
+  () => MainStore.selectedZipcode,
+  async nextSelectedZipcode => {
+    if (nextSelectedZipcode) {
       sortBy.value = 'Distance';
     } else {
       sortBy.value = 'Alphabetically';
