@@ -55,10 +55,21 @@ export const useDataStore = defineStore('DataStore', {
         // }
 
         if (data.features) {
+          data.features = data.features.filter(item => item.geometry);
+          // data.features = data.features.filter(item => item.hide_on_finder !== true);
+          // let j = 0;
+          // let badData = [];
           for (let i=0; i<data.features.length; i++) {
-            data.features[i]._featureId = appType + '_' + i;
-            data.features[i].properties._featureId = appType + '_' + i;
+            if (data.features[i].geometry) {
+              data.features[i]._featureId = appType + '_' + i;
+              data.features[i].properties._featureId = appType + '_' + i;
+              // badData.push(i);
+              // j = j+1;
+            }
           }
+          // for (let i=badData.length-1; i>=0; i--) {
+          //   data.features.splice(badData[i], 1);
+          // }
         } else if (data.rows) {
           data.features = [];
           let j = 0;

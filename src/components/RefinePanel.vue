@@ -501,11 +501,13 @@ watch(
     //   return;
     // }
     if (!arraysEqual(nextSelected, lastSelected)) {
+      let startQuery = { ...route.query };
       if (nextSelected.length) {
         // console.log('RefinePanel watch selectedArray is firing, nextSelected', nextSelected);
-        router.push({ query: { ...route.query, ...{ services: nextSelected.join(',') }}});
+        router.push({ query: { ...startQuery, ...{ services: nextSelected.join(',') }}});
       } else {
-        router.push({ query: { ...route.query }});
+        delete startQuery['services'];
+        router.push({ query: { ...startQuery }});
       }
     }
   }

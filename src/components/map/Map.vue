@@ -126,6 +126,7 @@ onMounted(async () => {
       map.getSource('zipcode').setData(zipcodeData);
       const center = centerOfMass(zipcodeData);
       map.setCenter(center.geometry.coordinates);
+      MapStore.zipcodeCenter = center.geometry.coordinates;
     }
 
     // if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 3, map.getStyle().layers:', map.getStyle().layers);
@@ -190,6 +191,8 @@ watch(
     if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue bufferForAddressOrZipcode watch, newBuffer:', newBuffer);
     if (newBuffer) {
       map.getSource('buffer').setData(newBuffer);
+    } else {
+      map.getSource('buffer').setData({ type: 'FeatureCollection', features: [] });
     }
   }
 )
@@ -330,23 +333,25 @@ watch(
   () => zipcodeData.value,
   async newZipcodeData => {
     map.getSource('zipcode').setData(newZipcodeData);
+    MapStore.zipcodeCenter = centerOfMass(zipcodeData.value);
   }
 )
 
-const zipcodeCenter = computed(() => {
-  let center;
-  if (zipcodeData.value) {
-    center = centerOfMass(zipcodeData.value);
-  }
-  return center;
-});
+// const zipcodeCenter = computed(() => {
+//   let center;
+//   if (zipcodeData.value) {
+//     center = centerOfMass(zipcodeData.value);
+//   }
+//   return center;
+// });
 
 watch(
-  () => zipcodeCenter.value,
+  () => MapStore.zipcodeCenter,
   async newZipcodeCenter => {
     if (import.meta.env.VITE_DEBUG) console.log('Map.vue zipcodeCenter watch, newZipcodeCenter:', newZipcodeCenter);
     if (newZipcodeCenter) {
-      map.setCenter(newZipcodeCenter.geometry.coordinates);
+      // map.setCenter(newZipcodeCenter.geometry.coordinates);
+      map.setCenter(newZipcodeCenter);
     }
   }
 )

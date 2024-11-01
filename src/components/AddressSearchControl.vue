@@ -114,13 +114,15 @@ const handleSubmit = (val) => {
   delete startQuery['zipcode'];
   if (import.meta.env.VITE_DEBUG) console.log('handleSubmit is running, valAsFloat:', valAsFloat, 'startQuery:', startQuery, 'route.query:', route.query, 'query:', query, 'val:', val, 'val.substring(0, 1):', val.substring(0, 1));
   router.push({ query: { ...startQuery, ...query }});
-  const searchCategory = Object.keys(query)[0];
-  const value = query[searchCategory];
+  if (query) {
+    const searchCategory = Object.keys(query)[0];
+    const value = query[searchCategory];
+    MainStore.currentSearch = value;
+  }
   // $gtag.event(searchBarType + '-search', {
   //   'event_category': store.state.gtag.category,
   //   'event_label': value,
   // })
-  MainStore.currentSearch = value;
 };
 
 </script>

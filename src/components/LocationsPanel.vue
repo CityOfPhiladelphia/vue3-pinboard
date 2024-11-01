@@ -412,7 +412,7 @@ const currentData = computed(() => {
     val = 'distance';
     // if (import.meta.env.VITE_DEBUG) console.log('it includes address');
     locations.sort(function(a, b) {
-      if (import.meta.env.VITE_DEBUG) console.log('a:', a, 'b:', b, 'val:', val);
+      // if (import.meta.env.VITE_DEBUG) console.log('a:', a, 'b:', b, 'val:', val);
       if (a[val] < b[val]) {
         return -1;
       }

@@ -8,6 +8,8 @@ import { useGeocodeStore } from '../stores/GeocodeStore.js';
 import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 
+import { polygon, point } from '@turf/helpers';
+
 const getGeocodeAndPutInStore = async(address) => {
   const GeocodeStore = useGeocodeStore();
   const MainStore = useMainStore();
@@ -28,6 +30,15 @@ const getGeocodeAndPutInStore = async(address) => {
   // MainStore.addressSearchRunning = false;
 }
 
+const clearGeocode = async() => {
+  const GeocodeStore = useGeocodeStore();
+  const MainStore = useMainStore();
+  const MapStore = useMapStore();
+  GeocodeStore.aisData = {};
+  MainStore.currentAddress = null;
+  MapStore.bufferForAddressOrZipcode = null;
+  // MapStore.bufferForAddressOrZipcode = point([]);
+}
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -69,6 +80,8 @@ router.afterEach(async (to, from) => {
     await getGeocodeAndPutInStore(to.query.address);
     // if (import.meta.env.VITE_DEBUG) console.log('router.afterEach is calling MapStore.fillBufferForAddressOrZipcode');
     MapStore.fillBufferForAddressOrZipcode();
+  } else {
+    clearGeocode();
   }
   if (to.query.zipcode && to.query.zipcode != from.query.zipcode) {
     if (import.meta.env.VITE_DEBUG) console.log('router.afterEach has zipcode and is calling MapStore.fillBufferForAddressOrZipcode');

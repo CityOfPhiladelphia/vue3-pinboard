@@ -10,6 +10,7 @@ import { ref, computed, getCurrentInstance, onMounted, watch, onBeforeMount } fr
 
 const ConfigStore = useConfigStore();
 const $config = ConfigStore.config;
+import $mapConfig from '../mapConfig';
 // if (import.meta.env.VITE_DEBUG) console.log('$config:', $config);
 
 import proj4 from 'proj4';
@@ -23,10 +24,11 @@ import Fuse from 'fuse.js'
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
-import { point } from '@turf/helpers';
+import { point, featureCollection } from '@turf/helpers';
 import buffer from '@turf/buffer';
 // import centerOfMass from '@turf/center-of-mass';
-import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
+import { booleanPointInPolygon } from '@turf/boolean-point-in-polygon';
+import { pointsWithinPolygon } from '@turf/points-within-polygon';
 import distance from '@turf/distance';
 import AlertBanner from '../components/AlertBanner.vue';
 import PhilaModal from '../components/PhilaModal.vue';
@@ -355,53 +357,14 @@ const database = computed(() => {
   return value;
 });
 
-// const database = computed(() => {
-//   if (store.state.sources[$appType].data) {
-
-//     let database = store.state.sources[$appType].data.rows || store.state.sources[$appType].data.features || store.state.sources[$appType].data.records;
-//     // if (import.meta.env.VITE_DEBUG) console.log('computed database is running, database:', database, '$appType:', $appType);
-
-//     for (let [key, value] of Object.entries(database)) {
-
-//       if ($config.hiddenRefine) {
-//         for (let field in $config.hiddenRefine) {
-//           let getter = $config.hiddenRefine[field];
-//           let val = getter(value);
-//           if (val === false) {
-//             delete database[key];
-//           }
-//         }
-//       }
-
-//       for (let [rowKey, rowValue] of Object.entries(value)) {
-//         if ( rowKey == 'hide_on_finder' && rowValue == true ){
-//           //if (import.meta.env.VITE_DEBUG) console.log('deleted entry', database[key])
-//           delete database[key];
-//         }
-//       }
-
-//     }
-//     //filter empty values from deleted database
-//     let finalDB = database.filter(_ => true);
-
-//     // if (import.meta.env.VITE_DEBUG) console.log('Main.vue database computed, finalDB:', finalDB);
-//     let languages = []
-//     for (let row of finalDB) {
-//       if (row.attributes && row.attributes.language) {
-//         let langs = row.attributes.language.split(',');
-//         // if (import.meta.env.VITE_DEBUG) console.log('row.attributes.language:', row.attributes.language, 'langs:', langs);
-//         for (let lang of langs) {
-//           if (!languages.includes(lang.trim())) {
-//             languages.push(lang.trim());
-//           }
-//         }
-//       }
-//     }
-//     if (import.meta.env.VITE_DEBUG) console.log('languages:', languages);
-
-//     return finalDB;
-//   }
-// });
+const database2 = computed(() => {
+  let value = {}
+  if (DataStore.sources[DataStore.appType]) {
+    // if (import.meta.env.VITE_DEBUG) console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]);
+    value = DataStore.sources[DataStore.appType].data;
+  }
+  return value;
+});
 
 // const shouldLoadCyclomediaWidget = computed(() => {
 //   return $config.cyclomedia && $config.cyclomedia.enabled && !isMobile.value;
@@ -624,53 +587,6 @@ watch(
   }
 );
 
-// watch(
-//   () => searchDistance.value,
-//   async nextSearchDistance => {
-//     // if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch searchDistance, nextSearchDistance:', nextSearchDistance);
-//     if (lastPinboardSearchMethod.value == 'geocode') {
-//       runBuffer();
-//     // } else if (MapStore.watchPositionOn) {
-//     //   runBuffer({coordinates: [ store.state.map.location.lng, store.state.map.location.lat ]});
-//     } else if (lastPinboardSearchMethod.value == 'zipcode') {
-//       if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch searchDistance and lastPinboardSearchMethod is zipcode');
-//       let nextZipcodeData = zipcodeData.value;
-//       if (nextZipcodeData) {
-//         let geo = {
-//           geometry: {
-//             coordinates: nextZipcodeData.geometry.rings,
-//             type: "Polygon"
-//           },
-//           type: "Feature",
-//         };
-//         runZipcodeBuffer(geo);
-//       }
-//     }
-//   }
-// );
-
-// watch(
-//   () => zipcodeData,
-//   async nextZipcodeData => {
-//     if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch zipcodeData, nextZipcodeData:', nextZipcodeData);
-//     if (nextZipcodeData) {
-//       if (import.meta.env.VITE_DEBUG) console.log('watch zipcodeData setting currentBuffer to shape');
-//       let geo = {
-//         geometry: {
-//           coordinates: nextZipcodeData.geometry.rings,
-//           type: "Polygon"
-//         },
-//         type: "Feature",
-//       };
-//       runZipcodeFindCenter(geo);
-//       runZipcodeBuffer(geo);
-//     } else {
-//       if (import.meta.env.VITE_DEBUG) console.log('watch zipcodeData setting currentBuffer to null');
-//       currentBuffer.value = null;
-//     }
-//   }
-// );
-
 watch(
   () => i18nLocale,
   async nexti18nLocale => {
@@ -723,9 +639,10 @@ watch(
 // );
 
 watch(
-  () => currentBuffer.value,
+  // () => currentBuffer.value,
+  () => MapStore.bufferForAddressOrZipcode,
   async => {
-    if (import.meta.env.VITE_DEBUG) console.log('watch currentBuffer.value is calling filterPoints');
+    if (import.meta.env.VITE_DEBUG) console.log('watch MapStore.bufferForAddressOrZipcode is calling filterPoints');
     filterPoints();
   }
 );
@@ -888,10 +805,9 @@ const clearGeocodeAndZipcode = async() => {
     MainStore.selectedKeywords = [];
   }
   router.push({ query: { ...startQuery }});
-  // $controller.resetGeocode();
-  MainStore.selectedZipcode = null;
-  MapStore.zipcodeCenter = [];
-  MainStore.currentSearch = null;
+  // MainStore.selectedZipcode = null;
+  // MapStore.zipcodeCenter = [];
+  // MainStore.currentSearch = null;
 };
 
 const watchedSubmittedCheckboxValue = () => {
@@ -943,74 +859,6 @@ const clearSearchTriggered = () => {
   MainStore.currentSearch = null;
 };
 
-// this has to do with the compiled data source
-// const setUpData = (theSources) => {
-//   if (import.meta.env.VITE_DEBUG) console.log('Pinboard App.vue setUpData is running, theSources:', theSources);
-//   let compiled = {
-//     key: 'compiled',
-//     data: {
-//       'records':[],
-//     },
-//     status: 'success',
-//   }
-//   let keys = Object.keys(theSources);
-//   if (keys.length > 1) {
-//     if (import.meta.env.VITE_DEBUG) console.log('theSources:', theSources, '$config.dataSources:', $config.dataSources);
-//     for (let key of keys) {
-//       if (import.meta.env.VITE_DEBUG) console.log('source:', key);
-//       if (theSources[key].features && $config.dataSources[key].compile) {
-//         for (let point of theSources[key].features) {
-//           // if (import.meta.env.VITE_DEBUG) console.log('point:', point);
-//           compiled.data.push(point);
-//         }
-//       } else if (theSources[key].records && $config.dataSources[key].compile) {
-//         for (let point of theSources[key].records) {
-//           let featureId = point._featureId.split('-')[1];
-//           if ($config.app.categorizeCompiled) {
-//             point.fields.category_type = featureId;
-//           }
-//           // if (import.meta.env.VITE_DEBUG) console.log('point:', point);
-//           compiled.data.records.push(point);
-//         }
-//       }
-//     }
-//     // if (import.meta.env.VITE_DEBUG) console.log('compiled:', compiled);
-//     store.commit('setSourceData', compiled);
-//     store.commit('setSourceStatus', compiled);
-//   }
-//   // if (import.meta.env.VITE_DEBUG) console.log('end of setUpData, store.state.sources:', store.state.sources);
-// };
-
-// const runBuffer = (coords) => {
-//   let theSearchDistance = searchDistance.value;
-//   if (import.meta.env.VITE_DEBUG) console.log('runBuffer is running, coords:', coords, 'searchDistance.value:', searchDistance.value, 'geocodeGeom.value:', geocodeGeom.value);
-//   if (coords && coords.coordinates[0] != null) {
-//     const geocodePoint = point(coords.coordinates);
-//     const pointBuffer = buffer(geocodePoint, theSearchDistance, { units: 'miles' });
-//     currentBuffer.value = pointBuffer;
-//     MapStore.bufferShape = pointBuffer;
-//   } else if (geocodeGeom.value) {
-//     const geocodePoint = point(geocodeGeom.value.coordinates);
-//     const pointBuffer = buffer(geocodePoint, theSearchDistance, { units: 'miles' });
-//     currentBuffer.value = pointBuffer;
-//     MapStore.bufferShape = pointBuffer;
-//   }
-// };
-
-// const runZipcodeBuffer = (geo) => {
-//   if (import.meta.env.VITE_DEBUG) console.log('Main.vue runZipcodeBuffer is running, geo:', geo);
-//   let searchDistance = searchDistance.value;
-//   const polygonBuffer = buffer(geo, searchDistance, { units: 'miles' });
-//   currentBuffer.value = polygonBuffer;
-//   MapStore.zipcodeBufferShape = polygonBuffer;
-// };
-
-// const runZipcodeFindCenter = (geo) => {
-//   let zipcodeCenter = centerOfMass(geo);
-//   if (import.meta.env.VITE_DEBUG) console.log('Main.vue runZipcodeFindCenter is running, geo:', geo, 'zipcodeCenter:', zipcodeCenter);
-//   MapStore.zipcodeCenter = zipcodeCenter.geometry.coordinates;
-// };
-
 const getProjection = (item) => {
   let val;
   if ($config && $config.projection) {
@@ -1034,6 +882,9 @@ const getProjection = (item) => {
 
 const checkServices = (index, row) => {
   const selectedServices = MainStore.selectedServices;
+  if (!selectedServices.length) {
+    return true;
+  }
   if ($config.refine && $config.refine.type && ['multipleFields', 'multipleFieldGroups', 'multipleDependentFieldGroups'].includes($config.refine.type)) {
     let booleanConditions = [];
 
@@ -1213,130 +1064,154 @@ const checkServices = (index, row) => {
 };
 
 const checkBuffer = (row) => {
-  if (!currentBuffer.value) {
-    // if (import.meta.env.VITE_DEBUG) console.log('!currentBuffer.value');
-    return true;
-  } else if (row.latlng) {
-    if (import.meta.env.VITE_DEBUG) console.log('row.latlng:', row.latlng);
-    if (import.meta.env.VITE_DEBUG) console.log('buffer else if 1 is running, row:', row, 'booleanBuffer:', booleanBuffer, 'typeof row.latlng[0]:', typeof row.latlng[0], 'MapStore.zipcodeCenter:', MapStore.zipcodeCenter);
-    if (typeof row.latlng[0] === 'number' && row.latlng[0] !== null) {
-      const rowPoint = point([ row.latlng[1], row.latlng[0] ]);
-      let geocodedPoint, options, theDistance;
-      if (GeocodeStore.aisData) {
-        geocodedPoint = point(GeocodeStore.aisData.features[0].geometry.coordinates);
-        options = { units: 'miles' };
-        theDistance = distance(geocodedPoint, rowPoint, options);
-        row.distance = theDistance;
-      } else if (MapStore.zipcodeCenter[0]) {
-        // if (import.meta.env.VITE_DEBUG) console.log('inside zipcode center else if');
-        let zipcodeCenter = point(MapStore.zipcodeCenter);
-        options = { units: 'miles' };
-        theDistance = distance(zipcodeCenter, rowPoint, options);
-        row.distance = theDistance;
-      } //else if (MapStore.watchPositionOn) {
-      //   if (import.meta.env.VITE_DEBUG) console.log('inside watchPositionOn else if');
-      //   geocodedPoint = point([ store.state.map.location.lng, store.state.map.location.lat ]);
-      //   options = { units: 'miles' };
-      //   theDistance = distance(geocodedPoint, rowPoint, options);
-      //   row.distance = theDistance;
-      // }
-      // if (import.meta.env.VITE_DEBUG) console.log('rowPoint:', rowPoint, 'currentBuffer.value:', currentBuffer.value, 'booleanPointInPolygon(rowPoint, currentBuffer.value):', booleanPointInPolygon(rowPoint, currentBuffer.value));
-      if (booleanPointInPolygon(rowPoint, buffer)) {
-        return true;
-      }
-      // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 1 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
-    } else if (typeof row.latlng[0] === 'string' && row.latlng[0] !== null) {
-      // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 1 ELSE IF');
-      const rowPoint = point([ parseFloat(row.latlng[1]), parseFloat(row.latlng[0]) ]);
-      if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
-        return true;
-      }
-    }
-  } else if (row.lat && row.lon) {
-    // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 2 is running, row:', row, 'booleanBuffer:', booleanBuffer);
-    if (typeof row.lat === 'number' && typeof row.lon === 'number') {
-      let projection = getProjection(row);
-      let lnglat;
-      if (projection === '3857') {
-        lnglat = proj4(projection3857, projection4326, [ row.lon, row.lat ]);
-      } else if (projection === '2272') {
-        lnglat = proj4(projection2272, projection4326, [ row.lon, row.lat ]);
-      } else {
-        lnglat = [ row.lon, row.lat ];
-      }
-      const rowPoint = point(lnglat);
-      if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
-        return true;
-      }
-      // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 2 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
-    }
-  } else if (row.geo && row.geo.coordinates) {
-    // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 is running, row:', row, 'booleanBuffer:', booleanBuffer);
-    if (typeof row.geo.coordinates[0] === 'number' && typeof row.geo.coordinates[1] === 'number') {
-      let projection = getProjection(row);
-      let lnglat;
-      if (projection === '3857') {
-        lnglat = proj4(projection3857, projection4326, [ row.geo.coordinates[0], row.geo.coordinates[1] ]);
-      } else if (projection === '2272') {
-        lnglat = proj4(projection2272, projection4326, [ row.geo.coordinates[0], row.geo.coordinates[1] ]);
-      } else {
-        lnglat = [ row.geo.coordinates[0], row.geo.coordinates[1] ];
-      }
-      const rowPoint = point(lnglat);
-
-      let geocodedPoint, options, theDistance;
-      if (GeocodeStore.aisData) {
-        geocodedPoint = point(GeocodeStore.aisData.features[0].geometry.coordinates);
-        options = { units: 'miles' };
-        theDistance = distance(geocodedPoint, rowPoint, options);
-        row.distance = theDistance;
-      } else if (MapStore.zipcodeCenter[0]) {
-        // if (import.meta.env.VITE_DEBUG) console.log('inside zipcode center else if');
-        let zipcodeCenter = point(MapStore.zipcodeCenter);
-        options = { units: 'miles' };
-        theDistance = distance(zipcodeCenter, rowPoint, options);
-        row.distance = theDistance;
-      }
-
-      if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
-        return true;
-      }
-      // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
-    }
-  } else if (row.geometry && row.geometry.x) {
-    // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 is running, row:', row, 'booleanBuffer:', booleanBuffer);
-    if (typeof row.geometry.x === 'number' && typeof row.geometry.y === 'number') {
-      let projection = getProjection(row);
-      let lnglat;
-      if (projection === '3857') {
-        lnglat = proj4(projection3857, projection4326, [ row.geometry.x, row.geometry.y ]);
-      } else if (projection === '2272') {
-        lnglat = proj4(projection2272, projection4326, [ row.geometry.x, row.geometry.y ]);
-      } else {
-        lnglat = [ row.geometry.x, row.geometry.y ];
-      }
-      const rowPoint = point(lnglat);
-
-      let geocodedPoint, options, theDistance;
-      if (GeocodeStore.aisData) {
-        geocodedPoint = point(GeocodeStore.aisData.features[0].geometry.coordinates);
-        options = { units: 'miles' };
-        theDistance = distance(geocodedPoint, rowPoint, options);
-        row.distance = theDistance;
-      } else if (MapStore.zipcodeCenter[0]) {
-        // if (import.meta.env.VITE_DEBUG) console.log('inside zipcode center else if');
-        let zipcodeCenter = point(MapStore.zipcodeCenter);
-        options = { units: 'miles' };
-        theDistance = distance(zipcodeCenter, rowPoint, options);
-        row.distance = theDistance;
-      }
-
-      if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
-        return true;
-      }
-      // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
-    }
+  // console.log('checkBuffer is running, row:', row, 'MapStore.bufferForAddressOrZipcode:', MapStore.bufferForAddressOrZipcode);
+  if (!row.geometry) {
+    return false;
   }
+  const buffer = MapStore.bufferForAddressOrZipcode;
+  // if (!Object.keys(MapStore.bufferForAddressOrZipcode).length) {
+  // if (!MapStore.bufferForAddressOrZipcode) {
+  if (!buffer) {
+    if (import.meta.env.VITE_DEBUG) console.log('!MapStore.bufferForAddressOrZipcode');
+    return true;
+  } else {
+    let comparePoint;
+    if (GeocodeStore.aisData.features) {
+      comparePoint = GeocodeStore.aisData.features[0].geometry;
+    } else if (MapStore.zipcodeCenter) {
+      comparePoint = MapStore.zipcodeCenter;
+    } //else {
+      // comparePoint = point($mapConfig.cityCenterCoords);
+      //comparePoint = $mapConfig.cityCenterCoords;
+    //}
+    row.distance = distance(comparePoint, row.geometry, { units: 'miles' });
+    return true;
+    // return booleanPointInPolygon(row.geometry, buffer)// {
+    //   return true;
+    // }
+  }
+  // } else if (row.latlng) {
+  // if (row.latlng) {
+  //   if (import.meta.env.VITE_DEBUG) console.log('row.latlng:', row.latlng);
+  //   if (import.meta.env.VITE_DEBUG) console.log('buffer else if 1 is running, row:', row, 'booleanBuffer:', booleanBuffer, 'typeof row.latlng[0]:', typeof row.latlng[0], 'MapStore.zipcodeCenter:', MapStore.zipcodeCenter);
+  //   if (typeof row.latlng[0] === 'number' && row.latlng[0] !== null) {
+  //     const rowPoint = point([ row.latlng[1], row.latlng[0] ]);
+  //     let geocodedPoint, options, theDistance;
+  //     if (GeocodeStore.aisData) {
+  //       geocodedPoint = point(GeocodeStore.aisData.features[0].geometry.coordinates);
+  //       options = { units: 'miles' };
+  //       theDistance = distance(geocodedPoint, rowPoint, options);
+  //       row.distance = theDistance;
+  //     } else if (MapStore.zipcodeCenter[0]) {
+  //       // if (import.meta.env.VITE_DEBUG) console.log('inside zipcode center else if');
+  //       let zipcodeCenter = point(MapStore.zipcodeCenter);
+  //       options = { units: 'miles' };
+  //       theDistance = distance(zipcodeCenter, rowPoint, options);
+  //       row.distance = theDistance;
+  //     } //else if (MapStore.watchPositionOn) {
+  //     //   if (import.meta.env.VITE_DEBUG) console.log('inside watchPositionOn else if');
+  //     //   geocodedPoint = point([ store.state.map.location.lng, store.state.map.location.lat ]);
+  //     //   options = { units: 'miles' };
+  //     //   theDistance = distance(geocodedPoint, rowPoint, options);
+  //     //   row.distance = theDistance;
+  //     // }
+  //     // if (import.meta.env.VITE_DEBUG) console.log('rowPoint:', rowPoint, 'currentBuffer.value:', currentBuffer.value, 'booleanPointInPolygon(rowPoint, currentBuffer.value):', booleanPointInPolygon(rowPoint, currentBuffer.value));
+  //     if (booleanPointInPolygon(rowPoint, buffer)) {
+  //       return true;
+  //     }
+  //     // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 1 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
+  //   } else if (typeof row.latlng[0] === 'string' && row.latlng[0] !== null) {
+  //     // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 1 ELSE IF');
+  //     const rowPoint = point([ parseFloat(row.latlng[1]), parseFloat(row.latlng[0]) ]);
+  //     if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
+  //       return true;
+  //     }
+  //   }
+  // } else if (row.lat && row.lon) {
+  //   // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 2 is running, row:', row, 'booleanBuffer:', booleanBuffer);
+  //   if (typeof row.lat === 'number' && typeof row.lon === 'number') {
+  //     let projection = getProjection(row);
+  //     let lnglat;
+  //     if (projection === '3857') {
+  //       lnglat = proj4(projection3857, projection4326, [ row.lon, row.lat ]);
+  //     } else if (projection === '2272') {
+  //       lnglat = proj4(projection2272, projection4326, [ row.lon, row.lat ]);
+  //     } else {
+  //       lnglat = [ row.lon, row.lat ];
+  //     }
+  //     const rowPoint = point(lnglat);
+  //     if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
+  //       return true;
+  //     }
+  //     // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 2 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
+  //   }
+  // } else if (row.geo && row.geo.coordinates) {
+  //   // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 is running, row:', row, 'booleanBuffer:', booleanBuffer);
+  //   if (typeof row.geo.coordinates[0] === 'number' && typeof row.geo.coordinates[1] === 'number') {
+  //     let projection = getProjection(row);
+  //     let lnglat;
+  //     if (projection === '3857') {
+  //       lnglat = proj4(projection3857, projection4326, [ row.geo.coordinates[0], row.geo.coordinates[1] ]);
+  //     } else if (projection === '2272') {
+  //       lnglat = proj4(projection2272, projection4326, [ row.geo.coordinates[0], row.geo.coordinates[1] ]);
+  //     } else {
+  //       lnglat = [ row.geo.coordinates[0], row.geo.coordinates[1] ];
+  //     }
+  //     const rowPoint = point(lnglat);
+
+  //     let geocodedPoint, options, theDistance;
+  //     if (GeocodeStore.aisData) {
+  //       geocodedPoint = point(GeocodeStore.aisData.features[0].geometry.coordinates);
+  //       options = { units: 'miles' };
+  //       theDistance = distance(geocodedPoint, rowPoint, options);
+  //       row.distance = theDistance;
+  //     } else if (MapStore.zipcodeCenter[0]) {
+  //       // if (import.meta.env.VITE_DEBUG) console.log('inside zipcode center else if');
+  //       let zipcodeCenter = point(MapStore.zipcodeCenter);
+  //       options = { units: 'miles' };
+  //       theDistance = distance(zipcodeCenter, rowPoint, options);
+  //       row.distance = theDistance;
+  //     }
+
+  //     if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
+  //       return true;
+  //     }
+  //     // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
+  //   }
+  // } else if (row.geometry && row.geometry.x) {
+  //   // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 is running, row:', row, 'booleanBuffer:', booleanBuffer);
+  //   if (typeof row.geometry.x === 'number' && typeof row.geometry.y === 'number') {
+  //     let projection = getProjection(row);
+  //     let lnglat;
+  //     if (projection === '3857') {
+  //       lnglat = proj4(projection3857, projection4326, [ row.geometry.x, row.geometry.y ]);
+  //     } else if (projection === '2272') {
+  //       lnglat = proj4(projection2272, projection4326, [ row.geometry.x, row.geometry.y ]);
+  //     } else {
+  //       lnglat = [ row.geometry.x, row.geometry.y ];
+  //     }
+  //     const rowPoint = point(lnglat);
+
+  //     let geocodedPoint, options, theDistance;
+  //     if (GeocodeStore.aisData) {
+  //       geocodedPoint = point(GeocodeStore.aisData.features[0].geometry.coordinates);
+  //       options = { units: 'miles' };
+  //       theDistance = distance(geocodedPoint, rowPoint, options);
+  //       row.distance = theDistance;
+  //     } else if (MapStore.zipcodeCenter[0]) {
+  //       // if (import.meta.env.VITE_DEBUG) console.log('inside zipcode center else if');
+  //       let zipcodeCenter = point(MapStore.zipcodeCenter);
+  //       options = { units: 'miles' };
+  //       theDistance = distance(zipcodeCenter, rowPoint, options);
+  //       row.distance = theDistance;
+  //     }
+
+  //     if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
+  //       return true;
+  //     }
+  //     // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
+  //   }
+  // }
 };
 
 const checkKeywords = (row) => {
@@ -1442,7 +1317,17 @@ const filterPoints = () => {
     return;
   }
 
-  for (const [index, row] of [ ...database.value.entries() ]) {
+  const buffer = MapStore.bufferForAddressOrZipcode;
+  let pointsAfterBuffer = database.value;
+  if (buffer) {
+    if (import.meta.env.VITE_DEBUG) console.log('Main.vue filterPoints is running, buffer:', buffer);
+    pointsAfterBuffer = pointsWithinPolygon(featureCollection(database.value), buffer).features;
+  }
+  console.log('pointsAfterBuffer', pointsAfterBuffer);
+
+
+
+  for (const [index, row] of [ ...pointsAfterBuffer.entries() ]) {
     // if (import.meta.env.VITE_DEBUG) console.log('row:', row, 'index:', index);
     // if (import.meta.env.VITE_DEBUG) console.log('row.services_offered:', row.services_offered);
 

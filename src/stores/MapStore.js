@@ -23,6 +23,7 @@ export const useMapStore = defineStore("MapStore", {
       imageryOn: false,
       imagerySelected: '2023',
       latestSelectedResourceFromMap: null,
+      zipcodeCenter: null,
     };
   },
   actions: {
