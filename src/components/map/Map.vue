@@ -9,7 +9,8 @@ import { useRoute, useRouter } from 'vue-router';
 import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
 
 import $mapConfig from '../../mapConfig';
-if (import.meta.env.VITE_DEBUG) console.log('Map.vue $mapConfig:', $mapConfig);
+const $config = useConfigStore().config;
+if (import.meta.env.VITE_DEBUG) console.log('Map.vue $config:', $config, '$mapConfig:', $mapConfig);
 
 // PACKAGE IMPORTS
 import maplibregl from 'maplibre-gl';
@@ -75,7 +76,13 @@ onMounted(async () => {
     let canvas = document.querySelector(".maplibregl-canvas");
     canvas.setAttribute('tabindex', -1);
 
-    // if (import.meta.env.VITE_DEBUG) console.log('map on load, map.getSource("resources"):', map.getSource('resources'));
+    let geojson = featureCollection(DataStore.currentData);
+    console.log('geojson:', geojson);
+    map.getSource('resources').setData(geojson);
+
+    map.addLayer($config.mapLayer);
+
+    if (import.meta.env.VITE_DEBUG) console.log('map on load, map.getSource("resources"):', map.getSource('resources'));
     if (map.getSource('resources') && DataStore.selectedResource) {
       map.setPaintProperty(
         'resources',
@@ -99,7 +106,7 @@ onMounted(async () => {
         }
         new maplibregl.Popup({ className: 'my-class' })
           .setLngLat(dataPoint.geometry.coordinates)
-          .setHTML(dataPoint.properties.site_name)
+          .setHTML(dataPoint.properties[$config.locationInfo.siteNameField])
           .setMaxWidth("300px")
           .addTo(map);
         
@@ -120,6 +127,7 @@ onMounted(async () => {
       const center = centerOfMass(zipcodeData);
       map.setCenter(center.geometry.coordinates);
     }
+
     // if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 3, map.getStyle().layers:', map.getStyle().layers);
   })
 
@@ -134,7 +142,7 @@ onMounted(async () => {
 
   // if the L&I topic is selected, and a building footprint is clicked, set the selected building number in the LiStore
   map.on('click', 'resources', (e) => {
-    // if (import.meta.env.VITE_DEBUG) console.log('Map.vue map click event, e:', e);
+    if (import.meta.env.VITE_DEBUG) console.log('Map.vue map click event, e:', e, 'e.features:', e.features, 'e.features[0]._featureId:', e.features[0]._featureId);
     MainStore.lastSelectMethod = 'map';
     const feature = e.features[0];
     const properties = e.features[0].properties;
@@ -165,6 +173,8 @@ onMounted(async () => {
   map.on('style.load', () => {
     if (import.meta.env.VITE_DEBUG) console.log('Map.vue map style.load event');
   })
+
+
 });
 
 watch(
@@ -189,8 +199,10 @@ watch(
   async newData => {
   let geojson = featureCollection(newData);
     // if (import.meta.env.VITE_DEBUG == 'true') console.log('geojson:', geojson, 'map.getStyle().sources.resources.data:', map.getStyle().sources.resources.data);
-  map.getSource('resources').setData(geojson);
-
+  if (import.meta.env.VITE_DEBUG) console.log('map.getSource("resources"):', map.getSource('resources'));
+  if (map.getSource('resources')) {
+    map.getSource('resources').setData(geojson);
+  }
 });
 
 watch(
@@ -241,7 +253,7 @@ watch(
           }
           new maplibregl.Popup({ className: 'my-class' })
             .setLngLat(dataPoint.geometry.coordinates)
-            .setHTML(dataPoint.properties.site_name)
+            .setHTML(dataPoint.properties[$config.locationInfo.siteNameField])
             .setMaxWidth("300px")
             .addTo(map);
         }

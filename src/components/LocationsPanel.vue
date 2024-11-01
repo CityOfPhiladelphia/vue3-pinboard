@@ -35,8 +35,8 @@ const router = useRouter();
 const address = computed(() => MainStore.currentAddress);
 
 const instance = getCurrentInstance();
-import { useI18n } from 'vue-i18n'
-const { t } = useI18n()
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 const $emit = defineEmits([ 'clear-bad-address' ]);
 
@@ -889,8 +889,9 @@ const makeValidUrl = (url) => {
               :is-map-visible="isMapVisible"
             />
 
+            <!-- v-if="!$config.customComps || !Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource" -->
             <div
-              v-if="!$config.customComps || !Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource"
+              v-if="!Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource"
               :class="isMobile ? 'main-content-mobile' : 'main-content'"
             >
               <print-share-section

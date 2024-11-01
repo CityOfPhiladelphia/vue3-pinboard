@@ -57,6 +57,7 @@ import { faSlidersH } from '@fortawesome/free-solid-svg-icons';
 import { faShareAlt } from '@fortawesome/free-solid-svg-icons';
 import { faPrint } from '@fortawesome/free-solid-svg-icons';
 import { faGlobe } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelope} from '@fortawesome/free-solid-svg-icons';
 
 library.add(
   faSearch,
@@ -82,7 +83,8 @@ library.add(
   faSlidersH,
   faShareAlt,
   faPrint,
-  faGlobe
+  faGlobe,
+  faEnvelope,
 );
 
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
@@ -91,7 +93,7 @@ import i18nFromFiles from './i18n/i18n.js';
 
 export default function pinboard(config) {
   const app = createApp(App);
-  if (import.meta.env.VITE_DEBUG) console.log('app:', app);
+  if (import.meta.env.VITE_DEBUG) console.log('config:', config, 'app:', app);
 
   app.component("AppHeader", AppHeader);
   app.component("AppFooter", AppFooter);
@@ -106,6 +108,7 @@ export default function pinboard(config) {
   app.component('FontAwesomeIcon', FontAwesomeIcon)
   app.use(VueGoodTablePlugin);
 
+  // if (config.i18n.enabled) {
   const i18nProject = config.i18n.data.messages;
   const messages = mergeDeep(i18nFromFiles.i18n.data.messages, i18nProject);
   if (import.meta.env.VITE_DEBUG == 'true') console.log('i18nFromFiles:', i18nFromFiles, 'messages:', messages);
@@ -117,6 +120,7 @@ export default function pinboard(config) {
     messages: messages
   })
   app.use(i18n)
+  // }
 
   app.use(createPinia())
 

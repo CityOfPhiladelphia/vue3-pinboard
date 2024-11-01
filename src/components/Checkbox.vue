@@ -1,3 +1,228 @@
+<script setup>
+import { useMainStore } from '../stores/MainStore.js';
+import { useMapStore } from '../stores/MapStore.js';
+import { useGeocodeStore } from '../stores/GeocodeStore.js';
+import { useDataStore } from '../stores/DataStore.js';
+import { useConfigStore } from '../stores/ConfigStore.js';
+import { useRoute, useRouter } from 'vue-router';
+import { ref, computed, getCurrentInstance, onMounted, watch, onBeforeMount } from 'vue';
+
+const MainStore = useMainStore();
+
+import IconToolTip from './IconToolTip.vue';
+
+/**
+ * Displays one or more checkboxes
+ * @niceName Checkboxes
+ * @group Inputs
+ * @position 210
+ */
+
+  // inheritAttrs: false,
+
+const props = defineProps({
+  /**
+   * The checkboxes options.
+   * @values Array of Strings, Array of Objects, Object
+   */
+  options: {
+    type: [ Object, Array ],
+    default: () => {
+      return {
+        'option-1': 'Option 1',
+        'option-2': 'Option 2',
+        'option-3': 'Option 3',
+      };
+    },
+  },
+  /**
+   * The Object key containing the checkbox text. Required when using options as an Array of Objects.
+   */
+  textKey: {
+    type: String,
+    default: "",
+  },
+
+  /**
+   * The Object key containing the checkbox value. Required when using options as an Array of Objects.
+   */
+  valueKey: {
+    type: String,
+    default: "",
+  },
+
+  value: {
+    type: [ Array ],
+    default () {
+      return [];
+    },
+  },
+
+  /**
+   * The label used for the checkbox or group of checkboxes
+   */
+  label: {
+    type: String,
+    default: '',
+  },
+
+  /**
+   * The description used for the checkbox or group of checkboxes
+   */
+  desc: {
+    type: String,
+    default: '',
+  },
+
+  /**
+   * Splits a group of checkboxes into columns 1 or more columns
+   */
+  numOfColumns: {
+    type: [ String, Number ],
+    default: 1,
+  },
+
+  /**
+   * Use small checkboxes
+   */
+  small: {
+    type: Boolean ,
+    default: false,
+  },
+  /**
+   * Random id is generated if none provided
+   */
+    id: {
+    type: String,
+    default: () => `ta_${Math.random().toString(12).substring(2, 8)}`,
+  },
+  /**
+   * Error message
+   */
+  errors: {
+    type: [ Array, String ],
+    default () {
+      return '';
+    },
+  },
+});
+
+const localValue = ref(props.value);
+
+//computed
+const error = computed(() => {
+  if (Array.isArray(props.errors)) {
+    return props.errors[0];
+  }
+  return props.errors;
+});
+
+const classes = computed(() => {
+  let classes = [];
+  // if (this.$attrs.required !== undefined) {
+  //   classes.push('required');
+  // }
+  if (error.value) {
+    classes.push('has-error');
+  }
+  // if (this.innerLabel) {
+  //   classes.push('inner-label');
+  // }
+  // if (this.forceInputBoxSize) {
+  //   classes.push('input-width');
+  // }
+  return classes.join(" ");
+});
+
+const isMobile = computed(() => {
+  return MainStore.isMobileDevice;
+});
+
+const tooltipType = computed(() => {
+  let value;
+  if (isMobile) {
+    value = 'hover';
+  } else {
+    value = 'hover';
+  }
+  return value;
+})
+
+const inputListeners = computed(() => {
+  console.log('this:', this);
+  delete this.$listeners['input'];
+
+  var vm = this;
+  return Object.assign({},
+    this.$listeners,
+    {
+      change: function (event) {
+
+        //IE11 needs the change event to be emitted as it does not listen to input
+        vm.$emit('change', vm.localValue);
+
+        //VeeValidate needs the input event to be emitted.
+        vm.$emit('input', vm.localValue);
+
+      },
+    },
+  );
+});
+
+const checkRadioClasses = computed(() => {
+  if (props.small) {
+    return `${classes.value} small-checkradio`;
+  }
+  return classes.value;
+});
+
+// onMounted(async () => {
+//   hasError();
+// });
+
+watch(
+  () => props.value,
+  async newValue => {
+    localValue = newValue;
+  }
+)
+
+watch(
+  () => error,
+  async => {
+    if (Array.isArray(props.errors)) {
+      return props.errors[0];
+    }
+    return props.errors;
+  }
+)
+
+// methods: {
+// const hasError = () => {
+//   if (error.value) {
+//     this.$parent.$emit('hasError', { [this.id]: this.error !== '' ? true : false });
+//   }
+// };
+
+const optionValue = (option, key) => {
+  let options = props.options;
+  // if (this.optgroup) {
+  //   options = this.ungroupedOptions;
+  // }
+  if (Array.isArray(options)) {
+    if (typeof option === 'string') {
+      return option;
+    }
+    if (typeof option === 'object') {
+      return option[props.valueKey];
+    }
+  } else {
+    return key;
+  }
+};
+
+</script>
+
 <template>
   <div
     class="input-wrap input-checkbox"
@@ -55,8 +280,8 @@
             role="checkbox"
             v-bind="option.attrs || {}"
             :value="optionValue(option, key)"
-            v-on="inputListeners"
           >
+            <!-- v-on="inputListeners" -->
           <label
             :for="`cb-${key}-${id}`"
           >
@@ -85,150 +310,6 @@
     </fieldset>
   </div>
 </template>
-<script>
-// import { inputMixins } from '@phila/phila-ui/src/utils/inputMixins';
-import IconToolTip from './IconToolTip.vue';
-
-/**
- * Displays one or more checkboxes
- * @niceName Checkboxes
- * @group Inputs
- * @position 210
- */
-export default {
-  name: 'Checkbox',
-  // mixins: [
-  //   inputMixins,
-  // ],
-  inheritAttrs: false,
-  components: {
-    IconToolTip,
-  },
-  props: {
-    /**
-     * The checkboxes options.
-     * @values Array of Strings, Array of Objects, Object
-     */
-    options: {
-      type: [ Object, Array ],
-      default: () => {
-        return {
-          'option-1': 'Option 1',
-          'option-2': 'Option 2',
-          'option-3': 'Option 3',
-        };
-      },
-    },
-    /**
-     * The Object key containing the checkbox text. Required when using options as an Array of Objects.
-     */
-    textKey: {
-      type: String,
-      default: "",
-    },
-
-    /**
-     * The Object key containing the checkbox value. Required when using options as an Array of Objects.
-     */
-    valueKey: {
-      type: String,
-      default: "",
-    },
-
-    value: {
-      type: [ Array ],
-      default () {
-        return [];
-      },
-    },
-
-    /**
-     * The label used for the checkbox or group of checkboxes
-     */
-    label: {
-      type: String,
-      default: '',
-    },
-
-    /**
-     * The description used for the checkbox or group of checkboxes
-     */
-    desc: {
-      type: String,
-      default: '',
-    },
-
-    /**
-     * Splits a group of checkboxes into columns 1 or more columns
-     */
-    numOfColumns: {
-      type: [ String, Number ],
-      default: 1,
-    },
-
-    /**
-     * Use small checkboxes
-     */
-    small: {
-      type: Boolean ,
-      default: false,
-    },
-  },
-
-  data () {
-    return {
-      localValue: this.value,
-    };
-  },
-  computed: {
-    tooltipType() {
-      let value;
-      if (this.isMobile) {
-        value = 'hover';
-      } else {
-        value = 'hover';
-      }
-      return value;
-    },
-    inputListeners: function () {
-
-      delete this.$listeners['input'];
-
-      var vm = this;
-      return Object.assign({},
-        this.$listeners,
-        {
-          change: function (event) {
-
-            //IE11 needs the change event to be emitted as it does not listen to input
-            vm.$emit('change', vm.localValue);
-
-            //VeeValidate needs the input event to be emitted.
-            vm.$emit('input', vm.localValue);
-
-          },
-        },
-      );
-    },
-    checkRadioClasses () {
-      if (this.small) {
-        return `${this.classes} small-checkradio`;
-      }
-      return this.classes;
-    },
-  },
-  watch: {
-    value (newValue) {
-      this.localValue = newValue;
-    },
-  },
-  methods: {
-    testFunc(option) {
-      console.log('testFunc, option:', option);
-    },
-  },
-};
-</script>
 
 <style>
 

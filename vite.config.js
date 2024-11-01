@@ -28,5 +28,8 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
+  },
+  optimizeDeps: {
+    include: [ '@turf/jsts', 'maplibre-gl', 'concaveman' ],
   }
 })

@@ -1,5 +1,6 @@
 import { defineStore, acceptHMRUpdate } from 'pinia';
 import axios from 'axios';
+import { feature, featureCollection, point } from '@turf/helpers';
 
 import { useConfigStore } from './ConfigStore.js';
 
@@ -31,6 +32,7 @@ export const useDataStore = defineStore('DataStore', {
       const data = ConfigStore.config.dataSources[appType];
       const params = data.options.params;
       const response = await axios.get(data.url, { params });
+      if (import.meta.env.VITE_DEBUG) console.log('fillResources is running, params:', params, 'response:', response);
       if (response.status === 200) {
         let data = await response.data;
         if (import.meta.env.VITE_DEBUG) console.log('data:', data, 'params:', params);
@@ -52,9 +54,26 @@ export const useDataStore = defineStore('DataStore', {
         //   }
         // }
 
-        for (let i=0; i<data.features.length; i++) {
-          data.features[i]._featureId = appType + '_' + i;
-          data.features[i].properties._featureId = appType + '_' + i;
+        if (data.features) {
+          for (let i=0; i<data.features.length; i++) {
+            data.features[i]._featureId = appType + '_' + i;
+            data.features[i].properties._featureId = appType + '_' + i;
+          }
+        } else if (data.rows) {
+          data.features = [];
+          let j = 0;
+          for (let i=0; i<data.rows.length; i++) {
+            // data.rows[i]._featureId = appType + '_' + i;
+            if (data.rows[i].lon && data.rows[i].lat) {
+              // const geo = point([data.rows[i].lon, data.rows[i].lat]);
+              // console.log('geo:', geo);
+              data.features[j] = point([data.rows[i].lon, data.rows[i].lat], data.rows[i]);
+              data.features[j]._featureId = appType + '_' + j;
+              data.features[j].properties._featureId = appType + '_' + j;
+              j = j+1;
+            }
+          }
+          delete data.rows;
         }
         this.sources[appType] = response;
         this.loadingSources = false;

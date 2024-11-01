@@ -753,7 +753,7 @@ watch(
 watch(
   () => dataStatus.value,
   async nextDataStatus => {
-    console.log('nextDataStatus:', nextDataStatus);
+    console.log('watch dataStatus, nextDataStatus:', nextDataStatus);
     if (nextDataStatus === 'success') {
       filterPoints();
     }
@@ -841,6 +841,8 @@ onMounted(async () => {
   if ($config.holidays && $config.holidays.forceBanner) {
     showForceHolidayBanner.value = true;
   }
+
+  filterPoints();
 
 });
 

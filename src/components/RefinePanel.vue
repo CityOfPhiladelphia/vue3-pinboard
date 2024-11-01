@@ -138,6 +138,10 @@ const selectedArray = computed(() => {
 });
 
 const refineListTranslated = computed(() => {
+  console.log('refineListTranslated computed is running, refineList.value:', refineList.value);
+  if (!refineList.value || !Object.keys(refineList.value).length) {
+    return {};
+  }
   let mainObject = {};
   let mainArray = [];
   if (refineType.value === 'categoryField_value') {
@@ -787,8 +791,8 @@ const clearAll = (e) => {
 };
 
 const getRefineSearchList = () => {
-  if (import.meta.env.VITE_DEBUG) console.log('getRefineSearchList is running');
   let refineData = database.value;
+  if (import.meta.env.VITE_DEBUG) console.log('getRefineSearchList is running, refineData:', refineData);
   if (refineData && refineData.records) {
     refineData = refineData.records;
   }

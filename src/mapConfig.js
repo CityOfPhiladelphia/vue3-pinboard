@@ -96,31 +96,31 @@ const pwdDrawnMapStyle = {
         'fill-outline-color': '#9e9ac8',
       }
     },
-    {
-      id: 'resources',
-      source: 'resources',
-      type: 'circle',
-      paint: {
-        'circle-radius': 7,
-        'circle-color': [
-          'match',
-          ['get', 'category_type'],
-          'Food Site',
-          '#0F4D90',
-          'Senior Meal Site',
-          '#a86518',
-          'Student Meal Site',
-          '#721817',
-          'General Meal Site',
-          '#506D0A',
-          'Public Benefits',
-          '#444444',
-          /* other */ '#000000'
-        ],
-        'circle-stroke-width': 1,
-        'circle-stroke-color': 'white',
-      },
-    },
+    // {
+    //   id: 'resources',
+    //   source: 'resources',
+    //   type: 'circle',
+    //   paint: {
+    //     'circle-radius': 7,
+    //     'circle-color': [
+    //       'match',
+    //       ['get', 'category_type'],
+    //       'Food Site',
+    //       '#0F4D90',
+    //       'Senior Meal Site',
+    //       '#a86518',
+    //       'Student Meal Site',
+    //       '#721817',
+    //       'General Meal Site',
+    //       '#506D0A',
+    //       'Public Benefits',
+    //       '#444444',
+    //       /* other */ '#000000'
+    //     ],
+    //     'circle-stroke-width': 1,
+    //     'circle-stroke-color': 'white',
+    //   },
+    // },
     {
       id: 'addressMarker',
       source: 'addressMarker',

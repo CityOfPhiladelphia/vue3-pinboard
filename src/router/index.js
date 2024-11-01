@@ -39,8 +39,8 @@ const router = createRouter({
       beforeEnter: async (to, from) => {
         if (import.meta.env.VITE_DEBUG) console.log('router beforeEnter is running to:', to, 'from:', from);
         const DataStore = useDataStore();
-        // await DataStore.fillAppType();
-        // await DataStore.fillResources();
+        await DataStore.fillAppType();
+        await DataStore.fillResources();
         // await DataStore.fillHolidays();
         await DataStore.fillZipcodes();
         if (import.meta.env.VITE_DEBUG) console.log('router beforeEnter is running, DataStore.zipcodes:', DataStore.zipcodes);

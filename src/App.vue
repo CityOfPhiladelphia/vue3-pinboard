@@ -60,8 +60,8 @@ onBeforeMount(async () => {
   handleWindowResize();
 
   // DataStore.fillZipcodes();
-  DataStore.fillAppType();
-  DataStore.fillResources();
+  // DataStore.fillAppType();
+  // DataStore.fillResources();
   DataStore.fillHolidays();
 });
 
