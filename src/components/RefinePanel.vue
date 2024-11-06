@@ -6,7 +6,7 @@ import { useGeocodeStore } from '../stores/GeocodeStore.js';
 import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
-import { ref, computed, getCurrentInstance, onBeforeMount, onMounted, watch } from 'vue';
+import { ref, reactive, computed, getCurrentInstance, onBeforeMount, onMounted, watch } from 'vue';
 
 import { findIconDefinition } from '@fortawesome/fontawesome-svg-core';
 
@@ -14,7 +14,7 @@ const instance = getCurrentInstance();
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
-import Checkbox from './Checkbox.vue';
+import OldCheckbox from './OldCheckbox.vue';
 // import Radio from '@phila/phila-ui-radio';
 
 import IconToolTip from './IconToolTip.vue';
@@ -46,6 +46,7 @@ const props = defineProps({
 const $emit = defineEmits(['geolocate-control-fire', 'watched-submitted-checkbox-value' ]);
 
 const baseUrl = '/';
+// const selected = ref(['wawa', 'starbucks']);
 const selected = ref([]);
 const selectedList = ref({});
 
@@ -120,18 +121,26 @@ const NumRefineColumns = computed(() => {
 });
 
 const selectedArray = computed(() => {
-  let test = {...selectedList.value};
-  if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, test:', test);
+  let sel = selected.value;
+  if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selected:', selected, 'sel:', sel, 'selectedList.value:', selectedList.value);
+  // let selL = {...selectedList.value};
+  // if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selL:', selL, 'selected.value:', selected.value);
   let compiled = [];
-  for (let value of Object.keys(test)) {
-    if (import.meta.env.VITE_DEBUG) console.log('in selectedArray computed, value:', value, value.split('_')[0]);
-    if (value.split('_')[0] == 'radio') {
-      // console.log('radio button clicked!');
-      compiled.push(test[value]);
-    } else {
-      for (let selected of selectedList.value[value]) {
-        compiled.push(selected);
-      }
+  // for (let value of Object.keys(selL)) {
+  //   if (import.meta.env.VITE_DEBUG) console.log('in selectedArray computed, value:', value, value.split('_')[0]);
+  //   if (value.split('_')[0] == 'radio') {
+  //     console.log('radio button clicked!');
+  //     compiled.push(selL[value]);
+  //   } else {
+  //     for (let sel of selL[value]) {
+  //       compiled.push(sel);
+  //     }
+  //   }
+  // }
+  // if (selected.value.length) {
+  if (sel.length) {
+    for (let selected of sel) {
+      compiled.push(selected);
     }
   }
   return compiled;
@@ -350,6 +359,13 @@ const database = computed(() => {
   }
   return value;
 });
+
+watch(
+  () => selected.value,
+  async nextSelected => {
+    if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selected, nextSelected:', nextSelected);
+  }
+)
 
 watch(
   () => props.submittedCheckboxValue,
@@ -618,9 +634,9 @@ const getCategoryFieldValue = (section) => {
 // };
 
 const getBoxValue = (box) => {
-  // console.log('getBoxValue is running, box:', box);
+  console.log('getBoxValue is running, box:', box);
   let value;
-  if (box) {
+  if (box && typeof box != 'object') {
     value = box.replace("_", ".");
   }
   return value;
@@ -1005,6 +1021,11 @@ const closeRefinePanel = () => {
   expandRefine();
   clearAll();
 };
+
+const checkboxChange = (e) => {
+  console.log('checkboxChange is running, e:', e);
+  // e.stopPropagation();
+};
   
 </script>
 
@@ -1158,15 +1179,17 @@ const closeRefinePanel = () => {
       id="field-div"
       class="refine-holder"
     >
-      <checkbox
+      <old-checkbox
         :options="refineListTranslated"
         :numOfColumns="NumRefineColumns"
         :small="!isMobile"
         v-model="selected"
         text-key="textLabel"
         value-key="data"
-      >
-      </checkbox>
+        >
+        <!-- @change="checkboxChange()"
+        @update:modelValue="checkboxChange()" -->
+      </old-checkbox>
     </div>
 
     <div
@@ -1223,7 +1246,7 @@ const closeRefinePanel = () => {
             </div>
           </radio>
 
-          <checkbox
+          <old-checkbox
             v-if="refineListTranslated[ind]['checkbox']"
             :options="refineListTranslated[ind]['checkbox']"
             :small="!isMobile"
@@ -1256,7 +1279,7 @@ const closeRefinePanel = () => {
                 {{ $t(refineListTranslated[ind]['tooltip']) }}
               </div>
             </div>
-          </checkbox>
+          </old-checkbox>
         </div>
       </div>
     </div>
@@ -1308,7 +1331,7 @@ const closeRefinePanel = () => {
                 </div>
               </radio>
 
-              <checkbox
+              <old-checkbox
                 v-if="refineListTranslated[ind]['checkbox']"
                 :options="refineListTranslated[ind]['checkbox']"
                 :small="!isMobile"
@@ -1322,7 +1345,7 @@ const closeRefinePanel = () => {
                   slot="label"
                 >
                 </div>
-              </checkbox>
+              </old-checkbox>
             </div>
           </div>
         </div>
@@ -1370,7 +1393,7 @@ const closeRefinePanel = () => {
               </div>
             </radio>
 
-            <checkbox
+            <old-checkbox
               :options="refineListTranslated[ind]['checkbox']"
               :num-of-columns="1"
               :small="!isMobile"
@@ -1378,6 +1401,8 @@ const closeRefinePanel = () => {
               text-key="textLabel"
               value-key="data"
               shrinkToFit="true"
+              @change="checkboxChange()"
+              @update:modelValue="checkboxChange()"
             >
               <div
                 v-if="!refineListTranslated[ind]['radio']"
@@ -1392,7 +1417,7 @@ const closeRefinePanel = () => {
                 >
                 </icon-tool-tip>
               </div>
-            </checkbox>
+            </old-checkbox>
           </div>
         </div>
       </div>

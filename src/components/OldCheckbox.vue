@@ -108,6 +108,7 @@ const props = defineProps({
 });
 
 const localValue = ref(props.value);
+const $emit = defineEmits(["update:modelValue", "change"]);
 
 //computed
 const error = computed(() => {
@@ -148,26 +149,26 @@ const tooltipType = computed(() => {
   return value;
 })
 
-const inputListeners = computed(() => {
-  console.log('this:', this);
-  delete this.$listeners['input'];
+// const inputListeners = computed(() => {
+//   console.log('this:', this);
+//   delete this.$listeners['input'];
 
-  var vm = this;
-  return Object.assign({},
-    this.$listeners,
-    {
-      change: function (event) {
+//   var vm = this;
+//   return Object.assign({},
+//     this.$listeners,
+//     {
+//       change: function (event) {
 
-        //IE11 needs the change event to be emitted as it does not listen to input
-        vm.$emit('change', vm.localValue);
+//         //IE11 needs the change event to be emitted as it does not listen to input
+//         vm.$emit('change', vm.localValue);
 
-        //VeeValidate needs the input event to be emitted.
-        vm.$emit('input', vm.localValue);
+//         //VeeValidate needs the input event to be emitted.
+//         vm.$emit('input', vm.localValue);
 
-      },
-    },
-  );
-});
+//       },
+//     },
+//   );
+// });
 
 const checkRadioClasses = computed(() => {
   if (props.small) {
@@ -219,6 +220,12 @@ const optionValue = (option, key) => {
   } else {
     return key;
   }
+};
+
+const onChange = (e) => {
+  if (import.meta.env.VITE_DEBUG) console.log('Checkbox onChange e:', e);
+  $emit("change", e);
+  $emit("update:modelValue", localValue.value);
 };
 
 </script>
@@ -280,6 +287,7 @@ const optionValue = (option, key) => {
             role="checkbox"
             v-bind="option.attrs || {}"
             :value="optionValue(option, key)"
+            @change="onChange()"
           >
             <!-- v-on="inputListeners" -->
           <label

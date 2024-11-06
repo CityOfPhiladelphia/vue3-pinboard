@@ -30,6 +30,7 @@ import NavLink from "@phila/phila-ui-nav-link";
 import Textbox from "@phila/phila-ui-textbox";
 import LangSelector from "@phila/phila-ui-lang-selector";
 import Radio from "@phila/phila-ui-radio";
+import Checkbox from "@phila/phila-ui-checkbox";
 if (import.meta.env.VITE_DEBUG) console.log('Radio:', Radio);
 
 import { library } from '@fortawesome/fontawesome-svg-core';
@@ -103,6 +104,7 @@ export default function pinboard(config) {
   app.component("Textbox", Textbox);
   app.component("LangSelector", LangSelector);
   app.component("Radio", Radio);
+  app.component("Checkbox", Checkbox);
   app.use(PhilaUICore);
 
   app.component('FontAwesomeIcon', FontAwesomeIcon)
