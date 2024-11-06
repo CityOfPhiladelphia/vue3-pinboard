@@ -1,0 +1,6 @@
+src
+public
+.vscode
+.github
+*.cjs
+*.json

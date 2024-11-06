@@ -16,11 +16,19 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v3
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v3
         with:
           node-version: '20.x'
-          registry-url: https://registry.npmjs.org/
-      - run: npm publish --access public
+          cache: 'npm'
+          registry-url: https://registry.npmjs.org
+      - name: Install dependencies
+        run: |
+          printf "@fortawesome:registry=https://npm.fontawesome.com/\n//npm.fontawesome.com/:_authToken=${FONTAWESOME_NPM_AUTH_TOKEN}" >> ~/.npmrc
+          npm ci
+          npm run build
+      - name: Publish to npm
+        run: npm publish dist --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
