@@ -1,3 +1,4 @@
+import { resolve } from 'path'
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
@@ -8,11 +9,20 @@ import AutoImport from 'unplugin-auto-import/vite'
 // https://vitejs.dev/config/
 export default defineConfig({
   build: {
+    lib: {
+      entry: resolve(__dirname, 'src/main.js'),
+      name: 'TestLib',
+      fileName: 'test-lib',
+    },
     rollupOptions: {
+      external: [ 'vue' ],
       output: {
-        entryFileNames: `assets/[name].js`,
-        chunkFileNames: `assets/[name].js`,
-        assetFileNames: `assets/[name].[ext]`
+        globals: {
+          vue: 'Vue'
+        }
+        // entryFileNames: `assets/[name].js`,
+        // chunkFileNames: `assets/[name].js`,
+        // assetFileNames: `assets/[name].[ext]`
       }
     }
   },

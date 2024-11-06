@@ -702,10 +702,10 @@ const makeValidUrl = (url) => {
       v-if="shouldShowGreeting"
       class="topics-container cell medium-cell-block-y"
     >
-      <custom-greeting
+      <!-- <custom-greeting
         v-if="shouldShowGreeting && hasCustomGreeting"
         @view-list="clickedViewList"
-      />
+      /> -->
       
     </div>
 

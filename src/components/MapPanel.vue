@@ -2,7 +2,7 @@
 
 import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
 
-import Map from './map/Map.vue';
+// import Map from './map/Map.vue';
 
 // import { useDataStore } from '../stores/DataStore.js';
 // const DataStore = useDataStore();
@@ -19,7 +19,7 @@ const mapPanelClass = computed(() => {
     id="map-panel"
     :class="mapPanelClass"
   >
-    <Map />
+    <!-- <Map /> -->
   </div>
 </template>
 
