@@ -25,7 +25,7 @@ jobs:
           registry-url: https://registry.npmjs.org
       - name: Install dependencies
         run: |
-          printf "//registry.npmjs.com/:_authToken=${NPM_TOKEN}\n@fortawesome:registry=https://npm.fontawesome.com/\n//npm.fontawesome.com/:_authToken=${NPM_FONTAWESOME_SECRET}" >> ~/.npmrc
+          printf "//registry.npmjs.com/:_authToken=${NPM_TOKEN}\n@fortawesome:registry=https://npm.fontawesome.com/\n//npm.fontawesome.com/:_authToken=${FONTAWESOME_NPM_AUTH_TOKEN}" >> ~/.npmrc
           npm ci
           npm run build
         env:
@@ -33,7 +33,8 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - name: Publish to npm
         run: |
-          printf "//registry.npmjs.com/:_authToken=${NPM_TOKEN}\n@fortawesome:registry=https://npm.fontawesome.com/\n//npm.fontawesome.com/:_authToken=${NPM_FONTAWESOME_SECRET}" >> ~/.npmrc
+          printf "//registry.npmjs.com/:_authToken=${NPM_TOKEN}\n@fortawesome:registry=https://npm.fontawesome.com/\n//npm.fontawesome.com/:_authToken=${FONTAWESOME_NPM_AUTH_TOKEN}" >> ~/.npmrc
           npm publish dist --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+          FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FA_AUTH_TOKEN }}
