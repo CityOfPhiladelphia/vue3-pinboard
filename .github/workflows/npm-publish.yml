@@ -20,11 +20,9 @@ jobs:
         with:
           node-version: '20.x'
           cache: 'npm'
-          registry-url: https://registry.npmjs.org
 
       - name: Install dependencies
         run: |
-          echo Installing dependencies ${FONTAWESOME_NPM_AUTH_TOKEN}
           printf "@fortawesome:registry=https://npm.fontawesome.com/\n//npm.fontawesome.com/:_authToken=${FONTAWESOME_NPM_AUTH_TOKEN}" >> ~/.npmrc
           npm ci
           npm run build
