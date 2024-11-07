@@ -11,6 +11,9 @@ import isMac from './util/is-mac';
 import mergeDeep from './util/merge-deep';
 
 import { useMainStore } from './stores/MainStore.js';
+import { useMapStore } from './stores/MapStore.js';
+import { useDataStore } from './stores/DataStore.js';
+import { useGeocodeStore } from './stores/GeocodeStore.js';
 
 import 'vue-good-table-next/dist/vue-good-table-next.css'
 import "bulma";
@@ -138,5 +141,6 @@ export default function pinboard(config) {
 };
 
 export { useMainStore };
-
-// pinboard(appConfig);
+export { useMapStore };
+export { useDataStore };
+export { useGeocodeStore };
