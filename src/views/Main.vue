@@ -851,7 +851,7 @@ const clearSearchTriggered = () => {
   delete startQuery['keyword'];
   // if (import.meta.env.VITE_DEBUG) console.log('in clearSearchTriggered2, route.query:', route.query, 'startQuery:', startQuery);
   router.push({ query: startQuery });
-  searchString = '';
+  searchString.value = '';
   MainStore.selectedKeywords = [];
   MainStore.selectedZipcode = null;
   MapStore.bufferShape = null;
@@ -1375,18 +1375,18 @@ const toggleMap = () => {
 };
 
 const toggleModal = () => {
-  isModalOpen = !isModalOpen;
+  isModalOpen.value = !isModalOpen.value;
   toggleBodyClass('no-scroll');
 };
 
 const showModal = () => {
-  isModalOpen = true;
+  isModalOpen.value = true;
   toggleBodyClass('no-scroll');
 };
 
 const closeModal = () => {
-  isModalOpen = false;
-  isAlertModalOpen = false;
+  isModalOpen.value = false;
+  isAlertModalOpen.value = false;
   toggleBodyClass('no-scroll');
 };
 

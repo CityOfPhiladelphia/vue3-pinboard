@@ -184,7 +184,7 @@ const checkRadioClasses = computed(() => {
 watch(
   () => props.value,
   async newValue => {
-    localValue = newValue;
+    localValue.value = newValue;
   }
 )
 
