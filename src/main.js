@@ -11,7 +11,7 @@ import isMac from './util/is-mac';
 import mergeDeep from './util/merge-deep';
 
 import { useMainStore } from './stores/MainStore.js';
-import { useMapStore } from './stores/MapStore.js';
+// import { useMapStore } from './stores/MapStore.js';
 import { useDataStore } from './stores/DataStore.js';
 import { useGeocodeStore } from './stores/GeocodeStore.js';
 // import PrintShareSection from './components/PrintShareSection.vue';
@@ -142,7 +142,7 @@ export default function pinboard(config) {
 };
 
 export { useMainStore };
-export { useMapStore };
+// export { useMapStore };
 export { useDataStore };
 export { useGeocodeStore };
 export { useConfigStore };
