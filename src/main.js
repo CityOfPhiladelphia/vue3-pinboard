@@ -14,7 +14,7 @@ import { useMainStore } from './stores/MainStore.js';
 import { useMapStore } from './stores/MapStore.js';
 import { useDataStore } from './stores/DataStore.js';
 import { useGeocodeStore } from './stores/GeocodeStore.js';
-import PrintShareSection from './components/PrintShareSection.vue';
+// import PrintShareSection from './components/PrintShareSection.vue';
 
 import 'vue-good-table-next/dist/vue-good-table-next.css'
 import "bulma";
@@ -146,4 +146,4 @@ export { useMapStore };
 export { useDataStore };
 export { useGeocodeStore };
 export { useConfigStore };
-export { PrintShareSection };
+// export { PrintShareSection };
