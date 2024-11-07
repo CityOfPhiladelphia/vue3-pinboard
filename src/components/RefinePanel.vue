@@ -15,7 +15,8 @@ import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
 import OldCheckbox from './OldCheckbox.vue';
-// import Radio from '@phila/phila-ui-radio';
+console.log('OldCheckbox:', OldCheckbox);
+import Radio from '@phila/phila-ui-radio';
 
 import IconToolTip from './IconToolTip.vue';
 
@@ -123,20 +124,20 @@ const NumRefineColumns = computed(() => {
 const selectedArray = computed(() => {
   let sel = selected.value;
   if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selected:', selected, 'sel:', sel, 'selectedList.value:', selectedList.value);
-  // let selL = {...selectedList.value};
+  let selL = {...selectedList.value};
   // if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selL:', selL, 'selected.value:', selected.value);
   let compiled = [];
-  // for (let value of Object.keys(selL)) {
-  //   if (import.meta.env.VITE_DEBUG) console.log('in selectedArray computed, value:', value, value.split('_')[0]);
-  //   if (value.split('_')[0] == 'radio') {
-  //     console.log('radio button clicked!');
-  //     compiled.push(selL[value]);
-  //   } else {
-  //     for (let sel of selL[value]) {
-  //       compiled.push(sel);
-  //     }
-  //   }
-  // }
+  for (let value of Object.keys(selL)) {
+    if (import.meta.env.VITE_DEBUG) console.log('in selectedArray computed, value:', value, value.split('_')[0]);
+    if (value.split('_')[0] == 'radio') {
+      console.log('radio button clicked!');
+      compiled.push(selL[value]);
+    } else {
+      for (let sel of selL[value]) {
+        compiled.push(sel);
+      }
+    }
+  }
   // if (selected.value.length) {
   if (sel.length) {
     for (let selected of sel) {
@@ -570,20 +571,20 @@ onBeforeMount(async () => {
   }
 });
 
-// onMounted(async () => {
-//   // console.log('refinePanel.vue mounted, library:', library);
-//   let divButton = document.querySelector('#refine-top');
-//   divButton.addEventListener('keypress', activate.bind(this));
-//   function activate(e) {
-//     // console.log('activate, e:', e, 'e.path[0]:', e.path[0]);
-//     if (e.type === 'keypress' && [ 13, 32 ].includes(e.keyCode) && e.srcElement.id == 'refine-top') {
-//       expandRefine();
-//     }
-//   };
-//   // console.log('RefinePanel.vue mounted is calling getRefineSearchList');
-//   getRefineSearchList();
-//   // console.log('mounted still running');
-// });
+onMounted(async () => {
+  // console.log('refinePanel.vue mounted, library:', library);
+  let divButton = document.querySelector('#refine-top');
+  divButton.addEventListener('keypress', activate.bind(this));
+  function activate(e) {
+    // console.log('activate, e:', e, 'e.path[0]:', e.path[0]);
+    if (e.type === 'keypress' && [ 13, 32 ].includes(e.keyCode) && e.srcElement.id == 'refine-top') {
+      expandRefine();
+    }
+  };
+  // console.log('RefinePanel.vue mounted is calling getRefineSearchList');
+  getRefineSearchList();
+  // console.log('mounted still running');
+});
 
 
 // const clickFirstBoxes = () => {

@@ -19,7 +19,8 @@ export default defineConfig({
       output: {
         globals: {
           vue: 'Vue'
-        }
+        },
+        exports: 'named',
         // entryFileNames: `assets/[name].js`,
         // chunkFileNames: `assets/[name].js`,
         // assetFileNames: `assets/[name].[ext]`

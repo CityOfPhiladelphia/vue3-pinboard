@@ -35,11 +35,6 @@ if (import.meta.env.VITE_DEBUG == 'true') console.log('import.meta.env.VITE_PUBL
 const route = useRoute();
 const router = useRouter();
 
-// COMPONENTS
-import LocationsPanel from './components/LocationsPanel.vue';
-import MapPanel from './components/MapPanel.vue';
-import RefinePanel from './components/RefinePanel.vue';
-
 const instance = getCurrentInstance();
 const locale = computed(() => instance.appContext.config.globalProperties.$i18n.locale);
 

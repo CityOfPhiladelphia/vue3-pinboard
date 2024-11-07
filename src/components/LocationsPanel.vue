@@ -11,7 +11,6 @@ import { ref, computed, getCurrentInstance, onMounted, watch, onBeforeMount } fr
 
 // import { Dropdown } from '@phila/phila-ui';
 // import SingleCheckbox from './SingleCheckbox.vue';
-// import PrintShareSection from '@phila/pinboard/src/components/PrintShareSection';
 
 const MainStore = useMainStore();
 const MapStore = useMapStore();
@@ -702,10 +701,10 @@ const makeValidUrl = (url) => {
       v-if="shouldShowGreeting"
       class="topics-container cell medium-cell-block-y"
     >
-      <!-- <custom-greeting
+      <custom-greeting
         v-if="shouldShowGreeting && hasCustomGreeting"
         @view-list="clickedViewList"
-      /> -->
+      />
       
     </div>
 
@@ -881,8 +880,12 @@ const makeValidUrl = (url) => {
             :checked="selectAllCheckbox"
             @print-box-checked="printBoxChecked"
           >
+            <print-share-section
+              v-if="item._featureId == DataStore.selectedResource"
+              :item="item"
+            />
 
-          <!-- v-if="$config.customComps && Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource" -->
+            <!-- v-if="$config.customComps && Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource" -->
             <expand-collapse-content
               v-if="item._featureId == DataStore.selectedResource"
               :item="item"
@@ -896,8 +899,7 @@ const makeValidUrl = (url) => {
             >
               <print-share-section
                 :item="item"
-              >
-              </print-share-section>
+              />
 
               <div class="columns top-section">
                 <div class="column is-6">

@@ -2,31 +2,24 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { useConfigStore } from './stores/ConfigStore.js';
 
+console.log('import.meta.env.VITE_DEBUG:', import.meta.env.VITE_DEBUG);
+
 import { createI18n } from 'vue-i18n'
 
 import App from './App.vue'
 import router from './router'
 
-import isMac from './util/is-mac';
 import mergeDeep from './util/merge-deep';
-
-import { useMainStore } from './stores/MainStore.js';
-// import { useMapStore } from './stores/MapStore.js';
-import { useDataStore } from './stores/DataStore.js';
-import { useGeocodeStore } from './stores/GeocodeStore.js';
-// import PrintShareSection from './components/PrintShareSection.vue';
 
 import 'vue-good-table-next/dist/vue-good-table-next.css'
 import "bulma";
-// import '@phila/phila-ui-core/dist/styles/scss/all.scss';
+import '@phila/phila-ui-core/dist/styles/scss/all.scss';
 import "@fortawesome/fontawesome-pro/css/fontawesome.min.css";
 import "@fortawesome/fontawesome-pro/css/solid.min.css";
-// import './assets/main.scss'
-import './assets/main_pin.scss'
-import './assets/style.scss'
-if (isMac()) {
-  import('./assets/mac-style.scss')
-}
+// import './assets/main.scss';
+import './assets/main_pin.scss';
+import './assets/style.scss';
+
 import PhilaUICore from "@phila/phila-ui-core";
 import AppHeader from "@phila/phila-ui-app-header";
 import AppFooter from "@phila/phila-ui-app-footer";
@@ -37,7 +30,6 @@ import Textbox from "@phila/phila-ui-textbox";
 import LangSelector from "@phila/phila-ui-lang-selector";
 import Radio from "@phila/phila-ui-radio";
 import Checkbox from "@phila/phila-ui-checkbox";
-if (import.meta.env.VITE_DEBUG) console.log('Radio:', Radio);
 
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
@@ -140,10 +132,3 @@ export default function pinboard(config) {
 
   app.mount('#app')
 };
-
-export { useMainStore };
-// export { useMapStore };
-export { useDataStore };
-export { useGeocodeStore };
-export { useConfigStore };
-// export { PrintShareSection };

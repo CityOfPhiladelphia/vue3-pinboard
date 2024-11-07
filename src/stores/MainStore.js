@@ -33,6 +33,7 @@ export const useMainStore = defineStore('MainStore', {
       windowDimensions: {},
       currentAddress: '',
       currentLang: null,
+      subsections: [],
     };
   },
 

@@ -13,6 +13,7 @@ const $config = ConfigStore.config;
 import $mapConfig from '../mapConfig';
 // if (import.meta.env.VITE_DEBUG) console.log('$config:', $config);
 
+
 import proj4 from 'proj4';
 import { format } from 'date-fns';
 import { parseISO } from 'date-fns';
@@ -76,6 +77,8 @@ const addressInputPlaceholder = ref(null);
 const submittedCheckboxValue = ref(null);
 const showForceHolidayBanner = ref(false);
 const showAutomaticHolidayBanner = ref(false);
+
+console.log('watch test');
 
 // OLD ONCREATED
 // let root = document.getElementsByTagName( 'html' )[0]; // '0' to assign the first (and only `HTML` tag)
@@ -1324,8 +1327,6 @@ const filterPoints = () => {
     pointsAfterBuffer = pointsWithinPolygon(featureCollection(database.value), buffer).features;
   }
   console.log('pointsAfterBuffer', pointsAfterBuffer);
-
-
 
   for (const [index, row] of [ ...pointsAfterBuffer.entries() ]) {
     // if (import.meta.env.VITE_DEBUG) console.log('row:', row, 'index:', index);
