@@ -10,9 +10,11 @@ import router from './router'
 import isMac from './util/is-mac';
 import mergeDeep from './util/merge-deep';
 
+import { useMainStore } from './stores/MainStore.js';
+
 import 'vue-good-table-next/dist/vue-good-table-next.css'
 import "bulma";
-// import '@phila/phila-ui-core/dist/styles/scss/all.scss';
+import '@phila/phila-ui-core/dist/styles/scss/all.scss';
 import "@fortawesome/fontawesome-pro/css/fontawesome.min.css";
 import "@fortawesome/fontawesome-pro/css/solid.min.css";
 // import './assets/main.scss'
@@ -134,5 +136,7 @@ export default function pinboard(config) {
 
   app.mount('#app')
 };
+
+export { useMainStore };
 
 // pinboard(appConfig);

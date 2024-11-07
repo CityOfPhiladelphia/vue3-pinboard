@@ -11,8 +11,8 @@ export default defineConfig({
   build: {
     lib: {
       entry: resolve(__dirname, 'src/main.js'),
-      name: 'TestLib',
-      fileName: 'test-lib',
+      name: 'Pinboard',
+      fileName: 'index',
     },
     rollupOptions: {
       external: [ 'vue' ],
