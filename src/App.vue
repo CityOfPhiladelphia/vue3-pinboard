@@ -8,7 +8,7 @@ import { useConfigStore } from './stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
 import { ref, computed, getCurrentInstance, onMounted, onBeforeMount, watch } from 'vue';
 
-if (import.meta.env.VITE_DEBUG == 'true') console.log('App.vue setup is running in debug mode, useDataStore:', useDataStore);
+if (import.meta.env.VITE_DEBUG == 'true') console.log('test App.vue setup is running in debug mode, useDataStore:', useDataStore);
 
 import { RouterView } from 'vue-router'
 

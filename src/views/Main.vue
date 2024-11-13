@@ -1442,8 +1442,13 @@ const toggleBodyClass = (className) => {
     <template #mobile-nav>
       <mobile-nav :links="footerLinks" />
     </template>
-    <template #lang-selector-nav>
+    
+    <template
+      v-if="i18nEnabled"
+      #lang-selector-nav
+    >
       <lang-selector
+        v-if="i18nEnabled"
         :languages="i18nLanguages"
       />
     </template>

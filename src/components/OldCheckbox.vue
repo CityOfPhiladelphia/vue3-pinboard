@@ -1,10 +1,5 @@
 <script setup>
 import { useMainStore } from '../stores/MainStore.js';
-import { useMapStore } from '../stores/MapStore.js';
-import { useGeocodeStore } from '../stores/GeocodeStore.js';
-import { useDataStore } from '../stores/DataStore.js';
-import { useConfigStore } from '../stores/ConfigStore.js';
-import { useRoute, useRouter } from 'vue-router';
 import { ref, computed, getCurrentInstance, onMounted, watch, onBeforeMount } from 'vue';
 
 const MainStore = useMainStore();
@@ -177,10 +172,6 @@ const checkRadioClasses = computed(() => {
   return classes.value;
 });
 
-// onMounted(async () => {
-//   hasError();
-// });
-
 watch(
   () => props.value,
   async newValue => {
@@ -270,13 +261,11 @@ const onChange = (e) => {
         :id="`cb-group-${id}`"
         :style="`columns: ${numOfColumns} auto`"
       >
-      <!-- class="checkbox-margin-top" -->
         <div
           v-for="(option, key) in options"
           :key="`k-${key}`"
           class="control"
         >
-        <!-- class="control ovvis" -->
           <input
             :id="`cb-${key}-${id}`"
             v-model="localValue"
@@ -311,7 +300,6 @@ const onChange = (e) => {
             :circle-type="tooltipType"
             :multiline="option.tooltip.multiline"
           />
-          <!-- :position="'bottom'" -->
 
         </div>
       </div>
@@ -325,18 +313,5 @@ const onChange = (e) => {
   font-size: .85rem;
   line-height: 1rem;
 }
-/* .checkbox-margin-top {
-  overflow: visible;
-}
-
-.checkbox-margin-top:before, .checkbox-margin-top:after {
-  content: ' ';
-  display: block;
-  height: 5px;
-}
-
-.ovvis {
-  overflow: visible;
-} */
 
 </style>

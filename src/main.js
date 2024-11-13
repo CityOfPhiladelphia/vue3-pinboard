@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { useConfigStore } from './stores/ConfigStore.js';
 
-console.log('import.meta.env.VITE_DEBUG:', import.meta.env.VITE_DEBUG);
+console.log('test, import.meta.env.VITE_DEBUG:', import.meta.env.VITE_DEBUG);
 
 import { createI18n } from 'vue-i18n'
 
@@ -14,11 +14,12 @@ import mergeDeep from './util/merge-deep';
 import 'vue-good-table-next/dist/vue-good-table-next.css'
 import "bulma";
 import '@phila/phila-ui-core/dist/styles/scss/all.scss';
+// import './assets/main.scss';
 import "@fortawesome/fontawesome-pro/css/fontawesome.min.css";
 import "@fortawesome/fontawesome-pro/css/solid.min.css";
-// import './assets/main.scss';
 import './assets/main_pin.scss';
 import './assets/style.scss';
+import '@creativebulma/bulma-tooltip/dist/bulma-tooltip.min.css';
 
 import PhilaUICore from "@phila/phila-ui-core";
 import AppHeader from "@phila/phila-ui-app-header";
@@ -57,6 +58,7 @@ import { faShareAlt } from '@fortawesome/free-solid-svg-icons';
 import { faPrint } from '@fortawesome/free-solid-svg-icons';
 import { faGlobe } from '@fortawesome/free-solid-svg-icons';
 import { faEnvelope} from '@fortawesome/free-solid-svg-icons';
+import { faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
   faSearch,
@@ -84,6 +86,7 @@ library.add(
   faPrint,
   faGlobe,
   faEnvelope,
+  faCircleInfo,
 );
 
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';

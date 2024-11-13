@@ -11,6 +11,9 @@ import { ref, computed, getCurrentInstance, onMounted, watch, onBeforeMount } fr
 
 // import { Dropdown } from '@phila/phila-ui';
 // import SingleCheckbox from './SingleCheckbox.vue';
+import { getActivePinia } from 'pinia';
+const activePinia = getActivePinia();
+console.log('activePinia:', activePinia);
 
 const MainStore = useMainStore();
 const MapStore = useMapStore();
@@ -704,6 +707,7 @@ const makeValidUrl = (url) => {
       <custom-greeting
         v-if="shouldShowGreeting && hasCustomGreeting"
         @view-list="clickedViewList"
+        :database="database"
       />
       
     </div>
@@ -890,6 +894,7 @@ const makeValidUrl = (url) => {
               v-if="item._featureId == DataStore.selectedResource"
               :item="item"
               :is-map-visible="isMapVisible"
+              :is-mobile="isMobile"
             />
 
             <!-- v-if="!$config.customComps || !Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource" -->
