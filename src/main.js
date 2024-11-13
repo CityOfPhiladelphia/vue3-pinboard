@@ -24,6 +24,7 @@ import '@creativebulma/bulma-tooltip/dist/bulma-tooltip.min.css';
 import PhilaUICore from "@phila/phila-ui-core";
 import AppHeader from "@phila/phila-ui-app-header";
 import AppFooter from "@phila/phila-ui-app-footer";
+import Callout from "@phila/phila-ui-callout";
 import Dropdown from "@phila/phila-ui-dropdown";
 import MobileNav from "@phila/phila-ui-mobile-nav";
 import NavLink from "@phila/phila-ui-nav-link";
@@ -99,6 +100,7 @@ export default function pinboard(config) {
 
   app.component("AppHeader", AppHeader);
   app.component("AppFooter", AppFooter);
+  app.component("Callout", Callout);
   app.component("Dropdown", Dropdown);
   app.component("MobileNav", MobileNav);
   app.component("NavLink", NavLink);

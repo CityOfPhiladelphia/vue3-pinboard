@@ -1,14 +1,9 @@
 <script setup>
 
 const props = defineProps({
-  item: {
-
-  },
   tip: {
-
-  },
-  circleData: {
-
+    type: String,
+    default: '',
   },
   circleType: {
     type: String,
@@ -24,16 +19,9 @@ const props = defineProps({
   },
 });
     
-const active = ref(false);
-const tipClass = ref('popup-tip');
-const tooltipStyle = ref({});
-
 //computed
 const tooltipPosition = computed(() => {
   let value;
-  // if (this.isMobile) {
-  //   value = 'has-tooltip-bottom';
-  // } else {
   if (props.position === 'right') {
     value = 'has-tooltip-right';
   } else if (props.position === 'bottom') {
@@ -52,30 +40,6 @@ const tooltipMultiline = computed(() => {
   return value;
 });
 
-// methods
-const infoClick = (e) => {
-  active.value = !active.value;
-  const thisId = props.item + '-icon';
-  const thisIcon = document.getElementById(thisId);
-  const iconStyle = thisIcon.getBoundingClientRect();
-  const rootElement = document.getElementById('app');
-  const rootStyle = window.getComputedStyle(rootElement);
-  const rootWidth = rootStyle.getPropertyValue('width');
-  const rootWidthNum = parseInt(rootWidth.replace('px', ''));
-  const gap = rootWidthNum - iconStyle.right;
-  console.log('iconToolTip mounted, iconStyle:', iconStyle, 'rootWidthNum:', rootWidthNum, 'gap:', gap);
-  if (gap < 250) {
-    tooltipStyle.value = {
-      'top': '-20px',
-      'right': '10px',
-    };
-  } else {
-    tooltipStyle.value = {
-      'top': '-20px',
-    };
-  }
-};
-
 </script>
 
 <template>
@@ -85,25 +49,9 @@ const infoClick = (e) => {
   >
     <font-awesome-icon
       v-if="circleType === 'hover'"
-      :id="item + '-icon'"
       icon="info-circle"
       class="fa-infoCircle"
     />
-    <font-awesome-icon
-      v-if="circleType === 'click'"
-      :id="item + '-icon'"
-      icon="info-circle"
-      class="fa-infoCircle"
-      @click="infoClick"
-    />
-    <div
-      v-if="active"
-      :id="item + '-tooltip'"
-      :class="tipClass"
-      :style="tooltipStyle"
-      v-html="circleData.html"
-    >
-    </div>
   </div>
 </template>
 

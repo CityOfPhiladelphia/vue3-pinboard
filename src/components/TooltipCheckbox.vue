@@ -1,6 +1,6 @@
 <script setup>
 import { useMainStore } from '../stores/MainStore.js';
-import { ref, computed, getCurrentInstance, onMounted, watch, onBeforeMount } from 'vue';
+import { ref, computed, watch } from 'vue';
 
 const MainStore = useMainStore();
 
@@ -12,8 +12,6 @@ import IconToolTip from './IconToolTip.vue';
  * @group Inputs
  * @position 210
  */
-
-  // inheritAttrs: false,
 
 const props = defineProps({
   /**
@@ -105,7 +103,7 @@ const props = defineProps({
 const localValue = ref(props.value);
 const $emit = defineEmits(["update:modelValue", "change"]);
 
-//computed
+// computed
 const error = computed(() => {
   if (Array.isArray(props.errors)) {
     return props.errors[0];
@@ -115,55 +113,15 @@ const error = computed(() => {
 
 const classes = computed(() => {
   let classes = [];
-  // if (this.$attrs.required !== undefined) {
-  //   classes.push('required');
-  // }
   if (error.value) {
     classes.push('has-error');
   }
-  // if (this.innerLabel) {
-  //   classes.push('inner-label');
-  // }
-  // if (this.forceInputBoxSize) {
-  //   classes.push('input-width');
-  // }
   return classes.join(" ");
 });
 
 const isMobile = computed(() => {
   return MainStore.isMobileDevice;
 });
-
-const tooltipType = computed(() => {
-  let value;
-  if (isMobile) {
-    value = 'hover';
-  } else {
-    value = 'hover';
-  }
-  return value;
-})
-
-// const inputListeners = computed(() => {
-//   console.log('this:', this);
-//   delete this.$listeners['input'];
-
-//   var vm = this;
-//   return Object.assign({},
-//     this.$listeners,
-//     {
-//       change: function (event) {
-
-//         //IE11 needs the change event to be emitted as it does not listen to input
-//         vm.$emit('change', vm.localValue);
-
-//         //VeeValidate needs the input event to be emitted.
-//         vm.$emit('input', vm.localValue);
-
-//       },
-//     },
-//   );
-// });
 
 const checkRadioClasses = computed(() => {
   if (props.small) {
@@ -189,18 +147,8 @@ watch(
   }
 )
 
-// methods: {
-// const hasError = () => {
-//   if (error.value) {
-//     this.$parent.$emit('hasError', { [this.id]: this.error !== '' ? true : false });
-//   }
-// };
-
 const optionValue = (option, key) => {
   let options = props.options;
-  // if (this.optgroup) {
-  //   options = this.ungroupedOptions;
-  // }
   if (Array.isArray(options)) {
     if (typeof option === 'string') {
       return option;
@@ -278,11 +226,11 @@ const onChange = (e) => {
             :value="optionValue(option, key)"
             @change="onChange()"
           >
-            <!-- v-on="inputListeners" -->
           <label
             :for="`cb-${key}-${id}`"
           >
             {{ !textKey ? option : option[textKey] }}
+            <slot name="tooltip" />
             <div
               v-if="isMobile && option.tooltip"
               class="mobile-tooltip"
@@ -297,10 +245,9 @@ const onChange = (e) => {
           <icon-tool-tip
             v-if="!isMobile && option.tooltip"
             :tip="option.tooltip.tip"
-            :circle-type="tooltipType"
+            :circle-type="'hover'"
             :multiline="option.tooltip.multiline"
           />
-
         </div>
       </div>
     </fieldset>

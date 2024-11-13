@@ -6,7 +6,7 @@ import { useGeocodeStore } from '../stores/GeocodeStore.js';
 import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
-import { ref, reactive, computed, getCurrentInstance, onBeforeMount, onMounted, watch } from 'vue';
+import { ref, computed, getCurrentInstance, onBeforeMount, onMounted, watch } from 'vue';
 
 import { findIconDefinition } from '@fortawesome/fontawesome-svg-core';
 
@@ -14,8 +14,7 @@ const instance = getCurrentInstance();
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
-import OldCheckbox from './OldCheckbox.vue';
-console.log('OldCheckbox:', OldCheckbox);
+import TooltipCheckbox from './TooltipCheckbox.vue';
 import Radio from '@phila/phila-ui-radio';
 
 import IconToolTip from './IconToolTip.vue';
@@ -46,8 +45,6 @@ const props = defineProps({
 
 const $emit = defineEmits(['geolocate-control-fire', 'watched-submitted-checkbox-value' ]);
 
-const baseUrl = '/';
-// const selected = ref(['wawa', 'starbucks']);
 const selected = ref([]);
 const selectedList = ref({});
 
@@ -1180,17 +1177,15 @@ const checkboxChange = (e) => {
       id="field-div"
       class="refine-holder"
     >
-      <old-checkbox
+      <tooltip-checkbox
         :options="refineListTranslated"
         :numOfColumns="NumRefineColumns"
         :small="!isMobile"
         v-model="selected"
-        text-key="textLabel"
         value-key="data"
-        >
-        <!-- @change="checkboxChange()"
-        @update:modelValue="checkboxChange()" -->
-      </old-checkbox>
+        text-key="textLabel"
+      >
+      </tooltip-checkbox>
     </div>
 
     <div
@@ -1205,7 +1200,7 @@ const checkboxChange = (e) => {
         text-key="text"
         value-key="value"
         :numOfColumns="NumRefineColumns"
-        >
+      >
         <!-- :small="false" -->
       <!-- :small="!isMobile" -->
       </radio>
@@ -1238,16 +1233,14 @@ const checkboxChange = (e) => {
             :small="!isMobile"
             :num-of-columns="calculateColumns(refineList[ind]['radio'], ind)"
           >
-            <div
-              :class="isMobile ? 'large-label': 'small-label'"
-              slot="label"
-            >
-              test
-              {{ $t(ind + '.category') }}
-            </div>
+            <template v-slot:label>
+              <div :class="isMobile ? 'large-label': 'small-label'">
+                {{ $t(ind + '.category') }}
+              </div>
+            </template>
           </radio>
 
-          <old-checkbox
+          <tooltip-checkbox
             v-if="refineListTranslated[ind]['checkbox']"
             :options="refineListTranslated[ind]['checkbox']"
             :small="!isMobile"
@@ -1257,30 +1250,29 @@ const checkboxChange = (e) => {
             shrinkToFit="true"
             :num-of-columns="calculateColumns(refineList[ind]['checkbox'], ind)"
           >
-            <div
-              :class="isMobile ? 'large-label': 'small-label'"
-              slot="label"
-            >
-              {{ $t(ind + '.category') }}
-              <icon-tool-tip
-                v-if="!isMobile && refineListTranslated[ind]['tooltip']"
-                :tip="refineListTranslated[ind]['tooltip']"
-                :circle-type="click"
-                :position="refineList[ind]['tooltip']['position']"
-                :multiline="refineList[ind]['tooltip']['multiline']"
-              />
-              <div
-                v-if="isMobile && refineListTranslated[ind]['tooltip']"
-                class="mobile-tooltip"
-              >
-                <font-awesome-icon
-                  icon="info-circle"
-                  class="fa-infoCircle"
+            <template v-slot:label>
+              <div :class="isMobile ? 'large-label': 'small-label'">
+                {{ $t(ind + '.category') }}
+                <icon-tool-tip
+                  v-if="!isMobile && refineListTranslated[ind]['tooltip']"
+                  :tip="refineListTranslated[ind]['tooltip']"
+                  :circle-type="click"
+                  :position="refineList[ind]['tooltip']['position']"
+                  :multiline="refineList[ind]['tooltip']['multiline']"
                 />
-                {{ $t(refineListTranslated[ind]['tooltip']) }}
+                <div
+                  v-if="isMobile && refineListTranslated[ind]['tooltip']"
+                  class="mobile-tooltip"
+                >
+                  <font-awesome-icon
+                    icon="info-circle"
+                    class="fa-infoCircle"
+                  />
+                  {{ $t(refineListTranslated[ind]['tooltip']) }}
+                </div>
               </div>
-            </div>
-          </old-checkbox>
+            </template>
+          </tooltip-checkbox>
         </div>
       </div>
     </div>
@@ -1326,13 +1318,9 @@ const checkboxChange = (e) => {
                 :small="!isMobile"
                 :num-of-columns="calculateColumns(refineList[ind]['radio'], ind)"
               >
-                <div
-                  slot="label"
-                >
-                </div>
               </radio>
 
-              <old-checkbox
+              <tooltip-checkbox
                 v-if="refineListTranslated[ind]['checkbox']"
                 :options="refineListTranslated[ind]['checkbox']"
                 :small="!isMobile"
@@ -1342,11 +1330,7 @@ const checkboxChange = (e) => {
                 shrinkToFit="true"
                 :num-of-columns="calculateColumns(refineList[ind]['checkbox'], ind)"
               >
-                <div
-                  slot="label"
-                >
-                </div>
-              </old-checkbox>
+              </tooltip-checkbox>
             </div>
           </div>
         </div>
@@ -1380,9 +1364,7 @@ const checkboxChange = (e) => {
               :num-of-columns="1"
               :small="!isMobile"
             >
-              <div
-                slot="label"
-              >
+              <template v-slot:label>
                 {{ $t(ind + '.category') }}
                 <icon-tool-tip
                   v-if="Object.keys(infoCircles).includes(ind)"
@@ -1391,10 +1373,10 @@ const checkboxChange = (e) => {
                   :circleType="'click'"
                 >
                 </icon-tool-tip>
-              </div>
+              </template>
             </radio>
 
-            <old-checkbox
+            <tooltip-checkbox
               :options="refineListTranslated[ind]['checkbox']"
               :num-of-columns="1"
               :small="!isMobile"
@@ -1405,9 +1387,9 @@ const checkboxChange = (e) => {
               @change="checkboxChange()"
               @update:modelValue="checkboxChange()"
             >
-              <div
+              <template
+                v-slot:label
                 v-if="!refineListTranslated[ind]['radio']"
-                slot="label"
               >
                 {{ $t(ind + '.category') }}
                 <icon-tool-tip
@@ -1417,8 +1399,8 @@ const checkboxChange = (e) => {
                   :circleType="'click'"
                 >
                 </icon-tool-tip>
-              </div>
-            </old-checkbox>
+              </template>
+            </tooltip-checkbox>
           </div>
         </div>
       </div>
