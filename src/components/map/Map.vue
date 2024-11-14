@@ -117,7 +117,7 @@ onMounted(async () => {
     }
     
     if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 3, MapStore.bufferForAddressOrZipcode:', MapStore.bufferForAddressOrZipcode);
-    if (Object.keys(MapStore.bufferForAddressOrZipcode).length) {
+    if (MapStore.bufferForAddressOrZipcode !== null && Object.keys(MapStore.bufferForAddressOrZipcode).length) {
       map.getSource('buffer').setData(MapStore.bufferForAddressOrZipcode);
     }
     if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 4');
@@ -143,7 +143,10 @@ onMounted(async () => {
   map.addControl(new maplibregl.NavigationControl(), 'bottom-left');
   map.addControl(new maplibregl.GeolocateControl(), 'bottom-left');
 
-  // if the L&I topic is selected, and a building footprint is clicked, set the selected building number in the LiStore
+  map.on('click', 'pwd', (e) => {
+    if (import.meta.env.VITE_DEBUG) console.log('Map.vue map click event, e:', e);
+  })
+
   map.on('click', 'resources', (e) => {
     if (import.meta.env.VITE_DEBUG) console.log('Map.vue map click event, e:', e, 'e.features:', e.features, 'e.features[0]._featureId:', e.features[0]._featureId);
     MainStore.lastSelectMethod = 'map';
@@ -163,7 +166,7 @@ onMounted(async () => {
   });
 
   map.on('mouseenter', 'resources', (e) => {
-    // if (import.meta.env.VITE_DEBUG == 'true') console.log('mouseenter, e:', e);
+    if (import.meta.env.VITE_DEBUG == 'true') console.log('mouseenter, e:', e);
     if (e.features.length > 0) {
       map.getCanvas().style.cursor = 'pointer'
     }

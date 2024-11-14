@@ -27,50 +27,34 @@ a {
   justify-content: space-evenly;
 }
 
-.main {
-  height: calc(100vh - 50px);
-  // display: flex;
-  // flex-direction: column;
-  padding-top: 42px !important;
-  margin-top: 0px !important;
-}
-
 .main-column {
-  height: calc(100vh - 100px);
+  height: calc(100vh - 96px);
+  // height: calc(100vh - 142px);
   display: flex;
   flex-direction: column;
-  padding-top: 42px !important;
-  margin-top: 0px !important;
+  padding: 0px !important;
+}
+
+.refine-panel-component {
+  // height: auto;
 }
 
 .main-row {
-  height: calc(100vh - 400px);
   display: flex;
   flex-direction: row;
+  height: 100%;
   // padding-top: 42px !important;
-  margin-top: 0px !important;
+  // margin-top: 0px !important;
 }
 
-.topics-holder {
+.locations-holder {
   display: flex;
   flex-direction: column;
   width: 50% !important;
   padding: 0;
   margin: 0;
-  height: calc(100vh - 110px);
-}
-
-.topics-holder-full {
-  width: 100% !important;
-}
-
-#topic-panel-no-topics {
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
-.topic-panel-half {
-  max-width: 46%;
+  // height: 100%;
+  // height: calc(100vh - 110px);
 }
 
 .bullet-list {
@@ -87,19 +71,11 @@ a {
   padding-bottom: 30px !important;
 }
 
-#topic-panel-content {
-  flex-grow: 1;
-  overflow-y: scroll;
-  overflow-x: hidden;
-  padding-left: 12px;
-  padding-right: 12px;
-  padding-bottom: 30px !important;
-}
-
 .map-panel-holder {
   width: 50%;
-  height: calc(100vh - 110px);
   margin-bottom: 0px;
+  height: 100%;
+  // height: calc(100vh - 110px);
 }
 
 .map-panel-holder-full {
@@ -135,7 +111,8 @@ a {
 }
 
 .map-panel {
-  height: calc(100vh - 110px);
+  height: 100%;
+  // height: calc(100vh - 110px);
 }
 
 .map-panel.cyclomedia-eagleview {
@@ -303,22 +280,22 @@ only screen and (max-width: 768px),
     height: auto;
   }
 
-  #topic-panel-content {
-    // overflow-y: hidden;
-    overflow-x: hidden;
-    padding-left: 12px;
-    padding-right: 12px;
-  }
+  // #topic-panel-content {
+  //   // overflow-y: hidden;
+  //   overflow-x: hidden;
+  //   padding-left: 12px;
+  //   padding-right: 12px;
+  // }
 
-  #topic-panel-no-topics {
-    overflow-x: hidden;
-    // overflow-y: hidden;
-    padding-left: 20px;
-    padding-right: 20px;
-    padding-top: 20px !important;
-    padding-bottom: 30px !important;
-    flex-grow: 1;
-  }
+  // #topic-panel-no-topics {
+  //   overflow-x: hidden;
+  //   // overflow-y: hidden;
+  //   padding-left: 20px;
+  //   padding-right: 20px;
+  //   padding-top: 20px !important;
+  //   padding-bottom: 30px !important;
+  //   flex-grow: 1;
+  // }
 
   .map-panel-holder {
     padding-top: 28px !important;
@@ -414,15 +391,15 @@ only screen and (min-device-width: 768px) and (max-device-width: 1024px) {
     height: 500px;
   }
 
-  #topic-panel-no-topics {
-    min-height: calc(100vh - 570px) !important;
-    // height: 60dvh !important;
-  }
+  // #topic-panel-no-topics {
+  //   min-height: calc(100vh - 570px) !important;
+  //   // height: 60dvh !important;
+  // }
 
-  #topic-panel-content {
-    min-height: calc(100vh - 700px) !important;
-    // height: 60dvh !important;
-  }
+  // #topic-panel-content {
+  //   min-height: calc(100vh - 700px) !important;
+  //   // height: 60dvh !important;
+  // }
 
 }
 

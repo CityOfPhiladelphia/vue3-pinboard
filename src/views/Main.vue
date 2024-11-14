@@ -680,10 +680,35 @@ watch(
   }
 );
 
-onMounted(async () => {
+watch(
+  () => refineOpen.value,
+  async() => {
+    await nextTick();
+    const el = document.getElementById('refine-panel-component');
+    let height = el.style.height;
+    let offsetHeight = el.offsetHeight;
+    if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch refineOpen is firing, el:', el, 'height:', height, 'offsetHeight:', offsetHeight);
+    const mainRow = document.getElementById('main-row');
+    // mainRow.style.height = `calc(100% - ${offsetHeight}px)`;
+    mainRow.style.setProperty('height', `calc(100% - ${offsetHeight+44}px)`);
+  }
+);
+
+onMounted(async() => {
   let body = document.body;
   body.classList.remove('print-view');
   body.classList.add('main-view');
+
+  await nextTick();
+  const refinePanel = document.getElementById('refine-panel-component');
+  let height = refinePanel.style.height;
+  let offsetHeight = refinePanel.offsetHeight;
+  let clientHeight = refinePanel.clientHeight;
+  if (import.meta.env.VITE_DEBUG) console.log('Main.vue onMounted is firing, refinePanel:', refinePanel, 'height:', height, 'offsetHeight:', offsetHeight, 'clientHeight:', clientHeight);
+  const mainRow = document.getElementById('main-row');
+  // mainRow.style.height = `calc(100% - ${offsetHeight}px)`;
+  mainRow.style.setProperty('height', `calc(100% - ${offsetHeight+44}px)`);
+
 
   // if (import.meta.env.VITE_DEBUG) console.log('in Main.vue mounted, route.query:', route.query);
   // if (import.meta.env.VITE_DEBUG) console.log('in Main.vue onMounted, $config:', $config, 'window.location.href:', window.location.href);
@@ -1452,19 +1477,6 @@ const toggleBodyClass = (className) => {
         :languages="i18nLanguages"
       />
     </template>
-    <!-- <mobile-nav
-      slot="mobile-nav"
-      :links="footerLinks"
-    >
-    </mobile-nav> -->
-
-    <!-- <lang-selector
-      slot="lang-selector-nav"
-      v-if="i18nEnabled && !i18nSelectorHidden"
-      :languages="i18nLanguages"
-    >
-    </lang-selector> -->
-
   </app-header>
 
   <div
@@ -1497,24 +1509,23 @@ const toggleBodyClass = (className) => {
     id="main"
     class="main-column invisible-scrollbar"
   >
-    <!-- <div
-      v-if="refineEnabled"
-      :class="refinePanelClass"
-    > -->
-    <refine-panel
-      :refine-title="refineTitle"
-      :submitted-checkbox-value="submittedCheckboxValue"
-      @watched-submitted-checkbox-value="watchedSubmittedCheckboxValue"
-      @geolocate-control-fire="geolocateControlFire"
-    />
+    <div>
+      <refine-panel
+        :refine-title="refineTitle"
+        :submitted-checkbox-value="submittedCheckboxValue"
+        @watched-submitted-checkbox-value="watchedSubmittedCheckboxValue"
+        @geolocate-control-fire="geolocateControlFire"
+      />
+    </div>
 
     <div
       v-show="!isMobile || isMobile && !refineOpen"
+      id="main-row"
       class="main-row"
     >
       <div
         v-show="locationsPanelVisible"
-        class="topics-holder"
+        class="locations-holder"
       >
         <locations-panel
           :is-map-visible="isMapVisible"
@@ -1525,13 +1536,11 @@ const toggleBodyClass = (className) => {
         v-show="mapPanelVisible"
         class="map-panel-holder"
       >
-        <!-- <Suspense> -->
         <map-panel
           @clear-search="clearSearchTriggered"
           @toggleMap="toggleMap"
           @geolocate-control-fire="geolocateControlFire"
         />
-        <!-- </Suspense> -->
       </div>
     </div>
   </main>
@@ -1546,23 +1555,15 @@ const toggleBodyClass = (className) => {
     </button>
   </div>
 
-  <!-- <div
-    class="footer-holder"
-  > -->
-  <!-- id="app-footer" -->
   <app-footer
     :is-sticky="true"
     :is-hidden-mobile="true"
     :links="footerLinks"
   >
   </app-footer>
-  <!-- </div> -->
-
-  <!-- </div> -->
 
 </template>
 
-<!-- @import "../assets/scss/main.scss"; -->
 <style lang="scss">
 
 .skip-to-main-content-link {

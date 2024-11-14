@@ -1035,34 +1035,129 @@ const checkboxChange = (e) => {
 
     <div
       id="refine-top"
-      :class="refineTitleClass + ' refine-title'"
+      :class="refineTitleClass + ' refine-title is-flex is-flex-direction-row'"
       tabindex="0"
       role="button"
       @click="expandRefine"
     >
+      <div class="refine-top-left is-flex is-flex-direction-row">
 
-      <div
-        class="slider-icon"
-      >
-        <font-awesome-icon icon="sliders-h" />
+        <div
+          class="slider-icon"
+        >
+          <font-awesome-icon icon="sliders-h" />
+        </div>
+
+        <h2
+          v-if="!i18nEnabled"
+          class="refine-label-text"
+        >
+          {{ refineTitle }}
+        </h2>
+
+        <h2
+          v-if="i18nEnabled"
+          class="refine-label-text"
+        >
+          {{ $t('refinePanel.refine') }}
+        </h2>
+
+        <button
+          v-if="!i18nEnabled && (selectedArray.length || anyValueEntered)"
+          class="clear-all"
+          @click.prevent="clearAll"
+        >
+          Clear all
+        </button>
+
+        <button
+          v-if="i18nEnabled && (selectedArray.length || anyValueEntered)"
+          class="clear-all"
+          @click.prevent="clearAll"
+          v-html="$t('refinePanel.clearAll')"
+        />
+
+        <div
+          v-if="!isMobile"
+          id="selected-boxes"
+          class="selected-boxes columns is-mobile"
+          @click="clickBox"
+        >
+          <button
+            v-for="box in keywordsEntered"
+            class="box-value column is-narrow"
+            @click="closeKeywordsBox(box)"
+          >
+            {{ $t(getBoxValue(box)) }}
+            <font-awesome-icon
+              class="fa-x"
+              :icon="[timesIconWeight,'times']"
+            />
+          </button>
+
+          <button
+            v-if="zipcodeEntered"
+            class="box-value column is-narrow"
+            @click="closeZipcodeBox(zipcodeEntered)"
+          >
+            {{ $t(getBoxValue(zipcodeEntered)) + ' - ' + searchDistance }}
+            <font-awesome-icon
+              class="fa-x"
+              :icon="[timesIconWeight,'times']"
+            />
+          </button>
+
+          <button
+            v-if="addressEntered"
+            class="box-value column is-narrow"
+            @click="closeAddressBox(addressEntered)"
+          >
+            <!-- {{ $t(getBoxValue(addressEntered)) + ' - ' + searchDistance }} -->
+            {{ $t(getBoxValue(addressEntered)) }}
+            <font-awesome-icon
+              class="fa-x"
+              :icon="[timesIconWeight,'times']"
+            />
+          </button>
+
+          <button
+            v-if="refineType !== 'categoryField_value'"
+            v-for="box in selectedArray"
+            class="box-value column is-narrow"
+            @click="closeBox(box)"
+          >
+            {{ $t(getBoxValue(box)) }}
+            <font-awesome-icon
+              class="fa-x"
+              :icon="[timesIconWeight,'times']"
+            />
+          </button>
+          <button
+            v-if="refineType == 'categoryField_value' && selected.length && i18nEnabled"
+            class="box-value column is-narrow"
+            @click="closeBox(selected)"
+          >
+            {{ $t('sections.' + getCategoryFieldValue(selected) + '.header') }}
+            <font-awesome-icon
+              class="fa-x"
+              :icon="[timesIconWeight,'times']"
+            />
+          </button>
+          <button
+            v-if="refineType == 'categoryField_value' && selected.length && !i18nEnabled"
+            class="box-value column is-narrow"
+            @click="closeBox(selected)"
+          >
+            {{ selected }}
+            <font-awesome-icon
+              class="fa-x"
+              :icon="[timesIconWeight,'times']"
+            />
+          </button>
+        </div>
       </div>
-
-      <h2
-        v-if="!i18nEnabled"
-        class="refine-label-text"
-      >
-        {{ refineTitle }}
-      </h2>
-
-      <h2
-        v-if="i18nEnabled"
-        class="refine-label-text"
-      >
-        {{ $t('refinePanel.refine') }}
-      </h2>
-
       <div
-        class="open-close-icon"
+        class="open-close-icon is-flex is-pulled-right"
       >
         <font-awesome-icon
           v-if="refineOpen && retractable  || refineOpen && isMobile"
@@ -1073,100 +1168,6 @@ const checkboxChange = (e) => {
           v-if="!refineOpen && retractable  || !refineOpen && isMobile"
           :icon="[angleIconWeight, 'angle-down']"
         />
-      </div>
-
-      <button
-        v-if="!i18nEnabled && (selectedArray.length || anyValueEntered)"
-        class="clear-all"
-        @click.prevent="clearAll"
-      >
-        Clear all
-      </button>
-
-      <button
-        v-if="i18nEnabled && (selectedArray.length || anyValueEntered)"
-        class="clear-all"
-        @click.prevent="clearAll"
-        v-html="$t('refinePanel.clearAll')"
-      />
-
-      <div
-        v-if="!isMobile"
-        id="selected-boxes"
-        class="selected-boxes columns is-mobile"
-        @click="clickBox"
-      >
-        <button
-          v-for="box in keywordsEntered"
-          class="box-value column is-narrow"
-          @click="closeKeywordsBox(box)"
-        >
-          {{ $t(getBoxValue(box)) }}
-          <font-awesome-icon
-            class="fa-x"
-            :icon="[timesIconWeight,'times']"
-          />
-        </button>
-
-        <button
-          v-if="zipcodeEntered"
-          class="box-value column is-narrow"
-          @click="closeZipcodeBox(zipcodeEntered)"
-        >
-          {{ $t(getBoxValue(zipcodeEntered)) + ' - ' + searchDistance }}
-          <font-awesome-icon
-            class="fa-x"
-            :icon="[timesIconWeight,'times']"
-          />
-        </button>
-
-        <button
-          v-if="addressEntered"
-          class="box-value column is-narrow"
-          @click="closeAddressBox(addressEntered)"
-        >
-          <!-- {{ $t(getBoxValue(addressEntered)) + ' - ' + searchDistance }} -->
-          {{ $t(getBoxValue(addressEntered)) }}
-          <font-awesome-icon
-            class="fa-x"
-            :icon="[timesIconWeight,'times']"
-          />
-        </button>
-
-        <button
-          v-if="refineType !== 'categoryField_value'"
-          v-for="box in selectedArray"
-          class="box-value column is-narrow"
-          @click="closeBox(box)"
-        >
-          {{ $t(getBoxValue(box)) }}
-          <font-awesome-icon
-            class="fa-x"
-            :icon="[timesIconWeight,'times']"
-          />
-        </button>
-        <button
-          v-if="refineType == 'categoryField_value' && selected.length && i18nEnabled"
-          class="box-value column is-narrow"
-          @click="closeBox(selected)"
-        >
-          {{ $t('sections.' + getCategoryFieldValue(selected) + '.header') }}
-          <font-awesome-icon
-            class="fa-x"
-            :icon="[timesIconWeight,'times']"
-          />
-        </button>
-        <button
-          v-if="refineType == 'categoryField_value' && selected.length && !i18nEnabled"
-          class="box-value column is-narrow"
-          @click="closeBox(selected)"
-        >
-          {{ selected }}
-          <font-awesome-icon
-            class="fa-x"
-            :icon="[timesIconWeight,'times']"
-          />
-        </button>
       </div>
 
     </div>
@@ -1448,9 +1449,11 @@ const checkboxChange = (e) => {
 @import "../assets/main_pin.scss";
 
 #refine-panel-component {
+  // height: 10%;
   // background: $ghost-grey;
   background: #f0f0f0;
   overflow-x: hidden;
+  // display: flex;
 }
 
 #columns-div-for-checkboxes {
@@ -1556,14 +1559,6 @@ const checkboxChange = (e) => {
       border-color: #2176d2;
     }
 
-    // .refine-title-open {
-    //   cursor: pointer;
-    // }
-
-    // .retractable-refine-title-open:hover {
-    //   border-color: #f0f0f0;
-    // }
-
     .close-button {
       height: 20px;
       // position: absolute;
@@ -1587,11 +1582,24 @@ const checkboxChange = (e) => {
   }
 
   .refine-title {
-    // color: $ben-franklin-blue-dark;
+    flex: 1 0 100%;
     color: #0f4d90;
     margin: 0px !important;
-    display: flex;
-    flex-direction: row;
+    // display: flex;
+    // flex-direction: row;
+
+    .refine-top-left {
+      // flex: 1 0 90%;
+      flex-grow: 11;
+      // display: flex;
+      // flex-direction: row;
+      // align-items: center;
+    }
+
+    .open-close-icon {
+      flex-grow: 1;
+      flex-direction: row-reverse;
+    }
 
     .clear-all {
       margin-top: 10px;
@@ -1653,6 +1661,7 @@ const checkboxChange = (e) => {
     .open-close-icon {
       padding-top: 9px;
       font-size: 26px;
+      // flex-grow: 1;
     }
 
     #columns-div-for-checkboxes {
@@ -1815,6 +1824,10 @@ const checkboxChange = (e) => {
   text-transform: uppercase;
 }
 
+.input-wrap {
+  padding-top: 0px !important;
+}
+
 .input-wrap.input-checkbox .is-checkradio+label:hover::before, .input-wrap.input-radio .is-checkradio+label:hover::before {
   border-width: 2px !important;
 }
@@ -1825,7 +1838,8 @@ const checkboxChange = (e) => {
 }
 
 .open-close-icon {
-  padding-top: 8px;
+  padding-top: 10px;
+  padding-right: 6px;
   font-size: 24px;
 }
 
