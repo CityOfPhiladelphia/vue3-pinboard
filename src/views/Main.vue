@@ -6,7 +6,7 @@ import { useGeocodeStore } from '../stores/GeocodeStore.js';
 import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
-import { ref, computed, getCurrentInstance, onMounted, watch, onBeforeMount } from 'vue';
+import { ref, computed, getCurrentInstance, onMounted, watch, onBeforeMount, nextTick } from 'vue';
 
 const ConfigStore = useConfigStore();
 const $config = ConfigStore.config;
@@ -684,10 +684,11 @@ watch(
   () => refineOpen.value,
   async() => {
     await nextTick();
-    const el = document.getElementById('refine-panel-component');
-    let height = el.style.height;
-    let offsetHeight = el.offsetHeight;
-    if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch refineOpen is firing, el:', el, 'height:', height, 'offsetHeight:', offsetHeight);
+    const refinePanel = document.getElementById('refine-panel-component');
+    let height = refinePanel.style.height;
+    let offsetHeight = refinePanel.offsetHeight;
+    let clientHeight = refinePanel.clientHeight;
+    if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch refineOpen is firing, refinePanel:', refinePanel, 'height:', height, 'offsetHeight:', offsetHeight, 'clientHeight:', clientHeight);
     const mainRow = document.getElementById('main-row');
     // mainRow.style.height = `calc(100% - ${offsetHeight}px)`;
     mainRow.style.setProperty('height', `calc(100% - ${offsetHeight+44}px)`);
