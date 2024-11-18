@@ -156,7 +156,7 @@ const database = computed(() => {
   let value = {}
   if (DataStore.sources[DataStore.appType]) {
     // if (import.meta.env.VITE_DEBUG) console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]);
-    value = DataStore.sources[DataStore.appType].data.rows || DataStore.sources[DataStore.appType].data.features || DataStore.sources[DataStore.appType].data;
+    value = DataStore.sources[DataStore.appType].data.rows || DataStore.sources[DataStore.appType].data.features || DataStore.sources[DataStore.appType].features;
   }
   return value;
 });
@@ -837,7 +837,7 @@ const makeValidUrl = (url) => {
           v-if="geocodeStatus !== 'error'"
           class="mt-2 mb-2"
         >
-          {{ summarySentenceStart }} <b><i>{{ summarySentenceEnd }}</i></b>
+          {{ summarySentenceStart }}<!-- <b><i>{{ summarySentenceEnd }}</i></b> -->
         </div>
       </div>
 

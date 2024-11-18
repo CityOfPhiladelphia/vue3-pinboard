@@ -222,7 +222,7 @@ onMounted(() => {
 
 const siteName = computed(() => {
   // const route = useRoute();
-  if (import.meta.env.VITE_DEBUG) console.log('siteName computed');
+  // if (import.meta.env.VITE_DEBUG) console.log('siteName computed');
   if (!props.item) {
     return;
   }
@@ -284,6 +284,7 @@ const openPrintView = (e) => {
 };
 
 const isElementInViewport = (el) => {
+  console.log('el:', el);
   const rect = el.getBoundingClientRect();
   // console.log('bounding box', rect);
   const visibility = {

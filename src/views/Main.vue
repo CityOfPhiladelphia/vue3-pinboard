@@ -355,16 +355,7 @@ const database = computed(() => {
   let value = {}
   if (DataStore.sources[DataStore.appType]) {
     // if (import.meta.env.VITE_DEBUG) console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]);
-    value = DataStore.sources[DataStore.appType].data.rows || DataStore.sources[DataStore.appType].data.features || DataStore.sources[DataStore.appType].data;
-  }
-  return value;
-});
-
-const database2 = computed(() => {
-  let value = {}
-  if (DataStore.sources[DataStore.appType]) {
-    // if (import.meta.env.VITE_DEBUG) console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]);
-    value = DataStore.sources[DataStore.appType].data;
+    value = DataStore.sources[DataStore.appType].data.rows || DataStore.sources[DataStore.appType].data.features || DataStore.sources[DataStore.appType].features;
   }
   return value;
 });
@@ -910,6 +901,7 @@ const getProjection = (item) => {
 };
 
 const checkServices = (index, row) => {
+  // if (import.meta.env.VITE_DEBUG) console.log('Main.vue checkServices is running, index:', index, 'row:', row);
   const selectedServices = MainStore.selectedServices;
   if (!selectedServices.length) {
     return true;
@@ -1093,17 +1085,20 @@ const checkServices = (index, row) => {
 };
 
 const checkBuffer = (row) => {
-  // console.log('checkBuffer is running, row:', row, 'MapStore.bufferForAddressOrZipcode:', MapStore.bufferForAddressOrZipcode);
-  if (!row.geometry) {
-    return false;
-  }
+  // if (import.meta.env.VITE_DEBUG) console.log('checkBuffer is running, row:', row, 'row.latitude:', row.latitude, 'MapStore.bufferForAddressOrZipcode:', MapStore.bufferForAddressOrZipcode);
+  // if (import.meta.env.VITE_DEBUG) console.log('checkBuffer is running, row.latitude:', row.latitude);
+  // if (!row.geometry && !row.latitude) {
+  //   // if (import.meta.env.VITE_DEBUG) console.log('!row.geometry && !row.latitude');
+  //   return false;
+  // }
+  // if (import.meta.env.VITE_DEBUG) console.log('checkBuffer still going, row:', row, 'MapStore.bufferForAddressOrZipcode:', MapStore.bufferForAddressOrZipcode);
   const buffer = MapStore.bufferForAddressOrZipcode;
   // if (!Object.keys(MapStore.bufferForAddressOrZipcode).length) {
   // if (!MapStore.bufferForAddressOrZipcode) {
   if (!buffer) {
-    if (import.meta.env.VITE_DEBUG) console.log('!MapStore.bufferForAddressOrZipcode');
+    // if (import.meta.env.VITE_DEBUG) console.log('!MapStore.bufferForAddressOrZipcode');
     return true;
-  } else {
+  } else if (row.geometry) {
     let comparePoint;
     if (GeocodeStore.aisData.features) {
       comparePoint = GeocodeStore.aisData.features[0].geometry;
@@ -1118,7 +1113,7 @@ const checkBuffer = (row) => {
     // return booleanPointInPolygon(row.geometry, buffer)// {
     //   return true;
     // }
-  }
+  // }
   // } else if (row.latlng) {
   // if (row.latlng) {
   //   if (import.meta.env.VITE_DEBUG) console.log('row.latlng:', row.latlng);
@@ -1156,6 +1151,23 @@ const checkBuffer = (row) => {
   //       return true;
   //     }
   //   }
+  // } else if (row.latitude && row.longitude) {
+  //   if (import.meta.env.VITE_DEBUG) console.log('buffer else if is running, row:', row, 'booleanBuffer:', booleanBuffer);
+  //   if (typeof row.latitude === 'number' && typeof row.lon === 'number') {
+  //     const rowPoint = point([longitude, latitude]);
+  //     let comparePoint;
+  //     if (GeocodeStore.aisData.features) {
+  //       comparePoint = GeocodeStore.aisData.features[0].geometry;
+  //     } else if (MapStore.zipcodeCenter) {
+  //       comparePoint = MapStore.zipcodeCenter;
+  //     }
+  //     row.distance = distance(comparePoint, rowPoint, { units: 'miles' });
+  //     return true;
+      // if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
+      //   return true;
+      // }
+      // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 2 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
+    // }
   // } else if (row.lat && row.lon) {
   //   // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 2 is running, row:', row, 'booleanBuffer:', booleanBuffer);
   //   if (typeof row.lat === 'number' && typeof row.lon === 'number') {
@@ -1240,11 +1252,11 @@ const checkBuffer = (row) => {
   //     }
   //     // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
   //   }
-  // }
+  }
 };
 
 const checkKeywords = (row) => {
-  // if (import.meta.env.VITE_DEBUG) console.log('row:', row, '$config.tags', $config.tags, 'selectedKeywords.value:', selectedKeywords.value, 'selectedKeywords.value.length:', selectedKeywords.value.length);
+  // if (import.meta.env.VITE_DEBUG) console.log('checkKeywords, row:', row, '$config.tags', $config.tags, 'selectedKeywords.value:', selectedKeywords.value, 'selectedKeywords.value.length:', selectedKeywords.value.length);
   let booleanKeywords;
   if (selectedKeywords.value.length > 0) {
     booleanKeywords = false;
@@ -1327,6 +1339,7 @@ const checkKeywords = (row) => {
       }
     }
   } else {
+    // console.log('no selectedKeywords');
     booleanKeywords = true;
   }
   return booleanKeywords;
@@ -1372,6 +1385,7 @@ const filterPoints = () => {
     // if (import.meta.env.VITE_DEBUG) console.log('booleanServices:', booleanServices, 'booleanBuffer:', booleanBuffer, 'booleanKeywords:', booleanKeywords);
 
     if (booleanServices && booleanBuffer && booleanKeywords) {
+      // if (import.meta.env.VITE_DEBUG) console.log('Main.vue filterPoints is pushing a row, row:', row);
       filteredRows.push(row);
     }
   }
@@ -1414,10 +1428,11 @@ const showModal = () => {
 const closeModal = () => {
   isModalOpen.value = false;
   isAlertModalOpen.value = false;
-  toggleBodyClass('no-scroll');
+  // toggleBodyClass('no-scroll');
 };
 
 const toggleBodyClass = (className) => {
+  console.log('toggleBodyClass is running, className:', className);
   const el = document.body;
   return isOpen ? el.classList.add(className) : el.classList.remove(className);
 };

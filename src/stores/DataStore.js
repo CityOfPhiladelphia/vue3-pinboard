@@ -29,9 +29,9 @@ export const useDataStore = defineStore('DataStore', {
     async fillResources() {
       const ConfigStore = useConfigStore();
       const appType = ConfigStore.config.app.type;
-      const data = ConfigStore.config.dataSources[appType];
-      const params = data.options.params;
-      const response = await axios.get(data.url, { params });
+      const dataConfig = ConfigStore.config.dataSources[appType];
+      const params = dataConfig.options.params;
+      const response = await axios.get(dataConfig.url, { params });
       if (import.meta.env.VITE_DEBUG) console.log('fillResources is running, params:', params, 'response:', response);
       if (response.status === 200) {
         let data = await response.data;
@@ -85,6 +85,23 @@ export const useDataStore = defineStore('DataStore', {
             }
           }
           delete data.rows;
+        } else if (data.length > 0) {
+          response.features = [];
+          // let features = [];
+          console.log('3rd option, data.features:', response.features);
+          let j = 0;
+          for (let i=0; i<data.length; i++) {
+            // data.rows[i]._featureId = appType + '_' + i;
+            if (data[i].longitude && data[i].latitude) {
+              // const geo = point([data.rows[i].lon, data.rows[i].lat]);
+              // console.log('geo:', geo);
+              response.features[j] = point([data[i].longitude, data[i].latitude], data[i]);
+              response.features[j]._featureId = appType + '_' + j;
+              response.features[j].properties._featureId = appType + '_' + j;
+              j = j+1;
+            }
+          }
+          console.log('3rd option 2, data.features:', response.features);
         }
         this.sources[appType] = response;
         this.loadingSources = false;
