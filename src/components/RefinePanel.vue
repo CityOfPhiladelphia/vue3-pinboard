@@ -1257,7 +1257,7 @@ const checkboxChange = (e) => {
                 <icon-tool-tip
                   v-if="!isMobile && refineListTranslated[ind]['tooltip']"
                   :tip="refineListTranslated[ind]['tooltip']"
-                  :circle-type="click"
+                  :circle-type="'click'"
                   :position="refineList[ind]['tooltip']['position']"
                   :multiline="refineList[ind]['tooltip']['multiline']"
                 />
@@ -1767,7 +1767,7 @@ const checkboxChange = (e) => {
 .dropdown-checkbox-div {
   padding: 0px !important;
   position: absolute;
-  z-index: 1001;
+  // z-index: 1001;
   border-style: solid;
   border-width: 1px;
 }

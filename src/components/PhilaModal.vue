@@ -24,7 +24,7 @@ export default {
             >
               <font-awesome-icon icon="times" />
             </button>
-            <slot name="header" />
+            <slot name="title"></slot>
           </div>
           <hr>
           <div class="modal-body">

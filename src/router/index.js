@@ -50,11 +50,18 @@ const router = createRouter({
       component: Main,
       beforeEnter: async (to, from) => {
         if (import.meta.env.VITE_DEBUG) console.log('router beforeEnter is running to:', to, 'from:', from);
+        const MainStore = useMainStore();
         const DataStore = useDataStore();
+        const ConfigStore = useConfigStore();
+        const $config = ConfigStore.config;
+        if ($config.agoTokenNeeded) {
+          await DataStore.fillAgoToken();
+        }
         await DataStore.fillAppType();
         await DataStore.fillResources();
         // await DataStore.fillHolidays();
         await DataStore.fillZipcodes();
+        MainStore.firstRouteLoaded = true;
         if (import.meta.env.VITE_DEBUG) console.log('router beforeEnter is running, DataStore.zipcodes:', DataStore.zipcodes);
       }
     },

@@ -27,12 +27,26 @@ a {
   justify-content: space-evenly;
 }
 
+.main {
+  height: 100%;
+  padding-top: 0px;
+}
+
+#loading-spinner {
+  height: 100%;
+}
+
 .main-column {
-  height: calc(100vh - 96px);
+  // height: calc(100vh - 96px);
   // height: calc(100vh - 142px);
   display: flex;
   flex-direction: column;
   padding: 0px !important;
+}
+
+.branding-col {
+  padding-bottom: 0px !important;
+  padding-top: 0px !important;
 }
 
 .refine-panel-component {

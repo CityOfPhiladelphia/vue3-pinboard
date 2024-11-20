@@ -27,6 +27,7 @@ import AppFooter from "@phila/phila-ui-app-footer";
 import Callout from "@phila/phila-ui-callout";
 import Dropdown from "@phila/phila-ui-dropdown";
 import MobileNav from "@phila/phila-ui-mobile-nav";
+import Modal from "@phila/phila-ui-modal";
 import NavLink from "@phila/phila-ui-nav-link";
 import Textbox from "@phila/phila-ui-textbox";
 import LangSelector from "@phila/phila-ui-lang-selector";
@@ -103,6 +104,7 @@ export default function pinboard(config) {
   app.component("Callout", Callout);
   app.component("Dropdown", Dropdown);
   app.component("MobileNav", MobileNav);
+  app.component("Modal", Modal);
   app.component("NavLink", NavLink);
   app.component("Textbox", Textbox);
   app.component("LangSelector", LangSelector);

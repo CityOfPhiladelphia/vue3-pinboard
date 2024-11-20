@@ -21,7 +21,6 @@ export const useMainStore = defineStore('MainStore', {
         current: false,
         start_date: '',
       },
-      agoToken: null,
       selectedKeywords: [],
       selectedServices: [],
       lastSelectMethod: '',
@@ -34,6 +33,7 @@ export const useMainStore = defineStore('MainStore', {
       currentAddress: '',
       currentLang: null,
       subsections: [],
+      firstRouteLoaded: false,
     };
   },
 

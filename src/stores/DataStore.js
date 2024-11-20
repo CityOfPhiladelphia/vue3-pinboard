@@ -8,6 +8,7 @@ export const useDataStore = defineStore('DataStore', {
   state: () => {
     return {
       // printCheckboxes: [],
+      agoToken: null,
       selectedResource: null,
       latestSelectedResourceFromExpand: null,
       appType: null,
@@ -25,6 +26,39 @@ export const useDataStore = defineStore('DataStore', {
     async fillAppType() {
       const ConfigStore = useConfigStore();
       this.appType = ConfigStore.config.app.type;
+    },
+    async fillAgoToken() {
+      let data = qs.stringify({
+        'f': 'json',
+        'username': import.meta.env.VITE_AGO_USERNAME,
+        'password': import.meta.env.VITE_AGO_PASSWORD,
+        'referer': 'https://www.mydomain.com' 
+      });
+    
+      let config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: 'https://www.arcgis.com/sharing/rest/generateToken',
+        headers: { 
+          'Content-Type': 'application/x-www-form-urlencoded', 
+          // 'Authorization': 'Basic Og=='
+        },
+        data : data
+      };
+    
+      axios.request(config)
+      .then((response) => {
+        console.log(JSON.stringify(response.data));
+        this.agoToken = response.data;
+        // this.$store.commit('setAgoToken', response.data.token);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    },
+    async fillExtraData() {
+      const ConfigStore = useConfigStore();
+      const appType = ConfigStore.config.app.type;
     },
     async fillResources() {
       const ConfigStore = useConfigStore();
@@ -110,7 +144,7 @@ export const useDataStore = defineStore('DataStore', {
     },
     async fillZipcodes() {
       try{
-        let url = '//services.arcgis.com/fLeGjb7u4uXqeF9q/arcgis/rest/services/Zipcodes_Poly/FeatureServer/0/query';
+        let url = 'https://services.arcgis.com/fLeGjb7u4uXqeF9q/arcgis/rest/services/Zipcodes_Poly/FeatureServer/0/query';
         let params = {
           where: '1=1',
           outFields: '*',

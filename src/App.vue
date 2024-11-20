@@ -18,9 +18,14 @@ import isMac from './util/is-mac'; // this can probably be removed from App.vue,
 import i18nFromFiles from './i18n/i18n.js';
 const languages = i18nFromFiles.i18n.languages;
 
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
+
 // STORES
 const DataStore = useDataStore();
 const MainStore = useMainStore();
+
+const $config = useConfigStore().config;
 
 if (!import.meta.env.VITE_PUBLICPATH) {
   MainStore.publicPath = '/';
@@ -29,14 +34,16 @@ if (!import.meta.env.VITE_PUBLICPATH) {
 }
 if (import.meta.env.VITE_DEBUG == 'true') console.log('import.meta.env.VITE_PUBLICPATH:', import.meta.env.VITE_PUBLICPATH, 'MainStore.publicPath:', MainStore.publicPath);
 
-// const test = ref(null);
-
 // ROUTER
 const route = useRoute();
 const router = useRouter();
 
 const instance = getCurrentInstance();
 const locale = computed(() => instance.appContext.config.globalProperties.$i18n.locale);
+
+const brandingImage = ref(null);
+const brandingLink = ref(null);
+const appLink = ref('/');
 
 onBeforeMount(async () => {
   MainStore.appVersion = import.meta.env.VITE_VERSION;
@@ -48,28 +55,45 @@ onBeforeMount(async () => {
     router.push({ name: 'home' });
   }
 
-  // const main = document.getElementById('main');
-  // main.scrollTop = -main.scrollHeight;
-
   window.addEventListener('resize', handleWindowResize);
   handleWindowResize();
 
-  // DataStore.fillZipcodes();
-  // DataStore.fillAppType();
-  // DataStore.fillResources();
   DataStore.fillHolidays();
+
+  if ($config.app.logoSrc) {
+    brandingImage.value = {
+      src: $config.app.logoSrc,
+      alt: $config.app.logoAlt,
+      width: $config.app.logoWidth || "200px",
+    }
+  }
+
+  if ($config.appLink) {
+    appLink.value = $config.appLink;
+  } else {
+    appLink.value = '.';
+  }
+
 });
 
-const links = [
-  {
-    type: 'native',
-    href: 'https://phila.formstack.com/forms/atlas_feedback_form',
-    text: 'Feedback',
-    attrs: {
-      target: '_blank',
-    },
-  },
-];
+const footerLinks = computed(() => {
+  if ($config.footer) {
+    let newValues = []
+    for (let i of $config.footer) {
+      let value = {}
+      for (let j of Object.keys(i)) {
+        // if (import.meta.env.VITE_DEBUG) console.log('i:', i, 'j:', j);
+        if (!i18nEnabled.value || j !== "text") {
+          value[j] = i[j];
+        } else {
+          value[j] = t(i[j]);
+        }
+      }
+      newValues.push(value)
+    }
+    return newValues;
+  }
+});
 
 const handleWindowResize = () => {
   const rootElement = document.getElementById('app');
@@ -128,78 +152,104 @@ watch(
     document.title = newPageTitle;
   }
 )
+
 const appTitle = computed(() => {
-  return 'Vue3 Pinboard'
-  // let version = 'Atlas';
-  // if (import.meta.env.VITE_VERSION == 'cityatlas'){
-  //   version = 'CityAtlas';
-  // }
-  // return version;
-})
+  let value;
+  if ($config.app.title) {
+    value = $config.app.title;
+  } else if (i18nEnabled.value) {
+    // if (import.meta.env.VITE_DEBUG) console.log('t("app.title"):', t('app.title'));
+    value = t('app.title');
+  }
+  return value;
+});
+
+const appSubTitle = computed(() => {
+  let value;
+  if ($config.app.subtitle) {
+    value = $config.app.subtitle;
+  } else if (i18nEnabled.value) {
+    // if (import.meta.env.VITE_DEBUG) console.log('t("app.subtitle"):', t('app.subtitle'));
+    value = t('app.subtitle'); 
+  }
+  return value;
+});
+
+const i18nEnabled = computed(() => {
+  if ($config.i18n && $config.i18n.enabled) {
+    return true;
+  } else {
+    return false;
+  }
+});
+
+const i18nLanguages = computed(() => {
+  let values = [];
+  // if (import.meta.env.VITE_DEBUG) console.log('i18nLanguages, $config.i18n:', $config.i18n);
+  if ($config.i18n.languages) {
+    values = $config.i18n.languages;
+  }
+  return values;
+});
 
 </script>
 
 <template>
-  <router-view></router-view>
-  <!-- <a
-    href="#main"
-    class="skip-to-main-content-link"
-  >Skip to main content</a>
-
+  
   <app-header
     :app-title="appTitle"
-    :app-subtitle="'test'"
-    app-link="/"
+    :app-subtitle="appSubTitle"
+    :app-link="appLink"
     :is-sticky="true"
     :is-fluid="true"
-  >
+    :branding-image="brandingImage"
+    :branding-link="brandingLink"
+    >
     <template #mobile-nav>
-      <mobile-nav :links="links" />
+      <mobile-nav :links="footerLinks" />
     </template>
-    <template #lang-selector-nav>
+    
+    <template
+      v-if="i18nEnabled"
+      #lang-selector-nav
+    >
       <lang-selector
-        :languages="languages"
+        v-if="i18nEnabled"
+        :languages="i18nLanguages"
       />
     </template>
   </app-header>
 
-  <main
-    id="main"
-    class="main-column invisible-scrollbar"
-  >
-    <refine-panel />
-
-    <div class="main-row">
-      <div
-        v-if="!isMobileDevice() && MainStore.windowDimensions.width > 768"
-        class="topics-holder"
-      >
-        <locations-panel />
-      </div>
-
-      <div
-        class="map-panel-holder"
-      >
-        <map-panel />
-      </div>
-
-      <div
-        v-if="isMobileDevice() || MainStore.windowDimensions.width <= 768"
-        class="topics-holder"
-      >
-        <locations-panel />
+  <main id="main" class="main">
+    
+    <div
+      v-if="MainStore.firstRouteLoaded === false"
+      id="loading-spinner"
+      class="is-flex is-justify-content-center is-align-items-center is-flex-direction-column"
+    >
+      <font-awesome-icon
+        icon="fa-solid fa-spinner"
+        class="fa-6x center-spinner"
+        spin
+      />
+      <div class="mt-6">
+        Loading {{ appTitle.toLowerCase() }}
       </div>
     </div>
+
+    <router-view></router-view>
+
   </main>
 
   <app-footer
     :is-sticky="true"
     :is-hidden-mobile="true"
-    :links="links"
-  /> -->
-
+    :links="footerLinks"
+  >
+  </app-footer>
 
 </template>
 
 <style>
+
 </style>

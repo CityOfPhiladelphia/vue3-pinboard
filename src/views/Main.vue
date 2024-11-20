@@ -63,7 +63,7 @@ const isAlertModalOpen = ref(false);
 const isLarge = ref(true);
 const currentBuffer = ref(null);
 const buttonText = ref('app.viewMap');
-const appLink = ref('/');
+// const appLink = ref('/');
 const myValue = ref('');
 const brandingImage = ref(null);
 const brandingLink = ref(null);
@@ -79,25 +79,6 @@ const showForceHolidayBanner = ref(false);
 const showAutomaticHolidayBanner = ref(false);
 
 console.log('watch test');
-
-// OLD ONCREATED
-// let root = document.getElementsByTagName( 'html' )[0]; // '0' to assign the first (and only `HTML` tag)
-// root.setAttribute( 'class', 'invisible-scrollbar' );
-
-// if (import.meta.env.VITE_DEBUG) console.log('Pinboard Main.vue created, $config:', $config);
-// if ($config.map) {
-//   if ($config.map.shouldInitialize === false) {
-//     MapStore.shouldInitialize = false
-//   }
-// }
-
-if ($config.app.logoSrc) {
-  brandingImage.value = {
-    src: $config.app.logoSrc,
-    alt: $config.app.logoAlt,
-    width: $config.app.logoWidth || "200px",
-  }
-}
 
 if ($config.app.logoLink && $config.app.logoLink == 'none') {
   brandingLink.value = {
@@ -193,75 +174,6 @@ const shouldShowGreeting = computed(() => {
 //   return value;
 // });
 
-const footerLinks = computed(() => {
-  if ($config.footer) {
-    let newValues = []
-    for (let i of $config.footer) {
-      let value = {}
-      for (let j of Object.keys(i)) {
-        // if (import.meta.env.VITE_DEBUG) console.log('i:', i, 'j:', j);
-        if (!i18nEnabled.value || j !== "text") {
-          value[j] = i[j];
-        } else {
-          value[j] = t(i[j]);
-        }
-      }
-      newValues.push(value)
-    }
-    return newValues;
-  }
-});
-
-const appTitle = computed(() => {
-  let value;
-  if ($config.app.title) {
-    value = $config.app.title;
-  } else if (i18nEnabled.value) {
-    // if (import.meta.env.VITE_DEBUG) console.log('t("app.title"):', t('app.title'));
-    value = t('app.title');
-  }
-  return value;
-});
-
-const appSubTitle = computed(() => {
-  let value;
-  
-  if ($config.app.subtitle) {
-    value = $config.app.subtitle;
-  } else if (i18nEnabled.value) {
-    // if (import.meta.env.VITE_DEBUG) console.log('t("app.subtitle"):', t('app.subtitle'));
-    value = t('app.subtitle'); 
-  }
-  return value;
-});
-
-const i18nLanguages = computed(() => {
-  let values = [];
-  // if (import.meta.env.VITE_DEBUG) console.log('i18nLanguages, $config.i18n:', $config.i18n);
-  if ($config.i18n.languages) {
-    values = $config.i18n.languages;
-  } // else {
-    // for (let key of Object.keys($i18n.messages)) {
-    //   let value = {};
-    //   // if (import.meta.env.VITE_DEBUG) console.log('in loop, key:', key, '$i18n.locale:', $i18n.locale, '$i18n.messages[key]:', $i18n.messages[key]);
-    //   value.language = key;
-    //   value.title = $i18n.messages[key].language;
-    //   values.push(value);
-    // }
-    // values = instance.appContext.config.globalProperties.$i18n.availableLocales;
-  // }
-  // if (import.meta.env.VITE_DEBUG) console.log('end of i18nLanguages, values:', values);
-  return values;
-});
-
-const feedbackLink = computed(() => {
-  let value;
-  if ($config.footer && $config.footer.feedback && $config.footer.feedback.link) {
-    value = $config.footer.feedback.link;
-  }
-  return value;
-});
-
 const alertResponse = computed(() => {
   return MainStore.alertResponse || null;
 });
@@ -274,10 +186,10 @@ const alertResponse = computed(() => {
 //   return value;
 // });
 
-const alertModalHeader = computed(() => {
+const alertModalTitle = computed(() => {
   let value = '';
-  if ($config.alerts && $config.alerts.modal && $config.alerts.modal.header) {
-    value = $config.alerts.modal.header;
+  if ($config.alerts && $config.alerts.modal && $config.alerts.modal.title) {
+    value = $config.alerts.modal.title;
   }
   return value;
 });
@@ -633,7 +545,6 @@ watch(
 // );
 
 watch(
-  // () => currentBuffer.value,
   () => MapStore.bufferForAddressOrZipcode,
   async => {
     if (import.meta.env.VITE_DEBUG) console.log('watch MapStore.bufferForAddressOrZipcode is calling filterPoints');
@@ -676,33 +587,37 @@ watch(
   async() => {
     await nextTick();
     const refinePanel = document.getElementById('refine-panel-component');
-    let height = refinePanel.style.height;
-    let offsetHeight = refinePanel.offsetHeight;
-    let clientHeight = refinePanel.clientHeight;
-    if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch refineOpen is firing, refinePanel:', refinePanel, 'height:', height, 'offsetHeight:', offsetHeight, 'clientHeight:', clientHeight);
+    let refinePanelOffsetHeight = refinePanel.offsetHeight;
+    if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch refineOpen is firing, refinePanel:', refinePanel, 'refinePanelOffsetHeight:', refinePanelOffsetHeight);
     const mainRow = document.getElementById('main-row');
-    // mainRow.style.height = `calc(100% - ${offsetHeight}px)`;
-    mainRow.style.setProperty('height', `calc(100% - ${offsetHeight+44}px)`);
+    mainRow.style.setProperty('height', `calc(100% - ${refinePanelOffsetHeight+44}px)`);
   }
 );
 
 onMounted(async() => {
+
   let body = document.body;
   body.classList.remove('print-view');
   body.classList.add('main-view');
 
   await nextTick();
+  // const appHeader = document.getElementById('app-header');
+  // let appHeaderOffsetHeight = appHeader.offsetHeight;
+  // console.log('appHeaderOffsetHeight:', appHeaderOffsetHeight);
+  // const mainColumn = document.getElementById('main-column');
+  // mainColumn.style.setProperty('height', `calc(100% - ${appHeaderOffsetHeight}px)`);
+
   const refinePanel = document.getElementById('refine-panel-component');
-  let height = refinePanel.style.height;
-  let offsetHeight = refinePanel.offsetHeight;
-  let clientHeight = refinePanel.clientHeight;
-  if (import.meta.env.VITE_DEBUG) console.log('Main.vue onMounted is firing, refinePanel:', refinePanel, 'height:', height, 'offsetHeight:', offsetHeight, 'clientHeight:', clientHeight);
+  let refinePanelOffsetHeight = refinePanel.offsetHeight;
+  // if (import.meta.env.VITE_DEBUG) console.log('Main.vue onMounted is firing, refinePanel:', refinePanel, 'height:', height, 'offsetHeight:', offsetHeight, 'clientHeight:', clientHeight);
   const mainRow = document.getElementById('main-row');
-  // mainRow.style.height = `calc(100% - ${offsetHeight}px)`;
-  mainRow.style.setProperty('height', `calc(100% - ${offsetHeight+44}px)`);
+  mainRow.style.setProperty('height', `calc(100% - ${refinePanelOffsetHeight+44}px)`);
 
+  // let alertModal = document.getElementsByClassName('modal-default')[0];
+  // if (alertModal) {
+  //   alertModal.style.setProperty('z-index', '1000');
+  // }
 
-  // if (import.meta.env.VITE_DEBUG) console.log('in Main.vue mounted, route.query:', route.query);
   // if (import.meta.env.VITE_DEBUG) console.log('in Main.vue onMounted, $config:', $config, 'window.location.href:', window.location.href);
   $config.searchBar.searchTypes.forEach(item => {
     if (route.query[item]) {
@@ -741,11 +656,11 @@ onMounted(async() => {
     addressInputPlaceholder.value = $config.searchBar.placeholder;
   }
 
-  if ($config.appLink) {
-    appLink.value = $config.appLink;
-  } else {
-    appLink.value = '.';
-  }
+  // if ($config.appLink) {
+  //   appLink.value = $config.appLink;
+  // } else {
+  //   appLink.value = '.';
+  // }
 
   if (!i18nEnabled.value) {
     buttonText.value = isMapVisible.value ? 'Toggle to resource list' : 'Toggle to map';
@@ -875,7 +790,6 @@ const clearSearchTriggered = () => {
   MainStore.selectedKeywords = [];
   MainStore.selectedZipcode = null;
   MapStore.bufferShape = null;
-  // controller.resetGeocode();
   MainStore.currentSearch = null;
 };
 
@@ -884,15 +798,12 @@ const getProjection = (item) => {
   if ($config && $config.projection) {
     let valOrGetter = $config.projection;
     const valOrGetterType = typeof valOrGetter;
-    
 
     if (valOrGetterType === 'function') {
       const getter = valOrGetter;
       if (item) {
         val = getter(item);
-      } //else {
-        // val = getter(state);
-      // }
+      }
     } else {
       val = valOrGetter;
     }
@@ -1461,39 +1372,28 @@ const toggleBodyClass = (className) => {
     v-show="isAlertModalOpen"
     @close="closeModal"
   >
-    <div
-      slot="header"
-      v-html="alertModalHeader"
-    />
+    <template v-slot:title>
+      <div
+        v-html="alertModalTitle"
+      ></div>
+    </template>
+    <template v-slot:body>
+      <div
+        v-html="alertModalBody"
+      ></div>
+    </template>
+  </PhilaModal>
+
+  <!-- <modal
+    v-show="isAlertModalOpen"
+    :hideXButton=true
+    :title="alertModalHeader"
+  >
     <div
       slot="body"
       v-html="alertModalBody"
     />
-  </PhilaModal>
-
-  <app-header
-    :app-title="appTitle"
-    :app-subtitle="appSubTitle"
-    :app-link="appLink"
-    :is-sticky="true"
-    :is-fluid="true"
-    :branding-image="brandingImage"
-    :branding-link="brandingLink"
-    >
-    <template #mobile-nav>
-      <mobile-nav :links="footerLinks" />
-    </template>
-    
-    <template
-      v-if="i18nEnabled"
-      #lang-selector-nav
-    >
-      <lang-selector
-        v-if="i18nEnabled"
-        :languages="i18nLanguages"
-      />
-    </template>
-  </app-header>
+  </modal> -->
 
   <div
     v-if="showForceHolidayBanner || showAutomaticHolidayBanner && holiday.coming_soon || showAutomaticHolidayBanner && holiday.current"
@@ -1521,8 +1421,8 @@ const toggleBodyClass = (className) => {
     </div> -->
 
     
-  <main
-    id="main"
+  <div
+    id="main-column"
     class="main-column invisible-scrollbar"
   >
     <div>
@@ -1559,7 +1459,7 @@ const toggleBodyClass = (className) => {
         />
       </div>
     </div>
-  </main>
+  </div>
 
 
   <div
@@ -1570,13 +1470,6 @@ const toggleBodyClass = (className) => {
       {{ $t(buttonText) }}
     </button>
   </div>
-
-  <app-footer
-    :is-sticky="true"
-    :is-hidden-mobile="true"
-    :links="footerLinks"
-  >
-  </app-footer>
 
 </template>
 
