@@ -403,11 +403,6 @@ watch(
       v-if="MapStore.imageryOn"
       @set-imagery="setImagery"
     /> -->
-    <!-- <OverlayLegend
-      v-show="!MapStore.imageryOn && ['stormwater'].includes(MainStore.currentTopic)"
-      :items="$mapConfig.stormwaterLegendData"
-      :options="{ shape: 'square' }"
-    /> -->
     <OverlayLegend
       v-if="$config.legendControl"
       :items="$config.legendControl.legend.data"

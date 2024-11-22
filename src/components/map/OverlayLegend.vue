@@ -1,5 +1,7 @@
 <script setup>
 
+import { computed } from 'vue';
+
 const props = defineProps({
   'position': {
     type: String,
