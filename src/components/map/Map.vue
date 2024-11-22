@@ -37,6 +37,7 @@ const router = useRouter();
 
 // COMPONENTS
 import AddressSearchControl from '../AddressSearchControl.vue';
+import OverlayLegend from './OverlayLegend.vue';
 // import ImageryToggleControl from '@/components/map/ImageryToggleControl.vue';
 // import ImageryDropdownControl from '@/components/map/ImageryDropdownControl.vue';
 
@@ -141,8 +142,8 @@ onMounted(async () => {
   map.addImage('marker-blue', markerImage.data);
 
   // add the unchanged maplibre controls
-  map.addControl(new maplibregl.NavigationControl(), 'bottom-left');
-  map.addControl(new maplibregl.GeolocateControl(), 'bottom-left');
+  map.addControl(new maplibregl.NavigationControl(), 'bottom-right');
+  map.addControl(new maplibregl.GeolocateControl(), 'bottom-right');
 
   map.on('click', 'pwd', (e) => {
     if (import.meta.env.VITE_DEBUG) console.log('Map.vue map click event, e:', e);
@@ -406,12 +407,12 @@ watch(
       v-show="!MapStore.imageryOn && ['stormwater'].includes(MainStore.currentTopic)"
       :items="$mapConfig.stormwaterLegendData"
       :options="{ shape: 'square' }"
-    />
-    <OverlayLegend
-      v-show="!MapStore.imageryOn && ['deeds', 'zoning'].includes(MainStore.currentTopic)"
-      :items="$mapConfig.dorLegendData"
-      :options="{ shape: 'square' }"
     /> -->
+    <OverlayLegend
+      v-if="$config.legendControl"
+      :items="$config.legendControl.legend.data"
+      :options="{ shape: 'circle' }"
+    />
   </div>
 </template>
 

@@ -1108,7 +1108,7 @@ const makeValidUrl = (url) => {
   padding-top: 1rem;
   // background-color: rgba(225, 225, 225, 1);
   // width: 48%;
-  // z-index:9;
+  z-index:9;
   background:#fff
 }
 
