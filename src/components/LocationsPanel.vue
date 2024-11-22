@@ -26,8 +26,9 @@ import ExpandCollapse from './ExpandCollapse.vue';
 
 const ConfigStore = useConfigStore();
 const $config = ConfigStore.config;
-const ExpandCollapseContent = $config.customComps.expandCollapseContent;
 const CustomGreeting = $config.customComps.customGreeting;
+const ExpandCollapseContent = $config.customComps.expandCollapseContent;
+console.log('ExpandCollapseContent:', ExpandCollapseContent);
 
 const version = import.meta.env.VITE_VERSION;
 

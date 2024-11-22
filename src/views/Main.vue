@@ -13,7 +13,6 @@ const $config = ConfigStore.config;
 import $mapConfig from '../mapConfig';
 // if (import.meta.env.VITE_DEBUG) console.log('$config:', $config);
 
-
 import proj4 from 'proj4';
 import { format } from 'date-fns';
 import { parseISO } from 'date-fns';
@@ -1368,32 +1367,36 @@ const toggleBodyClass = (className) => {
     </div>
   </PhilaModal>
 
-  <PhilaModal
+  <div
     v-show="isAlertModalOpen"
-    @close="closeModal"
+    class="modalWrapper"
+    @click="closeModal"
   >
-    <template v-slot:title>
-      <div
-        v-html="alertModalTitle"
-      ></div>
-    </template>
-    <template v-slot:body>
-      <div
-        v-html="alertModalBody"
-      ></div>
-    </template>
-  </PhilaModal>
-
-  <!-- <modal
-    v-show="isAlertModalOpen"
-    :hideXButton=true
-    :title="alertModalHeader"
-  >
-    <div
-      slot="body"
-      v-html="alertModalBody"
-    />
-  </modal> -->
+    <modal
+      type="none"
+      :hide-close-button="true"
+      :close="closeModal"
+    >
+      <template #title>
+        {{ alertModalTitle }}
+      </template>
+      <slot>
+        <div class="content">
+          <div
+            v-html="alertModalBody"
+          ></div>
+        </div>
+      </slot>
+      <template #actions-before>
+        <button
+          class="button is-secondary"
+          @click="closeModal"
+        >
+          Close
+        </button>
+      </template>
+    </modal>
+  </div>
 
   <div
     v-if="showForceHolidayBanner || showAutomaticHolidayBanner && holiday.coming_soon || showAutomaticHolidayBanner && holiday.current"
@@ -1699,6 +1702,19 @@ const toggleBodyClass = (className) => {
 
 .holiday-banner-close-button {
   height: 28px !important;
+}
+
+.modalWrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
 </style>

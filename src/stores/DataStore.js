@@ -2,6 +2,8 @@ import { defineStore, acceptHMRUpdate } from 'pinia';
 import axios from 'axios';
 import { feature, featureCollection, point } from '@turf/helpers';
 
+import qs from 'qs';
+
 import { useConfigStore } from './ConfigStore.js';
 
 export const useDataStore = defineStore('DataStore', {
@@ -46,7 +48,7 @@ export const useDataStore = defineStore('DataStore', {
         data : data
       };
     
-      axios.request(config)
+      await axios.request(config)
       .then((response) => {
         console.log(JSON.stringify(response.data));
         this.agoToken = response.data;
@@ -61,10 +63,13 @@ export const useDataStore = defineStore('DataStore', {
       const appType = ConfigStore.config.app.type;
     },
     async fillResources() {
-      const ConfigStore = useConfigStore();
-      const appType = ConfigStore.config.app.type;
-      const dataConfig = ConfigStore.config.dataSources[appType];
+      const $config = useConfigStore().config;
+      const appType = $config.app.type;
+      const dataConfig = $config.dataSources[appType];
       const params = dataConfig.options.params;
+      if ($config.agoTokenNeeded) {
+        params.token = this.agoToken.token;
+      };
       const response = await axios.get(dataConfig.url, { params });
       if (import.meta.env.VITE_DEBUG) console.log('fillResources is running, params:', params, 'response:', response);
       if (response.status === 200) {
