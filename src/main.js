@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { useConfigStore } from './stores/ConfigStore.js';
 
-console.log('test, import.meta.env.VITE_DEBUG:', import.meta.env.VITE_DEBUG);
+if (import.meta.env.VITE_DEBUG) console.log('test, import.meta.env.VITE_DEBUG:', import.meta.env.VITE_DEBUG);
 
 import { createI18n } from 'vue-i18n'
 

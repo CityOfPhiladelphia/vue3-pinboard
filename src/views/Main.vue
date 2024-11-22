@@ -587,9 +587,13 @@ watch(
     await nextTick();
     const refinePanel = document.getElementById('refine-panel-component');
     let refinePanelOffsetHeight = refinePanel.offsetHeight;
-    if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch refineOpen is firing, refinePanel:', refinePanel, 'refinePanelOffsetHeight:', refinePanelOffsetHeight);
+    if (import.meta.env.VITE_DEBUG) console.log('test Main.vue watch refineOpen is firing, refinePanel:', refinePanel, 'refinePanelOffsetHeight:', refinePanelOffsetHeight);
     const mainRow = document.getElementById('main-row');
-    mainRow.style.setProperty('height', `calc(100% - ${refinePanelOffsetHeight+44}px)`);
+    mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+140}px)`);
+    // const mapPanelHolder = document.getElementById('map-panel-holder');
+    // mapPanelHolder.style.setProperty('height', `calc(100% - ${refinePanelOffsetHeight+44}px)`);
+    const map = document.getElementById('map');
+    map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+140}px)`);
   }
 );
 
@@ -610,7 +614,11 @@ onMounted(async() => {
   let refinePanelOffsetHeight = refinePanel.offsetHeight;
   // if (import.meta.env.VITE_DEBUG) console.log('Main.vue onMounted is firing, refinePanel:', refinePanel, 'height:', height, 'offsetHeight:', offsetHeight, 'clientHeight:', clientHeight);
   const mainRow = document.getElementById('main-row');
-  mainRow.style.setProperty('height', `calc(100% - ${refinePanelOffsetHeight+44}px)`);
+  mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+140}px)`);
+  // const mapPanelHolder = document.getElementById('map-panel-holder');
+  // mapPanelHolder.style.setProperty('height', `calc(100% - ${refinePanelOffsetHeight+44}px)`);
+  const map = document.getElementById('map');
+  map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+140}px)`);
 
   // let alertModal = document.getElementsByClassName('modal-default')[0];
   // if (alertModal) {
@@ -1453,6 +1461,7 @@ const toggleBodyClass = (className) => {
       </div>
       <div
         v-show="mapPanelVisible"
+        id="map-panel-holder"
         class="map-panel-holder"
       >
         <map-panel

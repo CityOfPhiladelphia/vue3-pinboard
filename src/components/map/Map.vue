@@ -132,6 +132,7 @@ onMounted(async () => {
     }
 
     if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 6, map.getStyle().layers:', map.getStyle().layers);
+    map.resize();
   })
 
   // add the address marker and camera icon sources
