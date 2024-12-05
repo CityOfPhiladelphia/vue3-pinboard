@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { useConfigStore } from './stores/ConfigStore.js';
+import { useDataStore } from './stores/DataStore.js';
 
 if (import.meta.env.VITE_DEBUG) console.log('test, import.meta.env.VITE_DEBUG:', import.meta.env.VITE_DEBUG);
 
@@ -139,3 +140,5 @@ export default function pinboard(config) {
 
   app.mount('#app')
 };
+
+export { useDataStore };

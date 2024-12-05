@@ -31,7 +31,7 @@ export const useMainStore = defineStore('MainStore', {
       searchValue: '',
       windowDimensions: {},
       currentAddress: '',
-      currentLang: null,
+      // currentLang: null,
       subsections: [],
       firstRouteLoaded: false,
     };

@@ -119,16 +119,30 @@ const NumRefineColumns = computed(() => {
 });
 
 const selectedArray = computed(() => {
-  let sel = selected.value;
-  if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selected:', selected, 'sel:', sel, 'selectedList.value:', selectedList.value);
+  // let sel = selected.value;
+  if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selected:', selected, 'selectedList.value:', selectedList.value);
   let selL = {...selectedList.value};
   // if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selL:', selL, 'selected.value:', selected.value);
   let compiled = [];
   for (let value of Object.keys(selL)) {
-    if (import.meta.env.VITE_DEBUG) console.log('in selectedArray computed, value:', value, value.split('_')[0]);
-    if (value.split('_')[0] == 'radio') {
+    if (import.meta.env.VITE_DEBUG) console.log('in selectedArray computed, value:', value, 'selL[value]:', selL[value]);
+    if (value.split('_')[0] == 'checkbox') {
+      console.log('checkbox clicked!');
+      if (Array.isArray(selL[value])) {
+        for (let sel of selL[value]) {
+          if (import.meta.env.VITE_DEBUG) console.log('in selectedArray computed, loop, sel:', sel, 'value:', value, 'selL[value]:', selL[value]);
+          compiled.push(sel);
+        }
+      } else {
+        compiled.push(selL[value]);
+      }
+    } else if (value.split('_')[0] == 'radio') {
       console.log('radio button clicked!');
-      compiled.push(selL[value]);
+      if (typeof selL[value] === 'string') {
+        compiled.push(selL[value]);
+      } else {
+        compiled.push(selL[value][0]);
+      }
     } else {
       for (let sel of selL[value]) {
         compiled.push(sel);
@@ -136,11 +150,11 @@ const selectedArray = computed(() => {
     }
   }
   // if (selected.value.length) {
-  if (sel.length) {
-    for (let selected of sel) {
-      compiled.push(selected);
-    }
-  }
+  // if (sel.length) {
+  //   for (let selected of sel) {
+  //     compiled.push(selected);
+  //   }
+  // }
   return compiled;
 });
 
@@ -416,8 +430,8 @@ watch(
                     for (let field of Object.keys(uniq[group][dep])) {
                       if (dep == 'checkbox' && selected.value.includes(uniq[group][dep][field].unique_key)) {
                         // console.log('RefinePanel end of getRefineSearchList, dependent, group:', group, 'dep:', dep, 'field:', field, 'uniq[group][dep][field].unique_key', uniq[group][dep][field].unique_key, 'selected.value:', selected.value);
-                        if (!selectedNow[group]) {
-                          selectedNow[group] = [];
+                        if (!selectedNow['checkbox_'+group]) {
+                          selectedNow['checkbox_'+group] = [];
                         }
                         selectedNow[group].push(uniq[group][dep][field].unique_key);
                       } else if (dep == 'radio' && selected.value.includes(uniq[group][dep][field].unique_key)) {
@@ -505,6 +519,7 @@ const arraysEqual = (a, b) => {
 watch(
   () => selectedArray.value,
   async (nextSelected, lastSelected) => {
+    if (nextSelected === lastSelected) return;
     if (import.meta.env.VITE_DEBUG) console.log('watch selectedArray is firing, nextSelected:', nextSelected, 'lastSelected:', lastSelected);
     // MainStore.selectedServices = nextSelected;
     // if (typeof nextSelected === 'string') {
@@ -527,27 +542,29 @@ watch(
   }
 );
 
-watch(
-  () => route.query,
-  async (newQuery, oldQuery) => {
-    if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch route.query is firing, newQuery:', newQuery, 'oldQuery:', oldQuery);
-    // if (newQuery.services) {
-    selectedList.value = {};
-    if (newQuery.services && refineType.value !== 'categoryField_value') {
-      const newServices = newQuery.services.split(',');
-      if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch.query route is firing, newServices:', newServices, 'newQuery.services:', newQuery.services);
-      for (let service of newServices) {
-        if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch.query route is firing, service:', service);
-        let category = 'radio_' + service.split('_')[0];
-        selectedList.value[category] = service;
-      }
-    } else if (newQuery.services) {
-      // this will need to be changed
-      selectedList.value = newQuery.services;
-    }
-    // }
-  }
-);
+// watch(
+//   () => route.query,
+//   async (newQuery, oldQuery) => {
+//     if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch route.query is firing, newQuery:', newQuery, 'oldQuery:', oldQuery);
+//     // if (newQuery.services) {
+//     selectedList.value = {};
+//     if (newQuery.services && refineType.value !== 'categoryField_value') {
+//       const newServices = newQuery.services.split(',');
+//       if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch.query route is firing, newServices:', newServices, 'newQuery.services:', newQuery.services);
+//       for (let service of newServices) {
+//         const serviceType = service.split('_')[0];
+//         let checkboxOrRadio = Object.keys($config.refine.multipleFieldGroups[serviceType])[0];
+//         if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch.query route is firing, service:', service, 'checkboxOrRadio:', checkboxOrRadio);
+//         let category = checkboxOrRadio + '_' + serviceType;
+//         selectedList.value[category] = service;
+//       }
+//     } else if (newQuery.services) {
+//       // this will need to be changed
+//       selectedList.value = newQuery.services;
+//     }
+//     // }
+//   }
+// );
 
 // watch(
 //   () => selectedServices,
@@ -557,16 +574,9 @@ watch(
 //   }
 // );
 
-onBeforeMount(async () => {
-  if (route.query.services) {
-    // console.log('RefinePanel.vue beforeMount is running, selectedList.value:', selectedList.value, 'route.query:', route.query);//, 'route.query.services.split(','):', route.query.services.split(','));
-    if (refineType.value !== 'categoryField_value') {
-      selected.value = route.query.services.split(',');
-    } else {
-      selected.value = route.query.services;
-    }
-  }
-});
+// onBeforeMount(async () => {
+  
+// });
 
 onMounted(async () => {
   // console.log('refinePanel.vue mounted, library:', library);
@@ -579,8 +589,34 @@ onMounted(async () => {
     }
   };
   // console.log('RefinePanel.vue mounted is calling getRefineSearchList');
-  getRefineSearchList();
-  // console.log('mounted still running');
+  await getRefineSearchList();
+
+  if (route.query.services) {
+    // console.log('RefinePanel.vue beforeMount is running, selectedList.value:', selectedList.value, 'route.query:', route.query);//, 'route.query.services.split(','):', route.query.services.split(','));
+    if (refineType.value !== 'categoryField_value') {
+      selected.value = route.query.services.split(',');
+    } else {
+      selected.value = route.query.services;
+    }
+  }
+
+  for (let service of selected.value) {
+    const serviceType = service.split('_')[0];
+    let checkboxOrRadio = Object.keys($config.refine.multipleFieldGroups[serviceType])[0];
+    let category = checkboxOrRadio + '_' + serviceType;
+    if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue beforeMount 1 is running, service:', service, 'serviceType:', serviceType, 'checkboxOrRadio:', checkboxOrRadio, 'category:', category, 'selectedList.value:', selectedList.value);
+    if (checkboxOrRadio == 'checkbox') {
+      if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue beforeMount 2 is running, service:', service, 'serviceType:', serviceType, 'checkboxOrRadio:', checkboxOrRadio, 'category:', category, 'selectedList.value:', selectedList.value);
+      if (selectedList.value[category]) {
+        selectedList.value[category].push(service);
+      } else {
+        selectedList.value[category] = [];
+        selectedList.value[category].push(service);
+      }
+    } else {
+      selectedList.value[category] = service;
+    }
+  }
 });
 
 
@@ -632,11 +668,11 @@ const getCategoryFieldValue = (section) => {
 // };
 
 const getBoxValue = (box) => {
-  console.log('getBoxValue is running, box:', box);
   let value;
   if (box && typeof box != 'object') {
     value = box.replace("_", ".");
   }
+  console.log('getBoxValue is running, box:', box, 'value:', value);
   return value;
 };
 
@@ -738,7 +774,7 @@ const closeKeywordsBox = (box) => {
 };
 
 const closeBox = (box) => {
-  console.log('closeBox is running');
+  console.log('closeBox is running, box:', box);
   if (refineType.value === 'categoryField_value') {
     selectedList.value = [];
     // $emit('watched-submitted-checkbox-value');
@@ -746,10 +782,10 @@ const closeBox = (box) => {
   }
   let section = box.split('_')[0];
   // console.log('closeBox is running, section:', section, 'selected.value:', selected.value, 'selected.value[section]:', selected.value[section]);
-  if (selectedList.value[section]) {
+  if (selectedList.value['checkbox_'+section]) {
     // console.log('it\'s there in selectedList');
-    let boxIndex = selectedList.value[section].indexOf(box);
-    selectedList.value[section].splice(boxIndex, 1);
+    let boxIndex = selectedList.value['checkbox_'+section].indexOf(box);
+    selectedList.value['checkbox_'+section].splice(boxIndex, 1);
     // $emit('watched-submitted-checkbox-value');
   } else if (selectedList.value['radio_' + section]) {
     if (import.meta.env.VITE_DEBUG) console.log('1 it\'s there in selectedList WITH radio, box:', box, 'selectedList.value["radio_" + section]:', selectedList.value['radio_' + section]);
@@ -764,7 +800,7 @@ const closeBox = (box) => {
     selected.value.splice(boxIndex, 1);
     // $emit('watched-submitted-checkbox-value');
   } else {
-    // console.log('not there in selected list');
+    console.log('not there in selected list');
   }
   // console.log('closeBox is running, box:', box, 'section:', section, 'boxIndex:', boxIndex);
 };
@@ -791,22 +827,31 @@ const clearAll = (e) => {
   // MainStore.currentSearch = null;
   // MapStore.bufferShape = null;
   let startQuery = { ...route.query };
-  if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, startQuery1:', startQuery);
+  // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, startQuery1:', startQuery);
   delete startQuery['address'];
   delete startQuery['zipcode'];
   delete startQuery['keyword'];
   delete startQuery['services'];
-  if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, startQuery2:', startQuery);
+  // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, startQuery2:', startQuery);
   router.push({ query: { ...startQuery }});
   MapStore.watchPositionOn = false;
   const payload = {
     lat: null,
     lng: null,
   };
+  for (let selected of Object.keys(selectedList.value)) {
+    if (import.meta.env.VITE_DEBUG) console.log('clearAll is running, selected:', selected, 'selectedList.value[selected]:', selectedList.value[selected]);
+    // selectedList.value[selected] = [];
+    for (let i=selectedList.value[selected].length-1;i>=0;i--) {
+      console.log('clearAll is running, i:', i);
+      closeBox(selectedList.value[selected][i]);
+    }
+  }
+  selectedList
   $emit('geolocate-control-fire', payload);
 };
 
-const getRefineSearchList = () => {
+const getRefineSearchList = async() => {
   let refineData = database.value;
   if (import.meta.env.VITE_DEBUG) console.log('getRefineSearchList is running, refineData:', refineData);
   if (refineData && refineData.records) {
@@ -1245,7 +1290,8 @@ const checkboxChange = (e) => {
             v-if="refineListTranslated[ind]['checkbox']"
             :options="refineListTranslated[ind]['checkbox']"
             :small="!isMobile"
-            v-model="selectedList[ind]"
+            v-model="selectedList['checkbox_'+ind]"
+            :value="selectedList['checkbox_'+ind]"
             text-key="textLabel"
             value-key="data"
             shrinkToFit="true"
@@ -1325,7 +1371,7 @@ const checkboxChange = (e) => {
                 v-if="refineListTranslated[ind]['checkbox']"
                 :options="refineListTranslated[ind]['checkbox']"
                 :small="!isMobile"
-                v-model="selectedList[ind]"
+                v-model="selectedList['checkbox_'+ind]"
                 text-key="textLabel"
                 value-key="data"
                 shrinkToFit="true"

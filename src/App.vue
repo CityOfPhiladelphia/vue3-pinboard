@@ -50,9 +50,14 @@ onBeforeMount(async () => {
   MainStore.isMobileDevice = isMobileDevice();
   MainStore.isMac = isMac();
   await router.isReady()
-  // if (import.meta.env.VITE_DEBUG == 'true') console.log('App onMounted, route.params.topic:', route.params.topic, 'route.params.address:', route.params.address);
+  if (import.meta.env.VITE_DEBUG == 'true') console.log('App onBeforeMount, route.params:', route.params, 'route.query:', route.query);
   if (route.name === 'not-found') {
     router.push({ name: 'home' });
+  }
+
+  if (route.query.lang) {
+    instance.appContext.config.globalProperties.$i18n.locale = route.query.lang;
+    // MainStore.currentLang = route.query.lang;
   }
 
   window.addEventListener('resize', handleWindowResize);
@@ -110,39 +115,50 @@ const handleWindowResize = () => {
   MainStore.windowDimensions = dim;
 }
 
-watch(
-  () => MainStore.currentLang,
-  (newLang, oldLang) => {
-    if (import.meta.env.VITE_DEBUG == 'true') console.log('watch MainStore.currentLang:', newLang, oldLang, 'locale.value:', locale.value);
-    if (newLang != locale.value) {
-      if (import.meta.env.VITE_DEBUG == 'true') console.log('setting locale:', newLang);
-      // const instance = getCurrentInstance();
-      if (import.meta.env.VITE_DEBUG == 'true') console.log('instance:', instance);
-      if (instance) {
-        if (import.meta.env.VITE_DEBUG == 'true') console.log('instance:', instance);
-        if (newLang) {
-          instance.appContext.config.globalProperties.$i18n.locale = newLang;
-        } else {
-          instance.appContext.config.globalProperties.$i18n.locale = 'en-US';
-        }
-      }
-    }
-  }
-)
+// watch(
+//   () => MainStore.currentLang,
+//   (newLang, oldLang) => {
+//     if (import.meta.env.VITE_DEBUG == 'true') console.log('watch MainStore.currentLang:', newLang, oldLang, 'locale.value:', locale.value);
+//     if (newLang != locale.value) {
+//       if (import.meta.env.VITE_DEBUG == 'true') console.log('setting locale:', newLang);
+//       // const instance = getCurrentInstance();
+//       if (import.meta.env.VITE_DEBUG == 'true') console.log('instance:', instance);
+//       if (instance) {
+//         if (import.meta.env.VITE_DEBUG == 'true') console.log('instance:', instance);
+//         if (newLang) {
+//           instance.appContext.config.globalProperties.$i18n.locale = newLang;
+//         } else {
+//           instance.appContext.config.globalProperties.$i18n.locale = 'en-US';
+//         }
+//       }
+//     }
+//   }
+// )
 
 watch(
   () => locale.value,
   (newLocale, oldLocale) => {
     if (import.meta.env.VITE_DEBUG == 'true') console.log('watch locale:', newLocale, oldLocale);
-    if (newLocale === MainStore.currentLang) {
-      return;
-    } else if (newLocale && newLocale != 'en-US') {
-      MainStore.currentLang = newLocale;
-      router.push({ query: { 'lang': newLocale }});
+    let startQuery = { ...route.query };
+
+    delete startQuery['lang'];
+    if (import.meta.env.VITE_DEBUG) console.log('watch i18nLocale, startQuery:', startQuery);
+
+    if (newLocale !== 'en-US') {
+      let query = { 'lang': newLocale };
+      router.push({ query: { ...startQuery, ...query }});
     } else {
-      MainStore.currentLang = null;
-      router.push({ fullPath: route.path });
+      router.push({ query: { ...startQuery }});
     }
+  //   if (newLocale === MainStore.currentLang) {
+  //     return;
+  //   } else if (newLocale && newLocale != 'en-US') {
+  //     MainStore.currentLang = newLocale;
+  //     router.push({ query: { 'lang': newLocale }});
+  //   } else {
+  //     MainStore.currentLang = null;
+  //     router.push({ fullPath: route.path });
+  //   }
   }
 )
 

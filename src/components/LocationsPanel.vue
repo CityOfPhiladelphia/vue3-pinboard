@@ -187,9 +187,9 @@ const refineList = computed(() => {
 
 const summarySentenceStart = computed(() => {
   let sentence = t('showing') + ' ' + currentData.value.length + ' ' + t('outOf') + ' ' + databaseLength.value + ' ' + t('results');
-  if (selectedKeywords.value.length || zipcodeEntered.value || addressEntered.value || selectedServices.value.length) {
-    sentence += ' ' + t('for') + ' ';
-  }
+  // if (selectedKeywords.value.length || zipcodeEntered.value || addressEntered.value || selectedServices.value.length) {
+  //   sentence += ' ' + t('for') + ' ';
+  // }
   return sentence;
 });
 

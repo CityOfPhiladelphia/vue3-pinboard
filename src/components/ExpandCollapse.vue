@@ -2,14 +2,10 @@
 
 import { useMainStore } from '../stores/MainStore.js';
 import { useMapStore } from '../stores/MapStore.js';
-import { useGeocodeStore } from '../stores/GeocodeStore.js';
 import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
-import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
-
-// import { library } from '@fortawesome/fontawesome-svg-core';
-// import { findIconDefinition } from '@fortawesome/fontawesome-svg-core';
+import { ref, computed, onMounted, watch } from 'vue';
 
 const MainStore = useMainStore();
 const MapStore = useMapStore();
@@ -91,48 +87,38 @@ const i18nEnabled = computed(() => {
   return value;
 });
 
-const subsections = computed(() => {
-  return $config.subsections || {};
-});
+// const subsections = computed(() => {
+//   return $config.subsections || {};
+// });
 
 const section = computed(() => {
   let section;
-  let category;
-  if (props.item.properties) {
-    category = props.item.properties['CATEGORY'] || props.item.properties['category'];
+  if (props.item.properties && $config.fieldsUsed) {
+    section = props.item.properties[$config.fieldsUsed.section];
   }
-  if (Object.keys(subsections.value).length) {
-    section = subsections.value[category];
-  } else if ($config.sections) {
-    section = props.item.site_type;
+  if ($config.subsections) {
+    section = $config.subsections[props.item.properties[$config.fieldsUsed.subsection]];
   }
   return section;
 });
 
-const sectionItem = computed(() => {
-  let sectionItem = {};
-  if (Object.keys(subsections.value).length) {
-    sectionItem = $config.sections;
-  }
-  return sectionItem;
-});
+// const sectionItem = computed(() => {
+//   let sectionItem = {};
+//   if (Object.keys(subsections.value).length) {
+//     sectionItem = $config.sections;
+//   }
+//   return sectionItem;
+// });
 
 const sectionTitle = computed(() => {
   let sectionTitle;
-  if (Object.keys(subsections.value).length) {
-    // sectionTitle = section.value;
-    sectionTitle = $config.sections[section.value].titleSingular;
-  } else if ($config.sections) {
-    sectionTitle = props.item.site_type;
-  }
+  sectionTitle = $config.sections[section.value].titleSingular;
   return sectionTitle;
 });
 
 const sectionColor = computed(() => {
   let sectionColor;
-  if (Object.keys(subsections.value).length) {
-    sectionColor = $config.sections[section.value].color;
-  } else if ($config.sections) {
+  if (section.value) {
     sectionColor = $config.sections[section.value].color;
   }
   return sectionColor;
@@ -221,7 +207,6 @@ onMounted(() => {
 });
 
 const siteName = computed(() => {
-  // const route = useRoute();
   // if (import.meta.env.VITE_DEBUG) console.log('siteName computed');
   if (!props.item) {
     return;
@@ -239,22 +224,13 @@ const siteName = computed(() => {
       // console.log('props.item:', props.item);
       if (props.item && props.item.distance) {
         val = '(' + props.item.distance.toFixed(2) + 'miles) ' + getter(props.item);
-        // val = '(' + props.item.distance.toFixed(2) + 'miles) ' + getter(props.item, transforms);
-        // val = '(' + props.item.distance.toFixed(2) + ' ' + this.$i18n.messages[this.i18nLocale]['miles'] + ') ' + getter(props.item, transforms);
       } else {
-        // console.log('getSiteName else is running');
-        // val = '(' + props.item.distance.toFixed(2) + ' miles) ' + getter(state);
-        // val = getter(state);
-        // val = getter(props.item, transforms);
         val = getter(props.item);
       }
     } else {
       if (props.item) {
         val = getter(props.item);
-        // val = getter(props.item, transforms);
-      } //else {
-      //   val = getter(state);
-      // }
+      }
     }
   } else {
     if (currentQueryKeys.includes('address')) {
@@ -435,8 +411,6 @@ const makeID = (itemTitle) =>{
   </div>
 </template>
 
-
-<!-- @import "../assets/scss/main.scss"; -->
 <style lang="scss">
 
 .expand-collapse-checkbox {
