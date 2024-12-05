@@ -119,42 +119,44 @@ const NumRefineColumns = computed(() => {
 });
 
 const selectedArray = computed(() => {
-  // let sel = selected.value;
   if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selected:', selected, 'selectedList.value:', selectedList.value);
   let selL = {...selectedList.value};
   // if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selL:', selL, 'selected.value:', selected.value);
   let compiled = [];
-  for (let value of Object.keys(selL)) {
-    if (import.meta.env.VITE_DEBUG) console.log('in selectedArray computed, value:', value, 'selL[value]:', selL[value]);
-    if (value.split('_')[0] == 'checkbox') {
-      console.log('checkbox clicked!');
-      if (Array.isArray(selL[value])) {
-        for (let sel of selL[value]) {
-          if (import.meta.env.VITE_DEBUG) console.log('in selectedArray computed, loop, sel:', sel, 'value:', value, 'selL[value]:', selL[value]);
-          compiled.push(sel);
+  if (Object.keys(selL).length) {
+    for (let value of Object.keys(selL)) {
+      if (import.meta.env.VITE_DEBUG) console.log('in selectedArray computed, value:', value, 'selL[value]:', selL[value]);
+      if (value.split('_')[0] == 'checkbox') {
+        console.log('checkbox clicked!');
+        if (Array.isArray(selL[value])) {
+          for (let sel of selL[value]) {
+            if (import.meta.env.VITE_DEBUG) console.log('in selectedArray computed, loop, sel:', sel, 'value:', value, 'selL[value]:', selL[value]);
+            compiled.push(sel);
+          }
+        } else {
+          compiled.push(selL[value]);
+        }
+      } else if (value.split('_')[0] == 'radio') {
+        console.log('radio button clicked!, selL[value]:', selL[value]);
+        if (typeof selL[value] === 'string') {
+          compiled.push(selL[value]);
+        } else {
+          compiled.push(selL[value][0]);
         }
       } else {
-        compiled.push(selL[value]);
+        for (let sel of selL[value]) {
+          compiled.push(sel);
+        }
       }
-    } else if (value.split('_')[0] == 'radio') {
-      console.log('radio button clicked!');
-      if (typeof selL[value] === 'string') {
-        compiled.push(selL[value]);
-      } else {
-        compiled.push(selL[value][0]);
-      }
-    } else {
-      for (let sel of selL[value]) {
-        compiled.push(sel);
+    }
+  } else {
+    let sel = selected.value;
+    if (sel.length) {
+      for (let selected of sel) {
+        compiled.push(selected);
       }
     }
   }
-  // if (selected.value.length) {
-  // if (sel.length) {
-  //   for (let selected of sel) {
-  //     compiled.push(selected);
-  //   }
-  // }
   return compiled;
 });
 
@@ -607,7 +609,7 @@ onMounted(async () => {
     if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue beforeMount 1 is running, service:', service, 'serviceType:', serviceType, 'checkboxOrRadio:', checkboxOrRadio, 'category:', category, 'selectedList.value:', selectedList.value);
     if (checkboxOrRadio == 'checkbox') {
       if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue beforeMount 2 is running, service:', service, 'serviceType:', serviceType, 'checkboxOrRadio:', checkboxOrRadio, 'category:', category, 'selectedList.value:', selectedList.value);
-      if (selectedList.value[category]) {
+      if (selectedList.value[category] && !selectedList.value[category].includes(service)) {
         selectedList.value[category].push(service);
       } else {
         selectedList.value[category] = [];
@@ -851,7 +853,7 @@ const clearAll = (e) => {
       closeBox(selectedList.value[selected]);
     }
   }
-  selectedList
+  selected.value = [];
   $emit('geolocate-control-fire', payload);
 };
 
@@ -1232,6 +1234,7 @@ const checkboxChange = (e) => {
         :numOfColumns="NumRefineColumns"
         :small="!isMobile"
         v-model="selected"
+        :value="selected"
         value-key="data"
         text-key="textLabel"
       >

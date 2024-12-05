@@ -860,7 +860,7 @@ const checkServices = (index, row) => {
         for (let group of selectedGroups) {
           let groupBooleanConditions = [];
           for (let service of selectedServices) {
-            // if (import.meta.env.VITE_DEBUG) console.log('Main.vue checkServices loop, service:', service);
+            if (import.meta.env.VITE_DEBUG) console.log('Main.vue checkServices loop, service:', service, 'group:', group);
             if (group !== 'keyword' && service.split('_', 1)[0] === group && $config.refine.multipleFieldGroups[group]['radio']) {
               // if (import.meta.env.VITE_DEBUG) console.log('group:', group, '$config.refine.multipleFieldGroups[group]["radio"]:', $config.refine.multipleFieldGroups[group]['radio']);
               let dependentGroups = $config.refine.multipleFieldGroups[group]['radio'][service.split('_')[1]]['dependentGroups'] || [];
