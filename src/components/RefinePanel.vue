@@ -842,9 +842,13 @@ const clearAll = (e) => {
   for (let selected of Object.keys(selectedList.value)) {
     if (import.meta.env.VITE_DEBUG) console.log('clearAll is running, selected:', selected, 'selectedList.value[selected]:', selectedList.value[selected]);
     // selectedList.value[selected] = [];
-    for (let i=selectedList.value[selected].length-1;i>=0;i--) {
-      console.log('clearAll is running, i:', i);
-      closeBox(selectedList.value[selected][i]);
+    if (Array.isArray(selectedList.value[selected])) {
+      for (let i=selectedList.value[selected].length-1;i>=0;i--) {
+        console.log('clearAll is running, i:', i);
+        closeBox(selectedList.value[selected][i]);
+      }
+    } else {
+      closeBox(selectedList.value[selected]);
     }
   }
   selectedList
