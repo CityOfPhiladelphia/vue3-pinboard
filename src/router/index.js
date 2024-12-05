@@ -17,7 +17,6 @@ const getGeocodeAndPutInStore = async(address) => {
   if (!GeocodeStore.aisData.features) {
     MainStore.currentAddress = null;
     if (import.meta.env.VITE_DEBUG == 'true') console.log('getGeocodeAndPutInStore, calling not-found');
-    router.push({ name: 'not-found' });
     return;
   }
   let currentAddress;
@@ -27,7 +26,6 @@ const getGeocodeAndPutInStore = async(address) => {
     currentAddress = GeocodeStore.aisData.features[0].street_address;
   }
   MainStore.setCurrentAddress(currentAddress);
-  // MainStore.addressSearchRunning = false;
 }
 
 const clearGeocode = async() => {
@@ -65,11 +63,6 @@ const router = createRouter({
         if (import.meta.env.VITE_DEBUG) console.log('router beforeEnter is running, DataStore.zipcodes:', DataStore.zipcodes);
       }
     },
-    {
-      path: '/not-found',
-      name: 'not-found',
-      component: Main,
-    },
   ]
 })
 
@@ -87,7 +80,9 @@ router.afterEach(async (to, from) => {
   if (to.query.address && to.query.address != from.query.address) {
     await getGeocodeAndPutInStore(to.query.address);
     // if (import.meta.env.VITE_DEBUG) console.log('router.afterEach is calling MapStore.fillBufferForAddressOrZipcode');
-    MapStore.fillBufferForAddressOrZipcode();
+    if (GeocodeStore.aisData.features) {
+      MapStore.fillBufferForAddressOrZipcode();
+    }
   } else {
     clearGeocode();
   }

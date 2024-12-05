@@ -10,7 +10,6 @@ import { useRoute, useRouter } from 'vue-router';
 import { ref, computed, getCurrentInstance, onMounted, watch, onBeforeMount } from 'vue';
 
 // import { Dropdown } from '@phila/phila-ui';
-// import SingleCheckbox from './SingleCheckbox.vue';
 import { getActivePinia } from 'pinia';
 const activePinia = getActivePinia();
 console.log('activePinia:', activePinia);
@@ -20,7 +19,6 @@ const MapStore = useMapStore();
 const GeocodeStore = useGeocodeStore();
 const DataStore = useDataStore();
 
-// import AddressSearchControl from './AddressSearchControl.vue';
 import PrintShareSection from './PrintShareSection.vue';
 import ExpandCollapse from './ExpandCollapse.vue';
 
@@ -67,12 +65,6 @@ const sortBy = ref('Alphabetically');
 const printCheckboxes = ref([]);
 const selectAllCheckbox = ref(false);
 
-// onBeforeMount(async () => {
-//   if (route.query || !$config.greeting && (!$config.customComps || !$config.customComps.customGreeting)) {
-//     MainStore.shouldShowGreeting = false;
-//   }
-// })
-
 onMounted(async () => {
   if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue mounted, $config:', $config, 'i18nLocale.value:', i18nLocale.value, 'route.query:', route.query);
   if (Object.keys(route.query).length || !$config.greeting && (!$config.customComps || !$config.customComps.customGreeting)) {
@@ -82,11 +74,9 @@ onMounted(async () => {
   let value, valueWithMiles;
   if ($config.searchBar.searchDistance && $config.searchBar.searchDistance != 1) {
     value = $config.searchBar.searchDistance;
-    // valueWithMiles = $config.searchBar.searchDistance + ' ' + $i18n.messages[i18nLocale.value]['miles'];
     valueWithMiles = $config.searchBar.searchDistance + ' ' + t('miles');
   } else {
     value = 1;
-    // valueWithMiles = 1 + ' ' + $i18n.messages[i18nLocale.value]['mile'];
     valueWithMiles = 1 + ' ' + t('mile');
   }
   searchDistance.value = valueWithMiles;
@@ -94,8 +84,6 @@ onMounted(async () => {
 
   printCheckboxes.value = MainStore.printCheckboxes;
 });
-
-
 
 
 // COMPUTED
@@ -162,117 +150,12 @@ const database = computed(() => {
   return value;
 });
 
-// const database = computed(() => {
-//   console.log('DataStore.appType:', DataStore.appType);
-//   // console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources:', DataStore.sources);
-//   if (DataStore.appType) {
-//     if (DataStore.sources[DataStore.appType].data.rows) {
-//       return DataStore.sources[DataStore.appType].data.rows;
-//     } else if (DataStore.sources[DataStore.appType].data.features) {
-//       return DataStore.sources[DataStore.appType].data.features;
-//     } else if (DataStore.sources[DataStore.appType].data) {
-//       return DataStore.sources[DataStore.appType].data;
-//     }
-//   }
-//   // return DataStore.sources[DataStore.appType].data.rows || DataStore.sources[DataStore.appType].data.features || DataStore.sources[DataStore.appType].data;
-// });
-
 const databaseLength = computed(() => {
   return database.value.length
 });
 
-const refineList = computed(() => {
-  return MainStore.refineList;
-});
-
 const summarySentenceStart = computed(() => {
   let sentence = t('showing') + ' ' + currentData.value.length + ' ' + t('outOf') + ' ' + databaseLength.value + ' ' + t('results');
-  // if (selectedKeywords.value.length || zipcodeEntered.value || addressEntered.value || selectedServices.value.length) {
-  //   sentence += ' ' + t('for') + ' ';
-  // }
-  return sentence;
-});
-
-const summarySentenceEnd = computed(() => {
-  let sentence = '';
-  if (selectedKeywords.value.length) {
-    for (let keyword of selectedKeywords.value) {
-      sentence += '"' + keyword + '"';
-      if (zipcodeEntered.value || addressEntered.value || selectedServices.value.length) {
-        sentence += ' : ';
-      }
-    }
-  }
-  if (zipcodeEntered.value) {
-    sentence += zipcodeEntered.value;
-
-    sentence += ' - ';
-    sentence += searchDistance.value;
-
-    // let word;
-    // if (searchDistance.value == 1) {
-    //   word = ' ' + $i18n.messages[i18nLocale.value]['mile'];
-    // } else {
-    //   word = ' ' + $i18n.messages[i18nLocale.value]['miles'];
-    // }
-    // sentence += word;
-
-    if (selectedServices.value.length) {
-      sentence += ' : ';
-    }
-  }
-  if (addressEntered.value) {
-    sentence += addressEntered.value;
-    sentence += ' - ';
-    sentence += searchDistance.value;
-
-    // let word;
-    // if (searchDistance.value == 1) {
-    //   word = ' ' + $i18n.messages[i18nLocale.value]['mile'];
-    // } else {
-    //   word = ' ' + $i18n.messages[i18nLocale.value]['miles'];
-    // }
-    // sentence += word;
-    
-    if (selectedServices.value.length) {
-      sentence += ' : ';
-    }
-  }
-  if (selectedServices.value.length) {
-    if (typeof selectedServices.value == 'string') {
-      // if (import.meta.env.VITE_DEBUG) console.log('t(selectedServices.value):', t(selectedServices.value));
-      sentence += t(selectedServices.value);
-    } else {
-      if (Array.isArray(refineList.value)) {
-        for (let service of selectedServices.value) {
-          sentence += service;
-          if (selectedServices.value.indexOf(service) < selectedServices.value.length-1) {
-            sentence += ' : ';
-          }
-        }
-      } else {
-        for (let service of selectedServices.value) {
-          // if (import.meta.env.VITE_DEBUG) console.log('in summarySentenceEnd, if else for service:', service);
-          let refineList = MainStore.refineList;
-          for (let key of Object.keys(refineList)) {
-            for (let key2 of Object.keys(refineList[key])) {
-              if (key2 === 'radio' || key2 === 'checkbox') {
-                for (let key3 of Object.keys(refineList[key][key2])) {
-                  if (refineList[key][key2][key3].unique_key == service) {
-                    // if (import.meta.env.VITE_DEBUG) console.log('key:', key, 'key3:', key3, 'key[key3]:', key[key3]);
-                    sentence += t(key+"."+key3);//.toLowerCase();
-                  }
-                }
-              }
-            }
-          }
-          if (selectedServices.value.indexOf(service) < selectedServices.value.length-1) {
-            sentence += ' : ';
-          }
-        }
-      }
-    }
-  }
   return sentence;
 });
 
@@ -388,18 +271,6 @@ const sortDisabled = computed(() => {
 const isMobile = computed(() => {
   return MainStore.isMobileDevice;
 })
-
-const selectedKeywords = computed(() => {
-  return MainStore.selectedKeywords;
-});
-
-const selectedServices = computed(() => {
-  return MainStore.selectedServices;
-});
-
-const selectedResource = computed(() => {
-  return DataStore.selectedResource;
-});
 
 const currentData = computed(() => {
   let locations = [...DataStore.currentData];
@@ -562,33 +433,6 @@ watch(
     }
   }
 );
-
-// watch(
-//   () => selectedKeywords,
-//   async nextSelectedKeywords => {
-//     // if (import.meta.env.VITE_DEBUG) console.log('watch, nextSelectedKeywords:', nextSelectedKeywords);
-//     MainStore.shouldShowGreeting = false;
-//   }
-// );
-
-// watch(
-//   () => selectedServices,
-//   async nextSelectedServices => {
-//     // if (import.meta.env.VITE_DEBUG) console.log('watch, nextSelectedServices:', nextSelectedServices);
-//     if (nextSelectedServices.length) {
-//       MainStore.shouldShowGreeting = false;
-//     }
-//   }
-// );
-
-// watch(
-//   () => selectedResource,
-//   async nextselectedResource => {
-//     // if (import.meta.env.VITE_DEBUG) console.log('watch, nextselectedResource:', nextselectedResource);
-//     MainStore.shouldShowGreeting = false;
-//   }
-// );
-
 
 // METHODS
 const clickedShare = () => {

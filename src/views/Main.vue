@@ -10,7 +10,6 @@ import { ref, computed, getCurrentInstance, onMounted, watch, onBeforeMount, nex
 
 const ConfigStore = useConfigStore();
 const $config = ConfigStore.config;
-import $mapConfig from '../mapConfig';
 // if (import.meta.env.VITE_DEBUG) console.log('$config:', $config);
 
 import proj4 from 'proj4';
@@ -62,14 +61,11 @@ const isAlertModalOpen = ref(false);
 const isLarge = ref(true);
 const currentBuffer = ref(null);
 const buttonText = ref('app.viewMap');
-// const appLink = ref('/');
+
 const myValue = ref('');
 const brandingImage = ref(null);
 const brandingLink = ref(null);
-// const brandingLink = ref({
-//   href: 'https://www.phila.gov/',
-//   target: '_blank',
-// });
+
 const searchString = ref(null);
 const refineEnabled = ref(true);
 const addressInputPlaceholder = ref(null);
@@ -83,11 +79,6 @@ if ($config.app.logoLink && $config.app.logoLink == 'none') {
   brandingLink.value = {
     style: 'pointer-events: none',
   }
-} else {
-  // brandingLink.value = {
-  //   href: $config.app.logoLink,
-  //   target: '_blank',
-  // }
 }
 
 if ($config.refineEnabled === false) {
@@ -127,51 +118,9 @@ const printCheckboxes = computed(() => {
   return MainStore.printCheckboxes;
 });
 
-// const selectedZipcode = computed(() => {
-//   return MainStore.selectedZipcode;
-// });
-
-// const zipcodeData = computed(() => {
-//   let zipcode;
-//   if (DataStore.zipcodes.features) {
-//     let zipcodesData = DataStore.zipcodes;
-//     let theSelectedZipcode = selectedZipcode.value;
-//     if (zipcodesData && selectedZipcode) {
-//       zipcode = zipcodesData.features.filter(item => item.properties.CODE == theSelectedZipcode)[0];
-//     }
-//   }
-//   return zipcode;
-// });
-
 const refineTitle = computed(() => {
   return $config.refine.title;
 });
-
-const projection4326 = computed(() => {
-  return "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
-});
-
-const projection2272 = computed(() => {
-  return "+proj=lcc +lat_1=40.96666666666667 +lat_2=39.93333333333333 +lat_0=39.33333333333334 +lon_0=-77.75 +x_0=600000 +y_0=0 +ellps=GRS80 +datum=NAD83 +to_meter=0.3048006096012192 +no_defs";
-});
-
-const projection3857 = computed(() => {
-  return "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs";
-});
-
-const shouldShowGreeting = computed(() => {
-  return MainStore.shouldShowGreeting;
-});
-
-// const locationsPanelClass = computed(() => {
-//   let value;
-//   if (isMobile.value) {
-//     value = 'invisible-scrollbar';
-//   } else {
-//     value = '';
-//   }
-//   return value;
-// });
 
 const alertResponse = computed(() => {
   return MainStore.alertResponse || null;
@@ -217,28 +166,6 @@ const i18nSelectorHidden = computed(() => {
   }
 });
 
-const geocodeStatus = computed(() => {
-  if (GeocodeStore.aisData.features && GeocodeStore.aisData.features.length) {
-    return 'success';
-  } else if (GeocodeStore.aisData.status == 404) {
-    return 'error';
-  } else if (!GeocodeStore.aisData.features) {
-    return 'none';
-  }
-});
-
-const geocodeResult = computed(() => {
-  return GeocodeStore.aisData || {};
-});
-
-const geocodeGeom = computed(() => {
-  return GeocodeStore.aisData.features[0].geometry;
-});
-
-const bufferList = computed(() => {
-  return MapStore.bufferList;
-});
-
 const selectedKeywords = computed(() => {
   return MainStore.selectedKeywords;
 });
@@ -258,7 +185,6 @@ const dataStatus = computed(() => {
       value = null;
     }
   }
-  // return 'success';
   return value;
 });
 
@@ -300,24 +226,6 @@ const selectedResource = computed(() => {
   return DataStore.selectedResource;
 });
 
-// const sourcesWatched = computed(() => {
-//   let sources = Object.keys(DataStore.sources);
-//   const index = sources.indexOf('compiled');
-//   if (index > -1) {
-//     sources.splice(index, 1);
-
-//     // let sourcesWatched = [];
-//     let sourcesWatched = {};
-
-//     for (let source of sources) {
-//       sourcesWatched[source] = DataStore.sources[source].data;
-//     }
-//     return sourcesWatched;
-//   } else {
-//     return null
-//   }
-// });
-
 const layoutDescription = computed(() => {
   let value;
   if (isMobile.value && !refineEnabled.value) {
@@ -330,18 +238,6 @@ const layoutDescription = computed(() => {
     value = 'nonMobileNoRefine';
   } else {
     value = 'nonMobileRefine';
-  }
-  return value;
-});
-
-const refinePanelClass = computed(() => {
-  let value;
-  if (isMobile.value && refineOpen.value) {
-    value = 'mobile-refine-panel-holder-open';
-  } else if (refineOpen.value) {
-    value = 'refine-panel-holder-open';
-  } else {
-    value = 'refine-panel-holder';
   }
   return value;
 });
@@ -1004,16 +900,7 @@ const checkServices = (index, row) => {
 };
 
 const checkBuffer = (row) => {
-  // if (import.meta.env.VITE_DEBUG) console.log('checkBuffer is running, row:', row, 'row.latitude:', row.latitude, 'MapStore.bufferForAddressOrZipcode:', MapStore.bufferForAddressOrZipcode);
-  // if (import.meta.env.VITE_DEBUG) console.log('checkBuffer is running, row.latitude:', row.latitude);
-  // if (!row.geometry && !row.latitude) {
-  //   // if (import.meta.env.VITE_DEBUG) console.log('!row.geometry && !row.latitude');
-  //   return false;
-  // }
-  // if (import.meta.env.VITE_DEBUG) console.log('checkBuffer still going, row:', row, 'MapStore.bufferForAddressOrZipcode:', MapStore.bufferForAddressOrZipcode);
   const buffer = MapStore.bufferForAddressOrZipcode;
-  // if (!Object.keys(MapStore.bufferForAddressOrZipcode).length) {
-  // if (!MapStore.bufferForAddressOrZipcode) {
   if (!buffer) {
     // if (import.meta.env.VITE_DEBUG) console.log('!MapStore.bufferForAddressOrZipcode');
     return true;
@@ -1023,154 +910,9 @@ const checkBuffer = (row) => {
       comparePoint = GeocodeStore.aisData.features[0].geometry;
     } else if (MapStore.zipcodeCenter) {
       comparePoint = MapStore.zipcodeCenter;
-    } //else {
-      // comparePoint = point($mapConfig.cityCenterCoords);
-      //comparePoint = $mapConfig.cityCenterCoords;
-    //}
+    }
     row.distance = distance(comparePoint, row.geometry, { units: 'miles' });
     return true;
-    // return booleanPointInPolygon(row.geometry, buffer)// {
-    //   return true;
-    // }
-  // }
-  // } else if (row.latlng) {
-  // if (row.latlng) {
-  //   if (import.meta.env.VITE_DEBUG) console.log('row.latlng:', row.latlng);
-  //   if (import.meta.env.VITE_DEBUG) console.log('buffer else if 1 is running, row:', row, 'booleanBuffer:', booleanBuffer, 'typeof row.latlng[0]:', typeof row.latlng[0], 'MapStore.zipcodeCenter:', MapStore.zipcodeCenter);
-  //   if (typeof row.latlng[0] === 'number' && row.latlng[0] !== null) {
-  //     const rowPoint = point([ row.latlng[1], row.latlng[0] ]);
-  //     let geocodedPoint, options, theDistance;
-  //     if (GeocodeStore.aisData) {
-  //       geocodedPoint = point(GeocodeStore.aisData.features[0].geometry.coordinates);
-  //       options = { units: 'miles' };
-  //       theDistance = distance(geocodedPoint, rowPoint, options);
-  //       row.distance = theDistance;
-  //     } else if (MapStore.zipcodeCenter[0]) {
-  //       // if (import.meta.env.VITE_DEBUG) console.log('inside zipcode center else if');
-  //       let zipcodeCenter = point(MapStore.zipcodeCenter);
-  //       options = { units: 'miles' };
-  //       theDistance = distance(zipcodeCenter, rowPoint, options);
-  //       row.distance = theDistance;
-  //     } //else if (MapStore.watchPositionOn) {
-  //     //   if (import.meta.env.VITE_DEBUG) console.log('inside watchPositionOn else if');
-  //     //   geocodedPoint = point([ store.state.map.location.lng, store.state.map.location.lat ]);
-  //     //   options = { units: 'miles' };
-  //     //   theDistance = distance(geocodedPoint, rowPoint, options);
-  //     //   row.distance = theDistance;
-  //     // }
-  //     // if (import.meta.env.VITE_DEBUG) console.log('rowPoint:', rowPoint, 'currentBuffer.value:', currentBuffer.value, 'booleanPointInPolygon(rowPoint, currentBuffer.value):', booleanPointInPolygon(rowPoint, currentBuffer.value));
-  //     if (booleanPointInPolygon(rowPoint, buffer)) {
-  //       return true;
-  //     }
-  //     // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 1 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
-  //   } else if (typeof row.latlng[0] === 'string' && row.latlng[0] !== null) {
-  //     // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 1 ELSE IF');
-  //     const rowPoint = point([ parseFloat(row.latlng[1]), parseFloat(row.latlng[0]) ]);
-  //     if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
-  //       return true;
-  //     }
-  //   }
-  // } else if (row.latitude && row.longitude) {
-  //   if (import.meta.env.VITE_DEBUG) console.log('buffer else if is running, row:', row, 'booleanBuffer:', booleanBuffer);
-  //   if (typeof row.latitude === 'number' && typeof row.lon === 'number') {
-  //     const rowPoint = point([longitude, latitude]);
-  //     let comparePoint;
-  //     if (GeocodeStore.aisData.features) {
-  //       comparePoint = GeocodeStore.aisData.features[0].geometry;
-  //     } else if (MapStore.zipcodeCenter) {
-  //       comparePoint = MapStore.zipcodeCenter;
-  //     }
-  //     row.distance = distance(comparePoint, rowPoint, { units: 'miles' });
-  //     return true;
-      // if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
-      //   return true;
-      // }
-      // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 2 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
-    // }
-  // } else if (row.lat && row.lon) {
-  //   // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 2 is running, row:', row, 'booleanBuffer:', booleanBuffer);
-  //   if (typeof row.lat === 'number' && typeof row.lon === 'number') {
-  //     let projection = getProjection(row);
-  //     let lnglat;
-  //     if (projection === '3857') {
-  //       lnglat = proj4(projection3857, projection4326, [ row.lon, row.lat ]);
-  //     } else if (projection === '2272') {
-  //       lnglat = proj4(projection2272, projection4326, [ row.lon, row.lat ]);
-  //     } else {
-  //       lnglat = [ row.lon, row.lat ];
-  //     }
-  //     const rowPoint = point(lnglat);
-  //     if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
-  //       return true;
-  //     }
-  //     // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 2 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
-  //   }
-  // } else if (row.geo && row.geo.coordinates) {
-  //   // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 is running, row:', row, 'booleanBuffer:', booleanBuffer);
-  //   if (typeof row.geo.coordinates[0] === 'number' && typeof row.geo.coordinates[1] === 'number') {
-  //     let projection = getProjection(row);
-  //     let lnglat;
-  //     if (projection === '3857') {
-  //       lnglat = proj4(projection3857, projection4326, [ row.geo.coordinates[0], row.geo.coordinates[1] ]);
-  //     } else if (projection === '2272') {
-  //       lnglat = proj4(projection2272, projection4326, [ row.geo.coordinates[0], row.geo.coordinates[1] ]);
-  //     } else {
-  //       lnglat = [ row.geo.coordinates[0], row.geo.coordinates[1] ];
-  //     }
-  //     const rowPoint = point(lnglat);
-
-  //     let geocodedPoint, options, theDistance;
-  //     if (GeocodeStore.aisData) {
-  //       geocodedPoint = point(GeocodeStore.aisData.features[0].geometry.coordinates);
-  //       options = { units: 'miles' };
-  //       theDistance = distance(geocodedPoint, rowPoint, options);
-  //       row.distance = theDistance;
-  //     } else if (MapStore.zipcodeCenter[0]) {
-  //       // if (import.meta.env.VITE_DEBUG) console.log('inside zipcode center else if');
-  //       let zipcodeCenter = point(MapStore.zipcodeCenter);
-  //       options = { units: 'miles' };
-  //       theDistance = distance(zipcodeCenter, rowPoint, options);
-  //       row.distance = theDistance;
-  //     }
-
-  //     if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
-  //       return true;
-  //     }
-  //     // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
-  //   }
-  // } else if (row.geometry && row.geometry.x) {
-  //   // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 is running, row:', row, 'booleanBuffer:', booleanBuffer);
-  //   if (typeof row.geometry.x === 'number' && typeof row.geometry.y === 'number') {
-  //     let projection = getProjection(row);
-  //     let lnglat;
-  //     if (projection === '3857') {
-  //       lnglat = proj4(projection3857, projection4326, [ row.geometry.x, row.geometry.y ]);
-  //     } else if (projection === '2272') {
-  //       lnglat = proj4(projection2272, projection4326, [ row.geometry.x, row.geometry.y ]);
-  //     } else {
-  //       lnglat = [ row.geometry.x, row.geometry.y ];
-  //     }
-  //     const rowPoint = point(lnglat);
-
-  //     let geocodedPoint, options, theDistance;
-  //     if (GeocodeStore.aisData) {
-  //       geocodedPoint = point(GeocodeStore.aisData.features[0].geometry.coordinates);
-  //       options = { units: 'miles' };
-  //       theDistance = distance(geocodedPoint, rowPoint, options);
-  //       row.distance = theDistance;
-  //     } else if (MapStore.zipcodeCenter[0]) {
-  //       // if (import.meta.env.VITE_DEBUG) console.log('inside zipcode center else if');
-  //       let zipcodeCenter = point(MapStore.zipcodeCenter);
-  //       options = { units: 'miles' };
-  //       theDistance = distance(zipcodeCenter, rowPoint, options);
-  //       row.distance = theDistance;
-  //     }
-
-  //     if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
-  //       return true;
-  //     }
-  //     // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
-  //   }
   }
 };
 

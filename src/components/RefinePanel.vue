@@ -621,35 +621,6 @@ onMounted(async () => {
   }
 });
 
-
-// const clickFirstBoxes = () => {
-//   // console.log('clickFirstBoxes is running');
-//   for (let value of Object.keys($config.refine.multipleFieldGroups)) {
-//     // console.log('clickFirstBoxes is running, $config.refine.multipleFieldGroups[value]:', $config.refine.multipleFieldGroups[value]);
-//     if (Object.keys($config.refine.multipleFieldGroups[value]).includes('checkbox')) {
-//       let checkbox = $config.refine.multipleFieldGroups[value].checkbox;
-//       let firstValue = Object.keys(checkbox)[0];
-//       let unique_key = value+'_'+firstValue;
-//       let element = document.querySelector('[value='+unique_key+']');
-//       // console.log('clickFirstBoxes is running, element:', element, 'unique_key:', unique_key, 'value:', value, 'firstValue:', firstValue, '$config.refine.multipleFieldGroups[value]:', $config.refine.multipleFieldGroups[value]);
-//     }
-//   }
-// };
-
-// const manualselectedArray = (nextSelected) => {
-//   window.theRouter = router;
-//   console.log('manualselectedArray is firing, nextSelected:', nextSelected);
-//   MainStore.selectedServices = nextSelected;
-//   if (typeof nextSelected === 'string') {
-//     nextSelected = [nextSelected];
-//   }
-//   console.log('RefinePanel manualselectedArray is firing, nextSelected', nextSelected);
-//   if (!nextSelected.length) {
-//     return;
-//   }
-//   router.push({ query: { ...route.query, ...{ services: nextSelected.join(',') }}});
-// };
-
 const getCategoryFieldValue = (section) => {
   let sectionLower = section.toLowerCase().replaceAll(' ', '');
   let i18nCategories = Object.keys(ConfigStore.config.i18n.data.messages[i18nLocale].sections);
@@ -664,11 +635,6 @@ const getCategoryFieldValue = (section) => {
   return selectedCategory;
 };
 
-// findTooltip(test) {
-//   console.log('findTooltip is running, test:', test);
-//   return 'test';
-// };
-
 const getBoxValue = (box) => {
   let value;
   if (box && typeof box != 'object') {
@@ -681,7 +647,6 @@ const getBoxValue = (box) => {
 const calculateColumns = (ind, indName) => {
   // console.log('calculateColumns is running, indName:', indName, 'ind:', ind, '$config.refine.columns', $config.refine.columns, '$config.refine.multipleFieldGroups', $config.refine.multipleFieldGroups);
   let value;
-  // if (isMobile.value || $config.refine.columns) {
   if (isMobile.value) {
     value = 1;
   } else if ($config.refine.columns) {
@@ -741,7 +706,6 @@ const closeAddressBox = (box) => {
   console.log('closeAddressBox is running, box:', box, 'startQuery:', startQuery);
   delete startQuery['address'];
   router.push({ query: { ...startQuery }});
-  // $controller.resetGeocode();
   MainStore.currentSearch = null;
   MapStore.bufferShape = null;
 };
@@ -810,24 +774,6 @@ const closeBox = (box) => {
 const clearAll = (e) => {
   e.stopPropagation();
   console.log('RefinePanel clearAll is running, e:', e);
-  // if (refineType.value === 'multipleFieldGroups' || refineType.value === 'multipleDependentFieldGroups') {
-  //   for (let checkbox of Object.keys(selectedList.value)) {
-  //     console.log('selectedList.value[checkbox]:', selectedList.value[checkbox]);
-  //     if (Array.isArray(selectedList.value[checkbox])) {
-  //       selectedList.value[checkbox].splice(0);
-  //     } else {
-  //       const { [checkbox]: removedProperty, ...exceptBoth } = selectedList.value;
-  //       selectedList.value = exceptBoth;
-  //     }
-  //   }
-  // } else {
-  //   selected.value = [];
-  // }
-  // MainStore.selectedKeywords = [];
-  // MainStore.selectedZipcode = null;
-  // MapStore.zipcodeCenter = [];
-  // MainStore.currentSearch = null;
-  // MapStore.bufferShape = null;
   let startQuery = { ...route.query };
   // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, startQuery1:', startQuery);
   delete startQuery['address'];
@@ -843,7 +789,6 @@ const clearAll = (e) => {
   };
   for (let selected of Object.keys(selectedList.value)) {
     if (import.meta.env.VITE_DEBUG) console.log('clearAll is running, selected:', selected, 'selectedList.value[selected]:', selectedList.value[selected]);
-    // selectedList.value[selected] = [];
     if (Array.isArray(selectedList.value[selected])) {
       for (let i=selectedList.value[selected].length-1;i>=0;i--) {
         console.log('clearAll is running, i:', i);
@@ -935,10 +880,6 @@ const getRefineSearchList = async() => {
     selected = {};
     for (let group of Object.keys($config.refine.multipleFieldGroups)){
 
-      // if (Object.keys($config.refine.multipleFieldGroups[group]).includes('checkbox')) {
-      //   console.log('selectedList.value:', selectedList.value, 'Object.keys($config.refine.multipleFieldGroups[group]):', Object.keys($config.refine.multipleFieldGroups[group]));
-      //   selectedList.value[group] = []
-      // }
       if (import.meta.env.VITE_DEBUG) console.log('group:', group);
       uniq[group] = { expanded: false };
       for (let dep of Object.keys($config.refine.multipleFieldGroups[group])){
@@ -1030,7 +971,6 @@ const getRefineSearchList = async() => {
     selectedList.value = selected;
   }
 
-  // refineList.value = uniq;
   MainStore.refineList = uniq;
 
   return uniq;

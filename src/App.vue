@@ -53,9 +53,6 @@ onBeforeMount(async () => {
   MainStore.isMac = isMac();
   await router.isReady()
   if (import.meta.env.VITE_DEBUG == 'true') console.log('App onBeforeMount, route.params:', route.params, 'route.query:', route.query);
-  if (route.name === 'not-found') {
-    router.push({ name: 'home' });
-  }
 
   if (route.query.lang) {
     instance.appContext.config.globalProperties.$i18n.locale = route.query.lang;
