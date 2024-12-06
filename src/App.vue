@@ -3,12 +3,12 @@
 if (import.meta.env.VITE_DEBUG == 'true') console.log('App.vue setup is running in debug mode');
 
 import { useMainStore } from './stores/MainStore.js';
-import { useMapStore } from './stores/MapStore.js';
-import { useGeocodeStore } from './stores/GeocodeStore.js';
+// import { useMapStore } from './stores/MapStore.js';
+// import { useGeocodeStore } from './stores/GeocodeStore.js';
 import { useDataStore } from './stores/DataStore.js';
 import { useConfigStore } from './stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
-import { ref, computed, getCurrentInstance, onMounted, onBeforeMount, watch } from 'vue';
+import { ref, computed, getCurrentInstance, onMounted, onBeforeMount, watch, nextTick } from 'vue';
 
 if (import.meta.env.VITE_DEBUG == 'true') console.log('App.vue setup is running in debug mode, useDataStore:', useDataStore);
 
@@ -77,7 +77,10 @@ onBeforeMount(async () => {
   } else {
     appLink.value = '.';
   }
+});
 
+const isMobile = computed(() => {
+  return MainStore.isMobileDevice || MainStore.windowDimensions.width < 768;
 });
 
 const footerLinks = computed(() => {
@@ -106,6 +109,7 @@ const handleWindowResize = () => {
   const rootHeight = rootStyle.getPropertyValue('height');
   const rootWidthNum = parseInt(rootWidth.replace('px', ''));
   const rootHeightNum = parseInt(rootHeight.replace('px', ''));
+  if (import.meta.env.VITE_DEBUG == 'true') console.log('handleWindowResize, rootElement:', rootElement, 'rootWidth:', rootWidth, 'rootHeight:', rootHeight, 'rootWidthNum:', rootWidthNum, 'rootHeightNum:', rootHeightNum);
 
   const dim = {
     width: rootWidthNum,
@@ -113,26 +117,6 @@ const handleWindowResize = () => {
   };
   MainStore.windowDimensions = dim;
 }
-
-// watch(
-//   () => MainStore.currentLang,
-//   (newLang, oldLang) => {
-//     if (import.meta.env.VITE_DEBUG == 'true') console.log('watch MainStore.currentLang:', newLang, oldLang, 'locale.value:', locale.value);
-//     if (newLang != locale.value) {
-//       if (import.meta.env.VITE_DEBUG == 'true') console.log('setting locale:', newLang);
-//       // const instance = getCurrentInstance();
-//       if (import.meta.env.VITE_DEBUG == 'true') console.log('instance:', instance);
-//       if (instance) {
-//         if (import.meta.env.VITE_DEBUG == 'true') console.log('instance:', instance);
-//         if (newLang) {
-//           instance.appContext.config.globalProperties.$i18n.locale = newLang;
-//         } else {
-//           instance.appContext.config.globalProperties.$i18n.locale = 'en-US';
-//         }
-//       }
-//     }
-//   }
-// )
 
 watch(
   () => locale.value,
@@ -149,15 +133,6 @@ watch(
     } else {
       router.push({ query: { ...startQuery }});
     }
-  //   if (newLocale === MainStore.currentLang) {
-  //     return;
-  //   } else if (newLocale && newLocale != 'en-US') {
-  //     MainStore.currentLang = newLocale;
-  //     router.push({ query: { 'lang': newLocale }});
-  //   } else {
-  //     MainStore.currentLang = null;
-  //     router.push({ fullPath: route.path });
-  //   }
   }
 )
 
@@ -181,11 +156,13 @@ const appTitle = computed(() => {
 
 const appSubTitle = computed(() => {
   let value;
-  if ($config.app.subtitle) {
-    value = $config.app.subtitle;
-  } else if (i18nEnabled.value) {
-    // if (import.meta.env.VITE_DEBUG) console.log('t("app.subtitle"):', t('app.subtitle'));
-    value = t('app.subtitle'); 
+  if (!isMobile.value) {
+    if ($config.app.subtitle) {
+      value = $config.app.subtitle;
+    } else if (i18nEnabled.value) {
+      // if (import.meta.env.VITE_DEBUG) console.log('t("app.subtitle"):', t('app.subtitle'));
+      value = t('app.subtitle'); 
+    }
   }
   return value;
 });

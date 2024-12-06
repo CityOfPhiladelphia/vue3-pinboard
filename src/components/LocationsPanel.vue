@@ -975,7 +975,6 @@ const makeValidUrl = (url) => {
     width: 100%;
     position: sticky;
     top: 0;
-    width: 100%;
   }
 }
 

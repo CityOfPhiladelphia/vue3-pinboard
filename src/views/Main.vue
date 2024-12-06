@@ -88,7 +88,7 @@ if ($config.refineEnabled === false) {
 // computed
 
 const isMobile = computed(() => {
-  return MainStore.isMobileDevice;
+  return MainStore.isMobileDevice || MainStore.windowDimensions.width < 768;
 });
 
 const i18nLocale = computed(() => {
@@ -482,15 +482,21 @@ watch(
   () => refineOpen.value,
   async() => {
     await nextTick();
+    let headerOffset;
+    if (isMobile.value) {
+      headerOffset = 40;
+    } else {
+      headerOffset = 140;
+    }
     const refinePanel = document.getElementById('refine-panel-component');
     let refinePanelOffsetHeight = refinePanel.offsetHeight;
-    if (import.meta.env.VITE_DEBUG) console.log('test Main.vue watch refineOpen is firing, refinePanel:', refinePanel, 'refinePanelOffsetHeight:', refinePanelOffsetHeight);
+    if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch refineOpen is firing, isMobile.value:', isMobile.value, 'headerOffset:', headerOffset, 'refinePanel:', refinePanel, 'refinePanelOffsetHeight:', refinePanelOffsetHeight);
     const mainRow = document.getElementById('main-row');
-    mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+140}px)`);
+    mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight + headerOffset}px)`);
     // const mapPanelHolder = document.getElementById('map-panel-holder');
     // mapPanelHolder.style.setProperty('height', `calc(100% - ${refinePanelOffsetHeight+44}px)`);
     const map = document.getElementById('map');
-    map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+140}px)`);
+    map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight + headerOffset}px)`);
   }
 );
 
@@ -501,11 +507,11 @@ onMounted(async() => {
   body.classList.add('main-view');
 
   await nextTick();
-  // const appHeader = document.getElementById('app-header');
-  // let appHeaderOffsetHeight = appHeader.offsetHeight;
-  // console.log('appHeaderOffsetHeight:', appHeaderOffsetHeight);
-  // const mainColumn = document.getElementById('main-column');
-  // mainColumn.style.setProperty('height', `calc(100% - ${appHeaderOffsetHeight}px)`);
+  let header = document.querySelector("#app-header");
+  console.log('header:', header, 'header.offsetHeight:', header.offsetHeight);
+  let main = document.querySelector("main");
+  main.style.cssText =
+    main.style.cssText + `margin-top: ${header.offsetHeight}px`;
 
   const refinePanel = document.getElementById('refine-panel-component');
   let refinePanelOffsetHeight = refinePanel.offsetHeight;
@@ -756,7 +762,7 @@ const checkServices = (index, row) => {
         for (let group of selectedGroups) {
           let groupBooleanConditions = [];
           for (let service of selectedServices) {
-            if (import.meta.env.VITE_DEBUG) console.log('Main.vue checkServices loop, service:', service, 'group:', group);
+            // if (import.meta.env.VITE_DEBUG) console.log('Main.vue checkServices loop, service:', service, 'group:', group);
             if (group !== 'keyword' && service.split('_', 1)[0] === group && $config.refine.multipleFieldGroups[group]['radio']) {
               // if (import.meta.env.VITE_DEBUG) console.log('group:', group, '$config.refine.multipleFieldGroups[group]["radio"]:', $config.refine.multipleFieldGroups[group]['radio']);
               let dependentGroups = $config.refine.multipleFieldGroups[group]['radio'][service.split('_')[1]]['dependentGroups'] || [];
@@ -1254,76 +1260,11 @@ const toggleBodyClass = (className) => {
   .trusted-site-hidden {
     display: none;
   }
-
-  // #nav-wrap {
-  //   height: 80px;
-  //   line-height: 80px;
-
-
-  //   #main-nav {
-  //     .columns {
-  //       height: 80px;
-  //       .column {
-  //         height: 80px;
-  //       }
-  //     }
-  //   }
-
-  // }
-  // .container {
-  //   padding-left: 16px !important;
-  //   padding-right: 16px !important;
-  // }
-  // .title-col {
-  //   padding-top: 1rem !important;
-  //   padding-bottom: 1rem !important;
-  // }
-  // h2 {
-  //   font-weight: 100;
-  // }
 }
-
-// .search-bar-container-class {
-//   min-height: 4.5rem;
-// }
 
 .capitalized {
   text-transform: uppercase;
 }
-
-// .header-holder {
-//   background-color: blue;
-// }
-
-// .footer-holder {
-//   background-color: blue;
-//   margin-top: auto;
-// }
-
-// @media screen and (min-width: 768px) {
-//   .title-col {
-//     padding-top: 1rem !important;
-//     padding-bottom: 1rem !important;
-//   }
-// }
-
-// @media screen and (max-width: 767px) {
-//   .title-col {
-//     padding-top: 2rem !important;
-//     padding-bottom: 2rem !important;
-//   }
-// }
-
-// #mobile-menu-close-bar {
-//   height: 50px;
-//   .button {
-//     bottom: 3px !important;
-//   }
-// }
-
-// #mobile-menu-wrap {
-//   height: calc(100% - 105px) !important;
-// }
 
 .mobile-refine-panel-holder-open {
   flex-grow: 1;
@@ -1343,85 +1284,14 @@ const toggleBodyClass = (className) => {
   border-color: #cfcfcf;
 }
 
-// .locations-and-map-panels-holder {
-//   flex-direction: row-reverse;
-//   overflow-y: scroll;
-//   min-height: 0px;
-//   flex-grow: 1;
-//   margin-left: 0px !important;
-//   margin-right: 0px !important;
-//   margin-bottom: 0px !important;
-//   margin-top: 0px !important;
-// }
-
-// .locations-panel-holder {
-//   min-height: 0px;
-//   padding: 0px !important;
-//   overflow-y: scroll;
-//   position: relative;
-// }
-
-// .invisible-scrollbar {
-//   -ms-overflow-style: none;
-//   scrollbar-width: none;
-// }
-
-// .invisible-scrollbar::-webkit-scrollbar {
-//   display: none;
-// }
-
-/* IE10+ CSS styles go here */
-// @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
-
-//   @media (min-width: 768px) {
-//     .locations-and-map-panels-holder {
-//       overflow-y: hidden;
-//       height: 100px;
-//     }
-//   }
-//   @media (max-width: 767px) {
-//     .locations-and-map-panels-holder {
-//       height: 100px;
-//     }
-//     .locations-panel-holder {
-//       overflow-y: hidden;
-//     }
-//   }
-
-// }
-
-// .locations-panel {
-//   overflow-y: hidden;
-// }
-
-// .map-panel-holder {
-//   height: 100%;
-//   padding: 0px !important;
-// }
-
 .toggle-button {
   background-color: #0f4d90 !important;
 }
-
-// .overflows {
-//   overflow-y: scroll;
-// }
-
-// .footer-holder a {
-//   text-decoration: underline;
-// }
 
 .no-scroll{
   overflow: hidden;
   height: 100vh;
 }
-
-// .toggle-map{
-//   position: fixed;
-//   bottom:0;
-//   width: 100%;
-//   z-index: 1002;
-// }
 
 @media print {
 
@@ -1438,13 +1308,8 @@ const toggleBodyClass = (className) => {
   }
 
   .locations-and-map-panels-holder {
-    // flex-direction: row-reverse;
     overflow-y: visible;
   }
-
-  // .overflows {
-  //   overflow-y: visible;
-  // }
 }
 
 .holiday-banner {

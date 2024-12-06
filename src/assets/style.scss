@@ -37,8 +37,6 @@ a {
 }
 
 .main-column {
-  // height: calc(100vh - 96px);
-  // height: calc(100vh - 142px);
   display: flex;
   flex-direction: column;
   padding: 0px !important;
@@ -49,31 +47,15 @@ a {
   padding-top: 0px !important;
 }
 
-.refine-panel-component {
-  // height: auto;
+.bullet-list {
+  list-style-type: disc;
+  padding-left: 1.5em;
 }
 
 .main-row {
   display: flex;
   flex-direction: row;
   height: 100%;
-  // padding-top: 42px !important;
-  // margin-top: 0px !important;
-}
-
-.locations-holder {
-  display: flex;
-  flex-direction: column;
-  width: 50% !important;
-  padding: 0;
-  margin: 0;
-  // height: 100%;
-  // height: calc(100vh - 110px);
-}
-
-.bullet-list {
-  list-style-type: disc;
-  padding-left: 1.5em;
 }
 
 #locations-panel-content {
@@ -85,11 +67,18 @@ a {
   padding-bottom: 30px !important;
 }
 
+.locations-holder {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+}
+
 .map-panel-holder {
   width: 50%;
   margin-bottom: 0px;
   height: 100%;
-  // height: calc(100vh - 110px);
 }
 
 .map-panel-holder-full {
@@ -244,9 +233,10 @@ a {
   padding-right: 0px;
 }
 
-@media 
-only screen and (max-width: 768px),
-(min-device-width: 768px) and (max-device-width: 1024px)  {
+// @media 
+// only screen and (max-width: 768px),
+// (min-device-width: 768px) and (max-device-width: 1024px)  {
+@media only screen and (max-width: 768px) {
 
   @supports (-webkit-touch-callout: none) {
     /* CSS specific to iOS devices */ 
@@ -282,34 +272,27 @@ only screen and (max-width: 768px),
     height: auto;
     display: flex;
     flex-direction: column;
-    overflow-y: scroll;
+    overflow-y: hidden;
   }
 
-  .topics-holder {
-    display: flex;
-    flex-direction: column;
-    width: 100% !important;
-    padding: 0;
-    margin: 0;
+  .main-column {
+    overflow-y: hidden;
+  }
+
+  // .topics-holder {
+  //   display: flex;
+  //   flex-direction: column;
+  //   width: 100% !important;
+  //   padding: 0;
+  //   margin: 0;
+  //   height: auto;
+  // }
+
+  .locations-holder {
+    width: 100%;
+    overflow-y: hidden;
     height: auto;
   }
-
-  // #topic-panel-content {
-  //   // overflow-y: hidden;
-  //   overflow-x: hidden;
-  //   padding-left: 12px;
-  //   padding-right: 12px;
-  // }
-
-  // #topic-panel-no-topics {
-  //   overflow-x: hidden;
-  //   // overflow-y: hidden;
-  //   padding-left: 20px;
-  //   padding-right: 20px;
-  //   padding-top: 20px !important;
-  //   padding-bottom: 30px !important;
-  //   flex-grow: 1;
-  // }
 
   .map-panel-holder {
     padding-top: 28px !important;
@@ -395,27 +378,21 @@ only screen and (max-width: 768px),
   
 }
 
-@media 
-only screen and (min-device-width: 768px) and (max-device-width: 1024px) {
-  .map-panel {
-    height: 500px;
-  }
+// @media (min-width: 768px) and (max-width: 1024px) {
 
-  .map-class {
-    height: 500px;
-  }
+//   .locations-holder {
+//     width: 50%;
+//   }
 
-  // #topic-panel-no-topics {
-  //   min-height: calc(100vh - 570px) !important;
-  //   // height: 60dvh !important;
-  // }
+//   .map-panel {
+//     width: 50%;
+//     height: 500px;
+//   }
 
-  // #topic-panel-content {
-  //   min-height: calc(100vh - 700px) !important;
-  //   // height: 60dvh !important;
-  // }
-
-}
+//   .map-class {
+//     height: 500px;
+//   }
+// }
 
 .no-link-at-bottom {
   margin-bottom: 2rem !important;
