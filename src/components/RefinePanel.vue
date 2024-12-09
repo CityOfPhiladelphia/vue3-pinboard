@@ -1164,277 +1164,283 @@ const checkboxChange = (e) => {
     </div>
 
     <div
-      v-if="dataStatus === 'success' && ['categoryField_array', 'multipleFields'].includes(refineType)"
+      id="refine-bottom"
+      class="refine-bottom invisible-scrollbar"
       v-show="!retractable && !isMobile || refineOpen"
-      id="field-div"
-      class="refine-holder"
     >
-      <tooltip-checkbox
-        :options="refineListTranslated"
-        :numOfColumns="NumRefineColumns"
-        :small="!isMobile"
-        v-model="selected"
-        :value="selected"
-        value-key="data"
-        text-key="textLabel"
-      >
-      </tooltip-checkbox>
-    </div>
 
-    <div
-      v-if="dataStatus === 'success' && refineType == 'categoryField_value'"
-      v-show="!retractable && !isMobile || refineOpen"
-      id="field-div"
-      class="refine-holder"
-    >
-      <radio
-        v-model="selected"
-        :options="refineListTranslated"
-        text-key="text"
-        value-key="value"
-        :numOfColumns="NumRefineColumns"
-      >
-        <!-- :small="false" -->
-      <!-- :small="!isMobile" -->
-      </radio>
-    </div>
-
-    <!-- if using multipleFieldGroups option and NOT dropdownRefine -->
-    <div
-      v-if="dataStatus === 'success' && refineType === 'multipleFieldGroups' && !dropdownRefine"
-      v-show="!retractable && !isMobile || refineOpen"
-      id="multiple-field-groups-div"
-      class="columns is-multiline multiple-field-groups"
-    >
       <div
-        v-for="(ind) in Object.keys(refineListTranslated)"
-        :id="'refine-list-'+ind"
-        :key="ind"
-        class="column is-narrow service-group-holder-x"
+        v-if="dataStatus === 'success' && ['categoryField_array', 'multipleFields'].includes(refineType)"
+        v-show="!retractable && !isMobile || refineOpen"
+        id="field-div"
+        class="refine-holder"
       >
-        <div
-          id="columns-div-for-checkboxes"
-          class="columns"
+        <tooltip-checkbox
+          :options="refineListTranslated"
+          :numOfColumns="NumRefineColumns"
+          :small="!isMobile"
+          v-model="selected"
+          :value="selected"
+          value-key="data"
+          text-key="textLabel"
         >
-          <radio
-            :id="'radio_'+ind"
-            v-model="selectedList['radio_'+ind]"
-            v-if="refineListTranslated[ind]['radio']"
-            :options="refineListTranslated[ind]['radio']"
-            text-key="textLabel"
-            value-key="data"
-            :small="!isMobile"
-            :num-of-columns="calculateColumns(refineList[ind]['radio'], ind)"
-          >
-            <template v-slot:label>
-              <div :class="isMobile ? 'large-label': 'small-label'">
-                {{ $t(ind + '.category') }}
-              </div>
-            </template>
-          </radio>
-
-          <tooltip-checkbox
-            v-if="refineListTranslated[ind]['checkbox']"
-            :options="refineListTranslated[ind]['checkbox']"
-            :small="!isMobile"
-            v-model="selectedList['checkbox_'+ind]"
-            :value="selectedList['checkbox_'+ind]"
-            text-key="textLabel"
-            value-key="data"
-            shrinkToFit="true"
-            :num-of-columns="calculateColumns(refineList[ind]['checkbox'], ind)"
-          >
-            <template v-slot:label>
-              <div :class="isMobile ? 'large-label': 'small-label'">
-                {{ $t(ind + '.category') }}
-                <icon-tool-tip
-                  v-if="!isMobile && refineListTranslated[ind]['tooltip']"
-                  :tip="refineListTranslated[ind]['tooltip']"
-                  :circle-type="'click'"
-                  :position="refineList[ind]['tooltip']['position']"
-                  :multiline="refineList[ind]['tooltip']['multiline']"
-                />
-                <div
-                  v-if="isMobile && refineListTranslated[ind]['tooltip']"
-                  class="mobile-tooltip"
-                >
-                  <font-awesome-icon
-                    icon="info-circle"
-                    class="fa-infoCircle"
-                  />
-                  {{ $t(refineListTranslated[ind]['tooltip']) }}
-                </div>
-              </div>
-            </template>
-          </tooltip-checkbox>
-        </div>
+        </tooltip-checkbox>
       </div>
-    </div>
 
-    <!-- if using multipleFieldGroups option and dropdownRefine -->
-    <div
-      v-if="dataStatus === 'success' && refineType === 'multipleFieldGroups' && dropdownRefine"
-      id="multiple-field-groups-dropdown-div"
-      class="columns is-multiline multiple-field-groups"
-    >
       <div
-        v-for="(ind) in Object.keys(refineListTranslated)"
-        :id="'refine-list-'+ind"
-        :key="ind"
-        class="column"
+        v-if="dataStatus === 'success' && refineType == 'categoryField_value'"
+        v-show="!retractable && !isMobile || refineOpen"
+        id="field-div"
+        class="refine-holder"
       >
+        <radio
+          v-model="selected"
+          :options="refineListTranslated"
+          text-key="text"
+          value-key="value"
+          :numOfColumns="NumRefineColumns"
+        >
+          <!-- :small="false" -->
+        <!-- :small="!isMobile" -->
+        </radio>
+      </div>
 
+      <!-- if using multipleFieldGroups option and NOT dropdownRefine -->
+      <div
+        v-if="dataStatus === 'success' && refineType === 'multipleFieldGroups' && !dropdownRefine"
+        v-show="!retractable && !isMobile || refineOpen"
+        id="multiple-field-groups-div"
+        class="columns is-multiline multiple-field-groups"
+      >
         <div
-          id="columns-div-for-checkboxes"
-          class="columns"
+          v-for="(ind) in Object.keys(refineListTranslated)"
+          :id="'refine-list-'+ind"
+          :key="ind"
+          class="column is-narrow service-group-holder-x"
         >
           <div
-            class="column dropdown-checkbox-div"
-            :style="{ 'width': 100/Object.keys(refineListTranslated).length+'%' }"
+            id="columns-div-for-checkboxes"
+            class="columns"
           >
-            <div
-              class="dropdown-checkbox-header"
-              @click="expandCheckbox(ind)"
-            >
-              {{ $t(ind + '.category') }}
-            </div>
-            <div
-              v-if="refineList[ind].expanded"
-              class="refine-dropdown"
-            >
-              <radio
-                :id="'radio_'+ind"
-                v-model="selectedList['radio_'+ind]"
-                v-if="refineListTranslated[ind]['radio']"
-                :options="refineListTranslated[ind]['radio']"
-                text-key="textLabel"
-                value-key="data"
-                :small="!isMobile"
-                :num-of-columns="calculateColumns(refineList[ind]['radio'], ind)"
-              >
-              </radio>
-
-              <tooltip-checkbox
-                v-if="refineListTranslated[ind]['checkbox']"
-                :options="refineListTranslated[ind]['checkbox']"
-                :small="!isMobile"
-                v-model="selectedList['checkbox_'+ind]"
-                text-key="textLabel"
-                value-key="data"
-                shrinkToFit="true"
-                :num-of-columns="calculateColumns(refineList[ind]['checkbox'], ind)"
-              >
-              </tooltip-checkbox>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- if using multipleDependentFieldGroups option -->
-    <div
-      v-if="dataStatus === 'success' && refineType === 'multipleDependentFieldGroups'"
-      id="multiple-dependent-field-groups-div"
-      class="columns is-multiline multiple-field-groups"
-    >
-      <div
-        v-for="(ind) in Object.keys(refineListTranslated)"
-        :id="'refine-list-'+ind"
-        :key="ind"
-        class="column is-narrow service-group-holder-x"
-      >
-
-        <div
-          id="columns-div-for-checkboxes"
-          class="columns"
-        >
-          <div class="column">
             <radio
+              :id="'radio_'+ind"
               v-model="selectedList['radio_'+ind]"
               v-if="refineListTranslated[ind]['radio']"
               :options="refineListTranslated[ind]['radio']"
               text-key="textLabel"
               value-key="data"
-              :num-of-columns="1"
               :small="!isMobile"
+              :num-of-columns="calculateColumns(refineList[ind]['radio'], ind)"
             >
               <template v-slot:label>
-                {{ $t(ind + '.category') }}
-                <icon-tool-tip
-                  v-if="Object.keys(infoCircles).includes(ind)"
-                  :item="ind"
-                  :circleData="infoCircles[ind]"
-                  :circleType="'click'"
-                >
-                </icon-tool-tip>
+                <div :class="isMobile ? 'large-label': 'small-label'">
+                  {{ $t(ind + '.category') }}
+                </div>
               </template>
             </radio>
 
             <tooltip-checkbox
+              v-if="refineListTranslated[ind]['checkbox']"
               :options="refineListTranslated[ind]['checkbox']"
-              :num-of-columns="1"
               :small="!isMobile"
-              v-model="selectedList[ind]"
+              v-model="selectedList['checkbox_'+ind]"
+              :value="selectedList['checkbox_'+ind]"
               text-key="textLabel"
               value-key="data"
               shrinkToFit="true"
-              @change="checkboxChange()"
-              @update:modelValue="checkboxChange()"
+              :num-of-columns="calculateColumns(refineList[ind]['checkbox'], ind)"
             >
-              <template
-                v-slot:label
-                v-if="!refineListTranslated[ind]['radio']"
-              >
-                {{ $t(ind + '.category') }}
-                <icon-tool-tip
-                  v-if="Object.keys(infoCircles).includes(ind)"
-                  :item="ind"
-                  :circleData="infoCircles[ind]"
-                  :circleType="'click'"
-                >
-                </icon-tool-tip>
+              <template v-slot:label>
+                <div :class="isMobile ? 'large-label': 'small-label'">
+                  {{ $t(ind + '.category') }}
+                  <icon-tool-tip
+                    v-if="!isMobile && refineListTranslated[ind]['tooltip']"
+                    :tip="refineListTranslated[ind]['tooltip']"
+                    :circle-type="'click'"
+                    :position="refineList[ind]['tooltip']['position']"
+                    :multiline="refineList[ind]['tooltip']['multiline']"
+                  />
+                  <div
+                    v-if="isMobile && refineListTranslated[ind]['tooltip']"
+                    class="mobile-tooltip"
+                  >
+                    <font-awesome-icon
+                      icon="info-circle"
+                      class="fa-infoCircle"
+                    />
+                    {{ $t(refineListTranslated[ind]['tooltip']) }}
+                  </div>
+                </div>
               </template>
             </tooltip-checkbox>
           </div>
         </div>
       </div>
-    </div>
 
-    <div
-      v-if="isMobile && refineOpen"
-      class="columns is-mobile mobile-clear-all"
-    >
+      <!-- if using multipleFieldGroups option and dropdownRefine -->
       <div
-        class="column is-narrow add-margin-left small-side-padding"
-        v-if="!i18nEnabled"
-      >
-        <button
-          class="button apply-filters-button medium-side-padding"
-          @click="expandRefine(); scrollToTop();"
-        >
-          <div class="apply-filters-text">
-            Apply filters
-          </div>
-        </button>
-      </div>
-
-      <div
-        class="column is-narrow add-margin-left small-side-padding"
-        v-if="i18nEnabled"
+        v-if="dataStatus === 'success' && refineType === 'multipleFieldGroups' && dropdownRefine"
+        id="multiple-field-groups-dropdown-div"
+        class="columns is-multiline multiple-field-groups"
       >
         <div
-          class="button apply-filters-button medium-side-padding"
-          @click="expandRefine(); scrollToTop();"
+          v-for="(ind) in Object.keys(refineListTranslated)"
+          :id="'refine-list-'+ind"
+          :key="ind"
+          class="column"
         >
+
           <div
-            v-html="$t('refinePanel.applyFilters')"
-            class="apply-filters-text"
-          />
+            id="columns-div-for-checkboxes"
+            class="columns"
+          >
+            <div
+              class="column dropdown-checkbox-div"
+              :style="{ 'width': 100/Object.keys(refineListTranslated).length+'%' }"
+            >
+              <div
+                class="dropdown-checkbox-header"
+                @click="expandCheckbox(ind)"
+              >
+                {{ $t(ind + '.category') }}
+              </div>
+              <div
+                v-if="refineList[ind].expanded"
+                class="refine-dropdown"
+              >
+                <radio
+                  :id="'radio_'+ind"
+                  v-model="selectedList['radio_'+ind]"
+                  v-if="refineListTranslated[ind]['radio']"
+                  :options="refineListTranslated[ind]['radio']"
+                  text-key="textLabel"
+                  value-key="data"
+                  :small="!isMobile"
+                  :num-of-columns="calculateColumns(refineList[ind]['radio'], ind)"
+                >
+                </radio>
+
+                <tooltip-checkbox
+                  v-if="refineListTranslated[ind]['checkbox']"
+                  :options="refineListTranslated[ind]['checkbox']"
+                  :small="!isMobile"
+                  v-model="selectedList['checkbox_'+ind]"
+                  text-key="textLabel"
+                  value-key="data"
+                  shrinkToFit="true"
+                  :num-of-columns="calculateColumns(refineList[ind]['checkbox'], ind)"
+                >
+                </tooltip-checkbox>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-    </div>
+      <!-- if using multipleDependentFieldGroups option -->
+      <div
+        v-if="dataStatus === 'success' && refineType === 'multipleDependentFieldGroups'"
+        id="multiple-dependent-field-groups-div"
+        class="columns is-multiline multiple-field-groups"
+      >
+        <div
+          v-for="(ind) in Object.keys(refineListTranslated)"
+          :id="'refine-list-'+ind"
+          :key="ind"
+          class="column is-narrow service-group-holder-x"
+        >
 
+          <div
+            id="columns-div-for-checkboxes"
+            class="columns"
+          >
+            <div class="column">
+              <radio
+                v-model="selectedList['radio_'+ind]"
+                v-if="refineListTranslated[ind]['radio']"
+                :options="refineListTranslated[ind]['radio']"
+                text-key="textLabel"
+                value-key="data"
+                :num-of-columns="1"
+                :small="!isMobile"
+              >
+                <template v-slot:label>
+                  {{ $t(ind + '.category') }}
+                  <icon-tool-tip
+                    v-if="Object.keys(infoCircles).includes(ind)"
+                    :item="ind"
+                    :circleData="infoCircles[ind]"
+                    :circleType="'click'"
+                  >
+                  </icon-tool-tip>
+                </template>
+              </radio>
+
+              <tooltip-checkbox
+                :options="refineListTranslated[ind]['checkbox']"
+                :num-of-columns="1"
+                :small="!isMobile"
+                v-model="selectedList[ind]"
+                text-key="textLabel"
+                value-key="data"
+                shrinkToFit="true"
+                @change="checkboxChange()"
+                @update:modelValue="checkboxChange()"
+              >
+                <template
+                  v-slot:label
+                  v-if="!refineListTranslated[ind]['radio']"
+                >
+                  {{ $t(ind + '.category') }}
+                  <icon-tool-tip
+                    v-if="Object.keys(infoCircles).includes(ind)"
+                    :item="ind"
+                    :circleData="infoCircles[ind]"
+                    :circleType="'click'"
+                  >
+                  </icon-tool-tip>
+                </template>
+              </tooltip-checkbox>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        v-if="isMobile && refineOpen"
+        class="columns is-mobile mobile-clear-all"
+      >
+        <div
+          class="column is-narrow add-margin-left small-side-padding"
+          v-if="!i18nEnabled"
+        >
+          <button
+            class="button apply-filters-button medium-side-padding"
+            @click="expandRefine(); scrollToTop();"
+          >
+            <div class="apply-filters-text">
+              Apply filters
+            </div>
+          </button>
+        </div>
+
+        <div
+          class="column is-narrow add-margin-left small-side-padding"
+          v-if="i18nEnabled"
+        >
+          <div
+            class="button apply-filters-button medium-side-padding"
+            @click="expandRefine(); scrollToTop();"
+          >
+            <div
+              v-html="$t('refinePanel.applyFilters')"
+              class="apply-filters-text"
+            />
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
 </template>
 
@@ -1445,6 +1451,7 @@ const checkboxChange = (e) => {
   // height: 10%;
   // background: $ghost-grey;
   background: #f0f0f0;
+  overflow-y: scroll;
   overflow-x: hidden;
   // display: flex;
 }
@@ -1626,6 +1633,11 @@ const checkboxChange = (e) => {
     // height: 3rem;
     position: relative;
 
+    .refine-bottom {
+      height: calc(100vh - 130px);
+      overflow-y: auto;
+    }
+
     .clear-all {
       // margin-top: 8px;
       border-style: none;
@@ -1718,6 +1730,7 @@ const checkboxChange = (e) => {
     #multiple-field-groups-div {
       padding-left: 16px;
       padding-right: 16px;
+      // overflow-y: scroll;
     }
   }
 
