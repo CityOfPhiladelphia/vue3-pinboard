@@ -21,10 +21,7 @@ a {
 
 #app {
   height: 100dvh;
-  display: flex;
-  flex-direction: column;
   overflow-y: hidden;
-  justify-content: space-evenly;
 }
 
 .main {
@@ -62,8 +59,8 @@ a {
   flex-grow: 1;
   overflow-y: scroll;
   overflow-x: hidden;
-  padding-left: 12px;
-  padding-right: 12px;
+  // padding-left: 12px;
+  // padding-right: 12px;
   padding-bottom: 30px !important;
 }
 
@@ -261,11 +258,8 @@ a {
 
   #app {
     height: 100dvh;
-    display: flex;
-    flex-direction: column;
     overflow-y: hidden;
     overflow-x: hidden;
-    justify-content: space-evenly;
   }
 
   .main {

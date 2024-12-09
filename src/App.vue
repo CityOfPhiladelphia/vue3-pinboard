@@ -109,7 +109,7 @@ const handleWindowResize = () => {
   const rootHeight = rootStyle.getPropertyValue('height');
   const rootWidthNum = parseInt(rootWidth.replace('px', ''));
   const rootHeightNum = parseInt(rootHeight.replace('px', ''));
-  if (import.meta.env.VITE_DEBUG == 'true') console.log('handleWindowResize, rootElement:', rootElement, 'rootWidth:', rootWidth, 'rootHeight:', rootHeight, 'rootWidthNum:', rootWidthNum, 'rootHeightNum:', rootHeightNum);
+  // if (import.meta.env.VITE_DEBUG == 'true') console.log('handleWindowResize, rootElement:', rootElement, 'rootWidth:', rootWidth, 'rootHeight:', rootHeight, 'rootWidthNum:', rootWidthNum, 'rootHeightNum:', rootHeightNum);
 
   const dim = {
     width: rootWidthNum,
@@ -212,7 +212,7 @@ const i18nLanguages = computed(() => {
     </template>
   </app-header>
 
-  <main id="main" class="main">
+  <main id="main" class="main invisible-scrollbar">
     
     <div
       v-if="MainStore.firstRouteLoaded === false"

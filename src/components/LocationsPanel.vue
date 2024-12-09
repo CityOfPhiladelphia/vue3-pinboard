@@ -543,7 +543,7 @@ const makeValidUrl = (url) => {
 </script>
 
 <template>
-  <div id="locations-panel-content" class="locations">
+  <div id="locations-panel-content" class="locations invisible-scrollbar">
 
     <div
       v-if="shouldShowGreeting"

@@ -511,7 +511,7 @@ onMounted(async() => {
   console.log('header:', header, 'header.offsetHeight:', header.offsetHeight);
   let main = document.querySelector("main");
   main.style.cssText =
-    main.style.cssText + `margin-top: ${header.offsetHeight}px`;
+    main.style.cssText + `margin-top: ${header.offsetHeight}px; padding-bottom: 0px;`;
 
   const refinePanel = document.getElementById('refine-panel-component');
   let refinePanelOffsetHeight = refinePanel.offsetHeight;
@@ -1220,21 +1220,29 @@ const toggleBodyClass = (className) => {
         />
       </div>
     </div>
-  </div>
 
 
-  <div
-    v-show="toggleButtonVisible"
-    @click="toggleMap"
-  >
-    <button class="button capitalized is-primary toggle-button is-fullwidth">
-      {{ $t(buttonText) }}
-    </button>
+    <div
+      v-show="toggleButtonVisible"
+      @click="toggleMap"
+    >
+      <button class="button capitalized is-primary toggle-button-left is-full-width">
+        <div class="text-div">{{ $t(buttonText) }}</div>
+      </button>
+      <button class="button capitalized is-primary toggle-button-right is-full-width">
+        <div class="text-div">{{ $t(buttonText) }}</div>
+      </button>
+    </div>
   </div>
+
 
 </template>
 
 <style lang="scss">
+
+.text-div {
+  margin: 0 auto;
+}
 
 .skip-to-main-content-link {
   position: absolute;
@@ -1284,8 +1292,17 @@ const toggleBodyClass = (className) => {
   border-color: #cfcfcf;
 }
 
-.toggle-button {
+.toggle-button-left {
   background-color: #0f4d90 !important;
+  width: 48%;
+  margin-left: 2px;
+  margin-right: 2px;
+}
+
+.toggle-button-right {
+  background-color: #0f4d90 !important;
+  width: 48%;
+  margin-right: 2px;
 }
 
 .no-scroll{
