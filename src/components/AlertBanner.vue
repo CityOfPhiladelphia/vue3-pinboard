@@ -9,12 +9,13 @@ import { useConfigStore } from '../stores/ConfigStore.js';
 const instance = getCurrentInstance();
 const ConfigStore = useConfigStore();
 const $config = ConfigStore.config;
+const MainStore = useMainStore();
 
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
 const isMobile = computed(() => {
-  return MainStore.isMobileDevice;
+  return MainStore.isMobileDevice || MainStore.windowDimensions.width < 768;
 });
   
 const i18nLocale = computed(() => {

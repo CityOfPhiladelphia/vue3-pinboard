@@ -112,7 +112,7 @@ const dropdownRefine = computed(() => {
 });
 
 const isMobile = computed(() => {
-  return MainStore.isMobileDevice;
+  return MainStore.isMobileDevice || MainStore.windowDimensions.width < 768;
 });
 
 const NumRefineColumns = computed(() => {
@@ -719,8 +719,8 @@ const closeAddressBox = (box) => {
   MapStore.bufferShape = null;
 };
 
-const closeKeywordsBox = (box) => {
-  console.log('closeKeywordsBox is running');
+const closeKeywordsBox = (box, e) => {
+  console.log('closeKeywordsBox is running, e:', e);
   let startQuery = { ...route.query };
   let keywordsArray;
   if (startQuery.keyword && typeof startQuery.keyword === 'string' && startQuery.keyword != '') {
@@ -748,8 +748,10 @@ const closeKeywordsBox = (box) => {
   MainStore.selectedKeywords = keywordsArray;
 };
 
-const closeBox = (box) => {
-  console.log('closeBox is running, box:', box);
+const closeBox = (e, box) => {
+  e.stopPropagation();
+  // console.log('closeBox is running, box:', box);
+  console.log('closeBox is running, box:', box, 'e:', e);
   if (refineType.value === 'categoryField_value') {
     selectedList.value = [];
     // $emit('watched-submitted-checkbox-value');
@@ -781,7 +783,6 @@ const closeBox = (box) => {
 };
 
 const clearAll = (e) => {
-  e.stopPropagation();
   console.log('RefinePanel clearAll is running, e:', e);
   let startQuery = { ...route.query };
   // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, startQuery1:', startQuery);
@@ -801,10 +802,10 @@ const clearAll = (e) => {
     if (Array.isArray(selectedList.value[selected])) {
       for (let i=selectedList.value[selected].length-1;i>=0;i--) {
         console.log('clearAll is running, i:', i);
-        closeBox(selectedList.value[selected][i]);
+        closeBox(e, selectedList.value[selected][i]);
       }
     } else {
-      closeBox(selectedList.value[selected]);
+      closeBox(e, selectedList.value[selected]);
     }
   }
   selected.value = [];
@@ -1077,12 +1078,12 @@ const checkboxChange = (e) => {
           v-html="$t('refinePanel.clearAll')"
         />
 
+        <!-- v-if="!isMobile" -->
         <div
-          v-if="!isMobile"
           id="selected-boxes"
           class="selected-boxes columns is-mobile"
-          @click="clickBox"
         >
+        <!-- @click="clickBox" -->
           <button
             v-for="box in keywordsEntered"
             class="box-value column is-narrow"
@@ -1124,7 +1125,7 @@ const checkboxChange = (e) => {
             v-if="refineType !== 'categoryField_value'"
             v-for="box in selectedArray"
             class="box-value column is-narrow"
-            @click="closeBox(box)"
+            @click="(e) => closeBox(e, box)"
           >
             {{ $t(getBoxValue(box)) }}
             <font-awesome-icon
@@ -1135,7 +1136,7 @@ const checkboxChange = (e) => {
           <button
             v-if="refineType == 'categoryField_value' && selected.length && i18nEnabled"
             class="box-value column is-narrow"
-            @click="closeBox(selected)"
+            @click="(e) => closeBox(e, selected)"
           >
             {{ $t('sections.' + getCategoryFieldValue(selected) + '.header') }}
             <font-awesome-icon
@@ -1146,7 +1147,7 @@ const checkboxChange = (e) => {
           <button
             v-if="refineType == 'categoryField_value' && selected.length && !i18nEnabled"
             class="box-value column is-narrow"
-            @click="closeBox(selected)"
+            @click="(e) => closeBox(e, selected)"
           >
             {{ selected }}
             <font-awesome-icon
@@ -1176,7 +1177,7 @@ const checkboxChange = (e) => {
       id="refine-bottom"
       class="refine-bottom invisible-scrollbar"
       v-show="!retractable && !isMobile || refineOpen"
-      :style="{ 'height': bottomHeight + 'px' }"
+      :style="isMobile ? { 'height': bottomHeight + 'px' } : null"
     >
 
       <div

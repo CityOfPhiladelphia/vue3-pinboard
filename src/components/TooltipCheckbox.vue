@@ -120,7 +120,7 @@ const classes = computed(() => {
 });
 
 const isMobile = computed(() => {
-  return MainStore.isMobileDevice;
+  return MainStore.isMobileDevice || MainStore.windowDimensions.width < 768;
 });
 
 const checkRadioClasses = computed(() => {

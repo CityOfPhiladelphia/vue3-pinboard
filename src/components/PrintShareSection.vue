@@ -37,7 +37,7 @@ const copiedUrl = computed(() => {
 });
 
 const isMobile = computed(() => {
-  return MainStore.isMobileDevice;
+  return MainStore.isMobileDevice || MainStore.windowDimensions.width < 768;
 });
 
 const i18nLocale = computed(() => {
