@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { useConfigStore } from './stores/ConfigStore.js';
 import { useDataStore } from './stores/DataStore.js';
+import { useMainStore } from './stores/MainStore.js';
 
 if (import.meta.env.VITE_DEBUG) console.log('test, import.meta.env.VITE_DEBUG:', import.meta.env.VITE_DEBUG);
 
@@ -62,6 +63,7 @@ import { faPrint } from '@fortawesome/free-solid-svg-icons';
 import { faGlobe } from '@fortawesome/free-solid-svg-icons';
 import { faEnvelope} from '@fortawesome/free-solid-svg-icons';
 import { faCircleInfo } from '@fortawesome/free-solid-svg-icons';
+import { faRectangleList } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
   faSearch,
@@ -90,6 +92,7 @@ library.add(
   faGlobe,
   faEnvelope,
   faCircleInfo,
+  faRectangleList,
 );
 
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
@@ -141,4 +144,6 @@ export default function pinboard(config) {
   app.mount('#app')
 };
 
-export { useDataStore };
+// export { useDataStore };
+// export { useMainStore };
+export { useDataStore, useMainStore };

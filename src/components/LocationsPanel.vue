@@ -505,6 +505,15 @@ const clickedViewList = () => {
   // });
 };
 
+const clickedViewMap = () => {
+  MainStore.shouldShowGreeting = false;
+  $emit('clicked-view-map');
+  // $gtag.event('click', {
+  //   'event_category': store.state.gtag.category,
+  //   'event_label': 'view map',
+  // });
+};
+
 const getLocationsList = () => {
   const locations = sources.value[$config.app.type].data.rows;
   return locations;
@@ -552,7 +561,9 @@ const makeValidUrl = (url) => {
       <custom-greeting
         v-if="shouldShowGreeting && hasCustomGreeting"
         @view-list="clickedViewList"
+        @view-map="clickedViewMap"
         :database="database"
+        :isMobile="isMobile"
       />
       
     </div>

@@ -250,8 +250,8 @@ const mapPanelVisible = computed(() => {
   return !isMobile.value || layoutDescription.value !== 'mobileRefineOpen' && isMapVisible.value;
 });
 
-const toggleButtonVisible = computed(() => {
-  return isMobile.value && layoutDescription.value !== 'mobileRefineOpen';
+const toggleButtonsVisible = computed(() => {
+  return isMobile.value && layoutDescription.value !== 'mobileRefineOpen' && !MainStore.shouldShowGreeting;
 });
 
 const refineOpen = computed(() => {
@@ -492,13 +492,50 @@ watch(
     let refinePanelOffsetHeight = refinePanel.offsetHeight;
     if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch refineOpen is firing, isMobile.value:', isMobile.value, 'headerOffset:', headerOffset, 'refinePanel:', refinePanel, 'refinePanelOffsetHeight:', refinePanelOffsetHeight);
     const mainRow = document.getElementById('main-row');
-    mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight + headerOffset}px)`);
+    if (isMobile.value && MainStore.shouldShowGreeting) {
+      mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight + headerOffset + 48}px)`);
+    } else if (isMobile.value) {
+      mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight + headerOffset + 88}px)`);
+    } else {
+      mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight + headerOffset}px)`);
+    }
+    const map = document.getElementById('map');
+    if (isMobile.value) {
+      map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight + headerOffset + 88}px)`);
+    } else {
+      map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight + headerOffset}px)`);
+    }
+    // mainRow.style.setProperty('height', `calc(100vh)`);
     // const mapPanelHolder = document.getElementById('map-panel-holder');
     // mapPanelHolder.style.setProperty('height', `calc(100% - ${refinePanelOffsetHeight+44}px)`);
-    const map = document.getElementById('map');
-    map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight + headerOffset}px)`);
   }
 );
+
+watch(
+  () => MainStore.shouldShowGreeting,
+  async() => {
+    if (isMobile.value) {
+      await nextTick();
+      let headerOffset;
+      if (isMobile.value) {
+        headerOffset = 40;
+      } else {
+        headerOffset = 140;
+      }
+      const refinePanel = document.getElementById('refine-panel-component');
+      let refinePanelOffsetHeight = refinePanel.offsetHeight;
+      if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch shouldShowGreeting is firing, isMobile.value:', isMobile.value, 'headerOffset:', headerOffset, 'refinePanel:', refinePanel, 'refinePanelOffsetHeight:', refinePanelOffsetHeight);
+      const mainRow = document.getElementById('main-row');
+      // if (MainStore.shouldShowGreeting) {
+      //   mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight + headerOffset + 48}px)`);
+      // } else {
+      mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight + headerOffset + 88}px)`);
+      // }
+      const map = document.getElementById('map');
+      map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight + headerOffset + 88}px)`);
+    }
+  }
+)
 
 onMounted(async() => {
 
@@ -517,11 +554,21 @@ onMounted(async() => {
   let refinePanelOffsetHeight = refinePanel.offsetHeight;
   // if (import.meta.env.VITE_DEBUG) console.log('Main.vue onMounted is firing, refinePanel:', refinePanel, 'height:', height, 'offsetHeight:', offsetHeight, 'clientHeight:', clientHeight);
   const mainRow = document.getElementById('main-row');
-  mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+140}px)`);
+  if (isMobile.value && MainStore.shouldShowGreeting) {
+    mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+88}px)`);
+  } else if (isMobile.value) {
+    mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+128}px)`);
+  } else {
+    mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+140}px)`);
+  }
   // const mapPanelHolder = document.getElementById('map-panel-holder');
   // mapPanelHolder.style.setProperty('height', `calc(100% - ${refinePanelOffsetHeight+44}px)`);
   const map = document.getElementById('map');
-  map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+140}px)`);
+  if (isMobile.value) {
+    map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+128}px)`);
+  } else {
+    map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+140}px)`);
+  }
 
   // let alertModal = document.getElementsByClassName('modal-default')[0];
   // if (alertModal) {
@@ -573,9 +620,9 @@ onMounted(async() => {
   // }
 
   if (!i18nEnabled.value) {
-    buttonText.value = isMapVisible.value ? 'Toggle to resource list' : 'Toggle to map';
+    buttonText.value = isMapVisible.value ? 'List' : 'Map';
   } else {
-    buttonText.value = isMapVisible.value ? 'app.viewList' : 'app.viewMap';
+    buttonText.value = isMapVisible.value ? 'app.list' : 'app.map';
   }
 
   if ($config.alerts && $config.alerts.modal && $config.alerts.modal.enabled) {
@@ -1062,24 +1109,21 @@ const filterPoints = () => {
 };
 
 // todo move to Map.vue
-const toggleMap = () => {
-  const newIsMapVisible = !isMapVisible.value;
-  if (import.meta.env.VITE_DEBUG) console.log('toggleMap is running');
-  if (newIsMapVisible === true) {
-    if (import.meta.env.VITE_DEBUG) console.log('toggleMap is running, newIsMapVisible.value === true');
-    // if (import.meta.env.VITE_DEBUG) console.log('setTimeout function is running');
-    // let themap = store.map;
-    // setTimeout(function() {
-    //   if (import.meta.env.VITE_DEBUG) console.log('mapbox running map resize now');
-    //   themap.resize();
-    //   if (import.meta.env.VITE_DEBUG) console.log('mapbox ran map resize');
-    // }, 250);
-  }
-  if (!i18nEnabled) {
-    buttonText.value = newIsMapVisible ? 'Toggle to resource list' : 'Toggle to map';
-  } else {
-    buttonText.value = newIsMapVisible ? 'app.viewList' : 'app.viewMap';
-  }
+const toggleToMap = () => {
+  if (import.meta.env.VITE_DEBUG) console.log('togglToMap is running');
+  isMapVisible.value = true;
+  // if (import.meta.env.VITE_DEBUG) console.log('setTimeout function is running');
+  // let themap = store.map;
+  // setTimeout(function() {
+  //   if (import.meta.env.VITE_DEBUG) console.log('mapbox running map resize now');
+  //   themap.resize();
+  //   if (import.meta.env.VITE_DEBUG) console.log('mapbox ran map resize');
+  // }, 250);
+};
+
+const toggleToList = () => {
+  if (import.meta.env.VITE_DEBUG) console.log('toggleToList is running');
+  isMapVisible.value = false;
 };
 
 const toggleModal = () => {
@@ -1206,6 +1250,7 @@ const toggleBodyClass = (className) => {
         <locations-panel
           :is-map-visible="isMapVisible"
           @clear-bad-address="clearBadAddress"
+          @clicked-view-map="toggleToMap"
         />
       </div>
       <div
@@ -1221,18 +1266,36 @@ const toggleBodyClass = (className) => {
       </div>
     </div>
 
-
-    <div
-      v-show="toggleButtonVisible"
-      @click="toggleMap"
+  </div>
+  <div
+    v-show="toggleButtonsVisible"
+  >
+    <button
+      class="capitalized toggle-button toggle-button-left"
+      :class="isMapVisible ? 'toggle-button-inactive' : 'toggle-button-active'"
+      @click="toggleToList"
     >
-      <button class="button capitalized is-primary toggle-button-left is-full-width">
-        <div class="text-div">{{ $t(buttonText) }}</div>
-      </button>
-      <button class="button capitalized is-primary toggle-button-right is-full-width">
-        <div class="text-div">{{ $t(buttonText) }}</div>
-      </button>
-    </div>
+      <div class="text-div">
+        <font-awesome-icon
+          icon="fa-solid fa-rectangle-list"
+          class="toggle-button-icon"
+        />
+        {{ $t('list') }}
+      </div>
+    </button>
+    <button
+      class="capitalized toggle-button toggle-button-right"
+      :class="isMapVisible ? 'toggle-button-active' : 'toggle-button-inactive'"
+      @click="toggleToMap"
+    >
+      <div class="text-div">
+        <font-awesome-icon
+          icon="fa-solid fa-map-marker-alt"
+          class="toggle-button-icon"
+        />
+        {{ $t('map') }}
+      </div>
+    </button>
   </div>
 
 
@@ -1241,7 +1304,9 @@ const toggleBodyClass = (className) => {
 <style lang="scss">
 
 .text-div {
-  margin: 0 auto;
+  height: 100%;
+  width: 100%;
+  padding: 10px;
 }
 
 .skip-to-main-content-link {
@@ -1292,17 +1357,47 @@ const toggleBodyClass = (className) => {
   border-color: #cfcfcf;
 }
 
+.toggle-button {
+  padding: 0px;
+  font-family: "Montserrat-Bold", "Montserrat Bold", "Montserrat", sans-serif;
+  // font-family: "ArialMT", "Arial", sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 18px;
+  height: 46px;
+  border-top-width: 1px;
+  border-bottom-width: 0px;
+  background-color: #f0f0f0;
+  border-color: #cfcfcf !important;
+  color: #0f4d90 !important;
+  width: 50%;
+}
+
+.toggle-button-icon {
+  color: inherit;
+}
+
+.toggle-button-active {
+ background-color: #ffffff;
+}
+
+.toggle-button-inactive {
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+
+.toggle-button-inactive :hover {
+  background-color: #0f4d90;
+  color: #ffffff;
+}
+
 .toggle-button-left {
-  background-color: #0f4d90 !important;
-  width: 48%;
-  margin-left: 2px;
-  margin-right: 2px;
+  border-left-width: 0px;
+  border-right-width: 1px;
 }
 
 .toggle-button-right {
-  background-color: #0f4d90 !important;
-  width: 48%;
-  margin-right: 2px;
+  border-left-width: 1px;
+  border-right-width: 0px;
 }
 
 .no-scroll{
