@@ -1448,19 +1448,14 @@ const checkboxChange = (e) => {
 @import "../assets/main_pin.scss";
 
 #refine-panel-component {
-  // height: 10%;
-  // background: $ghost-grey;
   background: #f0f0f0;
-  overflow-y: scroll;
   overflow-x: hidden;
-  // display: flex;
 }
 
 #columns-div-for-checkboxes {
 
   .input-checkbox, .input-radio {
     padding-bottom: 8px;
-    // padding-top: 24px;
   }
 
   .checkbox-div {
@@ -1476,11 +1471,6 @@ const checkboxChange = (e) => {
 
 .refine-dropdown-closed {
   height: 6rem;
-}
-
-.refine-retractable-closed {
-  // height: 3rem;
-  // height: 4rem;
 }
 
 .box-value {
@@ -1519,7 +1509,6 @@ const checkboxChange = (e) => {
 
 .refine-panel {
   overflow-y: hidden;
-  // padding: 1rem;
 
   .legend-title{
     margin-bottom: 0;
@@ -1585,15 +1574,9 @@ const checkboxChange = (e) => {
     flex: 1 0 100%;
     color: #0f4d90;
     margin: 0px !important;
-    // display: flex;
-    // flex-direction: row;
 
     .refine-top-left {
-      // flex: 1 0 90%;
       flex-grow: 11;
-      // display: flex;
-      // flex-direction: row;
-      // align-items: center;
     }
 
     .open-close-icon {
@@ -1639,7 +1622,6 @@ const checkboxChange = (e) => {
     }
 
     .clear-all {
-      // margin-top: 8px;
       border-style: none;
       background-color: rgb(240, 240, 240);
       height: 30px;
@@ -1666,7 +1648,6 @@ const checkboxChange = (e) => {
     .open-close-icon {
       padding-top: 9px;
       font-size: 26px;
-      // flex-grow: 1;
     }
 
     #columns-div-for-checkboxes {
@@ -1679,23 +1660,16 @@ const checkboxChange = (e) => {
 
     .close-button {
       height: 30px;
-      // position: absolute;
-      // top: 10px;
-      // right: 5px;
       border-style: none;
       background-color: rgb(240, 240, 240);
-      // color: $ben-franklin-blue-dark;
       color: #0f4d90;
       padding-left: 0px;
       padding-top: 9px;
-      // padding-bottom: 12px;
       padding-right: 0px;
     }
 
     .refine-title{
-      // margin-bottom: 14px !important;
       cursor: pointer;
-      // height:7vh;
     }
 
     .service-group-holder-x {
@@ -1788,7 +1762,6 @@ const checkboxChange = (e) => {
 
 .input-label {
   display: inline-block;
-  // color: $ben-franklin-blue-dark;
   color: #0f4d90;
   font-size: 14px;
   margin-bottom: .5rem;
@@ -1796,7 +1769,6 @@ const checkboxChange = (e) => {
 }
 
 .fa-infoCircle {
-  // color: $ben-franklin-blue-dark;
   color: #0f4d90;
   cursor: pointer;
 }
