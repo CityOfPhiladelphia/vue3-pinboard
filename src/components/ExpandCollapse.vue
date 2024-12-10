@@ -153,10 +153,10 @@ watch(
 watch(
   () => props.isMapVisible,
   nextIsMapVisible => {
-    console.log('ExpandCollapse watch isMapVisible');
+    // console.log('ExpandCollapse watch isMapVisible');
     if (!nextIsMapVisible) {
       if (latestSelectedResourceFromMap) {
-        console.log('ExpandCollapse is reporting map is invisible and there is a latestSelectedResourceFromMap:', latestSelectedResourceFromMap);
+        // console.log('ExpandCollapse is reporting map is invisible and there is a latestSelectedResourceFromMap:', latestSelectedResourceFromMap);
         if (latestSelectedResourceFromMap === props.item._featureId) {
           const el = $el;
           const visible = isElementInViewport(el);

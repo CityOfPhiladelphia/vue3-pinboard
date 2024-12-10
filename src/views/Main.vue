@@ -12,7 +12,6 @@ const ConfigStore = useConfigStore();
 const $config = ConfigStore.config;
 // if (import.meta.env.VITE_DEBUG) console.log('$config:', $config);
 
-import proj4 from 'proj4';
 import { format } from 'date-fns';
 import { parseISO } from 'date-fns';
 import { subWeeks } from 'date-fns';
@@ -505,9 +504,6 @@ watch(
     } else {
       map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight + headerOffset}px)`);
     }
-    // mainRow.style.setProperty('height', `calc(100vh)`);
-    // const mapPanelHolder = document.getElementById('map-panel-holder');
-    // mapPanelHolder.style.setProperty('height', `calc(100% - ${refinePanelOffsetHeight+44}px)`);
   }
 );
 
@@ -526,11 +522,7 @@ watch(
       let refinePanelOffsetHeight = refinePanel.offsetHeight;
       if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch shouldShowGreeting is firing, isMobile.value:', isMobile.value, 'headerOffset:', headerOffset, 'refinePanel:', refinePanel, 'refinePanelOffsetHeight:', refinePanelOffsetHeight);
       const mainRow = document.getElementById('main-row');
-      // if (MainStore.shouldShowGreeting) {
-      //   mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight + headerOffset + 48}px)`);
-      // } else {
       mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight + headerOffset + 88}px)`);
-      // }
       const map = document.getElementById('map');
       map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight + headerOffset + 88}px)`);
     }
@@ -538,7 +530,6 @@ watch(
 )
 
 onMounted(async() => {
-
   let body = document.body;
   body.classList.remove('print-view');
   body.classList.add('main-view');
@@ -1110,7 +1101,7 @@ const filterPoints = () => {
 
 // todo move to Map.vue
 const toggleToMap = () => {
-  if (import.meta.env.VITE_DEBUG) console.log('togglToMap is running');
+  if (import.meta.env.VITE_DEBUG) console.log('toggleToMap is running');
   isMapVisible.value = true;
   // if (import.meta.env.VITE_DEBUG) console.log('setTimeout function is running');
   // let themap = store.map;
@@ -1260,7 +1251,7 @@ const toggleBodyClass = (className) => {
       >
         <map-panel
           @clear-search="clearSearchTriggered"
-          @toggleMap="toggleMap"
+          @toggleMap="toggleToMap"
           @geolocate-control-fire="geolocateControlFire"
         />
       </div>
@@ -1280,7 +1271,7 @@ const toggleBodyClass = (className) => {
           icon="fa-solid fa-rectangle-list"
           class="toggle-button-icon"
         />
-        {{ $t('list') }}
+        {{ $t('app.list') }}
       </div>
     </button>
     <button
@@ -1293,7 +1284,7 @@ const toggleBodyClass = (className) => {
           icon="fa-solid fa-map-marker-alt"
           class="toggle-button-icon"
         />
-        {{ $t('map') }}
+        {{ $t('app.map') }}
       </div>
     </button>
   </div>
