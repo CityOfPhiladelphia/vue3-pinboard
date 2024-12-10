@@ -48,6 +48,13 @@ const $emit = defineEmits(['geolocate-control-fire', 'watched-submitted-checkbox
 const selected = ref([]);
 const selectedList = ref({});
 
+const viewerHeight = ref(window.innerHeight);
+const appHeaderHeight = ref(document.querySelector('#app-header').offsetHeight);
+const refineTopHeight = ref(46);
+const bottomHeight = computed(() => {
+  return viewerHeight.value - (appHeaderHeight.value + refineTopHeight.value);
+});
+
 const searchDistance = computed(() => {
   let value = MapStore.searchDistance;
   let word;
@@ -374,12 +381,12 @@ const database = computed(() => {
   return value;
 });
 
-watch(
-  () => selected.value,
-  async nextSelected => {
-    if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selected, nextSelected:', nextSelected);
-  }
-)
+// watch(
+//   () => selected.value,
+//   async nextSelected => {
+//     if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selected, nextSelected:', nextSelected);
+//   }
+// )
 
 watch(
   () => props.submittedCheckboxValue,
@@ -541,6 +548,8 @@ watch(
         router.push({ query: { ...startQuery }});
       }
     }
+    await nextTick();
+    refineTopHeight.value = document.querySelector('#refine-top').offsetHeight;
   }
 );
 
@@ -1167,6 +1176,7 @@ const checkboxChange = (e) => {
       id="refine-bottom"
       class="refine-bottom invisible-scrollbar"
       v-show="!retractable && !isMobile || refineOpen"
+      :style="{ 'height': bottomHeight + 'px' }"
     >
 
       <div
@@ -1617,7 +1627,7 @@ const checkboxChange = (e) => {
     position: relative;
 
     .refine-bottom {
-      height: calc(100vh - 130px);
+      // height: calc(100vh - 130px);
       overflow-y: auto;
     }
 
