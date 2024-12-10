@@ -11,7 +11,7 @@ export default {
       keyword: 'Search by keyword',
     },
     map: 'Map',
-    lst: 'List',
+    list: 'List',
     viewMap: 'View map',
     viewList: 'View list',
     viewAccessible: 'View accessible list of site locations',

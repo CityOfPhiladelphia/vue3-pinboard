@@ -10,6 +10,8 @@ export default {
       address: 'Buscar por dirección',
       keyword: 'spanish Search by keyword',
     },
+    map: 'Mapa',
+    list: 'Lista',
     viewMap: 'Ver mapa',
     viewList: 'Ver lista',
     viewAccessible: 'Ver lista accesible de ubicaciones de los sitios',
