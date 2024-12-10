@@ -67,7 +67,12 @@ const selectAllCheckbox = ref(false);
 
 onMounted(async () => {
   if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue mounted, $config:', $config, 'i18nLocale.value:', i18nLocale.value, 'route.query:', route.query);
-  if (Object.keys(route.query).length || !$config.greeting && (!$config.customComps || !$config.customComps.customGreeting)) {
+  const routeQueryKeys = Object.keys(route.query);
+  let routeChanged = false;
+  if (routeQueryKeys.length == 1 && !routeQueryKeys.includes('lang') || routeQueryKeys.length > 1) {
+    routeChanged = true;
+  }
+  if (routeChanged || !$config.greeting && (!$config.customComps || !$config.customComps.customGreeting)) {
     MainStore.shouldShowGreeting = false;
   }
 
@@ -400,7 +405,10 @@ watch(
   () => route.query,
   async nextRoute => {
     if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel watch route, nextRoute:', nextRoute);
-    MainStore.shouldShowGreeting = false;
+    const routeQueryKeys = Object.keys(route.query);
+    if (routeQueryKeys.length == 1 && !routeQueryKeys.includes('lang') || routeQueryKeys.length > 1) {
+      MainStore.shouldShowGreeting = false;
+    }
   }
 )
 

@@ -72,7 +72,8 @@ router.afterEach(async (to, from) => {
   const MapStore = useMapStore();
   const GeocodeStore = useGeocodeStore();
   if (import.meta.env.VITE_DEBUG) console.log('router.afterEach to:', to, 'from:', from);
-  if (to.query.resource && to.query.resource != from.query.resource) {
+  // if (to.query.resource && to.query.resource != from.query.resource) {
+  if (to.query.resource) {
     DataStore.selectedResource = to.query.resource;
   } else {
     DataStore.selectedResource = null;
