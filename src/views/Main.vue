@@ -86,7 +86,6 @@ if ($config.refineEnabled === false) {
 }
 
 // computed
-
 const isMobile = computed(() => {
   return MainStore.isMobileDevice || MainStore.windowDimensions.width < 768;
 });
@@ -529,7 +528,7 @@ onMounted(async() => {
 
   await nextTick();
   setHeights();
-  
+
   $config.searchBar.searchTypes.forEach(item => {
     if (route.query[item]) {
       searchString.value = route.query[item];
@@ -1183,12 +1182,10 @@ const toggleBodyClass = (className) => {
     id="main-column"
     class="main-column invisible-scrollbar"
   >
-    <!-- <div v-if="isMobile"> -->
     <address-search-control
       v-if="isMobile"
-      :input-id="'map-search-input'"
+      :input-id="'address-search-input'"
     />
-    <!-- </div> -->
 
     <div>
       <refine-panel

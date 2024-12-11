@@ -18,6 +18,10 @@ const router = useRouter();
 const route = useRoute();
 
 defineProps({
+  // searchPlaceholder: {
+  //   type: String,
+  //   default: 'Search by address',
+  // },
   inputId: {
     type: String,
     default: 'address-search-input',
@@ -28,6 +32,27 @@ const clearSearch = () => {
   if (import.meta.env.VITE_DEBUG == 'true') console.log('clearSearch is running');
   MainStore.searchValue = '';
 }
+
+const searchPlaceholder = computed(() => {
+  const searchTypes = $config.searchBar.searchTypes;
+  const searchTypesLength = searchTypes.length;
+  console.log('searchTypes:', searchTypes, 'searchTypes.length:', searchTypes.length);
+  let value = 'Search by '
+  for (let i=0; i<searchTypes.length; i++) {
+    console.log('i:', i, 'searchTypes[i]:', searchTypes[i]);
+    value += searchTypes[i];
+    if (searchTypes.length > 2 && i == searchTypesLength - 2) {
+      value += ', or ';
+    } else if (i == searchTypesLength - 1) {
+      break
+    } else if (searchTypes.length > 2) {
+      value += ', ';
+    } else {
+      value += ' or ';
+    }
+  }
+  return value;
+});
 
 const isMobile = computed(() => {
   return MainStore.isMobileDevice || MainStore.windowDimensions.width < 768;
@@ -156,13 +181,13 @@ const holder = computed(() => {
         <label
           :for="inputId"
           class="search-label"
-        >Search for an address, OPA account, or DOR number</label>
+        >{{ searchPlaceholder }}</label>
         <input
           :id="inputId"
           v-model="MainStore.searchValue"
           class="input address-input"
           type="text"
-          placeholder="Search for an address, OPA account, or DOR number"
+          :placeholder="searchPlaceholder"
           @keydown.enter="handleSubmit(MainStore.searchValue)"
         >
       </div>
