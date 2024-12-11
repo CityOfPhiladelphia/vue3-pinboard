@@ -43,9 +43,22 @@ const router = useRouter();
 const instance = getCurrentInstance();
 const locale = computed(() => instance.appContext.config.globalProperties.$i18n.locale);
 
-const brandingImage = ref(null);
 const brandingLink = ref(null);
 const appLink = ref('/');
+
+const brandingImage = computed(() => {
+  let value = null;
+  if (!isMobile.value) {
+    if ($config.app.logoSrc) {
+      value = {
+        src: $config.app.logoSrc,
+        alt: $config.app.logoAlt,
+        width: $config.app.logoWidth || "200px",
+      }
+    }
+  }
+  return value;
+});
 
 onBeforeMount(async () => {
   MainStore.appVersion = import.meta.env.VITE_VERSION;
@@ -63,14 +76,6 @@ onBeforeMount(async () => {
   handleWindowResize();
 
   DataStore.fillHolidays();
-
-  if ($config.app.logoSrc) {
-    brandingImage.value = {
-      src: $config.app.logoSrc,
-      alt: $config.app.logoAlt,
-      width: $config.app.logoWidth || "200px",
-    }
-  }
 
   if ($config.appLink) {
     appLink.value = $config.appLink;

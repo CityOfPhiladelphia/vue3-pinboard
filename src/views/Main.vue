@@ -497,7 +497,7 @@ const setHeights = () => {
   }
   const map = document.querySelector('#map');
   if (isMobile.value) {
-    map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+headerOffsetHeight+addressSearchHolderOffsetHeight+128}px)`);
+    map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+headerOffsetHeight+addressSearchHolderOffsetHeight+46}px)`);
   } else {
     map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+headerOffsetHeight+46}px)`);
   }

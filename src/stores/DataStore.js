@@ -79,7 +79,7 @@ export const useDataStore = defineStore('DataStore', {
         }
         console.log('source:', source, 'dataConfig:', dataConfig, 'params:', params, 'dependent:', dependent);
 
-        if (params.where && typeof params.where === 'function') {
+        if (params && params.where && typeof params.where === 'function') {
           params.where = params.where(dependent.data);
         }
 
