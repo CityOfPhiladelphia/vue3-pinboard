@@ -45,7 +45,7 @@ const props = defineProps({
 
 const $emit = defineEmits(['geolocate-control-fire', 'watched-submitted-checkbox-value' ]);
 
-const selected = ref([]);
+const selected = ref();
 const selectedList = ref({});
 
 const viewerHeight = ref(window.innerHeight);
@@ -126,7 +126,7 @@ const NumRefineColumns = computed(() => {
 });
 
 const selectedArray = computed(() => {
-  if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selected:', selected, 'selectedList.value:', selectedList.value);
+  if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selected.value:', selected.value, 'selectedList.value:', selectedList.value);
   let selL = {...selectedList.value};
   // if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selL:', selL, 'selected.value:', selected.value);
   let compiled = [];
@@ -156,12 +156,16 @@ const selectedArray = computed(() => {
         }
       }
     }
-  } else {
+  } else if (refineType.value !== 'categoryField_value') {
     let sel = selected.value;
     if (sel.length) {
       for (let selected of sel) {
         compiled.push(selected);
       }
+    }
+  } else {
+    if (selected.value) {
+      compiled.push(selected.value);
     }
   }
   return compiled;
@@ -541,7 +545,7 @@ watch(
     if (!arraysEqual(nextSelected, lastSelected)) {
       let startQuery = { ...route.query };
       if (nextSelected.length) {
-        // console.log('RefinePanel watch selectedArray is firing, nextSelected', nextSelected);
+        console.log('RefinePanel watch selectedArray is firing, nextSelected', nextSelected);
         router.push({ query: { ...startQuery, ...{ services: nextSelected.join(',') }}});
       } else {
         delete startQuery['services'];
@@ -611,34 +615,40 @@ onMounted(async () => {
     }
   }
 
-  for (let service of selected.value) {
-    const serviceType = service.split('_')[0];
-    let checkboxOrRadio = Object.keys($config.refine.multipleFieldGroups[serviceType])[0];
-    let category = checkboxOrRadio + '_' + serviceType;
-    if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue beforeMount 1 is running, service:', service, 'serviceType:', serviceType, 'checkboxOrRadio:', checkboxOrRadio, 'category:', category, 'selectedList.value:', selectedList.value);
-    if (checkboxOrRadio == 'checkbox') {
-      if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue beforeMount 2 is running, service:', service, 'serviceType:', serviceType, 'checkboxOrRadio:', checkboxOrRadio, 'category:', category, 'selectedList.value:', selectedList.value);
-      if (selectedList.value[category] && !selectedList.value[category].includes(service)) {
-        selectedList.value[category].push(service);
+  if (refineType.value === 'multipleFieldGroups') {
+    for (let service of selected.value) {
+      const serviceType = service.split('_')[0];
+      if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue beforeMount 0, serviceType:', serviceType)//, $config.refine.multipleFieldGroups[serviceType]:', $config.refine.multipleFieldGroups[serviceType]);
+      let checkboxOrRadio = Object.keys($config.refine.multipleFieldGroups[serviceType])[0];
+      let category = checkboxOrRadio + '_' + serviceType;
+      if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue beforeMount 1 is running, service:', service, 'serviceType:', serviceType, 'checkboxOrRadio:', checkboxOrRadio, 'category:', category, 'selectedList.value:', selectedList.value);
+      if (checkboxOrRadio == 'checkbox') {
+        if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue beforeMount 2 is running, service:', service, 'serviceType:', serviceType, 'checkboxOrRadio:', checkboxOrRadio, 'category:', category, 'selectedList.value:', selectedList.value);
+        if (selectedList.value[category] && !selectedList.value[category].includes(service)) {
+          selectedList.value[category].push(service);
+        } else {
+          selectedList.value[category] = [];
+          selectedList.value[category].push(service);
+        }
       } else {
-        selectedList.value[category] = [];
-        selectedList.value[category].push(service);
+        selectedList.value[category] = service;
       }
-    } else {
-      selectedList.value[category] = service;
     }
   }
 });
 
 const getCategoryFieldValue = (section) => {
-  let sectionLower = section.toLowerCase().replaceAll(' ', '');
-  let i18nCategories = Object.keys(ConfigStore.config.i18n.data.messages[i18nLocale].sections);
-  console.log('18nCategories:', i18nCategories);
+  if (import.meta.env.VITE_DEBUG) console.log('getCategoryFieldValue is running, section:', section);
   let selectedCategory;
-  for (let category of i18nCategories) {
-    let categoryLower = category.toLowerCase().replaceAll(' ', '');
-    if (categoryLower === sectionLower || categoryLower === sectionLower + 's') {
-      selectedCategory = category;
+  if (section.length) {
+    let sectionLower = section.toLowerCase().replaceAll(' ', '');
+    let i18nCategories = Object.keys(ConfigStore.config.i18n.data.messages[i18nLocale.value].sections);
+    console.log('18nCategories:', i18nCategories);
+    for (let category of i18nCategories) {
+      let categoryLower = category.toLowerCase().replaceAll(' ', '');
+      if (categoryLower === sectionLower || categoryLower === sectionLower + 's') {
+        selectedCategory = category;
+      }
     }
   }
   return selectedCategory;
@@ -753,12 +763,13 @@ const closeBox = (e, box) => {
   // console.log('closeBox is running, box:', box);
   console.log('closeBox is running, box:', box, 'e:', e);
   if (refineType.value === 'categoryField_value') {
+    selected.value = null;
     selectedList.value = [];
     // $emit('watched-submitted-checkbox-value');
     return;
   }
   let section = box.split('_')[0];
-  // console.log('closeBox is running, section:', section, 'selected.value:', selected.value, 'selected.value[section]:', selected.value[section]);
+  console.log('closeBox is running, section:', section, 'selected.value:', selected.value, 'selected.value[section]:', selected.value[section]);
   if (selectedList.value['checkbox_'+section]) {
     // console.log('it\'s there in selectedList');
     let boxIndex = selectedList.value['checkbox_'+section].indexOf(box);
@@ -790,7 +801,7 @@ const clearAll = (e) => {
   delete startQuery['zipcode'];
   delete startQuery['keyword'];
   delete startQuery['services'];
-  // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, startQuery2:', startQuery);
+  if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, startQuery2:', startQuery);
   router.push({ query: { ...startQuery }});
   MapStore.watchPositionOn = false;
   const payload = {
@@ -808,7 +819,11 @@ const clearAll = (e) => {
       closeBox(e, selectedList.value[selected]);
     }
   }
-  selected.value = [];
+  if (refineType.value === 'categoryField_value') {
+    selected.value = null;
+  } else {
+    selected.value = [];
+  }
   $emit('geolocate-control-fire', payload);
 };
 
@@ -1134,7 +1149,7 @@ const checkboxChange = (e) => {
             />
           </button>
           <button
-            v-if="refineType == 'categoryField_value' && selected.length && i18nEnabled"
+            v-if="refineType == 'categoryField_value' && selected != null && i18nEnabled"
             class="box-value column is-narrow"
             @click="(e) => closeBox(e, selected)"
           >
@@ -1145,7 +1160,7 @@ const checkboxChange = (e) => {
             />
           </button>
           <button
-            v-if="refineType == 'categoryField_value' && selected.length && !i18nEnabled"
+            v-if="refineType == 'categoryField_value' && selected != null && !i18nEnabled"
             class="box-value column is-narrow"
             @click="(e) => closeBox(e, selected)"
           >
@@ -1210,9 +1225,8 @@ const checkboxChange = (e) => {
           text-key="text"
           value-key="value"
           :numOfColumns="NumRefineColumns"
+          :small="!isMobile"
         >
-          <!-- :small="false" -->
-        <!-- :small="!isMobile" -->
         </radio>
       </div>
 
