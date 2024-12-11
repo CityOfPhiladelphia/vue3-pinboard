@@ -46,6 +46,11 @@ const props = defineProps({
 const $emit = defineEmits(['geolocate-control-fire', 'watched-submitted-checkbox-value' ]);
 
 const selected = ref();
+if ($config.refine.type === 'categoryField_value') {
+  selected.value = null;
+} else {
+  selected.value = [];
+}
 const selectedList = ref({});
 
 const viewerHeight = ref(window.innerHeight);
