@@ -10,9 +10,9 @@ import { useRoute, useRouter } from 'vue-router';
 import { ref, computed, getCurrentInstance, onMounted, watch, onBeforeMount } from 'vue';
 
 // import { Dropdown } from '@phila/phila-ui';
-import { getActivePinia } from 'pinia';
-const activePinia = getActivePinia();
-console.log('activePinia:', activePinia);
+// import { getActivePinia } from 'pinia';
+// const activePinia = getActivePinia();
+// console.log('activePinia:', activePinia);
 
 const MainStore = useMainStore();
 const MapStore = useMapStore();
@@ -652,6 +652,7 @@ const makeValidUrl = (url) => {
               class="column is-6-tablet is-7-desktop p-0"
             >
               <dropdown
+                id="sortby-dropdown"
                 v-model="sortBy"
                 :options="sortByOptions"
                 :placeholder="$t('sortBy')"
@@ -662,6 +663,7 @@ const makeValidUrl = (url) => {
               class="column is-6-tablet is-5-desktop p-0"
             >
               <dropdown
+                id="distance-dropdown"
                 v-model="searchDistance"
                 :options="searchDistanceOptions"
                 :placeholder="$t('distance')"
@@ -679,6 +681,7 @@ const makeValidUrl = (url) => {
             class="mb-1 p-0 mobile-dropdown-container column is-6"
           >
             <dropdown
+              id="sortby-dropdown"
               v-model="sortBy"
               :options="sortByOptions"
               placeholder="Sort By"
@@ -689,11 +692,12 @@ const makeValidUrl = (url) => {
             class="mb-1 p-0 mobile-dropdown-container column is-6"
           >
             <dropdown
+              id="distance-dropdown"
               v-model="searchDistance"
               :options="searchDistanceOptions"
+              />
               placeholder="Distance"
               :disabled="sortDisabled"
-            />
           </div>
         </div>
 
@@ -951,6 +955,14 @@ const makeValidUrl = (url) => {
 
 .dropdown-div {
   padding-top: 0px !important;
+}
+
+#dd-sortby-dropdown {
+  // font-size: 14px;
+}
+
+#dd-distance-dropdown {
+  // font-size: 14px;
 }
 
 .locations-panel {
