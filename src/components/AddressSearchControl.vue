@@ -29,8 +29,16 @@ const clearSearch = () => {
   MainStore.searchValue = '';
 }
 
+const isMobile = computed(() => {
+  return MainStore.isMobileDevice || MainStore.windowDimensions.width < 768;
+});
+
 const holderWidth = computed(() => {
-  return '70%';
+  if (isMobile.value) {
+    return '100%';
+  } else {
+    return '70%';
+  }
 });
 
 const yPosition = computed(() => {
@@ -125,11 +133,22 @@ const handleSubmit = (val) => {
   // })
 };
 
+const holder = computed(() => {
+  let value = '';
+  if (isMobile.value) {
+    value = 'address-search-holder';
+  } else {
+    value = 'holder holder-map';
+  }
+  return value;
+});
+
 </script>
 
 <template>
   <div
-    class="holder holder-map"
+    id="address-search-holder"
+    :class="holder"
     :style="{ top: yPosition, width: holderWidth }"
   >
     <div class="field has-addons" :style="{ width: '100%' }">

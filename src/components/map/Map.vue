@@ -54,6 +54,10 @@ const markerSrc = computed(() => {
 //   return MainStore.publicPath + 'images/camera.png';
 // })
 
+const isMobile = computed(() => {
+  return MainStore.isMobileDevice || MainStore.windowDimensions.width < 768;
+});
+
 onMounted(async () => {
   if (import.meta.env.VITE_DEBUG) console.log('Map.vue onMounted');
   
@@ -387,7 +391,7 @@ watch(
     id="map"
     class="map map-class"
   >
-  <div
+    <div
       v-if="MainStore.addressSearchRunning"
       class="map-cover is-align-content-center has-text-centered"
     >
@@ -398,12 +402,18 @@ watch(
         />
     </div>
 
-    <AddressSearchControl :input-id="'map-search-input'" />
+    <AddressSearchControl
+      v-if="!isMobile"
+      :input-id="'map-search-input'"
+    />
+
     <!-- <ImageryToggleControl @toggle-imagery="toggleImagery" />
+
     <ImageryDropdownControl
       v-if="MapStore.imageryOn"
       @set-imagery="setImagery"
     /> -->
+
     <OverlayLegend
       v-if="$config.legendControl"
       :items="$config.legendControl.legend.data"

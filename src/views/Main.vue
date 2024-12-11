@@ -38,6 +38,7 @@ import isMac from '../util/is-mac'; // this can probably be removed from App.vue
 import LocationsPanel from '../components/LocationsPanel.vue';
 import MapPanel from '../components/MapPanel.vue';
 import RefinePanel from '../components/RefinePanel.vue';
+import AddressSearchControl from '../components/AddressSearchControl.vue';
 
 const instance = getCurrentInstance();
 const locale = computed(() => instance.appContext.config.globalProperties.$i18n.locale);
@@ -477,33 +478,37 @@ watch(
   }
 );
 
+const setHeights = () => {
+  let header = document.querySelector("#app-header");
+  let headerOffsetHeight = header.offsetHeight;
+  console.log('header:', header, 'header.offsetHeight:', header.offsetHeight);
+  let main = document.querySelector("main");
+  main.style.cssText = main.style.cssText + `margin-top: ${header.offsetHeight}px; padding-bottom: 0px;`;
+  let addressSearchHolder = document.querySelector("#address-search-holder");
+  let addressSearchHolderOffsetHeight = addressSearchHolder.offsetHeight;
+  const refinePanel = document.querySelector('#refine-panel-component');
+  let refinePanelOffsetHeight = refinePanel.offsetHeight;
+  const mainRow = document.querySelector('#main-row');
+  if (isMobile.value && MainStore.shouldShowGreeting) {
+    mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+headerOffsetHeight+addressSearchHolderOffsetHeight}px)`);
+  } else if (isMobile.value) {
+    mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+headerOffsetHeight+addressSearchHolderOffsetHeight+46}px)`);
+  } else {
+    mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+headerOffsetHeight+46}px)`);
+  }
+  const map = document.querySelector('#map');
+  if (isMobile.value) {
+    map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+headerOffsetHeight+addressSearchHolderOffsetHeight+128}px)`);
+  } else {
+    map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+headerOffsetHeight+46}px)`);
+  }
+}
+
 watch(
   () => refineOpen.value,
   async() => {
     await nextTick();
-    let headerOffset;
-    if (isMobile.value) {
-      headerOffset = 40;
-    } else {
-      headerOffset = 140;
-    }
-    const refinePanel = document.getElementById('refine-panel-component');
-    let refinePanelOffsetHeight = refinePanel.offsetHeight;
-    if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch refineOpen is firing, isMobile.value:', isMobile.value, 'headerOffset:', headerOffset, 'refinePanel:', refinePanel, 'refinePanelOffsetHeight:', refinePanelOffsetHeight);
-    const mainRow = document.getElementById('main-row');
-    if (isMobile.value && MainStore.shouldShowGreeting) {
-      mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight + headerOffset + 48}px)`);
-    } else if (isMobile.value) {
-      mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight + headerOffset + 88}px)`);
-    } else {
-      mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight + headerOffset}px)`);
-    }
-    const map = document.getElementById('map');
-    if (isMobile.value) {
-      map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight + headerOffset + 88}px)`);
-    } else {
-      map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight + headerOffset}px)`);
-    }
+    setHeights();
   }
 );
 
@@ -512,19 +517,7 @@ watch(
   async() => {
     if (isMobile.value) {
       await nextTick();
-      let headerOffset;
-      if (isMobile.value) {
-        headerOffset = 40;
-      } else {
-        headerOffset = 140;
-      }
-      const refinePanel = document.getElementById('refine-panel-component');
-      let refinePanelOffsetHeight = refinePanel.offsetHeight;
-      if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch shouldShowGreeting is firing, isMobile.value:', isMobile.value, 'headerOffset:', headerOffset, 'refinePanel:', refinePanel, 'refinePanelOffsetHeight:', refinePanelOffsetHeight);
-      const mainRow = document.getElementById('main-row');
-      mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight + headerOffset + 88}px)`);
-      const map = document.getElementById('map');
-      map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight + headerOffset + 88}px)`);
+      setHeights();
     }
   }
 )
@@ -535,38 +528,8 @@ onMounted(async() => {
   body.classList.add('main-view');
 
   await nextTick();
-  let header = document.querySelector("#app-header");
-  console.log('header:', header, 'header.offsetHeight:', header.offsetHeight);
-  let main = document.querySelector("main");
-  main.style.cssText =
-    main.style.cssText + `margin-top: ${header.offsetHeight}px; padding-bottom: 0px;`;
-
-  const refinePanel = document.getElementById('refine-panel-component');
-  let refinePanelOffsetHeight = refinePanel.offsetHeight;
-  // if (import.meta.env.VITE_DEBUG) console.log('Main.vue onMounted is firing, refinePanel:', refinePanel, 'height:', height, 'offsetHeight:', offsetHeight, 'clientHeight:', clientHeight);
-  const mainRow = document.getElementById('main-row');
-  if (isMobile.value && MainStore.shouldShowGreeting) {
-    mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+88}px)`);
-  } else if (isMobile.value) {
-    mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+128}px)`);
-  } else {
-    mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+140}px)`);
-  }
-  // const mapPanelHolder = document.getElementById('map-panel-holder');
-  // mapPanelHolder.style.setProperty('height', `calc(100% - ${refinePanelOffsetHeight+44}px)`);
-  const map = document.getElementById('map');
-  if (isMobile.value) {
-    map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+128}px)`);
-  } else {
-    map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+140}px)`);
-  }
-
-  // let alertModal = document.getElementsByClassName('modal-default')[0];
-  // if (alertModal) {
-  //   alertModal.style.setProperty('z-index', '1000');
-  // }
-
-  // if (import.meta.env.VITE_DEBUG) console.log('in Main.vue onMounted, $config:', $config, 'window.location.href:', window.location.href);
+  setHeights();
+  
   $config.searchBar.searchTypes.forEach(item => {
     if (route.query[item]) {
       searchString.value = route.query[item];
@@ -1220,6 +1183,13 @@ const toggleBodyClass = (className) => {
     id="main-column"
     class="main-column invisible-scrollbar"
   >
+    <!-- <div v-if="isMobile"> -->
+    <address-search-control
+      v-if="isMobile"
+      :input-id="'map-search-input'"
+    />
+    <!-- </div> -->
+
     <div>
       <refine-panel
         :refine-title="refineTitle"
