@@ -51,31 +51,19 @@ const items = computed(() => {
 });
 
 onMounted(async () => {
-  let body = document.body;
-  body.classList.remove('main-view');
-  body.classList.add('print-view');
-
-  let header = document.querySelector("#app-header");
-  let headerOffsetHeight = header.offsetHeight;
-  console.log('headerOffsetHeight:', headerOffsetHeight);
-  // const printView = document.querySelector('#print-view');
-  // printView.style.setProperty('height', `calc(100vh - ${headerOffsetHeight + 46}px)`);
-
   if (printCheckboxes.value.length === 0) {
     router.push({ name: 'home' });
-  }
-
-  if (printCheckboxes.value.length > 0) {
+  } else {
     window.print();
   }
 });
 
 // methods
+
 const clickedBackToHome = () => {
   console.log('clickedBackToHome is running');
   let startQuery = { ...route.query };
   router.push({ name: 'home', query: { ...startQuery } });
-  // router.push({ name: 'home'  });
 };
 
 const parseAddress = (address) => {

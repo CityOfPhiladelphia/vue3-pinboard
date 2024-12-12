@@ -69,7 +69,7 @@ const brandingLink = ref(null);
 const searchString = ref(null);
 const refineEnabled = ref(true);
 const addressInputPlaceholder = ref(null);
-const submittedCheckboxValue = ref(null);
+// const submittedCheckboxValue = ref(null);
 const showForceHolidayBanner = ref(false);
 const showAutomaticHolidayBanner = ref(false);
 
@@ -521,10 +521,6 @@ watch(
 )
 
 onMounted(async() => {
-  let body = document.body;
-  body.classList.remove('print-view');
-  body.classList.add('main-view');
-
   await nextTick();
   setHeights();
 
@@ -654,10 +650,10 @@ const clearGeocodeAndZipcode = async() => {
   // MainStore.currentSearch = null;
 };
 
-const watchedSubmittedCheckboxValue = () => {
-  if (import.meta.env.VITE_DEBUG) console.log('Main.vue watchedSubmittedCheckboxValue is running');
-  submittedCheckboxValue.value = null;
-};
+// const watchedSubmittedCheckboxValue = () => {
+//   if (import.meta.env.VITE_DEBUG) console.log('Main.vue watchedSubmittedCheckboxValue is running');
+//   submittedCheckboxValue.value = null;
+// };
 
 const clearBadAddress = () => {
   if (import.meta.env.VITE_DEBUG) console.log('clearBadAddress is running');
@@ -1283,10 +1279,10 @@ const footerLinks = computed(() => {
     <div>
       <refine-panel
         :refine-title="refineTitle"
-        :submitted-checkbox-value="submittedCheckboxValue"
-        @watched-submitted-checkbox-value="watchedSubmittedCheckboxValue"
         @geolocate-control-fire="geolocateControlFire"
       />
+      <!-- :submitted-checkbox-value="submittedCheckboxValue" -->
+      <!-- @watched-submitted-checkbox-value="watchedSubmittedCheckboxValue" -->
     </div>
 
     <div

@@ -390,31 +390,31 @@ const database = computed(() => {
   return value;
 });
 
-// watch(
-//   () => selected.value,
-//   async nextSelected => {
-//     if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selected, nextSelected:', nextSelected);
-//   }
-// )
+watch(
+  () => database,
+  async nextDatabase => {
+    // console.log('watch database is calling getRefineSearchList, nextDatabase:', nextDatabase);
+    getRefineSearchList();
+  }
+);
 
 watch(
-  () => props.submittedCheckboxValue,
-  async nextSubmittedCheckboxValue => {
-    if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch submittedCheckboxValue, nextSubmittedCheckboxValue:', nextSubmittedCheckboxValue);
-    if (nextSubmittedCheckboxValue == null) {
-      return;
-    }
-    let refineList = refineList.value;
-    for (let key of Object.keys(refineList)) {
-      for (let key2 of Object.keys(refineList[key])) {
+  () => MainStore.selectedServices,
+  async nextSelectedServices => {
+    // console.log('RefinePanel watch selectedServices is firing:', nextSelectedServices);
+    selected.value = nextSelectedServices;
+    // let refineList = refineList.value;
+    for (let key of Object.keys(refineList.value)) {
+      for (let key2 of Object.keys(refineList.value[key])) {
         if (key2 === 'radio' || key2 === 'checkbox') {
-          for (let key3 of Object.keys(refineList[key][key2])) {
+          for (let key3 of Object.keys(refineList.value[key][key2])) {
             let unique_key = $config.refine.multipleFieldGroups[key][key2][key3].unique_key;
-            let i18nValue = t([key][key3]);
-            // console.log('in watch submittedCheckboxValue, key:', key, 'key2:', key2, 'key3:', key3, 'unique_key:', unique_key, 'i18nValue:', i18nValue);
-            if (i18nValue.toLowerCase() === nextSubmittedCheckboxValue.toLowerCase()) {
+            console.log('in watch selectedServices, key:', key, 'key2:', key2, 'key3:', key3, 'unique_key:', unique_key);
+            let i18nValue = t(key+'.'+key3);
+            // console.log('in watch selectedServices, key:', key, 'key2:', key2, 'key3:', key3, 'unique_key:', unique_key, 'i18nValue:', i18nValue);
+            // if (i18nValue.toLowerCase() === nextSelectedServices.toLowerCase()) {
 
-              selected.value.push(unique_key);
+              // selected.value.push(unique_key);
 
               let uniq = {};
               let selectedNow = {};
@@ -444,6 +444,7 @@ watch(
 
               if (selected.value.length) {
                 for (let group of Object.keys(uniq)) {
+                  console.log('group:', group);
                   for (let dep of Object.keys(uniq[group])) {
                     for (let field of Object.keys(uniq[group][dep])) {
                       if (dep == 'checkbox' && selected.value.includes(uniq[group][dep][field].unique_key)) {
@@ -451,7 +452,7 @@ watch(
                         if (!selectedNow['checkbox_'+group]) {
                           selectedNow['checkbox_'+group] = [];
                         }
-                        selectedNow[group].push(uniq[group][dep][field].unique_key);
+                        selectedNow['checkbox_'+group].push(uniq[group][dep][field].unique_key);
                       } else if (dep == 'radio' && selected.value.includes(uniq[group][dep][field].unique_key)) {
                         // console.log('RefinePanel end of getRefineSearchList, independent, selected:', selected, 'group:', group, 'dep:', dep, 'field:', field, 'uniq[group][dep][field].unique_key', uniq[group][dep][field].unique_key, 'selected.value:', selected.value);
                         if (!selectedNow['radio_'+group]) {
@@ -465,58 +466,38 @@ watch(
               }
 
               selectedList.value = selectedNow;
-            }
+            // }
           }
         }
       }
     }
-    console.log('RefinePanel about to emit watchedSubmittedCheckboxValue');
-    $emit('watched-submitted-checkbox-value');
   }
 );
 
 // watch(
-//   () => refineOpen,
-//   async nextRefineOpen => {
-//     // console.log('RefinePanel.vue watch refineOpen is firing');
-//     $nextTick(() => {
-//       $store.map.resize();
-//     });
+//   () => selected.value,
+//   async (nextSelected, oldSelected) => {
+//     console.log('watch selected is firing, nextSelected:', nextSelected, 'oldSelected:', oldSelected);
+//     let newSelection;
+//     if (refineType.value !== 'categoryField_value') {
+//       newSelection = nextSelected.filter(x => !oldSelected.includes(x));
+//       if (newSelection.length) {
+//         // this.$gtag.event('refine-checkbox-click', {
+//         //   'event_category': MainStore.gtag.category,
+//         //   'event_label': newSelection[0],
+//         // });
+//       }
+//     } else {
+//       newSelection = nextSelected;
+//       if (newSelection.length) {
+//         // this.$gtag.event('refine-checkbox-click', {
+//         //   'event_category': MainStore.gtag.category,
+//         //   'event_label': newSelection,
+//         // });
+//       }
+//     }
 //   }
 // );
-
-watch(
-  () => database,
-  async nextDatabase => {
-    // console.log('watch database is calling getRefineSearchList, nextDatabase:', nextDatabase);
-    getRefineSearchList();
-  }
-);
-
-watch(
-  () => selected,
-  async (nextSelected, oldSelected) => {
-    console.log('watch selected is firing, nextSelected:', nextSelected, 'oldSelected:', oldSelected);
-    let newSelection;
-    if (refineType.value !== 'categoryField_value') {
-      newSelection = nextSelected.filter(x => !oldSelected.includes(x));
-      if (newSelection.length) {
-        // this.$gtag.event('refine-checkbox-click', {
-        //   'event_category': MainStore.gtag.category,
-        //   'event_label': newSelection[0],
-        // });
-      }
-    } else {
-      newSelection = nextSelected;
-      if (newSelection.length) {
-        // this.$gtag.event('refine-checkbox-click', {
-        //   'event_category': MainStore.gtag.category,
-        //   'event_label': newSelection,
-        // });
-      }
-    }
-  }
-);
 
 const arraysEqual = (a, b) => {
   if (a === b) return true;
