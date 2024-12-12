@@ -478,11 +478,10 @@ watch(
 );
 
 const setHeights = () => {
+  // if (import.meta.env.VITE_DEBUG) console.log('setHeights is running');
   let header = document.querySelector("#app-header");
   let headerOffsetHeight = header.offsetHeight;
-  console.log('header:', header, 'header.offsetHeight:', header.offsetHeight);
-  let main = document.querySelector("main");
-  main.style.cssText = main.style.cssText + `margin-top: ${header.offsetHeight}px; padding-bottom: 0px;`;
+  // if (import.meta.env.VITE_DEBUG) console.log('header:', header, 'header.offsetHeight:', header.offsetHeight);
   let addressSearchHolder = document.querySelector("#address-search-holder");
   let addressSearchHolderOffsetHeight = addressSearchHolder.offsetHeight;
   const refinePanel = document.querySelector('#refine-panel-component');

@@ -695,9 +695,9 @@ const makeValidUrl = (url) => {
               id="distance-dropdown"
               v-model="searchDistance"
               :options="searchDistanceOptions"
-              />
               placeholder="Distance"
               :disabled="sortDisabled"
+            />
           </div>
         </div>
 
