@@ -1,27 +1,30 @@
-// @import 'bulma/css/bulma.css';
-// @import "@phila/phila-ui-core/dist/styles/scss/all.scss";
-
 $primary-color: #0f4254;
 $dropdown-menu-min-width: 100px;
 
-html {
-  min-height: 100dvh;
-  overflow-y: hidden !important;
+@media print {
+  .no-print {
+    visibility: hidden;
+  }
+
+  html, body {
+    height: 100%;
+    width: 100%;
+  }
+
+  #app {
+    display: block;
+    height: auto;
+    width: auto;
+    overflow-y: visible !important;
+  }
 }
 
-body {
-  height: auto;
-  overflow-y: hidden !important;
-}
+
+// html, body, #app are not set because it interferes with the print view
 
 a {
   color: #0f4d90;
   font-weight: bold;
-}
-
-#app {
-  height: 100dvh;
-  overflow-y: hidden;
 }
 
 .main {
@@ -61,8 +64,6 @@ a {
   flex-grow: 1;
   overflow-y: scroll;
   overflow-x: hidden;
-  // padding-left: 12px;
-  // padding-right: 12px;
   padding-bottom: 30px !important;
 }
 

@@ -1100,9 +1100,103 @@ const toggleBodyClass = (className) => {
   return isOpen ? el.classList.add(className) : el.classList.remove(className);
 };
 
+const appTitle = computed(() => {
+  let value;
+  if ($config.app.title) {
+    value = $config.app.title;
+  } else if (i18nEnabled.value) {
+    // if (import.meta.env.VITE_DEBUG) console.log('t("app.title"):', t('app.title'));
+    value = t('app.title');
+  }
+  return value;
+});
+
+const appSubTitle = computed(() => {
+  let value;
+  if (!isMobile.value) {
+    if ($config.app.subtitle) {
+      value = $config.app.subtitle;
+    } else if (i18nEnabled.value) {
+      // if (import.meta.env.VITE_DEBUG) console.log('t("app.subtitle"):', t('app.subtitle'));
+      value = t('app.subtitle'); 
+    }
+  }
+  return value;
+});
+
+const i18nLanguages = computed(() => {
+  let values = [];
+  // if (import.meta.env.VITE_DEBUG) console.log('i18nLanguages, $config.i18n:', $config.i18n);
+  if ($config.i18n.languages) {
+    values = $config.i18n.languages;
+  }
+  return values;
+});
+
+const footerLinks = computed(() => {
+  if ($config.footer) {
+    let newValues = []
+    for (let i of $config.footer) {
+      let value = {}
+      for (let j of Object.keys(i)) {
+        // if (import.meta.env.VITE_DEBUG) console.log('i:', i, 'j:', j);
+        if (!i18nEnabled.value || j !== "text") {
+          value[j] = i[j];
+        } else {
+          value[j] = t(i[j]);
+        }
+      }
+      newValues.push(value)
+    }
+    return newValues;
+  }
+});
+
 </script>
 
 <template>
+
+<app-header
+    :app-title="appTitle"
+    :app-subtitle="appSubTitle"
+    :app-link="appLink"
+    :is-sticky="true"
+    :is-fluid="true"
+    :branding-image="brandingImage"
+    :branding-link="brandingLink"
+    >
+    <template #mobile-nav>
+      <mobile-nav :links="footerLinks" />
+    </template>
+    
+    <template
+      v-if="i18nEnabled"
+      #lang-selector-nav
+    >
+      <lang-selector
+        v-if="i18nEnabled"
+        :languages="i18nLanguages"
+      />
+    </template>
+  </app-header>
+
+  <main id="main" class="main invisible-scrollbar">
+    
+    <div
+      v-if="MainStore.firstRouteLoaded === false"
+      id="loading-spinner"
+      class="is-flex is-justify-content-center is-align-items-center is-flex-direction-column"
+    >
+      <font-awesome-icon
+        icon="fa-solid fa-spinner"
+        class="fa-6x center-spinner"
+        spin
+      />
+      <div class="mt-6">
+        Loading {{ appTitle.toLowerCase() }}
+      </div>
+    </div>
+
   <PhilaModal
     v-show="isModalOpen"
     @close="closeModal"
@@ -1254,6 +1348,16 @@ const toggleBodyClass = (className) => {
       </div>
     </button>
   </div>
+
+
+</main>
+
+<app-footer
+  :is-sticky="true"
+  :is-hidden-mobile="true"
+  :links="footerLinks"
+>
+</app-footer>
 
 
 </template>

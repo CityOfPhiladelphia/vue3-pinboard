@@ -123,13 +123,13 @@ const anySearch = computed(() => {
   return value;
 });
 
-const showPrintAndShare = computed(() => {
-  let value = false;
-  if (route.name == 'home') {
-    value = true;
-  }
-  return value;
-});
+// const showPrintAndShare = computed(() => {
+//   let value = false;
+//   if (route.name == 'home') {
+//     value = true;
+//   }
+//   return value;
+// });
 
 const sortByOptions = computed(() => {
   let value = {};
@@ -379,7 +379,7 @@ watch(
 );
 
 watch(
-  () => selectAllCheckbox,
+  () => selectAllCheckbox.value,
   async nextSelectAllCheckbox => {
     if (import.meta.env.VITE_DEBUG) console.log('watch selectAllCheckbox, nextSelectAllCheckbox:', nextSelectAllCheckbox);
     if (nextSelectAllCheckbox == false) {
@@ -480,7 +480,8 @@ const clickedPrint = () => {
     });
     return;
   }
-  router.push({ name: 'printView'  });
+  let startQuery = { ...route.query };
+  router.push({ name: 'printView', query: { ...startQuery } });
 };
 
 const printBoxChecked = (id) => {

@@ -34,7 +34,7 @@ const props = defineProps({
 });
   
 const printCheckboxes = computed(() => {
-  return DataStore.printCheckboxes;
+  return MainStore.printCheckboxes;
 })
 
 const allowPrint = computed(() => {
@@ -177,13 +177,13 @@ onMounted(() => {
     }
 
     let values = []
-    // if (printCheckboxes.length) {
-    //   for (let checkbox of printCheckboxes) {
-    //     if (checkbox == props.item._featureId) {
-    //       values.push(true);
-    //     }
-    //   }
-    // }
+    if (printCheckboxes.value.length) {
+      for (let checkbox of printCheckboxes.value) {
+        if (checkbox == props.item._featureId) {
+          values.push(true);
+        }
+      }
+    }
     if (values.includes(true)) {
       // console.log('ExpandCollapse mounted, values includes true, printCheckboxes:', printCheckboxes, 'props.item._featureId:', props.item._featureId, 'printCheckboxes.includes(props.item_featureId):', printCheckboxes.includes(props.item_featureId));
       document.getElementById('checkbox'+props.item._featureId).checked = true;

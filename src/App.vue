@@ -193,7 +193,7 @@ const i18nLanguages = computed(() => {
 
 <template>
   
-  <app-header
+  <!-- <app-header
     :app-title="appTitle"
     :app-subtitle="appSubTitle"
     :app-link="appLink"
@@ -232,18 +232,18 @@ const i18nLanguages = computed(() => {
       <div class="mt-6">
         Loading {{ appTitle.toLowerCase() }}
       </div>
-    </div>
+    </div> -->
 
     <router-view></router-view>
 
-  </main>
+  <!-- </main>
 
   <app-footer
     :is-sticky="true"
     :is-hidden-mobile="true"
     :links="footerLinks"
   >
-  </app-footer>
+  </app-footer> -->
 
 </template>
 

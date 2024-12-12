@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 // import App from '../App.vue';
 import Main from '../views/Main.vue';
+import PrintView from '../views/PrintView.vue';
 
 import { useMainStore } from '../stores/MainStore.js';
 import { useMapStore } from '../stores/MapStore.js';
@@ -39,6 +40,22 @@ const clearGeocode = async() => {
   // MapStore.bufferForAddressOrZipcode = point([]);
 }
 
+const initData = async() => {
+  const MainStore = useMainStore();
+  if (!MainStore.firstRouteLoaded) {
+    const DataStore = useDataStore();
+    const ConfigStore = useConfigStore();
+    const $config = ConfigStore.config;
+    if ($config.agoTokenNeeded) {
+      await DataStore.fillAgoToken();
+    }
+    await DataStore.fillAppType();
+    await DataStore.fillResources();
+    await DataStore.fillZipcodes();
+    MainStore.firstRouteLoaded = true;
+  }
+}
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -47,22 +64,17 @@ const router = createRouter({
       name: 'home',
       component: Main,
       beforeEnter: async (to, from) => {
-        if (import.meta.env.VITE_DEBUG) console.log('router beforeEnter is running to:', to, 'from:', from);
-        const MainStore = useMainStore();
-        const DataStore = useDataStore();
-        const ConfigStore = useConfigStore();
-        const $config = ConfigStore.config;
-        if ($config.agoTokenNeeded) {
-          await DataStore.fillAgoToken();
-        }
-        await DataStore.fillAppType();
-        await DataStore.fillResources();
-        // await DataStore.fillHolidays();
-        await DataStore.fillZipcodes();
-        MainStore.firstRouteLoaded = true;
-        if (import.meta.env.VITE_DEBUG) console.log('router beforeEnter is running, DataStore.zipcodes:', DataStore.zipcodes);
+        initData();
       }
     },
+    {
+      path: '/print',
+      name: 'printView',
+      component: PrintView,
+      beforeEnter: async (to, from) => {
+        initData();
+      }
+    }
   ]
 })
 
