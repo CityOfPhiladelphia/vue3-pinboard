@@ -64,7 +64,7 @@ const router = createRouter({
       name: 'home',
       component: Main,
       beforeEnter: async (to, from) => {
-        initData();
+        await initData();
       }
     },
     {
@@ -72,7 +72,7 @@ const router = createRouter({
       name: 'printView',
       component: PrintView,
       beforeEnter: async (to, from) => {
-        initData();
+        await initData();
       }
     }
   ]

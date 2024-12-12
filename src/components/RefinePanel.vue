@@ -589,7 +589,7 @@ onMounted(async () => {
       expandRefine();
     }
   };
-  // console.log('RefinePanel.vue mounted is calling getRefineSearchList');
+  console.log('RefinePanel.vue mounted is calling getRefineSearchList');
   await getRefineSearchList();
 
   if (route.query.services) {
