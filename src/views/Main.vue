@@ -22,17 +22,13 @@ import Fuse from 'fuse.js'
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
-import { point, featureCollection } from '@turf/helpers';
+import { featureCollection } from '@turf/helpers';
 import buffer from '@turf/buffer';
-// import centerOfMass from '@turf/center-of-mass';
+import centerOfMass from '@turf/center-of-mass';
 import { booleanPointInPolygon } from '@turf/boolean-point-in-polygon';
 import { pointsWithinPolygon } from '@turf/points-within-polygon';
 import distance from '@turf/distance';
 import AlertBanner from '../components/AlertBanner.vue';
-import PhilaModal from '../components/PhilaModal.vue';
-
-import isMobileDevice from '../util/is-mobile-device';
-import isMac from '../util/is-mac'; // this can probably be removed from App.vue, and only run in main.js
 
 // COMPONENTS
 import LocationsPanel from '../components/LocationsPanel.vue';
@@ -41,7 +37,6 @@ import RefinePanel from '../components/RefinePanel.vue';
 import AddressSearchControl from '../components/AddressSearchControl.vue';
 
 const instance = getCurrentInstance();
-const locale = computed(() => instance.appContext.config.globalProperties.$i18n.locale);
 // if (import.meta.env.VITE_DEBUG) console.log('instance.appContext.config.globalProperties.$i18n:', instance.appContext.config.globalProperties.$i18n);
 
 // STORES
@@ -56,15 +51,12 @@ const router = useRouter();
 
 const publicPath = ref('/');
 const isMapVisible = ref(false);
-const isModalOpen = ref(false);
 const isAlertModalOpen = ref(false);
-const isLarge = ref(true);
 const currentBuffer = ref(null);
 const buttonText = ref('app.viewMap');
 
-const myValue = ref('');
-const brandingImage = ref(null);
 const brandingLink = ref(null);
+const appLink = ref('/');
 
 const searchString = ref(null);
 const refineEnabled = ref(true);
@@ -85,6 +77,21 @@ if ($config.refineEnabled === false) {
 }
 
 // computed
+
+const brandingImage = computed(() => {
+  let value = null;
+  if (!isMobile.value) {
+    if ($config.app.logoSrc) {
+      value = {
+        src: $config.app.logoSrc,
+        alt: $config.app.logoAlt,
+        width: $config.app.logoWidth || "200px",
+      }
+    }
+  }
+  return value;
+});
+
 const isMobile = computed(() => {
   return MainStore.isMobileDevice || MainStore.windowDimensions.width < 768;
 });
@@ -93,16 +100,8 @@ const i18nLocale = computed(() => {
   return instance.appContext.config.globalProperties.$i18n.locale;
 });
 
-const printCheckboxes = computed(() => {
-  return MainStore.printCheckboxes;
-});
-
 const refineTitle = computed(() => {
   return $config.refine.title;
-});
-
-const alertResponse = computed(() => {
-  return MainStore.alertResponse || null;
 });
 
 // const shouldShowHeaderAlert = computed(() => {
@@ -501,6 +500,14 @@ watch(
   }
 )
 
+onBeforeMount(() => {
+  if ($config.appLink) {
+    appLink.value = $config.appLink;
+  } else {
+    appLink.value = '.';
+  }
+});
+
 onMounted(async() => {
   await nextTick();
   setHeights();
@@ -894,7 +901,7 @@ const checkBuffer = (row) => {
 };
 
 const checkKeywords = (row) => {
-  if (import.meta.env.VITE_DEBUG) console.log('checkKeywords, row:', row, '$config.tags', $config.tags, 'selectedKeywords.value:', selectedKeywords.value, 'selectedKeywords.value.length:', selectedKeywords.value.length);
+  // if (import.meta.env.VITE_DEBUG) console.log('checkKeywords, row:', row, '$config.tags', $config.tags, 'selectedKeywords.value:', selectedKeywords.value, 'selectedKeywords.value.length:', selectedKeywords.value.length);
   let booleanKeywords;
   if (selectedKeywords.value.length > 0) {
     booleanKeywords = false;
@@ -916,7 +923,6 @@ const checkKeywords = (row) => {
           description.push(tag.value);
         } else if (tag.type == 'value' && row.attributes[tag.field] !== null && row.attributes[tag.field] != ' ') {
           // if (import.meta.env.VITE_DEBUG) console.log('in else if, row.attributes[tag.field]:', row.attributes[tag.field]);
-          // description.push(row.attributes[tag.field].charAt(0) + row.attributes[tag.field].substring(1).toLowerCase());
           let value = row.attributes[tag.field].toLowerCase();
           // if (import.meta.env.VITE_DEBUG) console.log('value.split(","):', value.split(','));
           description = description.concat(value.split(','));
@@ -1037,27 +1043,15 @@ const toggleToList = () => {
   isMapVisible.value = false;
 };
 
-const toggleModal = () => {
-  isModalOpen.value = !isModalOpen.value;
-  toggleBodyClass('no-scroll');
-};
-
-const showModal = () => {
-  isModalOpen.value = true;
-  toggleBodyClass('no-scroll');
-};
-
 const closeModal = () => {
-  isModalOpen.value = false;
   isAlertModalOpen.value = false;
-  // toggleBodyClass('no-scroll');
 };
 
-const toggleBodyClass = (className) => {
-  console.log('toggleBodyClass is running, className:', className);
-  const el = document.body;
-  return isOpen ? el.classList.add(className) : el.classList.remove(className);
-};
+// const toggleBodyClass = (className) => {
+//   console.log('toggleBodyClass is running, className:', className);
+//   const el = document.body;
+//   return isOpen ? el.classList.add(className) : el.classList.remove(className);
+// };
 
 const appTitle = computed(() => {
   let value;
@@ -1116,62 +1110,30 @@ const footerLinks = computed(() => {
 <template>
 
 <app-header
-    :app-title="appTitle"
-    :app-subtitle="appSubTitle"
-    :app-link="appLink"
-    :is-sticky="true"
-    :is-fluid="true"
-    :branding-image="brandingImage"
-    :branding-link="brandingLink"
-    >
-    <template #mobile-nav>
-      <mobile-nav :links="footerLinks" />
-    </template>
-    
-    <template
-      v-if="i18nEnabled"
-      #lang-selector-nav
-    >
-      <lang-selector
-        v-if="i18nEnabled"
-        :languages="i18nLanguages"
-      />
-    </template>
-  </app-header>
-
-  <main id="main" class="main invisible-scrollbar">
-    
-    <div
-      v-if="MainStore.firstRouteLoaded === false"
-      id="loading-spinner"
-      class="is-flex is-justify-content-center is-align-items-center is-flex-direction-column"
-    >
-      <font-awesome-icon
-        icon="fa-solid fa-spinner"
-        class="fa-6x center-spinner"
-        spin
-      />
-      <div class="mt-6">
-        Loading {{ appTitle.toLowerCase() }}
-      </div>
-    </div>
-
-  <PhilaModal
-    v-show="isModalOpen"
-    @close="closeModal"
+  :app-title="appTitle"
+  :app-subtitle="appSubTitle"
+  :app-link="appLink"
+  :is-sticky="true"
+  :is-fluid="true"
+  :branding-image="brandingImage"
+  :branding-link="brandingLink"
   >
-    <div slot="body">
-      <p>The resource finder helps you locate services related to a particular topic. You can browse the list of providers, search by keyword or address, and narrow your results by category.</p>
+  <template #mobile-nav>
+    <mobile-nav :links="footerLinks" />
+  </template>
+  
+  <template
+    v-if="i18nEnabled"
+    #lang-selector-nav
+  >
+    <lang-selector
+      v-if="i18nEnabled && !i18nSelectorHidden"
+      :languages="i18nLanguages"
+    />
+  </template>
+</app-header>
 
-      <p>The providers are listed alphabetically. To learn about what they offer and where they are, select their name. This will expand their listing and locate them on the map. You can also:
-        <ul>
-      <li><b>Search by location or keyword.</b> To find service providers near you, select “Address” in the dropdown and enter a street address. To search for a specific term, select “Keyword” in the dropdown and enter your term.</li>
-      <li><b>Choose a category.</b> If you’re looking for a specific type of resource, select the appropriate topic under “Filter list by category.” You can pick multiple categories.</li>
-        </ul></p>
-      <p>If you’re interested in a particular service or resource, contact the provider to learn more and confirm that it’s still available.</p>
-
-    </div>
-  </PhilaModal>
+<main id="main" class="main invisible-scrollbar">
 
   <div
     v-show="isAlertModalOpen"

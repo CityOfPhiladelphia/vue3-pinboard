@@ -41,6 +41,7 @@ const clearGeocode = async() => {
 }
 
 const initData = async() => {
+  if (import.meta.env.VITE_DEBUG) console.log('initData is running');
   const MainStore = useMainStore();
   if (!MainStore.firstRouteLoaded) {
     const DataStore = useDataStore();
@@ -52,6 +53,7 @@ const initData = async() => {
     await DataStore.fillAppType();
     await DataStore.fillResources();
     await DataStore.fillZipcodes();
+    await DataStore.fillHolidays();
     MainStore.firstRouteLoaded = true;
   }
 }

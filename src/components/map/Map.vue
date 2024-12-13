@@ -285,7 +285,7 @@ watch(
     if (newAddress.features && newAddress.features[0].geometry.coordinates.length) {
       const newCoords = newAddress.features[0].geometry.coordinates;
       map.setCenter(newCoords);
-      map.setZoom(14);
+      map.setZoom(12);
       MapStore.currentAddressCoords = newCoords;
   
       const popup = document.getElementsByClassName('maplibregl-popup');

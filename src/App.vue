@@ -3,31 +3,21 @@
 if (import.meta.env.VITE_DEBUG == 'true') console.log('App.vue setup is running in debug mode');
 
 import { useMainStore } from './stores/MainStore.js';
-// import { useMapStore } from './stores/MapStore.js';
-// import { useGeocodeStore } from './stores/GeocodeStore.js';
-import { useDataStore } from './stores/DataStore.js';
 import { useConfigStore } from './stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
-import { ref, computed, getCurrentInstance, onMounted, onBeforeMount, watch, nextTick } from 'vue';
-
-if (import.meta.env.VITE_DEBUG == 'true') console.log('App.vue setup is running in debug mode, useDataStore:', useDataStore);
+import { computed, getCurrentInstance, onBeforeMount, watch } from 'vue';
 
 import { RouterView } from 'vue-router'
 
 import isMobileDevice from './util/is-mobile-device';
 import isMac from './util/is-mac'; // this can probably be removed from App.vue, and only run in main.js
-
-import i18nFromFiles from './i18n/i18n.js';
-const languages = i18nFromFiles.i18n.languages;
-
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
 // STORES
-const DataStore = useDataStore();
+const ConfigStore = useConfigStore();
+const $config = ConfigStore.config;
 const MainStore = useMainStore();
-
-const $config = useConfigStore().config;
 
 if (!import.meta.env.VITE_PUBLICPATH) {
   MainStore.publicPath = '/';
@@ -43,25 +33,7 @@ const router = useRouter();
 const instance = getCurrentInstance();
 const locale = computed(() => instance.appContext.config.globalProperties.$i18n.locale);
 
-const brandingLink = ref(null);
-const appLink = ref('/');
-
-const brandingImage = computed(() => {
-  let value = null;
-  if (!isMobile.value) {
-    if ($config.app.logoSrc) {
-      value = {
-        src: $config.app.logoSrc,
-        alt: $config.app.logoAlt,
-        width: $config.app.logoWidth || "200px",
-      }
-    }
-  }
-  return value;
-});
-
 onBeforeMount(async () => {
-  MainStore.appVersion = import.meta.env.VITE_VERSION;
   MainStore.isMobileDevice = isMobileDevice();
   MainStore.isMac = isMac();
   await router.isReady()
@@ -69,42 +41,10 @@ onBeforeMount(async () => {
 
   if (route.query.lang) {
     instance.appContext.config.globalProperties.$i18n.locale = route.query.lang;
-    // MainStore.currentLang = route.query.lang;
   }
 
   window.addEventListener('resize', handleWindowResize);
   handleWindowResize();
-
-  DataStore.fillHolidays();
-
-  if ($config.appLink) {
-    appLink.value = $config.appLink;
-  } else {
-    appLink.value = '.';
-  }
-});
-
-const isMobile = computed(() => {
-  return MainStore.isMobileDevice || MainStore.windowDimensions.width < 768;
-});
-
-const footerLinks = computed(() => {
-  if ($config.footer) {
-    let newValues = []
-    for (let i of $config.footer) {
-      let value = {}
-      for (let j of Object.keys(i)) {
-        // if (import.meta.env.VITE_DEBUG) console.log('i:', i, 'j:', j);
-        if (!i18nEnabled.value || j !== "text") {
-          value[j] = i[j];
-        } else {
-          value[j] = t(i[j]);
-        }
-      }
-      newValues.push(value)
-    }
-    return newValues;
-  }
 });
 
 const handleWindowResize = () => {
@@ -148,30 +88,6 @@ watch(
   }
 )
 
-const appTitle = computed(() => {
-  let value;
-  if ($config.app.title) {
-    value = $config.app.title;
-  } else if (i18nEnabled.value) {
-    // if (import.meta.env.VITE_DEBUG) console.log('t("app.title"):', t('app.title'));
-    value = t('app.title');
-  }
-  return value;
-});
-
-const appSubTitle = computed(() => {
-  let value;
-  if (!isMobile.value) {
-    if ($config.app.subtitle) {
-      value = $config.app.subtitle;
-    } else if (i18nEnabled.value) {
-      // if (import.meta.env.VITE_DEBUG) console.log('t("app.subtitle"):', t('app.subtitle'));
-      value = t('app.subtitle'); 
-    }
-  }
-  return value;
-});
-
 const i18nEnabled = computed(() => {
   if ($config.i18n && $config.i18n.enabled) {
     return true;
@@ -180,21 +96,39 @@ const i18nEnabled = computed(() => {
   }
 });
 
-const i18nLanguages = computed(() => {
-  let values = [];
-  // if (import.meta.env.VITE_DEBUG) console.log('i18nLanguages, $config.i18n:', $config.i18n);
-  if ($config.i18n.languages) {
-    values = $config.i18n.languages;
+const appTitle = computed(() => {
+  let value;
+  if ($config.app.title) {
+    value = $config.app.title;
+  } else if (i18nEnabled.value) {
+    value = t('app.title');
   }
-  return values;
+  return value;
 });
 
 </script>
 
 <template>
+
+  <div
+    v-if="!MainStore.firstRouteLoaded"
+    id="spinner-holder"
+    class="is-flex is-justify-content-center"
+  >
+    <div
+      id="loading-spinner"
+      class="is-flex is-justify-content-center is-flex-direction-column"
+    >
+      <font-awesome-icon
+        icon="fa-solid fa-spinner"
+        class="fa-6x center-spinner"
+        spin
+      />
+      <div class="mt-6">
+        Loading {{ appTitle.toLowerCase() }}
+      </div>
+    </div>
+  </div>
+
   <router-view></router-view>
 </template>
-
-<style>
-
-</style>

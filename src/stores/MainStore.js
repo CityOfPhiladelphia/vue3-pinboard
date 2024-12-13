@@ -10,8 +10,7 @@ export const useMainStore = defineStore('MainStore', {
       lastPinboardSearchMethod: null,
       shouldShowGreeting: true,
       currentSearch: null,
-      fullScreen: {},
-      alertResponse: null,
+      // alertResponse: null,
       gtag: {
         category: 'unspecified-pinboard-app'
       },
@@ -31,7 +30,6 @@ export const useMainStore = defineStore('MainStore', {
       searchValue: '',
       windowDimensions: {},
       currentAddress: '',
-      // currentLang: null,
       subsections: [],
       firstRouteLoaded: false,
       submittedCheckboxValue: null,
