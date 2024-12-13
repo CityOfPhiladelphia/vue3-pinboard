@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router';
-// import App from '../App.vue';
 import Main from '../views/Main.vue';
 import PrintView from '../views/PrintView.vue';
 
@@ -9,7 +8,7 @@ import { useGeocodeStore } from '../stores/GeocodeStore.js';
 import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 
-import { polygon, point } from '@turf/helpers';
+// import { polygon, point } from '@turf/helpers';
 
 const getGeocodeAndPutInStore = async(address) => {
   const GeocodeStore = useGeocodeStore();
@@ -37,7 +36,6 @@ const clearGeocode = async() => {
   MainStore.currentAddress = null;
   MapStore.bufferForAddressOrZipcode = null;
   MainStore.selectedZipcode = null;
-  // MapStore.bufferForAddressOrZipcode = point([]);
 }
 
 const initData = async() => {

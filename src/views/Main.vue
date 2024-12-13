@@ -23,12 +23,12 @@ import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
 import { featureCollection } from '@turf/helpers';
-import buffer from '@turf/buffer';
-import centerOfMass from '@turf/center-of-mass';
-import { booleanPointInPolygon } from '@turf/boolean-point-in-polygon';
 import { pointsWithinPolygon } from '@turf/points-within-polygon';
 import distance from '@turf/distance';
 import AlertBanner from '../components/AlertBanner.vue';
+// import buffer from '@turf/buffer';
+// import centerOfMass from '@turf/center-of-mass';
+// import { booleanPointInPolygon } from '@turf/boolean-point-in-polygon';
 
 // COMPONENTS
 import LocationsPanel from '../components/LocationsPanel.vue';
@@ -389,35 +389,6 @@ watch(
   }
 );
 
-// this has to do with using the compiled data source
-// watch(
-//   () => sourcesWatched,
-//   async nextSourcesWatched => {
-//     if (import.meta.env.VITE_DEBUG) console.log('watch sourcesWatched, nextSourcesWatched:', nextSourcesWatched);
-//     let allSourceValues = [];
-//     for (let value of Object.keys(nextSourcesWatched)) {
-//       allSourceValues.push(nextSourcesWatched[value]);
-//     }
-//     if (!allSourceValues.includes(null)) {
-//       setUpData(nextSourcesWatched);
-//     }
-//   }
-// );
-
-// watch(
-//   () => geocodeStatus,
-//   async nextGeocodeStatus => {
-//     if (nextGeocodeStatus === 'success') {
-//       runBuffer();
-//     } else if (nextGeocodeStatus === null && lastPinboardSearchMethod.value != 'zipcode' && lastPinboardSearchMethod.value != 'zipcodeKeyword') {
-//       currentBuffer.value = null;
-//     } else if (nextGeocodeStatus === 'error') {
-//       if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch geocodeStatus, nextGeocodeStatus is an error:', nextGeocodeStatus);
-//       geocodeFailed();
-//     }
-//   }
-// );
-
 watch(
   () => MapStore.bufferForAddressOrZipcode,
   async => {
@@ -644,7 +615,6 @@ const clearBadAddress = () => {
   delete startQuery['address'];
   router.push({ query: startQuery });
   searchString.value = '';
-  // $controller.resetGeocode();
   MainStore.currentSearch = null;
 };
 
@@ -679,24 +649,6 @@ const clearSearchTriggered = () => {
   MainStore.selectedZipcode = null;
   MapStore.bufferShape = null;
   MainStore.currentSearch = null;
-};
-
-const getProjection = (item) => {
-  let val;
-  if ($config && $config.projection) {
-    let valOrGetter = $config.projection;
-    const valOrGetterType = typeof valOrGetter;
-
-    if (valOrGetterType === 'function') {
-      const getter = valOrGetter;
-      if (item) {
-        val = getter(item);
-      }
-    } else {
-      val = valOrGetter;
-    }
-  }
-  return val;
 };
 
 const checkServices = (index, row) => {
@@ -1046,12 +998,6 @@ const toggleToList = () => {
 const closeModal = () => {
   isAlertModalOpen.value = false;
 };
-
-// const toggleBodyClass = (className) => {
-//   console.log('toggleBodyClass is running, className:', className);
-//   const el = document.body;
-//   return isOpen ? el.classList.add(className) : el.classList.remove(className);
-// };
 
 const appTitle = computed(() => {
   let value;
