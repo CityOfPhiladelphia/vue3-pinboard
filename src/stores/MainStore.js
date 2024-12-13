@@ -34,6 +34,7 @@ export const useMainStore = defineStore('MainStore', {
       // currentLang: null,
       subsections: [],
       firstRouteLoaded: false,
+      submittedCheckboxValue: null,
     };
   },
 

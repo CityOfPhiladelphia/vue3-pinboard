@@ -94,25 +94,6 @@ const i18nLocale = computed(() => {
   return instance.appContext.config.globalProperties.$i18n.locale;
 });
 
-const refineList = computed(() => {
-  return MainStore.refineList;
-});
-
-const checkboxText = computed(() => {
-  let text = []
-  let refineList = refineList.value;
-  for (let key of Object.keys(refineList)) {
-    for (let key2 of Object.keys(refineList[key])) {
-      if (key2 === 'radio' || key2 === 'checkbox') {
-        for (let key3 of Object.keys(refineList[key][key2])) {
-          text.push(t([key][key3].toLowerCase()));
-        }
-      }
-    }
-  }
-  return text;
-});
-
 const printCheckboxes = computed(() => {
   return MainStore.printCheckboxes;
 });

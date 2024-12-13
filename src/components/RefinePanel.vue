@@ -37,10 +37,10 @@ const props = defineProps({
     type: String,
     default: 'FILTER',
   },
-  submittedCheckboxValue: {
-    type: String,
-    default: null,
-  },
+  // submittedCheckboxValue: {
+  //   type: String,
+  //   default: null,
+  // },
 });
 
 const $emit = defineEmits(['geolocate-control-fire', 'watched-submitted-checkbox-value' ]);
@@ -399,74 +399,67 @@ watch(
 );
 
 watch(
-  () => MainStore.selectedServices,
+  () => selectedServices.value.length,
   async nextSelectedServices => {
-    // console.log('RefinePanel watch selectedServices is firing:', nextSelectedServices);
-    selected.value = nextSelectedServices;
-    // let refineList = refineList.value;
+    console.log('RefinePanel watch selectedServices is firing:', selectedServices.value);
+    selected.value = selectedServices.value;
     for (let key of Object.keys(refineList.value)) {
       for (let key2 of Object.keys(refineList.value[key])) {
         if (key2 === 'radio' || key2 === 'checkbox') {
           for (let key3 of Object.keys(refineList.value[key][key2])) {
             let unique_key = $config.refine.multipleFieldGroups[key][key2][key3].unique_key;
             console.log('in watch selectedServices, key:', key, 'key2:', key2, 'key3:', key3, 'unique_key:', unique_key);
-            let i18nValue = t(key+'.'+key3);
-            // console.log('in watch selectedServices, key:', key, 'key2:', key2, 'key3:', key3, 'unique_key:', unique_key, 'i18nValue:', i18nValue);
-            // if (i18nValue.toLowerCase() === nextSelectedServices.toLowerCase()) {
 
-              // selected.value.push(unique_key);
+            let uniq = {};
+            let selectedNow = {};
+            for (let group of Object.keys($config.refine.multipleFieldGroups)){
 
-              let uniq = {};
-              let selectedNow = {};
-              for (let group of Object.keys($config.refine.multipleFieldGroups)){
-
-                uniq[group] = { expanded: false };
-                for (let dep of Object.keys($config.refine.multipleFieldGroups[group])){
-                  // console.log('middle loop, dep:', dep, 'group:', group);
-                  if (dep !== 'tooltip') {
-                    uniq[group][dep] = {};
-                    for (let field of Object.keys($config.refine.multipleFieldGroups[group][dep])){
-                      uniq[group][dep][field] = {};
-                      // console.log('field:', field, 'selected:', selected, '$config.refine.multipleFieldGroups[group][field].unique_key:', $config.refine.multipleFieldGroups[group][field].unique_key);
-                      if ($config.refine.multipleFieldGroups[group][dep][field].i18n_key) {
-                        uniq[group][dep][field].box_label = $config.refine.multipleFieldGroups[group][dep][field].i18n_key;
-                      } else {
-                        uniq[group][dep][field].box_label = field;
-                      }
-                      uniq[group][dep][field].unique_key = $config.refine.multipleFieldGroups[group][dep][field].unique_key;
-                      uniq[group][dep][field].tooltip = $config.refine.multipleFieldGroups[group][dep][field].tooltip;
+              uniq[group] = { expanded: false };
+              for (let dep of Object.keys($config.refine.multipleFieldGroups[group])){
+                // console.log('middle loop, dep:', dep, 'group:', group);
+                if (dep !== 'tooltip') {
+                  uniq[group][dep] = {};
+                  for (let field of Object.keys($config.refine.multipleFieldGroups[group][dep])){
+                    uniq[group][dep][field] = {};
+                    // console.log('field:', field, 'selected:', selected, '$config.refine.multipleFieldGroups[group][field].unique_key:', $config.refine.multipleFieldGroups[group][field].unique_key);
+                    if ($config.refine.multipleFieldGroups[group][dep][field].i18n_key) {
+                      uniq[group][dep][field].box_label = $config.refine.multipleFieldGroups[group][dep][field].i18n_key;
+                    } else {
+                      uniq[group][dep][field].box_label = field;
                     }
-                  } else {
-                    uniq[group][dep] = $config.refine.multipleFieldGroups[group][dep];
+                    uniq[group][dep][field].unique_key = $config.refine.multipleFieldGroups[group][dep][field].unique_key;
+                    uniq[group][dep][field].tooltip = $config.refine.multipleFieldGroups[group][dep][field].tooltip;
                   }
+                } else {
+                  uniq[group][dep] = $config.refine.multipleFieldGroups[group][dep];
                 }
               }
+            }
 
-              if (selected.value.length) {
-                for (let group of Object.keys(uniq)) {
-                  console.log('group:', group);
-                  for (let dep of Object.keys(uniq[group])) {
-                    for (let field of Object.keys(uniq[group][dep])) {
-                      if (dep == 'checkbox' && selected.value.includes(uniq[group][dep][field].unique_key)) {
-                        // console.log('RefinePanel end of getRefineSearchList, dependent, group:', group, 'dep:', dep, 'field:', field, 'uniq[group][dep][field].unique_key', uniq[group][dep][field].unique_key, 'selected.value:', selected.value);
-                        if (!selectedNow['checkbox_'+group]) {
-                          selectedNow['checkbox_'+group] = [];
-                        }
-                        selectedNow['checkbox_'+group].push(uniq[group][dep][field].unique_key);
-                      } else if (dep == 'radio' && selected.value.includes(uniq[group][dep][field].unique_key)) {
-                        // console.log('RefinePanel end of getRefineSearchList, independent, selected:', selected, 'group:', group, 'dep:', dep, 'field:', field, 'uniq[group][dep][field].unique_key', uniq[group][dep][field].unique_key, 'selected.value:', selected.value);
-                        if (!selectedNow['radio_'+group]) {
-                          selectedNow['radio_'+group] = undefined;
-                        }
-                        selectedNow['radio_'+group] = uniq[group][dep][field].unique_key;
+            if (selected.value.length) {
+              for (let group of Object.keys(uniq)) {
+                console.log('group:', group);
+                for (let dep of Object.keys(uniq[group])) {
+                  for (let field of Object.keys(uniq[group][dep])) {
+                    if (dep == 'checkbox' && selected.value.includes(uniq[group][dep][field].unique_key)) {
+                      // console.log('RefinePanel end of getRefineSearchList, dependent, group:', group, 'dep:', dep, 'field:', field, 'uniq[group][dep][field].unique_key', uniq[group][dep][field].unique_key, 'selected.value:', selected.value);
+                      if (!selectedNow['checkbox_'+group]) {
+                        selectedNow['checkbox_'+group] = [];
                       }
+                      selectedNow['checkbox_'+group].push(uniq[group][dep][field].unique_key);
+                    } else if (dep == 'radio' && selected.value.includes(uniq[group][dep][field].unique_key)) {
+                      // console.log('RefinePanel end of getRefineSearchList, independent, selected:', selected, 'group:', group, 'dep:', dep, 'field:', field, 'uniq[group][dep][field].unique_key', uniq[group][dep][field].unique_key, 'selected.value:', selected.value);
+                      if (!selectedNow['radio_'+group]) {
+                        selectedNow['radio_'+group] = undefined;
+                      }
+                      selectedNow['radio_'+group] = uniq[group][dep][field].unique_key;
                     }
                   }
                 }
               }
+            }
 
-              selectedList.value = selectedNow;
-            // }
+            selectedList.value = selectedNow;
           }
         }
       }

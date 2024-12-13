@@ -8,6 +8,9 @@ import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
 import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
 
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
+
 const ConfigStore = useConfigStore();
 const $config = ConfigStore.config;
 
@@ -16,6 +19,8 @@ const MainStore = useMainStore();
 
 const router = useRouter();
 const route = useRoute();
+
+const submittedCheckboxValue = ref(null);
 
 defineProps({
   // searchPlaceholder: {
@@ -77,6 +82,25 @@ const yPosition = computed(() => {
 //   router.push({ name: 'home', query });
 // }
 
+const refineList = computed(() => {
+  return MainStore.refineList;
+});
+
+const checkboxText = computed(() => {
+  let text = {};
+  let refList = refineList.value;
+  for (let key of Object.keys(refList)) {
+    for (let key2 of Object.keys(refList[key])) {
+      if (key2 === 'radio' || key2 === 'checkbox') {
+        for (let key3 of Object.keys(refList[key][key2])) {
+          text[t(key+'.'+key3).toLowerCase()] = refList[key][key2][key3].unique_key;
+        }
+      }
+    }
+  }
+  return text;
+});
+
 const handleSubmit = (val) => {
   if (import.meta.env.VITE_DEBUG) console.log('handleSubmit is running, val:', val);
   let query;
@@ -97,14 +121,19 @@ const handleSubmit = (val) => {
       return;
     } else {
       if (import.meta.env.VITE_DEBUG) console.log('in handleSubmit, checking checkboxText');
-      if (checkboxText.value.includes(val.toLowerCase())) {
-        if (import.meta.env.VITE_DEBUG) console.log('in handleSubmit, checking checkboxText - its there');
-        // alert('There is already a checkbox or radio button for that search term');
-        submittedCheckboxValue.value = val;
-        if (MainStore.shouldShowGreeting && !isMobile.value) {
-          MainStore.refineOpen = true;
+      // let match = checkboxText.value.filter((value) => value.toLowerCase() === val.toLowerCase());
+      for (let key of Object.keys(checkboxText.value)) {
+        console.log('key:', key);
+        if (key.toLowerCase() == val.toLowerCase()) {
+          if (import.meta.env.VITE_DEBUG) console.log('in handleSubmit, checking checkboxText - its there');
+          // alert('There is already a checkbox or radio button for that search term');
+          MainStore.selectedServices.push(checkboxText.value[key]);
+          if (MainStore.shouldShowGreeting && !isMobile.value) {
+            MainStore.refineOpen = true;
+          }
+          return;
         }
-        return;
+        
       }
       MainStore.lastPinboardSearchMethod = 'keyword';
       let startKeyword;
