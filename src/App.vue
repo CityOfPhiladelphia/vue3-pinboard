@@ -192,59 +192,7 @@ const i18nLanguages = computed(() => {
 </script>
 
 <template>
-  
-  <!-- <app-header
-    :app-title="appTitle"
-    :app-subtitle="appSubTitle"
-    :app-link="appLink"
-    :is-sticky="true"
-    :is-fluid="true"
-    :branding-image="brandingImage"
-    :branding-link="brandingLink"
-    >
-    <template #mobile-nav>
-      <mobile-nav :links="footerLinks" />
-    </template>
-    
-    <template
-      v-if="i18nEnabled"
-      #lang-selector-nav
-    >
-      <lang-selector
-        v-if="i18nEnabled"
-        :languages="i18nLanguages"
-      />
-    </template>
-  </app-header>
-
-  <main id="main" class="main invisible-scrollbar">
-    
-    <div
-      v-if="MainStore.firstRouteLoaded === false"
-      id="loading-spinner"
-      class="is-flex is-justify-content-center is-align-items-center is-flex-direction-column"
-    >
-      <font-awesome-icon
-        icon="fa-solid fa-spinner"
-        class="fa-6x center-spinner"
-        spin
-      />
-      <div class="mt-6">
-        Loading {{ appTitle.toLowerCase() }}
-      </div>
-    </div> -->
-
-    <router-view></router-view>
-
-  <!-- </main>
-
-  <app-footer
-    :is-sticky="true"
-    :is-hidden-mobile="true"
-    :links="footerLinks"
-  >
-  </app-footer> -->
-
+  <router-view></router-view>
 </template>
 
 <style>

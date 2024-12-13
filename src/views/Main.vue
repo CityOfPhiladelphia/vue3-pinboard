@@ -966,18 +966,12 @@ const checkKeywords = (row) => {
         results[keyword] = fuse.search(keyword);
       }
     }
-    // const result = fuse.search(selectedKeywords.value[0]);
-    // if (import.meta.env.VITE_DEBUG) console.log('App.vue filterPoints booleanKeywords section, result:', result, 'results:', results);
-    // if (result.length > 0) {
-    //   booleanKeywords = true;
-    // }
     for (let keyword of Object.keys(results)) {
       if (results[keyword].length > 0) {
         booleanKeywords = true;
       }
     }
   } else {
-    // console.log('no selectedKeywords');
     booleanKeywords = true;
   }
   return booleanKeywords;
@@ -1036,13 +1030,6 @@ const filterPoints = () => {
 const toggleToMap = () => {
   if (import.meta.env.VITE_DEBUG) console.log('toggleToMap is running');
   isMapVisible.value = true;
-  // if (import.meta.env.VITE_DEBUG) console.log('setTimeout function is running');
-  // let themap = store.map;
-  // setTimeout(function() {
-  //   if (import.meta.env.VITE_DEBUG) console.log('mapbox running map resize now');
-  //   themap.resize();
-  //   if (import.meta.env.VITE_DEBUG) console.log('mapbox ran map resize');
-  // }, 250);
 };
 
 const toggleToList = () => {
@@ -1229,19 +1216,6 @@ const footerLinks = computed(() => {
       x
     </button>
   </div>
-
-    <!-- <div
-      v-show="isMobile && !$config.searchBar.hide"
-      class="search-bar-container-class"
-    >
-      <phila-ui-address-input
-        :over-map="false"
-        :placeholder="addressInputPlaceholder"
-        @clear-search="clearSearchTriggered"
-        @handle-search-form-submit="handleSubmit"
-      />
-    </div> -->
-
     
   <div
     id="main-column"
@@ -1319,7 +1293,6 @@ const footerLinks = computed(() => {
     </button>
   </div>
 
-
 </main>
 
 <app-footer
@@ -1329,7 +1302,6 @@ const footerLinks = computed(() => {
 >
 </app-footer>
 
-
 </template>
 
 <style lang="scss">
@@ -1337,7 +1309,7 @@ const footerLinks = computed(() => {
 .text-div {
   height: 100%;
   width: 100%;
-  padding: 10px;
+  padding: 12px;
 }
 
 .skip-to-main-content-link {
