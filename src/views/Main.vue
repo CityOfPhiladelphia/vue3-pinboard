@@ -69,7 +69,6 @@ const brandingLink = ref(null);
 const searchString = ref(null);
 const refineEnabled = ref(true);
 const addressInputPlaceholder = ref(null);
-// const submittedCheckboxValue = ref(null);
 const showForceHolidayBanner = ref(false);
 const showAutomaticHolidayBanner = ref(false);
 
@@ -440,8 +439,9 @@ watch(
 );
 
 watch(
-  () => selectedKeywords,
-  async => {
+  () => selectedKeywords.value.length,
+  async nextKeywords => {
+    if (import.meta.env.VITE_DEBUG) console.log('watch selectedKeywords is firing, nextKeywords:', nextKeywords);
     if (database.value) {
       filterPoints();
     }
@@ -630,11 +630,6 @@ const clearGeocodeAndZipcode = async() => {
   // MapStore.zipcodeCenter = [];
   // MainStore.currentSearch = null;
 };
-
-// const watchedSubmittedCheckboxValue = () => {
-//   if (import.meta.env.VITE_DEBUG) console.log('Main.vue watchedSubmittedCheckboxValue is running');
-//   submittedCheckboxValue.value = null;
-// };
 
 const clearBadAddress = () => {
   if (import.meta.env.VITE_DEBUG) console.log('clearBadAddress is running');
@@ -899,15 +894,15 @@ const checkBuffer = (row) => {
 };
 
 const checkKeywords = (row) => {
-  // if (import.meta.env.VITE_DEBUG) console.log('checkKeywords, row:', row, '$config.tags', $config.tags, 'selectedKeywords.value:', selectedKeywords.value, 'selectedKeywords.value.length:', selectedKeywords.value.length);
+  if (import.meta.env.VITE_DEBUG) console.log('checkKeywords, row:', row, '$config.tags', $config.tags, 'selectedKeywords.value:', selectedKeywords.value, 'selectedKeywords.value.length:', selectedKeywords.value.length);
   let booleanKeywords;
   if (selectedKeywords.value.length > 0) {
     booleanKeywords = false;
     let description = [];
-    if (Array.isArray(row.tags)) {
-      description = row.tags;
-    } else if (row.tags) {
-      description = row.tags.split(', ');
+    if (Array.isArray(row.properties.tags)) {
+      description = row.properties.tags;
+    } else if (row.properties.tags) {
+      description = row.properties.tags.split(', ');
     } else if ($config.tags && $config.tags.type == 'tagLocation') {
       if (Array.isArray($config.tags.location(row))) {
         description = $config.tags.location(row);
@@ -928,7 +923,7 @@ const checkKeywords = (row) => {
         }
       }
     }
-    // if (import.meta.env.VITE_DEBUG) console.log('still going, selectedKeywords.value[0]:', selectedKeywords.value[0], 'row.tags:', row.tags, 'description:', description);
+    // if (import.meta.env.VITE_DEBUG) console.log('still going, selectedKeywords.value[0]:', selectedKeywords.value[0], 'row.properties.tags:', row.properties.tags, 'description:', description);
 
     let threshold = 0.2;
     if ($config.searchBar.fuseThreshold) {
@@ -967,7 +962,7 @@ const checkKeywords = (row) => {
           results[keyword] = ['true'];
         }
       } else {
-        // if (import.meta.env.VITE_DEBUG) console.log('fuse.search(keyword):', fuse.search(keyword), 'description:', description);
+        if (import.meta.env.VITE_DEBUG) console.log('fuse.search(keyword):', fuse.search(keyword), 'description:', description);
         results[keyword] = fuse.search(keyword);
       }
     }
@@ -1262,8 +1257,6 @@ const footerLinks = computed(() => {
         :refine-title="refineTitle"
         @geolocate-control-fire="geolocateControlFire"
       />
-      <!-- :submitted-checkbox-value="submittedCheckboxValue" -->
-      <!-- @watched-submitted-checkbox-value="watchedSubmittedCheckboxValue" -->
     </div>
 
     <div

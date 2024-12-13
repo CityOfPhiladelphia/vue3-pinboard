@@ -733,7 +733,7 @@ const closeKeywordsBox = (box, e) => {
   } else {
     router.push({ query: { ...route.query, ...{ keyword: [] } }});
   }
-  searchString.value = '';
+  // searchString.value = '';
   MainStore.selectedKeywords = keywordsArray;
 };
 
@@ -798,6 +798,11 @@ const clearAll = (e) => {
       closeBox(e, selectedList.value[selected]);
     }
   }
+  
+  for (let keyword of keywordsEntered.value) {
+    closeKeywordsBox(keyword, e);
+  }
+
   if (refineType.value === 'categoryField_value') {
     selected.value = null;
   } else {

@@ -75,13 +75,6 @@ const yPosition = computed(() => {
   return '10px';
 });
 
-// const setRoute = (input) => {
-//   let query = {...route.query};
-//   if (import.meta.env.VITE_DEBUG) console.log('query:', query);
-//   query.address = address;
-//   router.push({ name: 'home', query });
-// }
-
 const refineList = computed(() => {
   return MainStore.refineList;
 });
@@ -89,11 +82,15 @@ const refineList = computed(() => {
 const checkboxText = computed(() => {
   let text = {};
   let refList = refineList.value;
-  for (let key of Object.keys(refList)) {
-    for (let key2 of Object.keys(refList[key])) {
-      if (key2 === 'radio' || key2 === 'checkbox') {
-        for (let key3 of Object.keys(refList[key][key2])) {
-          text[t(key+'.'+key3).toLowerCase()] = refList[key][key2][key3].unique_key;
+  if (Array.isArray(refList)) {
+    for (let ref of refList) text[ref.textLabel] = ref.textLabel;
+  } else {
+    for (let key of Object.keys(refList)) {
+      for (let key2 of Object.keys(refList[key])) {
+        if (key2 === 'radio' || key2 === 'checkbox') {
+          for (let key3 of Object.keys(refList[key][key2])) {
+            text[t(key+'.'+key3).toLowerCase()] = refList[key][key2][key3].unique_key;
+          }
         }
       }
     }
@@ -133,9 +130,9 @@ const handleSubmit = (val) => {
           }
           return;
         }
-        
       }
       MainStore.lastPinboardSearchMethod = 'keyword';
+      MainStore.selectedKeywords.push(val);
       let startKeyword;
       if (startQuery['keyword'] && startQuery['keyword'] != '') {
         startKeyword = startQuery['keyword'];
