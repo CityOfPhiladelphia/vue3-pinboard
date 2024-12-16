@@ -389,6 +389,15 @@ watch(
   }
 );
 
+// watch(
+//   () => MapStore.location,
+//   async newLocation => {
+//     if (newLocation) {
+//       clearGeocodeAndZipcode();
+//     }
+//   }
+// );
+
 watch(
   () => MapStore.bufferForAddressOrLocationOrZipcode,
   async => {
@@ -588,25 +597,33 @@ const closeHolidayBanner = async() => {
   // store.commit('setHoliday', holiday);
 };
 
-const geolocateControlFire = async(e) => {
-  // if (import.meta.env.VITE_DEBUG) console.log('Pinboard Main.vue geolocateControlFire is running, e.coords.latitude:', e.coords.latitude, 'e.coords.longitude:', e.coords.longitude);
-  if (e.lng != null) {
+const geolocate = () => {
+  clearGeocodeAndZipcode();
+  MapStore.geolocate();
+  MainStore.selectedZipcode = null;
+}
 
-    clearGeocodeAndZipcode();
 
-    await nextTick()
-    MainStore.lastPinboardSearchMethod = 'geolocate';
-    runBuffer({ coordinates: [ e.lng, e.lat ] });
-    if (MainStore.shouldShowGreeting) {
-      MainStore.shouldShowGreeting = false;
-    }
+// const geolocateControlFire = async(e) => {
+//   if (import.meta.env.VITE_DEBUG) console.log('Pinboard Main.vue geolocateControlFire is running, e:', e);
+//   // if (import.meta.env.VITE_DEBUG) console.log('Pinboard Main.vue geolocateControlFire is running, e.coords.latitude:', e.coords.latitude, 'e.coords.longitude:', e.coords.longitude);
+//   if (e.lng != null) {
+
+//     clearGeocodeAndZipcode();
+
+//     await nextTick()
+//     MainStore.lastPinboardSearchMethod = 'geolocate';
+//     // runBuffer({ coordinates: [ e.lng, e.lat ] });
+//     if (MainStore.shouldShowGreeting) {
+//       MainStore.shouldShowGreeting = false;
+//     }
     
-  } else {
-    // if (import.meta.env.VITE_DEBUG) console.log('Main.vue geolocateControlFire is running, remove currentBuffer.value');
-    MapStore.bufferShape = null;
-    currentBuffer.value = null;
-  }
-};
+//   } else {
+//     // if (import.meta.env.VITE_DEBUG) console.log('Main.vue geolocateControlFire is running, remove currentBuffer.value');
+//     MapStore.bufferForAddressOrLocationOrZipcode = {};
+//     currentBuffer.value = null;
+//   }
+// };
 
 const clearGeocodeAndZipcode = async() => {
   let startQuery = { ...route.query };
@@ -633,7 +650,7 @@ const clearBadAddress = () => {
 
 // const geocodeFailed = () => {
 //   if (import.meta.env.VITE_DEBUG) console.log('geocodeFailed is running');
-//   MapStore.bufferShape = null;
+//   MapStore.bufferForAddressOrLocationOrZipcode = null;
 // };
 
 // const compareArrays = (arr1, arr2) => {
@@ -648,7 +665,6 @@ const clearBadAddress = () => {
 //   return finalArray;
 // };
 
-
 const clearSearchTriggered = () => {
   let startQuery = { ...route.query };
   // if (import.meta.env.VITE_DEBUG) console.log('in clearSearchTriggered1, route.query:', route.query, 'startQuery:', startQuery);
@@ -660,7 +676,7 @@ const clearSearchTriggered = () => {
   searchString.value = '';
   MainStore.selectedKeywords = [];
   MainStore.selectedZipcode = null;
-  MapStore.bufferShape = null;
+  MapStore.bufferForAddressOrLocationOrZipcode = {};
   MainStore.currentSearch = null;
 };
 
@@ -849,9 +865,9 @@ const checkServices = (index, row) => {
 };
 
 const checkBuffer = (row) => {
-  if (import.meta.env.VITE_DEBUG) console.log('checkBuffer, row:', row);
+  // if (import.meta.env.VITE_DEBUG) console.log('checkBuffer, row:', row);
   const buffer = MapStore.bufferForAddressOrLocationOrZipcode;
-  if (!buffer) {
+  if (!Object.keys(buffer).length) {
     // if (import.meta.env.VITE_DEBUG) console.log('!MapStore.bufferForAddressOrLocationOrZipcode');
     return true;
   } else if (row.geometry) {
@@ -966,8 +982,9 @@ const filterPoints = () => {
   }
 
   const buffer = MapStore.bufferForAddressOrLocationOrZipcode;
+  console.log('buffer', buffer);
   let pointsAfterBuffer = database.value;
-  if (buffer) {
+  if (Object.keys(buffer).length) {
     if (import.meta.env.VITE_DEBUG) console.log('Main.vue filterPoints is running, buffer:', buffer);
     pointsAfterBuffer = pointsWithinPolygon(featureCollection(database.value), buffer).features;
   }
@@ -1160,8 +1177,8 @@ const footerLinks = computed(() => {
     <div>
       <refine-panel
         :refine-title="refineTitle"
-        @geolocate-control-fire="geolocateControlFire"
       />
+      <!-- @geolocate-control-fire="geolocateControlFire" -->
     </div>
 
     <div
@@ -1187,8 +1204,9 @@ const footerLinks = computed(() => {
         <map-panel
           @clear-search="clearSearchTriggered"
           @toggleMap="toggleToMap"
-          @geolocate-control-fire="geolocateControlFire"
+          @geolocate="geolocate"
         />
+          <!-- @geolocate-control-fire="geolocateControlFire" -->
       </div>
     </div>
 

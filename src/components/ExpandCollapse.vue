@@ -223,7 +223,7 @@ const siteName = computed(() => {
     if (currentQueryKeys.includes('address') || currentQueryKeys.includes('zipcode')) {// || this.$store.state.map.watchPositionOn) {
       // console.log('props.item:', props.item);
       if (props.item && props.item.distance) {
-        val = '(' + props.item.distance.toFixed(2) + 'miles) ' + getter(props.item);
+        val = '(' + props.item.distance.toFixed(2) + ' miles) ' + getter(props.item);
       } else {
         val = getter(props.item);
       }

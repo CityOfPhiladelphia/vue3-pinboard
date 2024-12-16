@@ -18,7 +18,6 @@ export const useMapStore = defineStore("MapStore", {
       currentMapStyle: 'pwdDrawnMapStyle',
       currentAddressCoords: [],
       bufferList: null,
-      bufferShape: null,
       watchPositionOn: null,
       bufferForAddressOrLocationOrZipcode: {},
       imageryOn: false,
@@ -43,20 +42,34 @@ export const useMapStore = defineStore("MapStore", {
     async geolocate() {
       console.log('geolocate is running');
       if (!this.location) {
+        // const router = useRouter();
+        // const route = useRoute();
+        // console.log('route:', route);
+        // const MainStore = useMainStore();
+        // let startQuery = { ...route.query };
+        // delete startQuery['address'];
+        // delete startQuery['zipcode'];
+        // if (lastPinboardSearchMethod.value == 'zipcodeKeyword') {
+        //   delete startQuery['keyword'];
+        //   MainStore.selectedKeywords = [];
+        // }
+        // router.push({ query: { ...startQuery }});
         navigator.geolocation.getCurrentPosition(this.geofindSuccess, this.geofindError, { enableHighAccuracy: true, timeout: 1000, maximumAge: 0, distanceFilter: 5 });
       } else {
         // this.watchPositionOn = false;
         this.location = null;
-        this.bufferForAddressOrLocationOrZipcode = null;
+        this.bufferForAddressOrLocationOrZipcode = {};
       }
     },
     async fillBufferForAddressOrLocationOrZipcode() {
       const MainStore = useMainStore();
+      const GeocodeStore = useGeocodeStore();
       if (import.meta.env.VITE_DEBUG) console.log('fillBufferForAddressOrLocationOrZipcode is running');
       if (this.location) {
         this.bufferForAddressOrLocationOrZipcode = buffer(point(this.location), this.searchDistance, {units: 'miles'});
-      } else if (MainStore.lastPinboardSearchMethod == 'geocode') {
-        const GeocodeStore = useGeocodeStore();
+      // } else if (MainStore.lastPinboardSearchMethod == 'geocode') {
+      } else if (GeocodeStore.aisData.features) {
+        // const GeocodeStore = useGeocodeStore();
         if (import.meta.env.VITE_DEBUG) console.log('fillBufferForAddressOrLocationOrZipcode is running, GeocodeStore.aisData.features:', GeocodeStore.aisData.features);
         let addressPoint = point(GeocodeStore.aisData.features[0].geometry.coordinates);
         // if (import.meta.env.VITE_DEBUG == 'true') console.log('fillBufferForAddressOrLocationOrZipcode is running, addressPoint:', addressPoint, 'addressBuffer:', addressBuffer, 'lng:', lng, 'lat:', lat);

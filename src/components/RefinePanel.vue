@@ -688,7 +688,8 @@ const clickBox = (e) => {
   e.stopPropagation();
 };
 
-const closeZipcodeBox = (box) => {
+const closeZipcodeBox = (e, box) => {
+  e.stopPropagation();
   console.log('closeZipcodeBox is running');
   let startQuery = { ...route.query };
   console.log('closeZipcodeBox is running, box:', box, 'startQuery:', startQuery);
@@ -699,16 +700,17 @@ const closeZipcodeBox = (box) => {
   MainStore.currentSearch = null;
 };
 
-const closeAddressBox = (box) => {
+const closeAddressBox = (e, box) => {
+  e.stopPropagation();
   let startQuery = { ...route.query };
-  console.log('closeAddressBox is running, box:', box, 'startQuery:', startQuery);
+  console.log('closeAddressBox is running, e:', e, 'box:', box, 'startQuery:', startQuery);
   delete startQuery['address'];
   router.push({ query: { ...startQuery }});
   MainStore.currentSearch = null;
-  MapStore.bufferShape = null;
 };
 
-const closeKeywordsBox = (box, e) => {
+const closeKeywordsBox = (e, box) => {
+  e.stopPropagation();
   console.log('closeKeywordsBox is running, e:', e);
   let startQuery = { ...route.query };
   let keywordsArray;
@@ -800,7 +802,7 @@ const clearAll = (e) => {
   }
   
   for (let keyword of keywordsEntered.value) {
-    closeKeywordsBox(keyword, e);
+    closeKeywordsBox(e, keyword);
   }
 
   if (refineType.value === 'categoryField_value') {
@@ -808,7 +810,7 @@ const clearAll = (e) => {
   } else {
     selected.value = [];
   }
-  $emit('geolocate-control-fire', payload);
+  // $emit('geolocate-control-fire', payload);
 };
 
 const getRefineSearchList = async() => {
@@ -1086,7 +1088,7 @@ const checkboxChange = (e) => {
           <button
             v-for="box in keywordsEntered"
             class="box-value column is-narrow"
-            @click="closeKeywordsBox(box)"
+            @click="(e) => closeKeywordsBox(e, box)"
           >
             {{ $t(getBoxValue(box)) }}
             <font-awesome-icon
@@ -1098,7 +1100,7 @@ const checkboxChange = (e) => {
           <button
             v-if="zipcodeEntered"
             class="box-value column is-narrow"
-            @click="closeZipcodeBox(zipcodeEntered)"
+            @click="(e) => closeZipcodeBox(e, zipcodeEntered)"
           >
             {{ $t(getBoxValue(zipcodeEntered)) + ' - ' + searchDistance }}
             <font-awesome-icon
@@ -1110,7 +1112,7 @@ const checkboxChange = (e) => {
           <button
             v-if="addressEntered"
             class="box-value column is-narrow"
-            @click="closeAddressBox(addressEntered)"
+            @click="(e) => closeAddressBox(e, addressEntered)"
           >
             <!-- {{ $t(getBoxValue(addressEntered)) + ' - ' + searchDistance }} -->
             {{ $t(getBoxValue(addressEntered)) }}

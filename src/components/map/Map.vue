@@ -12,6 +12,8 @@ import $mapConfig from '../../mapConfig';
 const $config = useConfigStore().config;
 if (import.meta.env.VITE_DEBUG) console.log('Map.vue $config:', $config, '$mapConfig:', $mapConfig);
 
+defineEmits(['geolocate']);
+
 // PACKAGE IMPORTS
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -209,9 +211,9 @@ watch(
   () => MapStore.bufferForAddressOrLocationOrZipcode,
   async newBuffer => {
     if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue bufferForAddressOrLocationOrZipcode watch, newBuffer:', newBuffer);
-    if (newBuffer) {
+    if (Object.keys(newBuffer).length && map.getSource('buffer')) {
       map.getSource('buffer').setData(newBuffer);
-    } else {
+    } else if (map.getSource('buffer')) {
       map.getSource('buffer').setData({ type: 'FeatureCollection', features: [] });
     }
   }
@@ -300,6 +302,8 @@ watch(
       if (popup.length) {
         popup[0].remove();
       }
+    } else {
+      MapStore.currentAddressCoords = [];
     }
   }
 )
@@ -320,6 +324,8 @@ watch(
   if (newCoords.length) {
     const address = point(newCoords);
     map.getSource('addressMarker').setData(address);
+  } else if (map.getSource('addressMarker')) {
+    map.getSource('addressMarker').setData({ type: 'FeatureCollection', features: [] });
   }
 });
 
@@ -392,6 +398,12 @@ watch(
 //     // if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue setLabelLayers, map.getStyle:', map.getStyle(), 'map.getStyle().layers:', map.getStyle().layers, 'map.getStyle().sources:', map.getStyle().sources);
 // }
 
+// const geolocate = () => {
+//   MapStore.geolocate();
+//   GeocodeStore.aisData = {};
+//   MainStore.selectedZipcode = null;
+// }
+
 </script>
 
 <template>
@@ -416,8 +428,9 @@ watch(
     />
 
     <GeolocateControl
-      @geolocate="MapStore.geolocate"
+      @geolocate="$emit('geolocate')"
     />
+    <!-- @geolocate="MapStore.geolocate" -->
 
     <!-- <ImageryToggleControl @toggle-imagery="toggleImagery" />
 

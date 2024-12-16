@@ -81,8 +81,18 @@ const pwdDrawnMapStyle = {
       layout: {},
       paint: {
         'fill-color': '#9e9ac8',
-        'fill-opacity': 0.4,
+        'fill-opacity': 0.2,
         'fill-outline-color': '#9e9ac8',
+      }
+    },
+    {
+      id: 'bufferLine',
+      type: 'line',
+      source: 'buffer',
+      layout: {},
+      paint: {
+        'line-color': '#9e9ac8',
+        'line-width': 2,
       }
     },
     {
@@ -91,9 +101,19 @@ const pwdDrawnMapStyle = {
       source: 'zipcode',
       layout: {},
       paint: {
-        'fill-color': '#9e9ac8',
-        'fill-opacity': 0.4,
-        'fill-outline-color': '#9e9ac8',
+        'fill-color': '#cc3000',
+        'fill-opacity': 0.2,
+        'fill-outline-color': '#cc3000',
+      }
+    },
+    {
+      id: 'zipcodeLine',
+      type: 'line',
+      source: 'zipcode',
+      layout: {},
+      paint: {
+        'line-color': '#cc3000',
+        'line-width': 2,
       }
     },
     // {

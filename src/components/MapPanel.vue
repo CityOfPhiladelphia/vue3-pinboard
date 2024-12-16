@@ -4,6 +4,8 @@ import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
 
 import Map from './map/Map.vue';
 
+defineEmits(['geolocate']);
+
 // import { useDataStore } from '../stores/DataStore.js';
 // const DataStore = useDataStore();
 // await DataStore.fillZipcodes();
@@ -19,7 +21,9 @@ const mapPanelClass = computed(() => {
     id="map-panel"
     :class="mapPanelClass"
   >
-    <Map />
+    <Map
+      @geolocate="$emit('geolocate')"
+    />
   </div>
 </template>
 

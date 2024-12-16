@@ -254,23 +254,30 @@ const geocodeStatus = computed(() => {
 
 const sortDisabled = computed(() => {
   let value;
-  let geocode, zip, watchPos;
-  if (geocodeStatus.value && geocodeStatus == 'success') {
-    geocode = true;
-  }
-  if (MainStore.selectedZipcode) {
-    zip = true;
-  }
-  if (watchPositionOn.value) {
-    watchPos = watchPositionOn.value;
-  }
-  // if (import.meta.env.VITE_DEBUG) console.log('computed sortDisabled, geocode:', geocode, 'zipcodeCenter:', zipcodeCenter);
-  if (geocode || zip || watchPos) {
+  if (Object.keys(MapStore.bufferForAddressOrLocationOrZipcode).length) {
     value = false;
   } else {
     value = true;
   }
   return value;
+  // let value;
+  // let geocode, zip, watchPos;
+  // if (geocodeStatus.value && geocodeStatus.value == 'success') {
+  //   geocode = true;
+  // }
+  // if (MainStore.selectedZipcode) {
+  //   zip = true;
+  // }
+  // if (watchPositionOn.value) {
+  //   watchPos = watchPositionOn.value;
+  // }
+  // // if (import.meta.env.VITE_DEBUG) console.log('computed sortDisabled, geocode:', geocode, 'zipcodeCenter:', zipcodeCenter);
+  // if (geocode || zip || watchPos) {
+  //   value = false;
+  // } else {
+  //   value = true;
+  // }
+  // return value;
 });
 
 const isMobile = computed(() => {

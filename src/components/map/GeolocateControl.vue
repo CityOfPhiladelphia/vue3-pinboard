@@ -2,10 +2,10 @@
 import { computed } from 'vue';
 // import { useMainStore } from '../../stores/MainStore.js'
 // const MainStore = useMainStore();
-// import { useMapStore } from '../../stores/MapStore.js';
-// const MapStore = useMapStore();
+import { useMapStore } from '../../stores/MapStore.js';
+const MapStore = useMapStore();
 
-defineEmits(['geolocate']);
+// defineEmits(['geolocate']);
 
 const imgSrc = computed(() => {
   return 'images/location-crosshairs-solid.svg';
@@ -20,6 +20,7 @@ const imgSrc = computed(() => {
       :title="'Find your location'"
       @click="$emit('geolocate')"
     >
+    <!-- @click="MapStore.geolocate" -->
       <img
         class="img-src"
         alt="imagery-or-basemap"
