@@ -214,29 +214,29 @@ const hasCustomGreeting = computed(() => {
   return value;
 });
 
-const greetingText = computed(() => {
-  let value;
-  if ($config.greeting) {
-    value = $config.greeting.message;
-  } else {
-    value = null;
-  }
-  return value;
-});
+// const greetingText = computed(() => {
+//   let value;
+//   if ($config.greeting) {
+//     value = $config.greeting.message;
+//   } else {
+//     value = null;
+//   }
+//   return value;
+// });
 
-const greetingOptions = computed(() => {
-  let value;
-  if ($config.greeting) {
-    value = $config.greeting.options;
-  } else {
-    value = {};
-  }
-  return value;
-});
+// const greetingOptions = computed(() => {
+//   let value;
+//   if ($config.greeting) {
+//     value = $config.greeting.options;
+//   } else {
+//     value = {};
+//   }
+//   return value;
+// });
 
-const zipcode = computed(() => {
-  return MainStore.selectedZipcode;
-});
+// const zipcode = computed(() => {
+//   return MainStore.selectedZipcode;
+// });
 
 const geocodeStatus = computed(() => {
   if (GeocodeStore.aisData.features && GeocodeStore.aisData.features.length) {

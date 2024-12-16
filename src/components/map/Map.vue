@@ -38,6 +38,7 @@ const router = useRouter();
 // COMPONENTS
 import AddressSearchControl from '../AddressSearchControl.vue';
 import OverlayLegend from './OverlayLegend.vue';
+import GeolocateControl from './GeolocateControl.vue';
 // import ImageryToggleControl from '@/components/map/ImageryToggleControl.vue';
 // import ImageryDropdownControl from '@/components/map/ImageryDropdownControl.vue';
 
@@ -123,9 +124,9 @@ onMounted(async () => {
       }
     }
     
-    if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 3, MapStore.bufferForAddressOrZipcode:', MapStore.bufferForAddressOrZipcode);
-    if (MapStore.bufferForAddressOrZipcode !== null && Object.keys(MapStore.bufferForAddressOrZipcode).length) {
-      map.getSource('buffer').setData(MapStore.bufferForAddressOrZipcode);
+    if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 3, MapStore.bufferForAddressOrLocationOrZipcode:', MapStore.bufferForAddressOrLocationOrZipcode);
+    if (MapStore.bufferForAddressOrLocationOrZipcode !== null && Object.keys(MapStore.bufferForAddressOrLocationOrZipcode).length) {
+      map.getSource('buffer').setData(MapStore.bufferForAddressOrLocationOrZipcode);
     }
     if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 4');
     if (DataStore.zipcodes && MainStore.selectedZipcode) {
@@ -148,7 +149,7 @@ onMounted(async () => {
 
   // add the unchanged maplibre controls
   map.addControl(new maplibregl.NavigationControl(), 'bottom-right');
-  map.addControl(new maplibregl.GeolocateControl(), 'bottom-right');
+  // map.addControl(new maplibregl.GeolocateControl(), 'bottom-right');
 
   map.on('click', 'pwd', (e) => {
     if (import.meta.env.VITE_DEBUG) console.log('Map.vue map click event, e:', e);
@@ -193,14 +194,21 @@ onMounted(async () => {
 watch(
   () => MapStore.searchDistance,
   async () => {
-    MapStore.fillBufferForAddressOrZipcode();
+    MapStore.fillBufferForAddressOrLocationOrZipcode();
   }
 )
 
 watch(
-  () => MapStore.bufferForAddressOrZipcode,
+  () => MapStore.location,
+  async () => {
+    MapStore.fillBufferForAddressOrLocationOrZipcode();
+  }
+)
+
+watch(
+  () => MapStore.bufferForAddressOrLocationOrZipcode,
   async newBuffer => {
-    if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue bufferForAddressOrZipcode watch, newBuffer:', newBuffer);
+    if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue bufferForAddressOrLocationOrZipcode watch, newBuffer:', newBuffer);
     if (newBuffer) {
       map.getSource('buffer').setData(newBuffer);
     } else {
@@ -399,12 +407,16 @@ watch(
         icon="fa-solid fa-spinner"
         class="fa-6x center-spinner"
         spin
-        />
+      />
     </div>
 
     <AddressSearchControl
       v-if="!isMobile"
       :input-id="'map-search-input'"
+    />
+
+    <GeolocateControl
+      @geolocate="MapStore.geolocate"
     />
 
     <!-- <ImageryToggleControl @toggle-imagery="toggleImagery" />

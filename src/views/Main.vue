@@ -390,9 +390,9 @@ watch(
 );
 
 watch(
-  () => MapStore.bufferForAddressOrZipcode,
+  () => MapStore.bufferForAddressOrLocationOrZipcode,
   async => {
-    if (import.meta.env.VITE_DEBUG) console.log('watch MapStore.bufferForAddressOrZipcode is calling filterPoints');
+    if (import.meta.env.VITE_DEBUG) console.log('watch MapStore.bufferForAddressOrLocationOrZipcode is calling filterPoints');
     filterPoints();
   }
 );
@@ -836,9 +836,10 @@ const checkServices = (index, row) => {
 };
 
 const checkBuffer = (row) => {
-  const buffer = MapStore.bufferForAddressOrZipcode;
+  if (import.meta.env.VITE_DEBUG) console.log('checkBuffer, row:', row);
+  const buffer = MapStore.bufferForAddressOrLocationOrZipcode;
   if (!buffer) {
-    // if (import.meta.env.VITE_DEBUG) console.log('!MapStore.bufferForAddressOrZipcode');
+    // if (import.meta.env.VITE_DEBUG) console.log('!MapStore.bufferForAddressOrLocationOrZipcode');
     return true;
   } else if (row.geometry) {
     let comparePoint;
@@ -846,6 +847,8 @@ const checkBuffer = (row) => {
       comparePoint = GeocodeStore.aisData.features[0].geometry;
     } else if (MapStore.zipcodeCenter) {
       comparePoint = MapStore.zipcodeCenter;
+    } else if (MapStore.location) {
+      comparePoint = MapStore.location;
     }
     row.distance = distance(comparePoint, row.geometry, { units: 'miles' });
     return true;
@@ -949,7 +952,7 @@ const filterPoints = () => {
     return;
   }
 
-  const buffer = MapStore.bufferForAddressOrZipcode;
+  const buffer = MapStore.bufferForAddressOrLocationOrZipcode;
   let pointsAfterBuffer = database.value;
   if (buffer) {
     if (import.meta.env.VITE_DEBUG) console.log('Main.vue filterPoints is running, buffer:', buffer);

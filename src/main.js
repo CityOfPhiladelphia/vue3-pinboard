@@ -64,6 +64,7 @@ import { faGlobe } from '@fortawesome/free-solid-svg-icons';
 import { faEnvelope} from '@fortawesome/free-solid-svg-icons';
 import { faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 import { faRectangleList } from '@fortawesome/free-solid-svg-icons';
+import { faLocationCrosshairs } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
   faSearch,
@@ -93,6 +94,7 @@ library.add(
   faEnvelope,
   faCircleInfo,
   faRectangleList,
+  faLocationCrosshairs,
 );
 
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
