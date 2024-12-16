@@ -437,19 +437,26 @@ const setHeights = () => {
   let addressSearchHolderOffsetHeight = addressSearchHolder.offsetHeight;
   const refinePanel = document.querySelector('#refine-panel-component');
   let refinePanelOffsetHeight = refinePanel.offsetHeight;
+  const holidayBanner = document.querySelector('#holiday-banner');
+  let holidayBannerOffsetHeight;
+  if (holidayBanner) {
+    holidayBannerOffsetHeight = holidayBanner.offsetHeight;
+  } else {
+    holidayBannerOffsetHeight = 0;
+  }
   const mainRow = document.querySelector('#main-row');
   if (isMobile.value && MainStore.shouldShowGreeting) {
-    mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+headerOffsetHeight+addressSearchHolderOffsetHeight}px)`);
+    mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+headerOffsetHeight+holidayBannerOffsetHeight+addressSearchHolderOffsetHeight}px)`);
   } else if (isMobile.value) {
-    mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+headerOffsetHeight+addressSearchHolderOffsetHeight+46}px)`);
+    mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+headerOffsetHeight+holidayBannerOffsetHeight+addressSearchHolderOffsetHeight+46}px)`);
   } else {
-    mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+headerOffsetHeight+46}px)`);
+    mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+46}px)`);
   }
   const map = document.querySelector('#map');
   if (isMobile.value) {
-    map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+headerOffsetHeight+addressSearchHolderOffsetHeight+46}px)`);
+    map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+headerOffsetHeight+holidayBannerOffsetHeight+addressSearchHolderOffsetHeight+46}px)`);
   } else {
-    map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+headerOffsetHeight+46}px)`);
+    map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+46}px)`);
   }
 }
 
@@ -552,10 +559,14 @@ onMounted(async() => {
 
   if ($config.holidays && $config.holidays.automaticBanner) {
     showAutomaticHolidayBanner.value = true;
+    await nextTick();
+    setHeights();
   }
 
   if ($config.holidays && $config.holidays.forceBanner) {
     showForceHolidayBanner.value = true;
+    await nextTick();
+    setHeights();
   }
 
   filterPoints();
@@ -563,9 +574,11 @@ onMounted(async() => {
 });
 
 // METHODS
-const closeHolidayBanner = () => {
+const closeHolidayBanner = async() => {
   showAutomaticHolidayBanner.value = false;
   showForceHolidayBanner.value = false;
+  await nextTick();
+  setHeights();
   // let holiday = {
   //   holiday_label: '',
   //   coming_soon: false,
@@ -1114,24 +1127,31 @@ const footerLinks = computed(() => {
       </template>
     </modal>
   </div>
-
-  <div
-    v-if="showForceHolidayBanner || showAutomaticHolidayBanner && holiday.coming_soon || showAutomaticHolidayBanner && holiday.current"
-    class="holiday-banner"
-  >
-    {{ closureMessageAllSites }}
-    <button
-      class="button is-primary is-small is-pulled-right holiday-banner-close-button"
-      @click="closeHolidayBanner"
-    >
-      x
-    </button>
-  </div>
     
   <div
     id="main-column"
     class="main-column invisible-scrollbar"
   >
+
+    <div
+      v-if="showForceHolidayBanner || showAutomaticHolidayBanner && holiday.coming_soon || showAutomaticHolidayBanner && holiday.current"
+      id="holiday-banner"
+      class="holiday-banner columns is-mobile"
+    >
+      <div class="column holiday-banner-column is-11">
+        {{ closureMessageAllSites }}
+      </div>
+      <div class="column holiday-banner-column is-1">
+        <button
+          style="height: 100% !important;"
+          class="button is-primary is-small is-pulled-right holiday-banner-close-button"
+          @click="closeHolidayBanner"
+        >
+          x
+        </button>
+      </div>
+    </div>
+
     <address-search-control
       v-if="isMobile"
       :input-id="'address-search-input'"
@@ -1339,12 +1359,23 @@ const footerLinks = computed(() => {
 }
 
 .holiday-banner {
+  margin-top: 0px !important;
+  margin-bottom: 0px !important;
   padding-left: 1rem;
   background-color: #fff7d0;
 }
 
+.holiday-banner-column {
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+}
+
 .holiday-banner-close-button {
-  height: 28px !important;
+  justify-content: center !important;
+  width: 48px !important;
+  height: 100% !important;
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
 }
 
 .modalWrapper {
