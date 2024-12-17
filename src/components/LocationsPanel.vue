@@ -7,12 +7,7 @@ import { useGeocodeStore } from '../stores/GeocodeStore.js';
 import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
-import { ref, computed, getCurrentInstance, onMounted, watch, onBeforeMount } from 'vue';
-
-// import { Dropdown } from '@phila/phila-ui';
-// import { getActivePinia } from 'pinia';
-// const activePinia = getActivePinia();
-// console.log('activePinia:', activePinia);
+import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
 
 const MainStore = useMainStore();
 const MapStore = useMapStore();
@@ -28,29 +23,14 @@ const CustomGreeting = $config.customComps.customGreeting;
 const ExpandCollapseContent = $config.customComps.expandCollapseContent;
 console.log('ExpandCollapseContent:', ExpandCollapseContent);
 
-const version = import.meta.env.VITE_VERSION;
-
 const route = useRoute();
 const router = useRouter();
-
-const address = computed(() => MainStore.currentAddress);
 
 const instance = getCurrentInstance();
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
 const $emit = defineEmits([ 'clear-bad-address' ]);
-
-// const zipCode = computed(() => {
-//   if (GeocodeStore.aisData && GeocodeStore.aisData.features) {
-//     return GeocodeStore.aisData.features[0].properties.zip_code + '-' + GeocodeStore.aisData.features[0].properties.zip_4;
-//   }
-//   return '';
-// });
-
-const currentItems = computed(() => {
-  return DataStore.covidFreeMealSites.features;
-});
 
 const props = defineProps({
   isMapVisible: {
@@ -90,7 +70,6 @@ onMounted(async () => {
   printCheckboxes.value = MainStore.printCheckboxes;
 });
 
-
 // COMPUTED
 const tagsPhrase = computed(() => {
   let value;
@@ -104,7 +83,6 @@ const tagsPhrase = computed(() => {
 
 const searchDistanceOptions = computed(() => {
   return [
-    // '1 ' + $i18n.messages[i18nLocale.value]['mile'],
     '1 ' + t('mile'),
     '2 ' + t('miles'),
     '3 ' + t('miles'),
@@ -117,19 +95,9 @@ const anySearch = computed(() => {
   let value = true;
   if (Object.keys($config).includes('anySearch')) {
     value = $config.anySearch
-  } //else {
-  //   value = true;
-  // }
+  }
   return value;
 });
-
-// const showPrintAndShare = computed(() => {
-//   let value = false;
-//   if (route.name == 'home') {
-//     value = true;
-//   }
-//   return value;
-// });
 
 const sortByOptions = computed(() => {
   let value = {};
@@ -168,26 +136,6 @@ const i18nLocale = computed(() => {
   return instance.appContext.config.globalProperties.$i18n.locale;
 });
 
-const zipcodeEntered = computed(() => {
-  return MainStore.selectedZipcode;
-});
-
-const geocode = computed(() => {
-  return GeocodeStore.aisData;
-});
-
-const addressEntered = computed(() => {
-  let address;
-  let routeAddress = route.query.address;
-  if (import.meta.env.VITE_DEBUG) console.log('addressEntered computed, routeAddress:', routeAddress);
-  if (geocode.value && geocode.value.properties && geocode.value.properties.street_address) {
-    address = geocode.value.properties.street_address;
-  } else if (routeAddress) {
-    address = routeAddress;
-  }
-  return address;
-});
-
 const shouldShowGreeting = computed(() => {
   return MainStore.shouldShowGreeting;
 });
@@ -210,30 +158,6 @@ const hasCustomGreeting = computed(() => {
   return value;
 });
 
-// const greetingText = computed(() => {
-//   let value;
-//   if ($config.greeting) {
-//     value = $config.greeting.message;
-//   } else {
-//     value = null;
-//   }
-//   return value;
-// });
-
-// const greetingOptions = computed(() => {
-//   let value;
-//   if ($config.greeting) {
-//     value = $config.greeting.options;
-//   } else {
-//     value = {};
-//   }
-//   return value;
-// });
-
-// const zipcode = computed(() => {
-//   return MainStore.selectedZipcode;
-// });
-
 const geocodeStatus = computed(() => {
   if (GeocodeStore.aisData.features && GeocodeStore.aisData.features.length) {
     return 'success';
@@ -243,10 +167,6 @@ const geocodeStatus = computed(() => {
     return 'none';
   }
 });
-
-// const zipcodeCenter = computed(() => {
-//   return MapStore.zipcodeCenter;
-// });
 
 const sortDisabled = computed(() => {
   let value;
@@ -270,7 +190,6 @@ const currentData = computed(() => {
   let val;
 
   // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue, currentData, sortBy.value:', sortBy.value, 'locations:', locations, 'valOrGetter:', valOrGetter, 'valOrGetterType:', valOrGetterType);
-
   if (sortBy.value == 'Distance') {
     if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue currentData computed, sortBy.value:', sortBy.value);
     val = 'distance';
@@ -331,10 +250,6 @@ const noLocations = computed(() => {
   return t('noLocations');
 });
 
-const copiedUrl = computed(() => {
-  return t('copiedUrl');
-});
-
 const loadingSources = computed(() => {
   return DataStore.loadingSources;
 });
@@ -357,9 +272,6 @@ watch(
   async nextSearchDistance => {
     if (import.meta.env.VITE_DEBUG) console.log('watch searchDistance, nextSearchDistance:', nextSearchDistance, 'parseInt(nextSearchDistance):', parseInt(nextSearchDistance));
     MapStore.searchDistance = parseInt(nextSearchDistance);
-    // if (GeocodeStore.aisData.features) {
-    //   MapStore.fillBufferForAddress();
-    // }
   }
 );
 
@@ -397,17 +309,9 @@ watch(
   }
 )
 
-// watch(
-//   () => zipcode,
-//   async nextZipcode => {
-//     MainStore.shouldShowGreeting = false;
-//   }
-// );
-
 watch(
   () => geocodeStatus.value,
   async nextGeocodeStatus => {
-    // MainStore.shouldShowGreeting = false;
     if (nextGeocodeStatus != 'success') {
       sortBy.value = 'Alphabetically';
     } else {
@@ -428,32 +332,9 @@ watch(
 );
 
 // METHODS
-const clickedShare = () => {
-  if (import.meta.env.VITE_DEBUG) console.log('clickedShare is running');
-  var dummy = document.createElement('input'),
-    text = window.location.href;
-
-  document.body.appendChild(dummy);
-  dummy.value = text;
-  dummy.select();
-  document.execCommand('copy');
-  document.body.removeChild(dummy);
-
-  this.$success(copiedUrl.value, {
-    duration: 3000,
-    closeOnClick: true,
-  });
-};
-
 const clearBadAddress = () => {
   $emit('clear-bad-address');
 };
-
-// clickedSinglePrint(item) {
-//   if (import.meta.env.VITE_DEBUG) console.log('clickedSinglePrint is running');
-//   store.commit('setPrintCheckboxes', [ item._featureId ]);
-//   router.push({ name: 'printView'  });
-// },
 
 const clickedPrint = () => {
   MainStore.selectedZipcode = null;
@@ -508,12 +389,6 @@ const clickedViewMap = () => {
   // });
 };
 
-const getLocationsList = () => {
-  const locations = sources.value[$config.app.type].data.rows;
-  return locations;
-};
-
-// TODO: handle edge cases
 const parseAddress = (address) => {
   const formattedAddress = address.replace(/(Phila.+)/g, city => `<div>${city}</div>`).replace(/^\d+\s[A-z]+\s[A-z]+/g, lineOne => `<div>${lineOne}</div>`).replace(/,/, '');
   return formattedAddress;
@@ -559,7 +434,6 @@ const makeValidUrl = (url) => {
         :database="database"
         :isMobile="isMobile"
       />
-      
     </div>
 
     <div
@@ -574,7 +448,6 @@ const makeValidUrl = (url) => {
           spin
         />
       </div>
-      <!-- <div>Loading Data</div> -->
     </div>
 
     <div
@@ -691,7 +564,7 @@ const makeValidUrl = (url) => {
           v-if="geocodeStatus !== 'error'"
           class="mt-2 mb-2"
         >
-          {{ summarySentenceStart }}<!-- <b><i>{{ summarySentenceEnd }}</i></b> -->
+          {{ summarySentenceStart }}
         </div>
       </div>
 
@@ -935,7 +808,6 @@ const makeValidUrl = (url) => {
 }
 
 .mobile-dropdown-container {
-  // margin-left: -10px;
   margin-right: -10px;
 }
 
@@ -953,30 +825,17 @@ const makeValidUrl = (url) => {
 
 .locations-panel {
   overflow-y: visible !important;
-  // width: 100%;
 }
 
 .summary-and-location-container {
-  // padding: 1rem;
-  // width: 100%;
   overflow-y: visible;
 }
 
 .summary-container {
-  // position: absolute;
   padding-left: 1rem;
-  // padding-right: 1rem;
   padding-top: 1rem;
-  // background-color: rgba(225, 225, 225, 1);
-  // width: 48%;
   z-index:9;
   background:#fff
-}
-
-@media (max-width: 767px) {
-  .summary-container {
-    // width: 100%;
-  }
 }
 
 .location-container {
@@ -997,7 +856,6 @@ const makeValidUrl = (url) => {
 
 @media (min-width: 768px) and (max-width: 1023px) {
   .location-container {
-    // padding-top: 170px;
     width: 100%;
   }
 
@@ -1011,14 +869,9 @@ const makeValidUrl = (url) => {
   .loc-panel-widget {
     padding-top: 0px !important;
   }
-
 }
 
 @media (max-width: 767px) {
-  .location-container {
-    // padding-top: 120px;
-  }
-
   .summary-container {
     position: sticky;
     top: 0;
@@ -1074,15 +927,11 @@ const makeValidUrl = (url) => {
 }
 
 .button.disabled, fieldset.disabled .button {
-  // background-color: #878787 !important;
-  // border-color: #878787 !important;
   background-color: #cfcfcf !important;
   border-color: #cfcfcf !important;
 }
 
 .button.disabled, fieldset.disabled .button {
-  // background-color: #878787 !important;
-  // border-color: #878787 !important;
   background-color: #cfcfcf !important;
   border-color: #cfcfcf !important;
   cursor: not-allowed;
