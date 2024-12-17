@@ -587,7 +587,7 @@ const clearSearchTriggered = () => {
   searchString.value = '';
   MainStore.selectedKeywords = [];
   MainStore.selectedZipcode = null;
-  MapStore.bufferForAddressOrLocationOrZipcode = {};
+  MapStore.bufferForAddressOrLocationOrZipcode = null;
   MainStore.currentSearch = null;
 };
 
@@ -778,7 +778,8 @@ const checkServices = (index, row) => {
 const checkBuffer = (row) => {
   // if (import.meta.env.VITE_DEBUG) console.log('checkBuffer, row:', row);
   const buffer = MapStore.bufferForAddressOrLocationOrZipcode;
-  if (!Object.keys(buffer).length) {
+  // if (!Object.keys(buffer).length) {
+  if (!buffer) {
     // if (import.meta.env.VITE_DEBUG) console.log('!MapStore.bufferForAddressOrLocationOrZipcode');
     return true;
   } else if (row.geometry) {
@@ -895,7 +896,8 @@ const filterPoints = () => {
   const buffer = MapStore.bufferForAddressOrLocationOrZipcode;
   console.log('buffer', buffer);
   let pointsAfterBuffer = database.value;
-  if (Object.keys(buffer).length) {
+  // if (Object.keys(buffer).length) {
+  if (buffer) {
     if (import.meta.env.VITE_DEBUG) console.log('Main.vue filterPoints is running, buffer:', buffer);
     pointsAfterBuffer = pointsWithinPolygon(featureCollection(database.value), buffer).features;
   }

@@ -127,7 +127,7 @@ onMounted(async () => {
     }
     
     if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 3, MapStore.bufferForAddressOrLocationOrZipcode:', MapStore.bufferForAddressOrLocationOrZipcode);
-    if (MapStore.bufferForAddressOrLocationOrZipcode !== null && Object.keys(MapStore.bufferForAddressOrLocationOrZipcode).length) {
+    if (MapStore.bufferForAddressOrLocationOrZipcode !== null) {
       map.getSource('buffer').setData(MapStore.bufferForAddressOrLocationOrZipcode);
     }
     if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 4');
@@ -217,7 +217,7 @@ watch(
   () => MapStore.bufferForAddressOrLocationOrZipcode,
   async newBuffer => {
     if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue bufferForAddressOrLocationOrZipcode watch, newBuffer:', newBuffer);
-    if (Object.keys(newBuffer).length && map.getSource('buffer')) {
+    if (newBuffer && map.getSource('buffer')) {
       map.getSource('buffer').setData(newBuffer);
     } else if (map.getSource('buffer')) {
       map.getSource('buffer').setData({ type: 'FeatureCollection', features: [] });

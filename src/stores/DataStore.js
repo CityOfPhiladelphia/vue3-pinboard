@@ -114,7 +114,7 @@ export const useDataStore = defineStore('DataStore', {
 
           if (data.features) {
             console.log('data.features.length:', data.features.length);
-            data.features = data.features.filter(item => item.geometry);
+            // data.features = data.features.filter(item => item.geometry);
             console.log('data.features.length:', data.features.length);
             // data.features = data.features.filter(item => item.hide_on_finder !== true);
             // let j = 0;

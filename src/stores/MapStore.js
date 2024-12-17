@@ -6,7 +6,6 @@ import { useConfigStore } from './ConfigStore';
 import { useGeocodeStore } from './GeocodeStore';
 import { useMainStore } from './MainStore';
 import { useDataStore } from './DataStore';
-import { useRoute, useRouter } from 'vue-router';
 
 export const useMapStore = defineStore("MapStore", {
 
@@ -18,7 +17,7 @@ export const useMapStore = defineStore("MapStore", {
       currentMapStyle: 'pwdDrawnMapStyle',
       currentAddressCoords: [],
       bufferList: null,
-      bufferForAddressOrLocationOrZipcode: {},
+      bufferForAddressOrLocationOrZipcode: null,
       imageryOn: false,
       imagerySelected: '2023',
       latestSelectedResourceFromMap: null,
@@ -42,7 +41,7 @@ export const useMapStore = defineStore("MapStore", {
         navigator.geolocation.getCurrentPosition(this.geofindSuccess, this.geofindError, { enableHighAccuracy: true, timeout: 1000, maximumAge: 0, distanceFilter: 5 });
       } else {
         this.geolocation = null;
-        this.bufferForAddressOrLocationOrZipcode = {};
+        this.bufferForAddressOrLocationOrZipcode = null;
       }
     },
     async fillBufferForAddressOrLocationOrZipcode() {

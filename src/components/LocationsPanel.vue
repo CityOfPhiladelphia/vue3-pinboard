@@ -170,7 +170,7 @@ const geocodeStatus = computed(() => {
 
 const sortDisabled = computed(() => {
   let value;
-  if (Object.keys(MapStore.bufferForAddressOrLocationOrZipcode).length) {
+  if (MapStore.bufferForAddressOrLocationOrZipcode) {
     value = false;
   } else {
     value = true;
