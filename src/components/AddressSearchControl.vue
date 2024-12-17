@@ -131,7 +131,6 @@ const handleSubmit = (val) => {
           return;
         }
       }
-      MainStore.lastPinboardSearchMethod = 'keyword';
       MainStore.selectedKeywords.push(val);
       let startKeyword;
       if (startQuery['keyword'] && startQuery['keyword'] != '') {
@@ -143,27 +142,11 @@ const handleSubmit = (val) => {
   } else if (checkVals) {
     if (import.meta.env.VITE_DEBUG) console.log('its a zipcode');
     if ($config.allowZipcodeSearch) {
-      MainStore.lastPinboardSearchMethod = 'zipcode';
       query = { 'zipcode': val };
-    } else if ($config.allowZipcodeInDataSearch) {
-      MainStore.lastPinboardSearchMethod = 'zipcodeKeyword';
-      let startKeyword;
-      if (startQuery['keyword'] && startQuery['keyword'] != '') {
-        startKeyword = startQuery['keyword'];
-        val = startKeyword + ',' + val;
-      }
-      query = { ...startQuery, ...{ 'keyword': val }};
     }
   } else {
     if (import.meta.env.VITE_DEBUG) console.log('its an address');
-
-    if (MainStore.lastPinboardSearchMethod == 'zipcodeKeyword') {
-      if (import.meta.env.VITE_DEBUG) console.log('startQuery:', startQuery);
-      delete startQuery['keyword'];
-      MainStore.selectedKeywords = [];
-    }
     query = { 'address': val };
-    MainStore.lastPinboardSearchMethod = 'geocode';
   }
   delete startQuery['address'];
   delete startQuery['keyword'];

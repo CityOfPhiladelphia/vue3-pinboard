@@ -236,10 +236,6 @@ const refineOpen = computed(() => {
   return MainStore.refineOpen;
 });
 
-const lastPinboardSearchMethod = computed(() => {
-  return MainStore.lastPinboardSearchMethod;
-});
-
 const searchDistance = computed(() => {
   return MapStore.searchDistance;
 });
@@ -505,12 +501,6 @@ onMounted(async() => {
     }
   });
 
-  if (route.query.address) {
-    MainStore.lastPinboardSearchMethod = 'geocode';
-  } else if (route.query.zipcode) {
-    MainStore.lastPinboardSearchMethod = 'zipcode';
-  }
-
   if (route.query.resource) {
     if (import.meta.env.VITE_DEBUG) console.log('App.vue mounted, route.query.resource:', route.query.resource);
     let selectedResource = [ route.query.resource ];
@@ -612,7 +602,6 @@ const geolocate = () => {
 //     clearGeocodeAndZipcode();
 
 //     await nextTick()
-//     MainStore.lastPinboardSearchMethod = 'geolocate';
 //     // runBuffer({ coordinates: [ e.lng, e.lat ] });
 //     if (MainStore.shouldShowGreeting) {
 //       MainStore.shouldShowGreeting = false;
@@ -629,14 +618,7 @@ const clearGeocodeAndZipcode = async() => {
   let startQuery = { ...route.query };
   delete startQuery['address'];
   delete startQuery['zipcode'];
-  if (lastPinboardSearchMethod.value == 'zipcodeKeyword') {
-    delete startQuery['keyword'];
-    MainStore.selectedKeywords = [];
-  }
   router.push({ query: { ...startQuery }});
-  // MainStore.selectedZipcode = null;
-  // MapStore.zipcodeCenter = [];
-  // MainStore.currentSearch = null;
 };
 
 const clearBadAddress = () => {

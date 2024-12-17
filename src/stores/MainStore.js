@@ -7,7 +7,6 @@ export const useMainStore = defineStore('MainStore', {
       selectedZipcode: null,
       refineList: {},
       printCheckboxes: [],
-      lastPinboardSearchMethod: null,
       shouldShowGreeting: true,
       currentSearch: null,
       // alertResponse: null,
