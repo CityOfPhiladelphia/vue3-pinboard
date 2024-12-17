@@ -8,8 +8,6 @@ import { useGeocodeStore } from '../stores/GeocodeStore.js';
 import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 
-// import { polygon, point } from '@turf/helpers';
-
 const getGeocodeAndPutInStore = async(address) => {
   const MapStore = useMapStore();
   MapStore.geolocation = null;
@@ -18,6 +16,7 @@ const getGeocodeAndPutInStore = async(address) => {
   await GeocodeStore.fillAisData(address);
   if (!GeocodeStore.aisData.features) {
     MainStore.currentAddress = null;
+    MapStore.bufferForAddressOrLocationOrZipcode = {};
     if (import.meta.env.VITE_DEBUG == 'true') console.log('getGeocodeAndPutInStore, calling not-found');
     return;
   }
@@ -34,11 +33,8 @@ const getGeocodeAndPutInStore = async(address) => {
 const clearGeocode = async() => {
   const GeocodeStore = useGeocodeStore();
   const MainStore = useMainStore();
-  const MapStore = useMapStore();
   GeocodeStore.aisData = {};
   MainStore.currentAddress = null;
-  // MapStore.bufferForAddressOrLocationOrZipcode = {};
-  // MainStore.selectedZipcode = null;
 }
 
 const initData = async() => {

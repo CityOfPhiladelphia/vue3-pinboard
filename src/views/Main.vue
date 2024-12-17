@@ -104,14 +104,6 @@ const refineTitle = computed(() => {
   return $config.refine.title;
 });
 
-// const shouldShowHeaderAlert = computed(() => {
-//   let value = false;
-//   if ($config.alerts && $config.alerts.header) {
-//     value = $config.alerts.header.enabled(store.state);
-//   }
-//   return value;
-// });
-
 const alertModalTitle = computed(() => {
   let value = '';
   if ($config.alerts && $config.alerts.modal && $config.alerts.modal.title) {
@@ -200,10 +192,6 @@ const database = computed(() => {
 //   return store.state.cyclomedia.orientation.hFov;
 // });
 
-const selectedResource = computed(() => {
-  return DataStore.selectedResource;
-});
-
 const layoutDescription = computed(() => {
   let value;
   if (isMobile.value && !refineEnabled.value) {
@@ -234,10 +222,6 @@ const toggleButtonsVisible = computed(() => {
 
 const refineOpen = computed(() => {
   return MainStore.refineOpen;
-});
-
-const searchDistance = computed(() => {
-  return MapStore.searchDistance;
 });
 
 const holidays = computed(() => {
@@ -305,7 +289,7 @@ const closureMessageAllSites = computed(() => {
   return message;
 });
 
-  // watch
+// watch
 watch(
   () => holidays,
   async nextHolidays => {
@@ -329,7 +313,6 @@ watch(
     for (let holiday of nextHolidays.holidays) {
       // if (import.meta.env.VITE_DEBUG) console.log('holiday.start_date:', holiday.start_date, parseISO(format(holiday.start_date, 'T')));
       // if (import.meta.env.VITE_DEBUG) console.log('currentUnixDate:', currentUnixDate, 'holiday.start_date:', holiday.start_date, parseInt(format(parseISO(holiday.start_date), 'T')));
-
       let oneWeekAhead = parseInt(format(subWeeks(parseISO(holiday.start_date), 1), 'T'));
       let actualHoliday = parseInt(format(parseISO(holiday.start_date), 'T'));
       let oneWeekBehind = parseInt(format(addWeeks(parseISO(holiday.start_date), 1), 'T'));
@@ -345,9 +328,7 @@ watch(
       } else if (currentUnixDate <= oneWeekBehind && currentUnixDate > actualHoliday) {
         holi.holiday_label = holiday.holiday_label;
         holi.just_passed = true;
-        // holi.start_date = holiday.start_date;
       }
-
       // if (import.meta.env.VITE_DEBUG) console.log('holiday.start_date:', holiday.start_date, format(holiday.start_date, 'T'));
     }
     // if (import.meta.env.VITE_DEBUG) console.log('watch holidays, holi.holiday_label:', holi.holiday_label, 'holi.coming_soon:', holi.coming_soon, 'holi.current:', holi.current);
@@ -384,15 +365,6 @@ watch(
     // })
   }
 );
-
-// watch(
-//   () => MapStore.geolocation,
-//   async newLocation => {
-//     if (newLocation) {
-//       clearGeocodeAndZipcode();
-//     }
-//   }
-// );
 
 watch(
   () => MapStore.bufferForAddressOrLocationOrZipcode,
@@ -578,13 +550,6 @@ const closeHolidayBanner = async() => {
   showForceHolidayBanner.value = false;
   await nextTick();
   setHeights();
-  // let holiday = {
-  //   holiday_label: '',
-  //   coming_soon: false,
-  //   current: false,
-  //   start_date: '',
-  // };
-  // store.commit('setHoliday', holiday);
 };
 
 const geolocate = () => {
@@ -592,27 +557,6 @@ const geolocate = () => {
   MapStore.geolocate();
   MainStore.selectedZipcode = null;
 }
-
-
-// const geolocateControlFire = async(e) => {
-//   if (import.meta.env.VITE_DEBUG) console.log('Pinboard Main.vue geolocateControlFire is running, e:', e);
-//   // if (import.meta.env.VITE_DEBUG) console.log('Pinboard Main.vue geolocateControlFire is running, e.coords.latitude:', e.coords.latitude, 'e.coords.longitude:', e.coords.longitude);
-//   if (e.lng != null) {
-
-//     clearGeocodeAndZipcode();
-
-//     await nextTick()
-//     // runBuffer({ coordinates: [ e.lng, e.lat ] });
-//     if (MainStore.shouldShowGreeting) {
-//       MainStore.shouldShowGreeting = false;
-//     }
-    
-//   } else {
-//     // if (import.meta.env.VITE_DEBUG) console.log('Main.vue geolocateControlFire is running, remove currentBuffer.value');
-//     MapStore.bufferForAddressOrLocationOrZipcode = {};
-//     currentBuffer.value = null;
-//   }
-// };
 
 const clearGeocodeAndZipcode = async() => {
   let startQuery = { ...route.query };
@@ -630,10 +574,10 @@ const clearBadAddress = () => {
   MainStore.currentSearch = null;
 };
 
-// const geocodeFailed = () => {
-//   if (import.meta.env.VITE_DEBUG) console.log('geocodeFailed is running');
-//   MapStore.bufferForAddressOrLocationOrZipcode = null;
-// };
+const geocodeFailed = () => {
+  if (import.meta.env.VITE_DEBUG) console.log('geocodeFailed is running');
+  MapStore.bufferForAddressOrLocationOrZipcode = null;
+};
 
 // const compareArrays = (arr1, arr2) => {
 //   const finalArray = [];
