@@ -1,4 +1,4 @@
-import mergeDeep from './util/merge-deep.js';
+// import mergeDeep from './util/merge-deep.js';
 
 const cityCenterCoords = [-75.163471, 39.953338];
 
@@ -26,6 +26,16 @@ const pwdDrawnMapStyle = {
       tileSize: 256,
     },
     addressMarker: {
+      type: 'geojson',
+      data: {
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: [],
+        }
+      }
+    },
+    geolocationMarker: {
       type: 'geojson',
       data: {
         type: 'Feature',
@@ -152,6 +162,17 @@ const pwdDrawnMapStyle = {
         'icon-size': .05,
         "icon-allow-overlap" : true,
         "text-allow-overlap": true,
+      },
+    },
+    {
+      id: 'geolocationMarker',
+      source: 'geolocationMarker',
+      type: 'circle',
+      paint: {
+        'circle-radius': 7,
+        'circle-color': 'red',
+        'circle-stroke-width': 1,
+        'circle-stroke-color': 'white',
       },
     },
   ],

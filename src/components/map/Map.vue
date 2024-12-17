@@ -201,9 +201,15 @@ watch(
 )
 
 watch(
-  () => MapStore.location,
-  async () => {
+  () => MapStore.geolocation,
+  async newGeolocation => {
     MapStore.fillBufferForAddressOrLocationOrZipcode();
+    if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue geolocation watch, newGeolocation:', newGeolocation);
+    if (newGeolocation) {
+      map.getSource('geolocationMarker').setData(point(MapStore.geolocation));
+    } else {
+      map.getSource('geolocationMarker').setData({ type: 'FeatureCollection', features: [] });
+    }
   }
 )
 

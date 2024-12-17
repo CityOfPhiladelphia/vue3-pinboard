@@ -24,7 +24,7 @@ export const useMapStore = defineStore("MapStore", {
       imagerySelected: '2023',
       latestSelectedResourceFromMap: null,
       zipcodeCenter: null,
-      location: null,
+      geolocation: null,
     };
   },
   actions: {
@@ -32,7 +32,7 @@ export const useMapStore = defineStore("MapStore", {
       if (import.meta.env.VITE_DEBUG) console.log('geofindSuccess is running, position:', position);
       const MainStore = useMainStore();
       MainStore.shouldShowGreeting = false;
-      this.location = [position.coords.longitude, position.coords.latitude];
+      this.geolocation = [position.coords.longitude, position.coords.latitude];
       // this.watchPositionOn = true;
     },
     geofindError(error) {
@@ -41,7 +41,7 @@ export const useMapStore = defineStore("MapStore", {
     },
     async geolocate() {
       console.log('geolocate is running');
-      if (!this.location) {
+      if (!this.geolocation) {
         // const router = useRouter();
         // const route = useRoute();
         // console.log('route:', route);
@@ -57,7 +57,7 @@ export const useMapStore = defineStore("MapStore", {
         navigator.geolocation.getCurrentPosition(this.geofindSuccess, this.geofindError, { enableHighAccuracy: true, timeout: 1000, maximumAge: 0, distanceFilter: 5 });
       } else {
         // this.watchPositionOn = false;
-        this.location = null;
+        this.geolocation = null;
         this.bufferForAddressOrLocationOrZipcode = {};
       }
     },
@@ -65,8 +65,8 @@ export const useMapStore = defineStore("MapStore", {
       const MainStore = useMainStore();
       const GeocodeStore = useGeocodeStore();
       if (import.meta.env.VITE_DEBUG) console.log('fillBufferForAddressOrLocationOrZipcode is running');
-      if (this.location) {
-        this.bufferForAddressOrLocationOrZipcode = buffer(point(this.location), this.searchDistance, {units: 'miles'});
+      if (this.geolocation) {
+        this.bufferForAddressOrLocationOrZipcode = buffer(point(this.geolocation), this.searchDistance, {units: 'miles'});
       // } else if (MainStore.lastPinboardSearchMethod == 'geocode') {
       } else if (GeocodeStore.aisData.features) {
         // const GeocodeStore = useGeocodeStore();

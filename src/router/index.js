@@ -12,7 +12,7 @@ import { useConfigStore } from '../stores/ConfigStore.js';
 
 const getGeocodeAndPutInStore = async(address) => {
   const MapStore = useMapStore();
-  MapStore.location = null;
+  MapStore.geolocation = null;
   const GeocodeStore = useGeocodeStore();
   const MainStore = useMainStore();
   await GeocodeStore.fillAisData(address);
@@ -104,7 +104,7 @@ router.afterEach(async (to, from) => {
   }
   if (to.query.zipcode && to.query.zipcode != from.query.zipcode) {
     if (import.meta.env.VITE_DEBUG) console.log('router.afterEach has zipcode and is calling MapStore.fillBufferForAddressOrLocationOrZipcode');
-    MapStore.location = null;
+    MapStore.geolocation = null;
     MainStore.selectedZipcode = to.query.zipcode;
     MapStore.fillBufferForAddressOrLocationOrZipcode();
   } else if (!to.query.address && !to.query.zipcode) {

@@ -142,7 +142,7 @@ const handleSubmit = (val) => {
     }
   } else if (checkVals) {
     if (import.meta.env.VITE_DEBUG) console.log('its a zipcode');
-    // MapStore.location = null;
+    // MapStore.geolocation = null;
     if ($config.allowZipcodeSearch) {
       // MapStore.watchPositionOn = false;
       MainStore.lastPinboardSearchMethod = 'zipcode';

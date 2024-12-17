@@ -390,7 +390,7 @@ watch(
 );
 
 // watch(
-//   () => MapStore.location,
+//   () => MapStore.geolocation,
 //   async newLocation => {
 //     if (newLocation) {
 //       clearGeocodeAndZipcode();
@@ -876,8 +876,8 @@ const checkBuffer = (row) => {
       comparePoint = GeocodeStore.aisData.features[0].geometry;
     } else if (MapStore.zipcodeCenter) {
       comparePoint = MapStore.zipcodeCenter;
-    } else if (MapStore.location) {
-      comparePoint = MapStore.location;
+    } else if (MapStore.geolocation) {
+      comparePoint = MapStore.geolocation;
     }
     row.distance = distance(comparePoint, row.geometry, { units: 'miles' });
     return true;
