@@ -94,16 +94,6 @@ export const useDataStore = defineStore('DataStore', {
             dataConfig.options.success(data, dependent);
           }
           // if (import.meta.env.VITE_DEBUG) console.log('data:', data, 'params:', params);
-
-          // if (this.$config.hiddenRefine) {
-          //   for (let field in this.$config.hiddenRefine) {
-          //     let getter = this.$config.hiddenRefine[field];
-          //     let val = getter(value);
-          //     if (val === false) {
-          //       delete database[key];
-          //     }
-          //   }
-          // }
     
           // for (let [rowKey, rowValue] of Object.entries(value)) {
           //   if ( rowKey == 'hide_on_finder' && rowValue == true ){
@@ -115,21 +105,20 @@ export const useDataStore = defineStore('DataStore', {
           if (data.features) {
             console.log('data.features.length:', data.features.length);
             // data.features = data.features.filter(item => item.geometry);
-            console.log('data.features.length:', data.features.length);
-            // data.features = data.features.filter(item => item.hide_on_finder !== true);
-            // let j = 0;
-            // let badData = [];
-            for (let i=0; i<data.features.length; i++) {
-              if (data.features[i].geometry) {
-                data.features[i]._featureId = source + '_' + i;
-                data.features[i].properties._featureId = source + '_' + i;
-                // badData.push(i);
-                // j = j+1;
+            data.features = data.features.filter(item => item.hide_on_finder !== true);
+            if ($config.hiddenRefine) {
+              for (let field in $config.hiddenRefine) {
+                let getter = $config.hiddenRefine[field];
+                data.features = data.features.filter(item => getter(item) == true);
               }
             }
-            // for (let i=badData.length-1; i>=0; i--) {
-            //   data.features.splice(badData[i], 1);
-            // }
+            console.log('data.features.length:', data.features.length);
+            for (let i=0; i<data.features.length; i++) {
+              // if (data.features[i].geometry) {
+              data.features[i]._featureId = source + '_' + i;
+              data.features[i].properties._featureId = source + '_' + i;
+              // }
+            }
           } else if (data.rows) {
             data.features = [];
             let j = 0;
@@ -142,6 +131,12 @@ export const useDataStore = defineStore('DataStore', {
                 data.features[j]._featureId = source + '_' + j;
                 data.features[j].properties._featureId = source + '_' + j;
                 j = j+1;
+              }
+              if ($config.hiddenRefine) {
+                for (let field in $config.hiddenRefine) {
+                  let getter = $config.hiddenRefine[field];
+                  data.features = data.features.filter(item => getter(item) == true);
+                }
               }
             }
             delete data.rows;
@@ -161,7 +156,13 @@ export const useDataStore = defineStore('DataStore', {
                 j = j+1;
               }
             }
-            console.log('3rd option 2, data.features:', response.features);
+            if ($config.hiddenRefine) {
+              for (let field in $config.hiddenRefine) {
+                let getter = $config.hiddenRefine[field];
+                response.features = response.features.filter(item => getter(item) == true);
+              }
+            }
+            console.log('3rd option 2, response.features:', response.features);
           }
           this.sources[source] = response;
         }
