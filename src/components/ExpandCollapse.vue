@@ -220,24 +220,14 @@ const siteName = computed(() => {
 
   if (valOrGetterType === 'function') {
     const getter = valOrGetter;
-    if (currentQueryKeys.includes('address') || currentQueryKeys.includes('zipcode')) {
-      if (props.item && props.item.distance) {
-        val = '(' + props.item.distance.toFixed(2) + ' miles) ' + getter(props.item);
-      } else {
-        val = getter(props.item);
-      }
+    if (props.item && props.item.distance) {
+      val = '(' + props.item.distance.toFixed(2) + ' miles) ' + getter(props.item);
     } else {
-      if (props.item) {
-        val = getter(props.item);
-      }
+      val = getter(props.item);
     }
   } else {
-    if (currentQueryKeys.includes('address')) {
-      if (props.item.distance) {
-        val = props.item.distance.toFixed(2) + ' miles - ' + props.item[valOrGetter];
-      } else {
-        val = props.item[valOrGetter];
-      }
+    if (props.item && props.item.distance) {
+      val = props.item.distance.toFixed(2) + ' miles - ' + props.item[valOrGetter];
     } else {
       val = props.item[valOrGetter];
     }

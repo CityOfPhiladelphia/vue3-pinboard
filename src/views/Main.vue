@@ -776,10 +776,11 @@ const checkServices = (index, row) => {
 };
 
 const checkBuffer = (row) => {
-  // if (import.meta.env.VITE_DEBUG) console.log('checkBuffer, row:', row);
+  if (import.meta.env.VITE_DEBUG) console.log('checkBuffer, row:', row);
   const buffer = MapStore.bufferForAddressOrLocationOrZipcode;
   // if (!Object.keys(buffer).length) {
   if (!buffer) {
+    row.distance = null;
     // if (import.meta.env.VITE_DEBUG) console.log('!MapStore.bufferForAddressOrLocationOrZipcode');
     return true;
   } else if (row.geometry) {
