@@ -1,11 +1,17 @@
 <script setup>
 import { computed } from 'vue';
-// import { useMainStore } from '../../stores/MainStore.js'
-// const MainStore = useMainStore();
 import { useMapStore } from '../../stores/MapStore.js';
 const MapStore = useMapStore();
 
-// defineEmits(['geolocate']);
+defineEmits(['geolocate']);
+
+const controlClass = computed(() => {
+  let value = 'geolocate-control-off';
+  if (MapStore.geolocation) {
+    value = 'geolocate-control-on';
+  }
+  return value;
+});
 
 const imgSrc = computed(() => {
   return 'images/location-crosshairs-solid.svg';
@@ -14,13 +20,12 @@ const imgSrc = computed(() => {
 </script>
 
 <template>
-  <div class="geolocate-control">
+  <div :class="controlClass + ' geolocate-control'">
     <button
       class="geolocate-button"
       :title="'Find your location'"
       @click="$emit('geolocate')"
     >
-    <!-- @click="MapStore.geolocate" -->
       <img
         class="img-src"
         alt="imagery-or-basemap"
@@ -39,8 +44,15 @@ button {
   width: 32px;
 }
 
-.geolocate-control {
+.geolocate-control-on {
+  background-color: rgb(243, 198, 19);
+}
+
+.geolocate-control-off {
   background-color: white;
+}
+
+.geolocate-control {
   height: 32px;
   width: 32px;
   position: absolute;

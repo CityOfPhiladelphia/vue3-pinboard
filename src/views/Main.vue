@@ -52,7 +52,7 @@ const router = useRouter();
 const publicPath = ref('/');
 const isMapVisible = ref(false);
 const isAlertModalOpen = ref(false);
-const currentBuffer = ref(null);
+// const currentBuffer = ref(null);
 const buttonText = ref('app.viewMap');
 
 const brandingLink = ref(null);
@@ -368,9 +368,11 @@ watch(
 
 watch(
   () => MapStore.bufferForAddressOrLocationOrZipcode,
-  async => {
-    if (import.meta.env.VITE_DEBUG) console.log('watch MapStore.bufferForAddressOrLocationOrZipcode is calling filterPoints');
-    filterPoints();
+  async nextBufferForAddressOrLocationOrZipcode => {
+    // if (Object.keys(nextBufferForAddressOrLocationOrZipcode).length) {
+      if (import.meta.env.VITE_DEBUG) console.log('watch MapStore.bufferForAddressOrLocationOrZipcode is calling filterPoints, nextBufferForAddressOrLocationOrZipcode:', nextBufferForAddressOrLocationOrZipcode);
+      filterPoints();
+    // }
   }
 );
 
@@ -573,23 +575,6 @@ const clearBadAddress = () => {
   searchString.value = '';
   MainStore.currentSearch = null;
 };
-
-const geocodeFailed = () => {
-  if (import.meta.env.VITE_DEBUG) console.log('geocodeFailed is running');
-  MapStore.bufferForAddressOrLocationOrZipcode = null;
-};
-
-// const compareArrays = (arr1, arr2) => {
-//   const finalArray = [];
-//   arr1.forEach((e1) => arr2.forEach((e2) =>
-//     {
-//       if (e1 === e2) {
-//         finalArray.push(e1);
-//       }
-//     }
-//   ));
-//   return finalArray;
-// };
 
 const clearSearchTriggered = () => {
   let startQuery = { ...route.query };
