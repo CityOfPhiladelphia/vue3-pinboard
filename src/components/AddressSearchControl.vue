@@ -142,13 +142,10 @@ const handleSubmit = (val) => {
     }
   } else if (checkVals) {
     if (import.meta.env.VITE_DEBUG) console.log('its a zipcode');
-    // MapStore.geolocation = null;
     if ($config.allowZipcodeSearch) {
-      // MapStore.watchPositionOn = false;
       MainStore.lastPinboardSearchMethod = 'zipcode';
       query = { 'zipcode': val };
     } else if ($config.allowZipcodeInDataSearch) {
-      // MapStore.watchPositionOn = false;
       MainStore.lastPinboardSearchMethod = 'zipcodeKeyword';
       let startKeyword;
       if (startQuery['keyword'] && startQuery['keyword'] != '') {
@@ -165,7 +162,6 @@ const handleSubmit = (val) => {
       delete startQuery['keyword'];
       MainStore.selectedKeywords = [];
     }
-    // MapStore.watchPositionOn = false;
     query = { 'address': val };
     MainStore.lastPinboardSearchMethod = 'geocode';
   }

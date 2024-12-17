@@ -784,7 +784,6 @@ const clearAll = (e) => {
   delete startQuery['services'];
   if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, startQuery2:', startQuery);
   router.push({ query: { ...startQuery }});
-  MapStore.watchPositionOn = false;
   const payload = {
     lat: null,
     lng: null,

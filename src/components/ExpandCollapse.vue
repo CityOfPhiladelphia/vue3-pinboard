@@ -220,8 +220,7 @@ const siteName = computed(() => {
 
   if (valOrGetterType === 'function') {
     const getter = valOrGetter;
-    if (currentQueryKeys.includes('address') || currentQueryKeys.includes('zipcode')) {// || this.$store.state.map.watchPositionOn) {
-      // console.log('props.item:', props.item);
+    if (currentQueryKeys.includes('address') || currentQueryKeys.includes('zipcode')) {
       if (props.item && props.item.distance) {
         val = '(' + props.item.distance.toFixed(2) + ' miles) ' + getter(props.item);
       } else {
@@ -234,7 +233,6 @@ const siteName = computed(() => {
     }
   } else {
     if (currentQueryKeys.includes('address')) {
-      // console.log('props.item:', props.item);
       if (props.item.distance) {
         val = props.item.distance.toFixed(2) + ' miles - ' + props.item[valOrGetter];
       } else {
@@ -244,7 +242,6 @@ const siteName = computed(() => {
       val = props.item[valOrGetter];
     }
   }
-  // console.log('getSiteName val:', val);
   return val;
 });
 

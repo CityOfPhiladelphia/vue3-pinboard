@@ -18,7 +18,6 @@ export const useMapStore = defineStore("MapStore", {
       currentMapStyle: 'pwdDrawnMapStyle',
       currentAddressCoords: [],
       bufferList: null,
-      watchPositionOn: null,
       bufferForAddressOrLocationOrZipcode: {},
       imageryOn: false,
       imagerySelected: '2023',
@@ -33,30 +32,15 @@ export const useMapStore = defineStore("MapStore", {
       const MainStore = useMainStore();
       MainStore.shouldShowGreeting = false;
       this.geolocation = [position.coords.longitude, position.coords.latitude];
-      // this.watchPositionOn = true;
     },
     geofindError(error) {
       if (import.meta.env.VITE_DEBUG) console.log('geofindError is running, error:', error);
-      // this.watchPositionOn = false;
     },
     async geolocate() {
       console.log('geolocate is running');
       if (!this.geolocation) {
-        // const router = useRouter();
-        // const route = useRoute();
-        // console.log('route:', route);
-        // const MainStore = useMainStore();
-        // let startQuery = { ...route.query };
-        // delete startQuery['address'];
-        // delete startQuery['zipcode'];
-        // if (lastPinboardSearchMethod.value == 'zipcodeKeyword') {
-        //   delete startQuery['keyword'];
-        //   MainStore.selectedKeywords = [];
-        // }
-        // router.push({ query: { ...startQuery }});
         navigator.geolocation.getCurrentPosition(this.geofindSuccess, this.geofindError, { enableHighAccuracy: true, timeout: 1000, maximumAge: 0, distanceFilter: 5 });
       } else {
-        // this.watchPositionOn = false;
         this.geolocation = null;
         this.bufferForAddressOrLocationOrZipcode = {};
       }
@@ -67,9 +51,7 @@ export const useMapStore = defineStore("MapStore", {
       if (import.meta.env.VITE_DEBUG) console.log('fillBufferForAddressOrLocationOrZipcode is running');
       if (this.geolocation) {
         this.bufferForAddressOrLocationOrZipcode = buffer(point(this.geolocation), this.searchDistance, {units: 'miles'});
-      // } else if (MainStore.lastPinboardSearchMethod == 'geocode') {
       } else if (GeocodeStore.aisData.features) {
-        // const GeocodeStore = useGeocodeStore();
         if (import.meta.env.VITE_DEBUG) console.log('fillBufferForAddressOrLocationOrZipcode is running, GeocodeStore.aisData.features:', GeocodeStore.aisData.features);
         let addressPoint = point(GeocodeStore.aisData.features[0].geometry.coordinates);
         // if (import.meta.env.VITE_DEBUG == 'true') console.log('fillBufferForAddressOrLocationOrZipcode is running, addressPoint:', addressPoint, 'addressBuffer:', addressBuffer, 'lng:', lng, 'lat:', lat);
