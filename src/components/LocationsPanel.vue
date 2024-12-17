@@ -418,10 +418,18 @@ const makeValidUrl = (url) => {
   return newUrl;
 };
 
+const locationsPanelClass = computed(() => {
+  if (isMobile.value) {
+    return 'invisible-scrollbar';
+  } else {
+    return '';
+  }
+});
+
 </script>
 
 <template>
-  <div id="locations-panel-content" class="locations invisible-scrollbar">
+  <div id="locations-panel-content" :class="locationsPanelClass + ' locations'">
 
     <div
       v-if="shouldShowGreeting"
