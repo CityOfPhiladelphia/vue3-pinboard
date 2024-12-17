@@ -42,9 +42,6 @@ export const useMainStore = defineStore('MainStore', {
     setCurrentGeocodeParameter(value) {
       this.currentGeocodeParameter = value;
     },
-    // setLastSearchMethod(searchMethod) {
-    //   this.lastSearchMethod = searchMethod;
-    // },
     setCurrentNearbyDataType(data) {
       this.currentNearbyDataType = data;
     },

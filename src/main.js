@@ -121,7 +121,6 @@ export default function pinboard(config) {
   app.component('FontAwesomeIcon', FontAwesomeIcon)
   app.use(VueGoodTablePlugin);
 
-  // if (config.i18n.enabled) {
   const i18nProject = config.i18n.data.messages;
   const messages = mergeDeep(i18nFromFiles.i18n.data.messages, i18nProject);
   if (import.meta.env.VITE_DEBUG == 'true') console.log('i18nFromFiles:', i18nFromFiles, 'messages:', messages);
@@ -133,7 +132,6 @@ export default function pinboard(config) {
     messages: messages
   })
   app.use(i18n)
-  // }
 
   app.use(createPinia())
 
@@ -146,6 +144,4 @@ export default function pinboard(config) {
   app.mount('#app')
 };
 
-// export { useDataStore };
-// export { useMainStore };
 export { useDataStore, useMainStore };

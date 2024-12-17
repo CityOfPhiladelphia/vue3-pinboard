@@ -280,7 +280,6 @@ const isElementInViewport = (el) => {
 };
 
 const expandLocation = () => {
-  // locationOpen.value = !locationOpen.value;
   MainStore.lastSelectMethod = 'row';
   const selectedResourceId = props.item._featureId;
   let query = {...route.query};
@@ -389,13 +388,11 @@ const makeID = (itemTitle) =>{
               v-if="!locationOpen"
               class="plus-icon"
               :icon="['fas', 'plus']"
-              />
-              <!-- :icon="[plusIconWeight, 'plus']" -->
-              <font-awesome-icon
+            />
+            <font-awesome-icon
               v-if="locationOpen"
               :icon="['fas', 'minus']"
-              />
-              <!-- :icon="[plusIconWeight, 'minus']" -->
+            />
           </div>
         </div>
       </div>

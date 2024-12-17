@@ -1,19 +1,23 @@
 <script setup>
 
 import { useMainStore } from '../stores/MainStore.js';
-import { useMapStore } from '../stores/MapStore.js';
-import { useGeocodeStore } from '../stores/GeocodeStore.js';
-import { useDataStore } from '../stores/DataStore.js';
-import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
-import { ref, computed, getCurrentInstance, onBeforeMount, onMounted, watch } from 'vue';
+import { computed } from 'vue';
+import * as bulmaToast from 'bulma-toast'
+
+bulmaToast.setDefaults({
+  position: 'top-center',
+  type: 'is-success',
+  dismissible: true,
+  closeOnClick: true,
+  zIndex: 9999,
+});
 
 const route = useRoute();
 const router = useRouter();
 
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
-const instance = getCurrentInstance();
 
 const MainStore = useMainStore();
 
@@ -32,16 +36,8 @@ const showPrintAndShare = computed(() => {
   return value;
 });
 
-const copiedUrl = computed(() => {
-  return t('copiedUrl');
-});
-
 const isMobile = computed(() => {
   return MainStore.isMobileDevice || MainStore.windowDimensions.width < 768;
-});
-
-const i18nLocale = computed(() => {
-  return instance.appContext.config.globalProperties.$i18n.locale;
 });
 
 const clickedShare = () => {
@@ -55,15 +51,15 @@ const clickedShare = () => {
   document.execCommand('copy');
   document.body.removeChild(dummy);
 
-  this.$success(this.copiedUrl, {
-    duration: 3000,
-    closeOnClick: true,
-  });
+  bulmaToast.toast({
+    message: t('copiedUrl'),
+    type: 'is-success',
+  })
 };
 
 const clickedPrint = () => {
   console.log('clickedPrint is running');
-  MainStore.printCheckboxes = [ this.item._featureId ];
+  MainStore.printCheckboxes = [ props.item._featureId ];
   router.push({ name: 'printView'  });
 }
 
