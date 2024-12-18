@@ -591,199 +591,100 @@ const clearSearchTriggered = () => {
   MainStore.currentSearch = null;
 };
 
-const checkServices = (index, row) => {
+const checkServices = (row) => {
   // if (import.meta.env.VITE_DEBUG) console.log('Main.vue checkServices is running, index:', index, 'row:', row);
   const selectedServices = MainStore.selectedServices;
   if (!selectedServices.length) {
     return true;
   }
-  if ($config.refine && $config.refine.type && ['multipleFields', 'multipleFieldGroups', 'multipleDependentFieldGroups'].includes($config.refine.type)) {
-    let booleanConditions = [];
-
-    if (selectedServices.length === 0) {
-      booleanConditions.push(true);
-    } else {
-
-      // if refine.type = multipleFields
-      if ($config.refine.type === 'multipleFields') {
-        for (let field in $config.refine.multipleFields) {
-          if (selectedServices.includes(field)) {
-
-            let getter = $config.refine.multipleFields[field];
-            let val = getter(row);
-            booleanConditions.push(val);
-          }
-        }
-      } else if ($config.refine.type === 'multipleFieldGroups') {
-        // if refine.type = multipleFieldGroups
-        let selectedGroups = [];
-        for (let value of selectedServices) {
-          // if (import.meta.env.VITE_DEBUG) console.log('Main.vue checkServices value:', value);
-          let valueGroup;
-          if (value) {
-            valueGroup = value.split('_', 1)[0];
-          }
-          if (valueGroup && !selectedGroups.includes(valueGroup)) {
-            selectedGroups.push(valueGroup)
-          }
-        }
-        // if (import.meta.env.VITE_DEBUG) console.log('Main.vue checkServices is running on multipleFieldGroups, selectedServices:', selectedServices, 'selectedGroups:', selectedGroups);
-        let groupValues = [];
-        for (let group of selectedGroups) {
-          let groupBooleanConditions = [];
-          for (let service of selectedServices) {
-            // if (import.meta.env.VITE_DEBUG) console.log('Main.vue checkServices loop, service:', service, 'group:', group);
-            if (group !== 'keyword' && service.split('_', 1)[0] === group && $config.refine.multipleFieldGroups[group]['radio']) {
-              // if (import.meta.env.VITE_DEBUG) console.log('group:', group, '$config.refine.multipleFieldGroups[group]["radio"]:', $config.refine.multipleFieldGroups[group]['radio']);
-              let dependentGroups = $config.refine.multipleFieldGroups[group]['radio'][service.split('_')[1]]['dependentGroups'] || [];
-              // if (import.meta.env.VITE_DEBUG) console.log('dependentGroup:', dependentGroup, 'service.split("_", 1)[0]:', service.split('_', 1)[0], 'service.split("_")[1]:', service.split('_')[1], 'group', group, '$config.refine.multipleFieldsGroups[group]', $config.refine.multipleFieldsGroups[group], '$config.refine.multipleFieldsGroups[group][service.split("_")[1]]:', $config.refine.multipleFieldsGroups[group][service.split('_')[1]]);
-              let getter = $config.refine.multipleFieldGroups[group]['radio'][service.split('_')[1]]['value'];
-              let dependentServices = [];
-              for (let service of selectedServices) {
-                if (dependentGroups.length && dependentGroups.includes(service.split('_')[0])) {
-                  dependentServices.push(service.split('_')[1]);
-                }
-              }
-              // if (import.meta.env.VITE_DEBUG) console.log('getter:', getter, 'dependentGroups:', dependentGroups, 'selectedServices:', selectedServices, 'dependentServices:', dependentServices);
-              let val = getter(row, dependentServices);
-              groupBooleanConditions.push(val);
-            }
-            if (group !== 'keyword' && service.split('_', 1)[0] === group && $config.refine.multipleFieldGroups[group]['checkbox']) {
-              // if (import.meta.env.VITE_DEBUG) console.log('group:', group, '$config.refine.multipleFieldGroups[group]["dependent"]:', $config.refine.multipleFieldGroups[group]['dependent']);
-              let dependentGroups = $config.refine.multipleFieldGroups[group]['checkbox'][service.split('_')[1]]['dependentGroups'] || [];
-              // if (import.meta.env.VITE_DEBUG) console.log('dependentGroup:', dependentGroup, 'service.split("_", 1)[0]:', service.split('_', 1)[0], 'service.split("_")[1]:', service.split('_')[1], 'group', group, '$config.refine.multipleFieldsGroups[group]', $config.refine.multipleFieldsGroups[group], '$config.refine.multipleFieldsGroups[group][service.split("_")[1]]:', $config.refine.multipleFieldsGroups[group][service.split('_')[1]]);
-              let getter = $config.refine.multipleFieldGroups[group]['checkbox'][service.split('_')[1]]['value'];
-              let dependentServices = [];
-              for (let service of selectedServices) {
-                if (dependentGroups.length && dependentGroups.includes(service.split('_')[0])) {
-                  dependentServices.push(service.split('_')[1]);
-                }
-              }
-              // if (import.meta.env.VITE_DEBUG) console.log('getter:', getter, 'dependentGroups:', dependentGroups, 'selectedServices:', selectedServices, 'dependentServices:', dependentServices);
-              let val = getter(row, dependentServices);
-              groupBooleanConditions.push(val);
-            }
-          }
-          // if (import.meta.env.VITE_DEBUG) console.log('$config.refine.andOr:', $config.refine.andOr, 'group:', group, 'groupBooleanConditions:', groupBooleanConditions);
-          if ($config.refine.andOr) {
-            if ($config.refine.andOr == 'and') {
-              if (groupBooleanConditions.includes(false)) {
-                booleanConditions.push(false);
-              } else {
-                booleanConditions.push(true);
-              }
-            } else if ($config.refine.andOr == 'or') {
-              if (groupBooleanConditions.includes(true)) {
-                booleanConditions.push(true);
-              } else {
-                booleanConditions.push(false);
-              }
-            }
-          } else {
-            if (groupBooleanConditions.includes(true)) {
-              booleanConditions.push(true);
-            } else if (groupBooleanConditions.length) {
-              booleanConditions.push(false);
-            }
-          }
-        }
-      } else {
-        // if refine.type = multipleDependentFieldGroups
-        let selectedGroups = [];
-        for (let value of selectedServices) {
-          let valueGroup = value.split('_', 1)[0]
-          if (!selectedGroups.includes(valueGroup)) {
-            selectedGroups.push(valueGroup)
-          }
-        }
-        // if (import.meta.env.VITE_DEBUG) console.log('Main.vue checkServices is running on multipleDependentFieldGroups, selectedServices:', selectedServices, 'selectedGroups:', selectedGroups);
-        let groupValues = [];
-        for (let group of selectedGroups) {
-          let groupBooleanConditions = [];
-          for (let service of selectedServices) {
-            if (service.split('_', 1)[0] === group) {
-              let ind = $config.refine.multipleDependentFieldGroups[group]['independent'];
-              let serviceEnd = service.split('_')[1];
-              // if (import.meta.env.VITE_DEBUG) console.log('ind:', ind, 'serviceEnd:', serviceEnd, 'selectedServices:', selectedServices);
-              let getter;
-              if ($config.refine.multipleDependentFieldGroups[group]['dependent'][service.split('_')[1]]) {
-                getter = $config.refine.multipleDependentFieldGroups[group]['dependent'][service.split('_')[1]]['value'];
-                let dependentServices = [];
-                if (ind) {
-                  for (let service of selectedServices) {
-                    if (Object.keys(ind).includes(service.split('_')[1])) {
-                      dependentServices.push(service.split('_')[1]);
-                    }
-                  }
-                }
-                let val = getter(row, dependentServices);
-                // if (import.meta.env.VITE_DEBUG) console.log('getter:', getter, 'selectedServices:', selectedServices, 'dependentServices:', dependentServices, 'val:', val);
-                groupBooleanConditions.push(val);
-              }
-            }
-          }
-          // if (import.meta.env.VITE_DEBUG) console.log('groupBooleanConditions:', groupBooleanConditions);
-          if (groupBooleanConditions.includes(true) || !groupBooleanConditions.length) {
-            booleanConditions.push(true);
-          } else {
-            booleanConditions.push(false);
-          }
-        }
-      }
-    }
-    // if (import.meta.env.VITE_DEBUG) console.log('booleanConditions:', booleanConditions);
-    if (!booleanConditions.includes(false)) {
-      return true
-    }
-
-  // if refine.type = categoryField_value
-  } else if ($config.refine && $config.refine.type === 'categoryField_value') {
-    if (selectedServices.length === 0) {
-      return true;
-    } else {
-      let value = $config.refine.value(row);
+  let value;
+  let selectedGroups = [];
+  switch ($config.refine.type) {
+    case 'categoryField_value':
+      value = $config.refine.value(row);
       return selectedServices.includes(value);
-    }
-
-  } else {
-    // the original default version, or refine.type = 'categoryField_array'
-    // if (import.meta.env.VITE_DEBUG) console.log('in else, row:', row, 'row.services_offered:', row.services_offered);
-    let servicesSplit;
-    if ($config.refine) {
-      servicesSplit = $config.refine.value(row);
-    } else if (row.services_offered) {
-      servicesSplit = row.services_offered;
-    }
-
-    // if (import.meta.env.VITE_DEBUG) console.log('1 servicesSplit:', servicesSplit, 'typeof servicesSplit:', typeof servicesSplit);
-    if (typeof servicesSplit === 'string') {
-      servicesSplit = servicesSplit.split(',');
-    }
-    // if (import.meta.env.VITE_DEBUG) console.log('2 servicesSplit:', servicesSplit, 'typeof servicesSplit:', typeof servicesSplit);
-
-    if (selectedServices.length === 0) {
-      return true;
-    } else {
-      let servicesFiltered = [];
-      if (servicesSplit) {
-        servicesFiltered = servicesSplit.filter(f => selectedServices.includes(f));
+    case 'categoryField_array':
+      let servicesSplit = $config.refine.value(row);
+      if (typeof servicesSplit === 'string') {
+        servicesSplit = servicesSplit.split(',');
       }
-      // if (import.meta.env.VITE_DEBUG) console.log('servicesFiltered:', servicesFiltered, 'selectedServices:', selectedServices);
+      let servicesFiltered = servicesSplit.filter(f => selectedServices.includes(f));
       return servicesFiltered.length == selectedServices.length;
-    }
-    // if (import.meta.env.VITE_DEBUG) console.log('services else is running, row:', row, 'selectedServices:', selectedServices, 'booleanServices:', booleanServices);
+    case 'multipleFields':
+      for (let field in $config.refine.multipleFields) {
+        if (selectedServices.includes(field)) {
+          let getter = $config.refine.multipleFields[field];
+          let val = getter(row);
+          if (!val) {
+            return false;
+          }
+        }
+      }
+      return true;
+    case 'multipleFieldGroups':
+      for (let value of selectedServices) {
+        let valueGroup = value.split('_', 1)[0];
+        if (!selectedGroups.includes(valueGroup)) {
+          selectedGroups.push(valueGroup);
+        }
+      }
+      for (let group of selectedGroups) {
+        console.log('group:', group);
+        let groupValues = [];
+        for (let service of selectedServices) {
+          if (service.split('_', 1)[0] === group) {
+            let getter, dependentGroups
+            let dependentServices = [];
+            if ($config.refine.multipleFieldGroups[group]['radio']) {
+              dependentGroups = $config.refine.multipleFieldGroups[group]['radio'][service.split('_')[1]]['dependentGroups'] || [];
+              getter = $config.refine.multipleFieldGroups[group]['radio'][service.split('_')[1]]['value'];
+              for (let service of selectedServices) {
+                if (dependentGroups.length && dependentGroups.includes(service.split('_')[0])) {
+                  dependentServices.push(service.split('_')[1]);
+                }
+              }
+            } else {
+              dependentGroups = $config.refine.multipleFieldGroups[group]['checkbox'][service.split('_')[1]]['dependentGroups'] || [];
+              getter = $config.refine.multipleFieldGroups[group]['checkbox'][service.split('_')[1]]['value'];
+              for (let service of selectedServices) {
+                if (dependentGroups.length && dependentGroups.includes(service.split('_')[0])) {
+                  dependentServices.push(service.split('_')[1]);
+                }
+              }
+            }
+            let val = getter(row, dependentServices);
+            groupValues.push(val);
+          }
+        }
+        if ($config.refine.andOr) {
+          if ($config.refine.andOr == 'and') {
+            if (groupValues.includes(false)) {
+              return false;
+            }
+          } else if ($config.refine.andOr == 'or') {
+            if (groupValues.includes(true)) {
+              return true;
+            }
+          }
+        } else {
+          if (groupValues.includes(true)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    default:
+      return true;
   }
 };
 
+
+
+
+
 const getDistances = (row) => {
   if (import.meta.env.VITE_DEBUG) console.log('getDistances, row:', row);
-  const buffer = MapStore.bufferForAddressOrLocationOrZipcode;
-  // if (!Object.keys(buffer).length) {
-  if (!buffer) {
-    row.distance = null;
-    // if (import.meta.env.VITE_DEBUG) console.log('!MapStore.bufferForAddressOrLocationOrZipcode');
-    // return true;
-  } else if (row.geometry) {
+  if (row.geometry) {
     let comparePoint;
     if (GeocodeStore.aisData.features) {
       comparePoint = GeocodeStore.aisData.features[0].geometry;
@@ -793,7 +694,6 @@ const getDistances = (row) => {
       comparePoint = MapStore.geolocation;
     }
     row.distance = distance(comparePoint, row.geometry, { units: 'miles' });
-    // return true;
   }
 };
 
@@ -895,7 +795,7 @@ const filterPoints = () => {
   }
 
   const buffer = MapStore.bufferForAddressOrLocationOrZipcode;
-  console.log('buffer', buffer);
+  // if (import.meta.env.VITE_DEBUG) console.log('buffer', buffer);
   let pointsAfterBuffer = database.value;
   
   // do buffer check without loop first
@@ -903,12 +803,11 @@ const filterPoints = () => {
     if (import.meta.env.VITE_DEBUG) console.log('Main.vue filterPoints is running, buffer:', buffer);
     pointsAfterBuffer = pointsWithinPolygon(featureCollection(database.value), buffer).features;
   }
-  console.log('pointsAfterBuffer', pointsAfterBuffer);
+  if (import.meta.env.VITE_DEBUG) console.log('pointsAfterBuffer', pointsAfterBuffer);
 
-  for (const [index, row] of [ ...pointsAfterBuffer.entries() ]) {
-    // if (import.meta.env.VITE_DEBUG) console.log('row:', row, 'index:', index);
-    // if (import.meta.env.VITE_DEBUG) console.log('row.services_offered:', row.services_offered);
-
+  // for (const [index, row] of [ ...pointsAfterBuffer.entries( )]) {
+  for (let row of pointsAfterBuffer) {
+    // if (import.meta.env.VITE_DEBUG) console.log('row:', row);
     let booleanKeywords = true;
     let booleanServices = checkServices(row);
 
@@ -919,6 +818,8 @@ const filterPoints = () => {
     // only get distances if there is a reason
     if (buffer && booleanServices && booleanKeywords) {
       getDistances(row);
+    } else {
+      row.distance = null;
     }
 
     // if (import.meta.env.VITE_DEBUG) console.log('booleanServices:', booleanServices, 'booleanKeywords:', booleanKeywords);

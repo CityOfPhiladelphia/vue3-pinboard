@@ -696,7 +696,7 @@ const closeZipcodeBox = (e, box) => {
   delete startQuery['zipcode'];
   router.push({ query: { ...startQuery }});
   MainStore.selectedZipcode = null;
-  MapStore.selectedZipcodeCenter = [];
+  MapStore.zipcodeCenter = [];
   MainStore.currentSearch = null;
 };
 
@@ -936,48 +936,6 @@ const getRefineSearchList = async() => {
       }
     }
     if (import.meta.env.VITE_DEBUG) console.log('RefinePanel end of getRefineSearchList, selected:', selected);
-    selectedList.value = selected;
-  }
-
-  if ($config.refine && $config.refine.type === 'multipleDependentFieldGroups') {
-    uniq = {};
-    selected = {};
-    for (let group of Object.keys($config.refine.multipleDependentFieldGroups)){
-      // console.log('outer loop, group:', group);
-      uniq[group] = {};
-      for (let dep of Object.keys($config.refine.multipleDependentFieldGroups[group])){
-        // console.log('middle loop, dep:', dep, 'group:', group);
-        uniq[group][dep] = {};
-        for (let field of Object.keys($config.refine.multipleDependentFieldGroups[group][dep])){
-          uniq[group][dep][field] = {};
-          // console.log('inner loop field:', field, 'selected:', selected, '$config.refine.multipleDependentFieldGroups[group][field].unique_key:', $config.refine.multipleDependentFieldGroups[group][field].unique_key);
-          if ($config.refine.multipleDependentFieldGroups[group][dep][field].i18n_key) {
-            uniq[group][dep][field].box_label = $config.refine.multipleDependentFieldGroups[group][dep][field].i18n_key;
-          } else {
-            uniq[group][dep][field].box_label = field;
-          }
-          uniq[group][dep][field].unique_key = $config.refine.multipleDependentFieldGroups[group][dep][field].unique_key;
-        }
-      }
-    }
-
-    console.log('RefinePanel end of getRefineSearchList, uniq:', uniq, 'selected:', selected, 'selected.value:', selected.value);
-    if (selected.value.length) {
-      for (let group of Object.keys(uniq)) {
-        for (let dep of Object.keys(uniq[group])) {
-          for (let field of Object.keys(uniq[group][dep])) {
-            if (selected.value.includes(uniq[group][dep][field].unique_key)) {
-              // console.log('RefinePanel end of getRefineSearchList, group:', group, 'field:', field, 'uniq[group][field].unique_key', uniq[group][field].unique_key, 'selected.value:', selected.value);
-              if (!selected[group]) {
-                selected[group] = [];
-              }
-              selected[group].push(uniq[group][dep][field].unique_key);
-            }
-          }
-        }
-      }
-    }
-    console.log('RefinePanel end of getRefineSearchList, selected:', selected);
     selectedList.value = selected;
   }
 
