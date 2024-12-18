@@ -337,7 +337,7 @@ const clearBadAddress = () => {
 };
 
 const clickedPrint = () => {
-  MainStore.selectedZipcode = null;
+  // MainStore.selectedZipcode = null;
   if (import.meta.env.VITE_DEBUG) console.log('clickedPrint is running');
   if (!printCheckboxes.value.length) {
     this.$warning(noLocations.value, {

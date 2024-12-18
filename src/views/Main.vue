@@ -775,14 +775,14 @@ const checkServices = (index, row) => {
   }
 };
 
-const checkBuffer = (row) => {
-  if (import.meta.env.VITE_DEBUG) console.log('checkBuffer, row:', row);
+const getDistances = (row) => {
+  if (import.meta.env.VITE_DEBUG) console.log('getDistances, row:', row);
   const buffer = MapStore.bufferForAddressOrLocationOrZipcode;
   // if (!Object.keys(buffer).length) {
   if (!buffer) {
     row.distance = null;
     // if (import.meta.env.VITE_DEBUG) console.log('!MapStore.bufferForAddressOrLocationOrZipcode');
-    return true;
+    // return true;
   } else if (row.geometry) {
     let comparePoint;
     if (GeocodeStore.aisData.features) {
@@ -793,7 +793,7 @@ const checkBuffer = (row) => {
       comparePoint = MapStore.geolocation;
     }
     row.distance = distance(comparePoint, row.geometry, { units: 'miles' });
-    return true;
+    // return true;
   }
 };
 
@@ -897,7 +897,8 @@ const filterPoints = () => {
   const buffer = MapStore.bufferForAddressOrLocationOrZipcode;
   console.log('buffer', buffer);
   let pointsAfterBuffer = database.value;
-  // if (Object.keys(buffer).length) {
+  
+  // do buffer check without loop first
   if (buffer) {
     if (import.meta.env.VITE_DEBUG) console.log('Main.vue filterPoints is running, buffer:', buffer);
     pointsAfterBuffer = pointsWithinPolygon(featureCollection(database.value), buffer).features;
@@ -908,26 +909,26 @@ const filterPoints = () => {
     // if (import.meta.env.VITE_DEBUG) console.log('row:', row, 'index:', index);
     // if (import.meta.env.VITE_DEBUG) console.log('row.services_offered:', row.services_offered);
 
-    let booleanBuffer = true;
     let booleanKeywords = true;
+    let booleanServices = checkServices(row);
 
-    let booleanServices = checkServices(index, row);
     if (booleanServices) {
-      booleanBuffer = checkBuffer(row);
-    }
-    if (booleanServices && booleanBuffer) {
       booleanKeywords = checkKeywords(row);
     }
 
-    // if (import.meta.env.VITE_DEBUG) console.log('booleanServices:', booleanServices, 'booleanBuffer:', booleanBuffer, 'booleanKeywords:', booleanKeywords);
+    // only get distances if there is a reason
+    if (buffer && booleanServices && booleanKeywords) {
+      getDistances(row);
+    }
 
-    if (booleanServices && booleanBuffer && booleanKeywords) {
+    // if (import.meta.env.VITE_DEBUG) console.log('booleanServices:', booleanServices, 'booleanKeywords:', booleanKeywords);
+    if (booleanServices && booleanKeywords) {
       // if (import.meta.env.VITE_DEBUG) console.log('Main.vue filterPoints is pushing a row, row:', row);
       filteredRows.push(row);
     }
   }
-  // if (import.meta.env.VITE_DEBUG) console.log('filteredRows:', filteredRows);
 
+  // if (import.meta.env.VITE_DEBUG) console.log('filteredRows:', filteredRows);
   DataStore.currentData = filteredRows;
 };
 

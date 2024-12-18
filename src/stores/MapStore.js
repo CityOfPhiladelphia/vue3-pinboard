@@ -44,27 +44,25 @@ export const useMapStore = defineStore("MapStore", {
         this.bufferForAddressOrLocationOrZipcode = null;
       }
     },
+    async fillZipcodeCenter(zipcode) {
+      this.zipcodeCenter = centerOfMass(zipcode).geometry.coordinates;
+    },
     async fillBufferForAddressOrLocationOrZipcode() {
-      const MainStore = useMainStore();
-      const GeocodeStore = useGeocodeStore();
       if (import.meta.env.VITE_DEBUG) console.log('fillBufferForAddressOrLocationOrZipcode is running');
       if (this.geolocation) {
         this.bufferForAddressOrLocationOrZipcode = buffer(point(this.geolocation), this.searchDistance, {units: 'miles'});
-      } else if (GeocodeStore.aisData.features) {
-        if (import.meta.env.VITE_DEBUG) console.log('fillBufferForAddressOrLocationOrZipcode is running, GeocodeStore.aisData.features:', GeocodeStore.aisData.features);
-        let addressPoint = point(GeocodeStore.aisData.features[0].geometry.coordinates);
+      } else if (useGeocodeStore().aisData.features) {
+        if (import.meta.env.VITE_DEBUG) console.log('fillBufferForAddressOrLocationOrZipcode is running, useGeocodeStore().aisData.features:', useGeocodeStore().aisData.features);
+        let addressPoint = point(useGeocodeStore().aisData.features[0].geometry.coordinates);
         // if (import.meta.env.VITE_DEBUG == 'true') console.log('fillBufferForAddressOrLocationOrZipcode is running, addressPoint:', addressPoint, 'addressBuffer:', addressBuffer, 'lng:', lng, 'lat:', lat);
         this.bufferForAddressOrLocationOrZipcode = buffer(addressPoint, this.searchDistance, {units: 'miles'});
-      } else if (MainStore.selectedZipcode) {
-        const DataStore = useDataStore();
-        if (import.meta.env.VITE_DEBUG) console.log('fillBufferForAddressOrLocationOrZipcode is running, MainStore.selectedZipcode:', MainStore.selectedZipcode, 'DataStore.zipcodes.features:', DataStore.zipcodes.features);
-        let zipcodesData = DataStore.zipcodes;
-        let theSelectedZipcode = MainStore.selectedZipcode;
+      } else if (useMainStore().selectedZipcode) {
+        let zipcodesData = useDataStore().zipcodes;
+        let theSelectedZipcode = useMainStore().selectedZipcode;
         let zipcode;
-        if (zipcodesData && theSelectedZipcode) {
+        if (zipcodesData) {
           zipcode = zipcodesData.features.filter(item => item.properties.CODE == theSelectedZipcode)[0];
         }
-        this.zipcodeCenter = centerOfMass(zipcode);
         this.bufferForAddressOrLocationOrZipcode= buffer(zipcode, this.searchDistance, {units: 'miles'});
       }
     },

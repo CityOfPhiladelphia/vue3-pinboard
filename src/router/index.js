@@ -90,6 +90,7 @@ router.afterEach(async (to, from) => {
     DataStore.selectedResource = null;
   }
   if (to.query.address && to.query.address != from.query.address) {
+    MainStore.selectedZipcode = null;
     await getGeocodeAndPutInStore(to.query.address);
     if (import.meta.env.VITE_DEBUG) console.log('router.afterEach is calling MapStore.fillBufferForAddressOrLocationOrZipcode, to.query.address:', to.query.address);
     if (GeocodeStore.aisData.features) {
@@ -99,10 +100,19 @@ router.afterEach(async (to, from) => {
     clearGeocode();
   }
   if (to.query.zipcode && to.query.zipcode != from.query.zipcode) {
+    if (import.meta.env.VITE_DEBUG) console.log('fillBufferForAddressOrLocationOrZipcode is running, DataStore.zipcodes.features:', DataStore.zipcodes.features);
+    let zipcodesData = DataStore.zipcodes;
+    let zipcode;
+    if (zipcodesData) {
+      zipcode = zipcodesData.features.filter(item => item.properties.CODE == to.query.zipcode)[0];
+    }
     if (import.meta.env.VITE_DEBUG) console.log('router.afterEach has zipcode and is calling MapStore.fillBufferForAddressOrLocationOrZipcode');
-    MapStore.geolocation = null;
-    MainStore.selectedZipcode = to.query.zipcode;
-    MapStore.fillBufferForAddressOrLocationOrZipcode();
+    if (zipcode) {
+      MapStore.geolocation = null;
+      MainStore.selectedZipcode = to.query.zipcode;
+      MapStore.fillZipcodeCenter(zipcode);
+      MapStore.fillBufferForAddressOrLocationOrZipcode();
+    }
   } else if (!to.query.address && !to.query.zipcode) {
     MapStore.bufferForAddressOrLocationOrZipcode = null;
   }

@@ -366,18 +366,9 @@ watch(
   () => zipcodeData.value,
   async newZipcodeData => {
     map.getSource('zipcode').setData(newZipcodeData);
-    // MapStore.zipcodeCenter = centerOfMass(newZipcodeData);
-    if (import.meta.env.VITE_DEBUG) console.log('watch zipcodeData.value, newZipcodeData:', newZipcodeData, 'MapStore.zipcodeCenter:', MapStore.zipcodeCenter);
+    if (import.meta.env.VITE_DEBUG) console.log('watch zipcodeData.value, newZipcodeData:', newZipcodeData);
   }
 )
-
-// const zipcodeCenter = computed(() => {
-//   let center;
-//   if (zipcodeData.value) {
-//     center = centerOfMass(zipcodeData.value);
-//   }
-//   return center;
-// });
 
 watch(
   () => MapStore.zipcodeCenter,
@@ -403,12 +394,6 @@ watch(
 //       })
 //     }
 //     // if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue setLabelLayers, map.getStyle:', map.getStyle(), 'map.getStyle().layers:', map.getStyle().layers, 'map.getStyle().sources:', map.getStyle().sources);
-// }
-
-// const geolocate = () => {
-//   MapStore.geolocate();
-//   GeocodeStore.aisData = {};
-//   MainStore.selectedZipcode = null;
 // }
 
 </script>
