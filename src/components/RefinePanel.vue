@@ -1225,7 +1225,7 @@ const checkboxChange = (e) => {
                   <icon-tool-tip
                     v-if="!isMobile && refineListTranslated[ind]['tooltip']"
                     :tip="refineListTranslated[ind]['tooltip']"
-                    :circle-type="'click'"
+                    :circle-type="'hover'"
                     :position="refineList[ind]['tooltip']['position']"
                     :multiline="refineList[ind]['tooltip']['multiline']"
                   />

@@ -496,7 +496,6 @@ onMounted(async() => {
       }
     }
     MainStore.currentSearch = value
-
     addressInputPlaceholder.value = $config.searchBar.placeholder;
   }
 
@@ -667,10 +666,6 @@ const checkServices = (row) => {
       return true;
   }
 };
-
-
-
-
 
 const getDistances = (row) => {
   if (import.meta.env.VITE_DEBUG) console.log('getDistances, row:', row);
