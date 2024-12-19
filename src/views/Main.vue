@@ -622,57 +622,47 @@ const checkServices = (row) => {
       }
       return true;
     case 'multipleFieldGroups':
+      let booleanConditions = [];
       for (let value of selectedServices) {
+        // if (import.meta.env.VITE_DEBUG) console.log('value:', value);
         let valueGroup = value.split('_', 1)[0];
-        if (!selectedGroups.includes(valueGroup)) {
-          selectedGroups.push(valueGroup);
-        }
+        if (!selectedGroups.includes(valueGroup)) selectedGroups.push(valueGroup);
       }
       for (let group of selectedGroups) {
-        console.log('group:', group);
+        // if (import.meta.env.VITE_DEBUG) console.log('group:', group);
         let groupValues = [];
         for (let service of selectedServices) {
           if (service.split('_', 1)[0] === group) {
-            let getter, dependentGroups
             let dependentServices = [];
-            if ($config.refine.multipleFieldGroups[group]['radio']) {
-              dependentGroups = $config.refine.multipleFieldGroups[group]['radio'][service.split('_')[1]]['dependentGroups'] || [];
-              getter = $config.refine.multipleFieldGroups[group]['radio'][service.split('_')[1]]['value'];
-              for (let service of selectedServices) {
-                if (dependentGroups.length && dependentGroups.includes(service.split('_')[0])) {
-                  dependentServices.push(service.split('_')[1]);
-                }
-              }
-            } else {
-              dependentGroups = $config.refine.multipleFieldGroups[group]['checkbox'][service.split('_')[1]]['dependentGroups'] || [];
-              getter = $config.refine.multipleFieldGroups[group]['checkbox'][service.split('_')[1]]['value'];
-              for (let service of selectedServices) {
-                if (dependentGroups.length && dependentGroups.includes(service.split('_')[0])) {
-                  dependentServices.push(service.split('_')[1]);
-                }
-              }
+            let radioOrCheckbox;
+            if (group !== 'keyword' && service.split('_', 1)[0] === group && $config.refine.multipleFieldGroups[group]['radio']) radioOrCheckbox = 'radio';
+            else if (group !== 'keyword' && service.split('_', 1)[0] === group && $config.refine.multipleFieldGroups[group]['checkbox']) radioOrCheckbox = 'checkbox';
+            let dependentGroups = $config.refine.multipleFieldGroups[group][radioOrCheckbox][service.split('_')[1]]['dependentGroups'] || [];
+            let getter = $config.refine.multipleFieldGroups[group][radioOrCheckbox][service.split('_')[1]]['value'];
+            for (let service of selectedServices) {
+              if (dependentGroups.length && dependentGroups.includes(service.split('_')[0])) dependentServices.push(service.split('_')[1]);
             }
             let val = getter(row, dependentServices);
             groupValues.push(val);
           }
         }
-        if ($config.refine.andOr) {
-          if ($config.refine.andOr == 'and') {
-            if (groupValues.includes(false)) {
-              return false;
-            }
-          } else if ($config.refine.andOr == 'or') {
-            if (groupValues.includes(true)) {
-              return true;
-            }
-          }
-        } else {
-          if (groupValues.includes(true)) {
-            return true;
-          }
+        switch ($config.refine.andOr) {
+          case 'and':
+            if (groupValues.includes(false)) booleanConditions.push(false);
+            else booleanConditions.push(true);
+            break;
+          case 'or':
+            if (groupValues.includes(true)) booleanConditions.push(true);
+            else booleanConditions.push(false);
+            break;
+          default:
+            if (groupValues.includes(true)) booleanConditions.push(true);
+            else booleanConditions.push(false);
         }
       }
-      return false;
+
+      if (booleanConditions.includes(false)) return false;
+      else return true;
     default:
       return true;
   }

@@ -218,6 +218,7 @@ const refineListTranslated = computed(() => {
       // console.log('refineListTranslated computed, category:', category, 't(category):', t(category), 'mainArray:', mainArray);
     }
   } else if (refineType.value == 'multipleFieldGroups') {
+    console.log('selectedArray computed, refineType.value:', refineType.value, 'refineList.value:', refineList.value);
     if (refineList.value) {
       for (let category of Object.keys(refineList.value)) {
         mainObject[category] = {};
