@@ -2,6 +2,8 @@
 
 import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
 
+import { useMapStore } from '../stores/MapStore.js'
+const MapStore = useMapStore();
 import Map from './map/Map.vue';
 
 defineEmits(['geolocate']);
@@ -11,7 +13,11 @@ defineEmits(['geolocate']);
 // await DataStore.fillZipcodes();
 
 const mapPanelClass = computed(() => {
-  return 'map-panel';
+  if (MapStore.cyclomediaOn || MapStore.eagleviewOn) {
+    return 'map-panel cyclomedia-eagleview';
+  } else {
+    return 'map-panel';
+  }
 });
 
 </script>

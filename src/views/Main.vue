@@ -432,12 +432,31 @@ const setHeights = () => {
     mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+46}px)`);
   }
   const map = document.querySelector('#map');
-  if (isMobile.value) {
+  if (isMobile.value && !MapStore.cyclomediaOn) {
     map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+headerOffsetHeight+holidayBannerOffsetHeight+addressSearchHolderOffsetHeight+46}px)`);
-  } else {
+  } else if (isMobile.value) {
+    map.style.setProperty('height', `calc(50vh - ${(refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+84)/2}px)`);
+  } else if (!MapStore.cyclomediaOn) {
     map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+46}px)`);
+  } else {
+    map.style.setProperty('height', `calc(50vh - ${(refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+44)/2}px)`);
+  }
+
+  const cyclomediaPanel = document.querySelector('#cyclomedia-panel');
+  if (isMobile.value && MapStore.cyclomediaOn) {
+    cyclomediaPanel.style.setProperty('height', `calc(50vh - ${(refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+84)/2}px)`);
+  } else if (MapStore.cyclomediaOn) {
+    cyclomediaPanel.style.setProperty('height', `calc(50vh - ${(refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+44)/2}px)`);
   }
 }
+
+watch(
+  () => MapStore.cyclomediaOn,
+  async() => {
+    await nextTick();
+    setHeights();
+  }
+);
 
 watch(
   () => refineOpen.value,

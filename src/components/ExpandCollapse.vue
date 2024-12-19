@@ -5,7 +5,7 @@ import { useMapStore } from '../stores/MapStore.js';
 import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
 
 const MainStore = useMainStore();
 const MapStore = useMapStore();
@@ -152,16 +152,18 @@ watch(
 
 watch(
   () => props.isMapVisible,
-  nextIsMapVisible => {
-    // console.log('ExpandCollapse watch isMapVisible');
+  async(nextIsMapVisible) => {
+    // if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse watch isMapVisible');
     if (!nextIsMapVisible) {
-      if (latestSelectedResourceFromMap) {
-        // console.log('ExpandCollapse is reporting map is invisible and there is a latestSelectedResourceFromMap:', latestSelectedResourceFromMap);
-        if (latestSelectedResourceFromMap === props.item._featureId) {
-          const el = $el;
+      await nextTick();
+      if (latestSelectedResourceFromMap.value) {
+        // if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse is reporting map is invisible and there is a latestSelectedResourceFromMap.value:', latestSelectedResourceFromMap.value);
+        if (latestSelectedResourceFromMap.value === props.item._featureId) {
+          const el = document.getElementsByClassName(props.item._featureId)[0];
           const visible = isElementInViewport(el);
+          // if (import.meta.env.VITE_DEBUG) console.log('el:', el, 'visible:', visible);
           if (!visible) {
-            console.log('ExpandCollapse in if in if');
+            // if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse in if in if');
             el.scrollIntoView({ block: 'center' });
           }
         }

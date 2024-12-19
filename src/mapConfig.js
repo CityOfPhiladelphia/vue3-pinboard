@@ -1,4 +1,4 @@
-// import mergeDeep from './util/merge-deep.js';
+import mergeDeep from './util/merge-deep.js';
 
 const cityCenterCoords = [-75.163471, 39.953338];
 
@@ -6,7 +6,60 @@ const addressDoubles = [
   '15 E HAMPTON RD',
 ];
 
-const pwdDrawnMapStyle = {
+const imageryInfo = {
+  sources: {
+    // imageryParcelOutlines: {
+    //   tiles: [
+    //     'https://tiles.arcgis.com/tiles/fLeGjb7u4uXqeF9q/arcgis/rest/services/PWDParcel_ImageryOverlay/MapServer/tile/{z}/{y}/{x}',
+    //   ],
+    //   type: 'raster',
+    //   tileSize: 256,
+    // },
+    imageryLabels: {
+      tiles: [
+        'https://tiles.arcgis.com/tiles/fLeGjb7u4uXqeF9q/arcgis/rest/services/CityImagery_Labels/MapServer/tile/{z}/{y}/{x}',
+      ],
+      type: 'raster',
+      tileSize: 256,
+    },
+    2023: {
+      tiles: [
+        'https://tiles.arcgis.com/tiles/fLeGjb7u4uXqeF9q/arcgis/rest/services/CityImagery_2023/MapServer/tile/{z}/{y}/{x}',
+      ],
+      type: 'raster',
+      tileSize: 256,
+    },
+    cyclomediaRecordings: {
+      type: 'geojson',
+      data: {
+        type: 'FeatureCollection',
+        features: []
+      },
+    },
+    cyclomediaCamera: {
+      type: 'geojson',
+      data: {
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: [],
+        }
+      }
+    },
+    cyclomediaViewcone: {
+      type: 'geojson',
+      data: {
+        type: 'Feature',
+        geometry: {
+          type: 'Polygon',
+          coordinates: [[[]]],
+        }
+      }
+    },
+  },
+}
+
+const pwdDrawnMapStyle = mergeDeep(imageryInfo,{
   version: 8,
   name: 'pwdDrawnMap',
   glyphs: '//fonts.openmaptiles.org/{fontstack}/{range}.pbf',
@@ -126,31 +179,42 @@ const pwdDrawnMapStyle = {
         'line-width': 2,
       }
     },
-    // {
-    //   id: 'resources',
-    //   source: 'resources',
-    //   type: 'circle',
-    //   paint: {
-    //     'circle-radius': 7,
-    //     'circle-color': [
-    //       'match',
-    //       ['get', 'category_type'],
-    //       'Food Site',
-    //       '#0F4D90',
-    //       'Senior Meal Site',
-    //       '#a86518',
-    //       'Student Meal Site',
-    //       '#721817',
-    //       'General Meal Site',
-    //       '#506D0A',
-    //       'Public Benefits',
-    //       '#444444',
-    //       /* other */ '#000000'
-    //     ],
-    //     'circle-stroke-width': 1,
-    //     'circle-stroke-color': 'white',
-    //   },
-    // },
+    {
+      id: 'cyclomediaRecordings',
+      source: 'cyclomediaRecordings',
+      type: 'circle',
+      paint: {
+        'circle-radius': 6,
+        'circle-color': '#5b94c6',
+        'circle-stroke-width': 1,
+        'circle-stroke-color': '#a1a1a1',
+        'circle-opacity': 0.5,
+      }
+    },
+    {
+      id: 'cyclomediaCamera',
+      source: 'cyclomediaCamera',
+      type: 'symbol',
+      layout: {
+        'icon-image': 'camera-icon',
+        'icon-anchor' : 'center',
+        'icon-size': 0.09,
+        'icon-rotate': 0,
+        'icon-rotation-alignment': 'map',
+        "icon-allow-overlap" : true,
+        "text-allow-overlap": true,
+      },
+    },
+    {
+      'id': 'cyclomediaViewcone',
+      'type': 'fill',
+      'source': 'cyclomediaViewcone',
+      'layout': {},
+      'paint': {
+        'fill-color': 'rgb(0,102,255)',
+        'fill-opacity': 0.2,
+      },
+    },
     {
       id: 'addressMarker',
       source: 'addressMarker',
@@ -176,7 +240,7 @@ const pwdDrawnMapStyle = {
       },
     },
   ],
-};
+});
 
 const $config = {
   mapLayers: {
@@ -202,50 +266,21 @@ const $config = {
     //   minzoom: 0,
     //   maxzoom: 22,
     // },
-    // imageryLabels: {
-    //   id: 'imageryLabels',
-    //   source: 'imageryLabels',
-    //   type: 'raster',
-    // },
-    // 2023: {
-    //   id: '2023',
-    //   source: '2023',
-    //   type: 'raster',
-    // },
+    imageryLabels: {
+      id: 'imageryLabels',
+      source: 'imageryLabels',
+      type: 'raster',
+    },
+    2023: {
+      id: '2023',
+      source: '2023',
+      type: 'raster',
+    },
   },
 }
-
-// const dorLegendData = {
-//   'Easements': {
-//     'border-color': 'rgb(255, 0, 197)',
-//     'border-style': 'solid',
-//     'border-weight': '1px',
-//     'width': '12px',
-//     'height': '12px',
-//     'font-size': '10px',
-//   },
-//   'Trans Parcels': {
-//     'border-color': 'rgb(0, 168, 132)',
-//     'border-style': 'solid',
-//     'border-weight': '1px',
-//     'width': '12px',
-//     'height': '12px',
-//     'font-size': '10px',
-//   },
-//   'Rights of Way': {
-//     'border-color': 'rgb(249, 147, 0)',
-//     'border-style': 'solid',
-//     'border-weight': '1px',
-//     'width': '12px',
-//     'height': '12px',
-//     'font-size': '10px',
-//   },
-// };
 
 $config['cityCenterCoords'] = cityCenterCoords;
 $config['addressDoubles'] = addressDoubles;
 $config['pwdDrawnMapStyle'] = pwdDrawnMapStyle;
-// $config['nearbyDrawnMapStyle'] = nearbyDrawnMapStyle;
-// $config['dorLegendData'] = dorLegendData;
 
 export default $config;

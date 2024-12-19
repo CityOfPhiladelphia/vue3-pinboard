@@ -949,4 +949,12 @@ const locationsPanelClass = computed(() => {
   box-shadow: 0 0 0 0em #25cef7 !important;
 }
 
+#locations-panel-content {
+  scroll-margin-top: 200px;
+}
+
+#location-container {
+  scroll-margin-top: 200px;
+}
+
 </style>

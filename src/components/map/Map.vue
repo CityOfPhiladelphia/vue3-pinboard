@@ -39,9 +39,12 @@ const router = useRouter();
 
 // COMPONENTS
 import AddressSearchControl from '../AddressSearchControl.vue';
-import OverlayLegend from './OverlayLegend.vue';
 import GeolocateControl from './GeolocateControl.vue';
-// import ImageryToggleControl from '@/components/map/ImageryToggleControl.vue';
+import ImageryToggleControl from './ImageryToggleControl.vue';
+import CyclomediaControl from './CyclomediaControl.vue';
+import CyclomediaPanel from './CyclomediaPanel.vue';
+import CyclomediaRecordingsClient from '../../util/recordings-client.js';
+
 // import ImageryDropdownControl from '@/components/map/ImageryDropdownControl.vue';
 
 let map;
@@ -53,9 +56,9 @@ const markerSrc = computed(() => {
 // const buildingColumnsSrc = computed(() => {
 //   return MainStore.publicPath + 'images/building-columns-solid.png';
 // })
-// const cameraSrc = computed(() => {
-//   return MainStore.publicPath + 'images/camera.png';
-// })
+const cameraSrc = computed(() => {
+  return MainStore.publicPath + 'images/camera.png';
+})
 
 const isMobile = computed(() => {
   return MainStore.isMobileDevice || MainStore.windowDimensions.width < 768;
@@ -148,10 +151,49 @@ onMounted(async () => {
   const markerImage = await map.loadImage(markerSrc.value)
   if (import.meta.env.VITE_DEBUG == 'true') console.log('markerImage:', markerImage);
   map.addImage('marker-blue', markerImage.data);
+  const cameraImage = await map.loadImage(cameraSrc.value)
+  map.addImage('camera-icon', cameraImage.data);
 
   // add the unchanged maplibre controls
   map.addControl(new maplibregl.NavigationControl(), 'bottom-right');
   // map.addControl(new maplibregl.GeolocateControl(), 'bottom-right');
+
+  map.on('moveend', () => {
+    // if (import.meta.env.VITE_DEBUG == 'true') console.log('map moveend event, e:', e, 'map.getZoom()', map.getZoom(), 'map.getStyle().layers:', map.getStyle().layers, 'map.getStyle().sources:', map.getStyle().sources);
+    if (MapStore.cyclomediaOn) {
+      map.getZoom() > 16.5 ? MapStore.cyclomediaRecordingsOn = true : MapStore.cyclomediaRecordingsOn = false;
+      if (MapStore.cyclomediaRecordingsOn) {
+        updateCyclomediaRecordings();
+      } else {
+        let geojson = { type: 'FeatureCollection', features: [] };
+        map.getSource('cyclomediaRecordings').setData(geojson);
+        $mapConfig.pwdDrawnMapStyle.sources.cyclomediaRecordings.data.features = [];
+      }
+    }
+  });
+
+  map.on('zoomend', () => {
+    if (MapStore.cyclomediaOn) {
+      updateCyclomediaCameraViewcone(MapStore.cyclomediaCameraHFov, MapStore.cyclomediaCameraYaw);
+    }
+  });
+
+  // if a cyclomedia recording circle is clicked, set its coordinates in the MapStore
+  map.on('click', 'cyclomediaRecordings', (e) => {
+    // if (import.meta.env.VITE_DEBUG == 'true') console.log('cyclomediaRecordings click, e:', e, 'e.features[0]:', e.features[0]);
+    e.clickOnLayer = true;
+    MapStore.clickedCyclomediaRecordingCoords = [ e.lngLat.lng, e.lngLat.lat ];
+  });
+
+  map.on('mouseenter', 'cyclomediaRecordings', (e) => {
+    if (e.features.length > 0) {
+      map.getCanvas().style.cursor = 'pointer'
+    }
+  });
+
+  map.on('mouseleave', 'cyclomediaRecordings', () => {
+    map.getCanvas().style.cursor = ''
+  });
 
   map.on('click', 'pwd', (e) => {
     if (import.meta.env.VITE_DEBUG) console.log('Map.vue map click event, e:', e);
@@ -164,6 +206,7 @@ onMounted(async () => {
     const properties = e.features[0].properties;
     // if (import.meta.env.VITE_DEBUG == 'true') console.log('click, e:', e, 'feature:', feature, 'properties:', properties);
     const selectedResourceId = e.features[0].properties._featureId;
+    MapStore.latestSelectedResourceFromMap = selectedResourceId;
     let query = {...route.query};
     if (import.meta.env.VITE_DEBUG) console.log('Map click query:', query);
     if (selectedResourceId != DataStore.selectedResource) {
@@ -396,6 +439,183 @@ watch(
 //     // if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue setLabelLayers, map.getStyle:', map.getStyle(), 'map.getStyle().layers:', map.getStyle().layers, 'map.getStyle().sources:', map.getStyle().sources);
 // }
 
+const imagerySelected = ref('2023');
+
+const toggleImagery = () => {
+  if (import.meta.env.VITE_DEBUG == 'true') console.log('toggleImagery, map.getStyle:', map.getStyle(), '$mapConfig.mapLayers:', $mapConfig.mapLayers);
+  if (!MapStore.imageryOn) {
+    MapStore.imageryOn = true;
+    map.addLayer($mapConfig.mapLayers[imagerySelected.value], 'cyclomediaRecordings')
+    map.addLayer($mapConfig.mapLayers.imageryLabels, 'cyclomediaRecordings')
+  } else {
+    if (import.meta.env.VITE_DEBUG == 'true') console.log('map.getStyle().layers:', map.getStyle().layers);
+    MapStore.imageryOn = false;
+    map.removeLayer(imagerySelected.value);
+    map.removeLayer('imageryLabels');
+  }
+}
+
+const removeAllCyclomediaMapLayers = () => {
+  let recordingsGeojson = {
+    type: 'FeatureCollection',
+    features: []
+  }
+  map.getSource('cyclomediaRecordings').setData(recordingsGeojson);
+  $mapConfig.pwdDrawnMapStyle.sources.cyclomediaRecordings.data.features = [];
+
+  let cameraGeojson = point([0,0]);
+  map.getSource('cyclomediaCamera').setData(cameraGeojson);
+  $mapConfig.pwdDrawnMapStyle.sources.cyclomediaCamera.data = cameraGeojson;
+  let viewConeGeojson = polygon([[[0,0], [0,0], [0,0], [0,0]]]);
+  map.getSource('cyclomediaViewcone').setData(viewConeGeojson);
+  $mapConfig.pwdDrawnMapStyle.sources.cyclomediaViewcone.data = viewConeGeojson;
+  MapStore.setCyclomediaCameraLngLat(MapStore.cyclomediaCameraLngLat, null);
+}
+
+// toggle cyclomedia on and off
+const toggleCyclomedia = async() => {
+  if (import.meta.env.VITE_DEBUG == 'true') console.log('toggleCyclomedia, map.getStyle().sources:', map.getStyle().sources, 'map.getStyle().layers:', map.getStyle().layers);
+  MapStore.cyclomediaOn = !MapStore.cyclomediaOn;
+  if (MapStore.cyclomediaOn) {
+    MapStore.eagleviewOn = false;
+    const zoom = map.getZoom();
+    if (zoom > 16.5) {
+      await updateCyclomediaRecordings();
+      if (MapStore.cyclomediaCameraLngLat) {
+        if (import.meta.env.VITE_DEBUG == 'true') console.log('in toggleCyclomedia, calling updateCyclomediaCameraLngLat, MapStore.cyclomediaCameraLngLat:', MapStore.cyclomediaCameraLngLat);
+        updateCyclomediaCameraLngLat(MapStore.cyclomediaCameraLngLat);
+      }
+      if (MapStore.cyclomediaCameraHFov && MapStore.cyclomediaCameraYaw) {
+        if (import.meta.env.VITE_DEBUG == 'true') console.log('calling updateCyclomediaCameraViewcone');
+        updateCyclomediaCameraViewcone(MapStore.cyclomediaCameraHFov, MapStore.cyclomediaCameraYaw);
+      }
+    }
+  } else {
+    removeAllCyclomediaMapLayers();
+  }
+}
+
+// an object class called CyclomediaRecordingsClient is used for adding the cyclomedia recordings circles to the map 
+let cyclomediaRecordingsClient = new CyclomediaRecordingsClient(
+  'https://atlasapi.cyclomedia.com/api/recording/wfs',
+  import.meta.env.VITE_CYCLOMEDIA_USERNAME,
+  import.meta.env.VITE_CYCLOMEDIA_PASSWORD,
+  4326,
+);
+
+const updateCyclomediaRecordings = async () => {
+  // if (import.meta.env.VITE_DEBUG == 'true') console.log('updateCyclomediaRecordings is running');
+  const bounds = map.getBounds();
+  cyclomediaRecordingsClient.getRecordings(
+    bounds,
+    recordings => {
+      let geojson = {
+        type: 'FeatureCollection',
+        features: []
+      }
+      let features = [];
+      for (let item of recordings) {
+        features.push({
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: [item.lng, item.lat]
+          },
+          properties: {
+            id: item.imageId,
+            type: 'cyclomediaRecording',
+          }
+        })
+      }
+      geojson.features = features;
+      // if (import.meta.env.VITE_DEBUG == 'true') console.log("map.getSource('cyclomediaRecordings'):", 'map.getStyle().layers:', map.getStyle().layers);
+      map.getSource('cyclomediaRecordings').setData(geojson);
+      // I don't know why this works - maybe because the mergeDeep is still running
+      $mapConfig.pwdDrawnMapStyle.sources.cyclomediaRecordings.data.features = features;
+    },
+  );
+}
+
+// everything for adding, moving, and orienting the cyclomedia camera icon and viewcone
+const updateCyclomediaCameraLngLat = (lngLat) => {
+  // if (import.meta.env.VITE_DEBUG == 'true') console.log('updateCyclomediaCameraLngLat is running, lngLat:', lngLat);
+  if (!MapStore.cyclomediaOn) {
+    return;
+  } else {
+    const theData = point(lngLat);
+    map.getSource('cyclomediaCamera').setData(theData);
+    $mapConfig.pwdDrawnMapStyle.sources.cyclomediaCamera.data = theData;
+  }
+}
+
+const updateCyclomediaCameraAngle = (newOrientation) => {
+  // if (import.meta.env.VITE_DEBUG == 'true') console.log('updateCyclomediaCameraAngle is running, newOrientation:', newOrientation);
+  if (!newOrientation) {
+    newOrientation = MapStore.cyclomediaCameraYaw;
+  }
+  map.setLayoutProperty('cyclomediaCamera', 'icon-rotate', newOrientation);
+}
+
+const updateCyclomediaCameraViewcone = (cycloHFov, cycloYaw) => {
+  const halfAngle = cycloHFov / 2.0;
+  let angle1 = cycloYaw - halfAngle;
+  let angle2 = cycloYaw + halfAngle;
+  if (import.meta.env.VITE_DEBUG == 'true') console.log('updateCyclomediaCameraViewcone, cycloHFov:', cycloHFov, 'halfAngle:', halfAngle, 'angle1:', angle1, 'cycloYaw:', cycloYaw, 'angle2:', angle2);
+  const watchedZoom = map.getZoom();
+  let distance;
+  if (watchedZoom < 9) {
+    distance = 2000 * (21 - watchedZoom);
+  } else if (watchedZoom < 10) {
+    distance = 1000 * (21 - watchedZoom);
+  } else if (watchedZoom < 11) {
+    distance = 670 * (21 - watchedZoom);
+  } else if (watchedZoom < 12) {
+    distance = 420 * (21 - watchedZoom);
+  } else if (watchedZoom < 13) {
+    distance = 270 * (21 - watchedZoom);
+  } else if (watchedZoom < 14) {
+    distance = 150 * (21 - watchedZoom);
+  } else if (watchedZoom < 15) {
+    distance = 100 * (21 - watchedZoom);
+  } else if (watchedZoom < 16) {
+    distance = 55 * (21 - watchedZoom);
+  } else if (watchedZoom < 17) {
+    distance = 30 * (21 - watchedZoom);
+  } else if (watchedZoom < 18) {
+    distance = 25 * (21 - watchedZoom);
+  } else if (watchedZoom < 20.4) {
+    distance = 15 * (21 - watchedZoom);
+  } else {
+    distance = 10;
+  }
+
+  const cyclomediaCameraLngLat = MapStore.cyclomediaCameraLngLat;
+  let options = { units: 'feet' };
+  if (!cyclomediaCameraLngLat) {
+    if (import.meta.env.VITE_DEBUG == 'true') console.log('no cyclomediaCameraLngLat');
+    return;
+  }
+  if (import.meta.env.VITE_DEBUG == 'true') console.log('cyclomediaCameraLngLat:', cyclomediaCameraLngLat);
+
+  var destination1 = destination([ cyclomediaCameraLngLat[0], cyclomediaCameraLngLat[1] ], distance, angle1, options);
+  var destination2 = destination([ cyclomediaCameraLngLat[0], cyclomediaCameraLngLat[1] ], distance, angle2, options);
+  let data = {
+    type: 'Feature',
+    geometry: {
+      type: 'Polygon',
+      coordinates: [[
+        [ cyclomediaCameraLngLat[0], cyclomediaCameraLngLat[1] ],
+        [ destination1.geometry.coordinates[0], destination1.geometry.coordinates[1] ],
+        [ destination2.geometry.coordinates[0], destination2.geometry.coordinates[1] ],
+        [ cyclomediaCameraLngLat[0], cyclomediaCameraLngLat[1] ],
+      ]],
+    }
+  }
+
+  map.getSource('cyclomediaViewcone').setData(data);
+  $mapConfig.pwdDrawnMapStyle.sources.cyclomediaViewcone.data = data;
+}
+
 </script>
 
 <template>
@@ -424,19 +644,32 @@ watch(
     />
     <!-- @geolocate="MapStore.geolocate" -->
 
-    <!-- <ImageryToggleControl @toggle-imagery="toggleImagery" />
+    <ImageryToggleControl @toggle-imagery="toggleImagery" />
+    <CyclomediaControl @toggle-cyclomedia="toggleCyclomedia" />
 
-    <ImageryDropdownControl
+    <!-- <ImageryDropdownControl
       v-if="MapStore.imageryOn"
       @set-imagery="setImagery"
     /> -->
 
-    <OverlayLegend
+    <!-- <OverlayLegend
       v-if="$config.legendControl"
       :items="$config.legendControl.legend.data"
       :options="{ shape: 'circle' }"
-    />
+    /> -->
+
   </div>
+  <KeepAlive>
+    <CyclomediaPanel
+      v-if="MapStore.cyclomediaOn"
+      @update-camera-yaw="updateCyclomediaCameraAngle"
+      @update-camera-h-fov="updateCyclomediaCameraViewcone"
+      @update-camera-lng-lat="updateCyclomediaCameraLngLat"
+      @toggle-cyclomedia="toggleCyclomedia"
+    />
+  </KeepAlive>
+
+
 </template>
 
 <style>

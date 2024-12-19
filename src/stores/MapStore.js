@@ -23,9 +23,25 @@ export const useMapStore = defineStore("MapStore", {
       latestSelectedResourceFromMap: null,
       zipcodeCenter: null,
       geolocation: null,
+      cyclomediaOn: false,
+      cyclomediaOn: false,
+      cyclomediaInitialized: false,
+      cyclomediaRecordingsOn: false,
+      cyclomediaCameraYaw: null,
+      cyclomediaCameraHFov: null,
+      cyclomediaCameraXyz: null,
+      cyclomediaCameraLngLat: null,
+      cyclomediaYear: null,
     };
   },
   actions: {
+    setCyclomediaCameraYaw(yaw) {
+      this.cyclomediaCameraYaw = yaw;
+    },
+    setCyclomediaCameraLngLat(lngLat, xyz) {
+      this.cyclomediaCameraXyz = xyz;
+      this.cyclomediaCameraLngLat = lngLat;
+    },
     geofindSuccess(position) {
       if (import.meta.env.VITE_DEBUG) console.log('geofindSuccess is running, position:', position);
       const MainStore = useMainStore();
