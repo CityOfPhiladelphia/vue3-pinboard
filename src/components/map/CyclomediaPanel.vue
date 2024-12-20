@@ -9,6 +9,8 @@ const MainStore = useMainStore();
 import { useDataStore } from '../../stores/DataStore';
 const DataStore = useDataStore();
 
+import { computed, watch } from 'vue';
+
 import $mapConfig from '../../mapConfig';
 const isMobile = computed(() => {
   return MainStore.isMobileDevice || MainStore.windowDimensions.width < 768;
