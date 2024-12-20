@@ -497,7 +497,7 @@ onMounted(async() => {
   if (route.query.resource) {
     if (import.meta.env.VITE_DEBUG) console.log('App.vue mounted, route.query.resource:', route.query.resource);
     let selectedResource = [ route.query.resource ];
-    DataStore.selectedResource = selectedResource;
+    DataStore.selectedResource = selectedResource[0];
   }
   
   if (route.query.lang) {

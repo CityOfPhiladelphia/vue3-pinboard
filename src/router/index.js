@@ -123,7 +123,6 @@ router.afterEach(async (to, from) => {
       MainStore.selectedServices = [];
     }
   }
-  // DataStore.latestSelectedResourceFromExpand = selectedResource;
 });
 
 export default router

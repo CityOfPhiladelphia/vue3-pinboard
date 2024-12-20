@@ -1,6 +1,6 @@
 import { defineStore, acceptHMRUpdate } from 'pinia';
 import axios from 'axios';
-import { feature, featureCollection, point } from '@turf/helpers';
+import { point } from '@turf/helpers';
 
 import qs from 'qs';
 
@@ -9,10 +9,8 @@ import { useConfigStore } from './ConfigStore.js';
 export const useDataStore = defineStore('DataStore', {
   state: () => {
     return {
-      // printCheckboxes: [],
       agoToken: null,
       selectedResource: null,
-      latestSelectedResourceFromExpand: null,
       appType: null,
       sources: {},
       databaseWithoutHiddenItems: [],
@@ -58,10 +56,6 @@ export const useDataStore = defineStore('DataStore', {
         console.log(error);
       });
     },
-    // async fillExtraData() {
-    //   const ConfigStore = useConfigStore();
-    //   const appType = ConfigStore.config.app.type;
-    // },
     async fillResources() {
       const $config = useConfigStore().config;
 

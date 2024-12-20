@@ -202,8 +202,8 @@ onMounted(async () => {
   map.on('click', 'resources', (e) => {
     if (import.meta.env.VITE_DEBUG) console.log('Map.vue map click event, e:', e, 'e.features:', e.features, 'e.features[0]._featureId:', e.features[0]._featureId);
     MainStore.lastSelectMethod = 'map';
-    const feature = e.features[0];
-    const properties = e.features[0].properties;
+    // const feature = e.features[0];
+    // const properties = e.features[0].properties;
     // if (import.meta.env.VITE_DEBUG == 'true') console.log('click, e:', e, 'feature:', feature, 'properties:', properties);
     const selectedResourceId = e.features[0].properties._featureId;
     MapStore.latestSelectedResourceFromMap = selectedResourceId;
@@ -315,12 +315,12 @@ watch(
           )
         };
         if (DataStore.sources[DataStore.appType].data.features) {
+          if (import.meta.env.VITE_DEBUG) console.log('DataStore.sources[DataStore.appType].data.features:', DataStore.sources[DataStore.appType].data.features, 'newSelectedResource:', newSelectedResource);
           const dataPoint = DataStore.sources[DataStore.appType].data.features.filter(item => item._featureId == newSelectedResource)[0];
           if (import.meta.env.VITE_DEBUG) console.log('dataPoint:', dataPoint);
           if (MainStore.lastSelectMethod == 'row') {
             map.setCenter(dataPoint.geometry.coordinates);
           }
-          // map.setZoom(15);
 
           const popup = document.getElementsByClassName('maplibregl-popup');
           if (popup.length) {
@@ -331,6 +331,10 @@ watch(
             .setHTML(dataPoint.properties[$config.locationInfo.siteNameField])
             .setMaxWidth("300px")
             .addTo(map);
+
+          if (import.meta.env.VITE_DEBUG) console.log('Map.vue selectedResource watch, dataPoint:', dataPoint);
+          // MapStore.cyclomediaCameraLngLat = dataPoint.geometry.coordinates;
+          // updateCyclomediaCameraLngLat(dataPoint.geometry.coordinates);
         }
       }
     }

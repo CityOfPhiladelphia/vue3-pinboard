@@ -6,6 +6,8 @@ import { useGeocodeStore } from '../../stores/GeocodeStore';
 const GeocodeStore = useGeocodeStore();
 import { useMainStore } from '../../stores/MainStore';
 const MainStore = useMainStore();
+import { useDataStore } from '../../stores/DataStore';
+const DataStore = useDataStore();
 
 import $mapConfig from '../../mapConfig';
 const isMobile = computed(() => {
@@ -14,19 +16,40 @@ const isMobile = computed(() => {
 
 import { format, subYears } from 'date-fns';
 
-import proj4 from 'proj4';
-const projection4326 = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
-const projection2272 = "+proj=lcc +lat_1=40.96666666666667 +lat_2=39.93333333333333 +lat_0=39.33333333333334 +lon_0=-77.75 +x_0=600000 +y_0=0 +ellps=GRS80 +datum=NAD83 +to_meter=0.3048006096012192 +no_defs";
+// import proj4 from 'proj4';
+// const projection4326 = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
+// const projection2272 = "+proj=lcc +lat_1=40.96666666666667 +lat_2=39.93333333333333 +lat_0=39.33333333333334 +lon_0=-77.75 +x_0=600000 +y_0=0 +ellps=GRS80 +datum=NAD83 +to_meter=0.3048006096012192 +no_defs";
 
 const cyclomediaInitialized = ref(false);
 
 const $emit = defineEmits(['updateCameraYaw', 'updateCameraLngLat', 'updateCameraHFov', 'toggleCyclomedia']);
 
+
+
+const selectedResourceCoords = computed(() => {
+  // const dataPoint = DataStore.currentData.filter(dataPoint => dataPoint._featureId === DataStore.selectedResource)[0];
+  const dataSource = DataStore.sources[DataStore.appType].data.features;
+  if (import.meta.env.VITE_DEBUG) console.log('selectedResourceCoords, dataSource:', dataSource, 'DataStore.selectedResource:', DataStore.selectedResource);
+  const dataPoint = dataSource.filter(dataPoint => dataPoint._featureId === DataStore.selectedResource)[0];
+  if (import.meta.env.VITE_DEBUG) console.log('selectedResourceCoords, dataPoint:', dataPoint);
+  if (dataPoint) {
+    return dataPoint.geometry.coordinates;
+  }
+});
+
+watch(
+  () => selectedResourceCoords.value,
+  newSelectedResourceCoords => {
+    if (import.meta.env.VITE_DEBUG == 'true') console.log('CyclomediaPanel.vue watch selectedResourceCoords, newSelectedResourceCoords:', newSelectedResourceCoords);
+    if (newSelectedResourceCoords && newSelectedResourceCoords.length) setNewLocation(newSelectedResourceCoords);
+  }
+)
+
 watch(
   () => MapStore.currentAddressCoords,
   newLngLat => {
     if (import.meta.env.VITE_DEBUG == 'true') console.log('CyclomediaPanel.vue watch cyclomediaLngLat, newLngLat:', newLngLat);
-    setNewLocation(newLngLat);
+    if (newLngLat.length) setNewLocation(newLngLat);
   }
 )
 
@@ -35,7 +58,9 @@ watch(
   newCyclomediaOn => {
     if (import.meta.env.VITE_DEBUG == 'true') console.log('CyclomediaPanel.vue watch cyclomediaOn, newCyclomediaOn:', newCyclomediaOn);
     if (newCyclomediaOn) {
-      if (MapStore.currentAddressCoords.length) {
+      if (DataStore.selectedResource) {
+        setNewLocation(selectedResourceCoords.value);
+      } else if (MapStore.currentAddressCoords.length) {
         setNewLocation(MapStore.currentAddressCoords);
       } else {
         setNewLocation($mapConfig.cityCenterCoords);
@@ -65,8 +90,8 @@ const setNewLocation = async (coords) => {
     // lastYear = format(subYears(today, 2), 'yyyy-MM-dd');
     // thisYear = format(today, 'yyyy-MM-dd');
     params = {
-      // coordinate: [coords2272[0],coords2272[1]],
       coordinate: coords,
+      orientation: { pitch: 0 },
     };
   }
   if (import.meta.env.VITE_DEBUG == 'true') console.log('CyclomediaPanel.vue setNewLocation, lastYear:', lastYear, 'thisYear:', thisYear, 'coords:', coords);
@@ -83,9 +108,12 @@ const setNewLocation = async (coords) => {
   )
   let viewer = response[0];
   if (import.meta.env.VITE_DEBUG == 'true') console.log('CyclomediaPanel.vue setNewLocation, viewer:', viewer, 'response:', response);
-  // if (isMobile.value) {
-    viewer.toggleNavbarExpanded(navBarExpanded.value);
-  // }
+  // let currentOrientation = viewer.getOrientation();
+  // currentOrientation.pitch = 0;
+  // viewer.props.orientation.pitch = 0;
+  // viewer.setOrientation(currentOrientation);
+  // if (import.meta.env.VITE_DEBUG == 'true') console.log('CyclomediaPanel.vue setNewLocation, viewer:', viewer, 'currentOrientation:', currentOrientation, 'viewer.props.orientation.pitch:', viewer.props.orientation.pitch, 'response:', response);
+  viewer.toggleNavbarExpanded(navBarExpanded.value);
   viewer.toggleButtonEnabled('panorama.elevation', false);
   viewer.toggleButtonEnabled('panorama.reportBlurring', false);
 
@@ -121,6 +149,7 @@ const setNewLocation = async (coords) => {
     MapStore.cyclomediaYear = viewer.props.recording.year;
     // $emit('updateCyclomediaDate', e.recording.year);
     const orientation = viewer.getOrientation();
+    // viewer.setOrientation({ pitch: 0 });
     if (import.meta.env.VITE_DEBUG == 'true') console.log('orientation:', orientation);
     if (viewer.props.orientation.xyz !== MapStore.cyclomediaCameraXyz) {
       // const lngLat = proj4(projection2272, projection4326, [ viewer.props.orientation.xyz[0], viewer.props.orientation.xyz[1] ]);
@@ -153,14 +182,8 @@ watch(
 )
 
 onMounted( async() => {
-  let CYCLOMEDIA_USERNAME, CYCLOMEDIA_PASSWORD;
-  // if (import.meta.env.VITE_VERSION == 'atlas') {
-  CYCLOMEDIA_USERNAME = import.meta.env.VITE_CYCLOMEDIA_USERNAME;
-  CYCLOMEDIA_PASSWORD = import.meta.env.VITE_CYCLOMEDIA_PASSWORD;
-  // } else if (import.meta.env.VITE_VERSION == 'cityatlas') {
-  //   CYCLOMEDIA_USERNAME = import.meta.env.VITE_CITYATLAS_CYCLOMEDIA_USERNAME;
-  //   CYCLOMEDIA_PASSWORD = import.meta.env.VITE_CITYATLAS_CYCLOMEDIA_PASSWORD;
-  // }
+  let CYCLOMEDIA_USERNAME = import.meta.env.VITE_CYCLOMEDIA_USERNAME;
+  let CYCLOMEDIA_PASSWORD = import.meta.env.VITE_CYCLOMEDIA_PASSWORD;
   if (import.meta.env.VITE_DEBUG == 'true') console.log('CyclomediaPanel.vue onMounted, StreetSmartApi:', StreetSmartApi, 'CYCLOMEDIA_USERNAME:', CYCLOMEDIA_USERNAME, 'CYCLOMEDIA_PASSWORD:', CYCLOMEDIA_PASSWORD);
 
   if (!cyclomediaInitialized.value) {
@@ -180,7 +203,9 @@ onMounted( async() => {
     if (import.meta.env.VITE_DEBUG == 'true') console.log('CyclomediaPanel.vue onMounted, cyclomedia initialized');
     cyclomediaInitialized.value = true;
   }
-  if (GeocodeStore.aisData.features) {
+  if (DataStore.selectedResource) {
+    setNewLocation(selectedResourceCoords.value);
+  } else if (GeocodeStore.aisData.features) {
     setNewLocation(GeocodeStore.aisData.features[0].geometry.coordinates);
   } else {
     setNewLocation([ -75.163471, 39.953338 ]);
