@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useMapStore } from '../../stores/MapStore';
 const MapStore = useMapStore();
 import { useGeocodeStore } from '../../stores/GeocodeStore';
@@ -8,8 +8,6 @@ import { useMainStore } from '../../stores/MainStore';
 const MainStore = useMainStore();
 import { useDataStore } from '../../stores/DataStore';
 const DataStore = useDataStore();
-
-import { computed, watch } from 'vue';
 
 import $mapConfig from '../../mapConfig';
 const isMobile = computed(() => {
