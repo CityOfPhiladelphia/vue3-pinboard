@@ -34,6 +34,8 @@ jobs:
           VITE_CYCLOMEDIA_API_KEY: ${{ secrets.VITE_CYCLOMEDIA_API_KEY }}
           VITE_CYCLOMEDIA_PASSWORD: ${{ secrets.VITE_CYCLOMEDIA_PASSWORD }}
           VITE_CYCLOMEDIA_USERNAME: ${{ secrets.VITE_CYCLOMEDIA_USERNAME }}
+          VITE_AGO_USERNAME: ${{ secrets.VITE_AGO_USERNAME }}
+          VITE_AGO_PASSWORD: ${{ secrets.VITE_AGO_PASSWORD }}
 
       - uses: actions/setup-node@v3
         with:
