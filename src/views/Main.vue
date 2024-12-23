@@ -166,31 +166,6 @@ const database = computed(() => {
   return value;
 });
 
-// const shouldLoadCyclomediaWidget = computed(() => {
-//   return $config.cyclomedia && $config.cyclomedia.enabled && !isMobile.value;
-// });
-
-// const cyclomediaActive = computed(() => {
-//   return store.state.cyclomedia.active;
-// });
-
-// const cycloLatlng = computed(() => {
-//   if (store.state.cyclomedia.orientation.xyz !== null) {
-//     const xyz = store.state.cyclomedia.orientation.xyz;
-//     return [ xyz[1], xyz[0] ];
-//   }
-//   const center = $config.map.center;
-//   return center;
-// });
-
-// const cycloRotationAngle = computed(() => {
-//   return store.state.cyclomedia.orientation.yaw * (180/3.14159265359);
-// });
-
-// const cycloHFov = computed(() => {
-//   return store.state.cyclomedia.orientation.hFov;
-// });
-
 const layoutDescription = computed(() => {
   let value;
   if (isMobile.value && !refineEnabled.value) {
@@ -253,20 +228,6 @@ const justPassedHolidayClosure = computed(() => {
     return true;
   } 
   return false;
-});
-
-const closureMessage = computed(() => {
-  let holiday = MainStore.holiday;
-  let message;
-  if (currentHolidayClosure.value) {
-    message = t('holidayClosure') + holiday.holiday_label + ' ' + format(parseISO(holiday.start_date), 'MM/dd/yyyy');
-  } else if (futureHolidayClosure.value) {
-    message = t('futureHolidayClosure') + holiday.holiday_label + ' ' + format(parseISO(holiday.start_date), 'MM/dd/yyyy');
-    // message = t('futureHolidayClosure') + transforms.toLocaleDateString.transform(item.attributes.close_holiday_start);
-  } else {
-    message = null;
-  }
-  return message;
 });
 
 const closureMessageAllSites = computed(() => {
