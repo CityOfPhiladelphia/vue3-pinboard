@@ -55,74 +55,79 @@ const initData = async() => {
   }
 }
 
-const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [
-    {
-      path: '/',
-      name: 'home',
-      component: Main,
-      beforeEnter: async (to, from) => {
-        await initData();
+const initRouter = (publicPath) => {
+  console.log('router/index.js initRouter is running, publicPath:', publicPath);
+  const router = createRouter({
+    history: createWebHistory(publicPath),
+    routes: [
+      {
+        path: '/',
+        name: 'home',
+        component: Main,
+        beforeEnter: async (to, from) => {
+          await initData();
+        }
+      },
+      {
+        path: '/print',
+        name: 'printView',
+        component: PrintView,
+        beforeEnter: async (to, from) => {
+          await initData();
+        }
       }
-    },
-    {
-      path: '/print',
-      name: 'printView',
-      component: PrintView,
-      beforeEnter: async (to, from) => {
-        await initData();
-      }
-    }
-  ]
-});
+    ]
+  })
 
-router.afterEach(async (to, from) => {
-  const DataStore = useDataStore();
-  const MainStore = useMainStore();
-  const MapStore = useMapStore();
-  const GeocodeStore = useGeocodeStore();
-  if (import.meta.env.VITE_DEBUG) console.log('router.afterEach to:', to, 'from:', from);
-  // if (to.query.resource && to.query.resource != from.query.resource) {
-  if (to.query.resource) {
-    DataStore.selectedResource = to.query.resource;
-  } else {
-    DataStore.selectedResource = null;
-  }
-  if (to.query.address && to.query.address != from.query.address) {
-    MainStore.selectedZipcode = null;
-    await getGeocodeAndPutInStore(to.query.address);
-    if (import.meta.env.VITE_DEBUG) console.log('router.afterEach is calling MapStore.fillBufferForAddressOrLocationOrZipcode, to.query.address:', to.query.address);
-    if (GeocodeStore.aisData.features) {
-      MapStore.fillBufferForAddressOrLocationOrZipcode();
-    }
-  } else if (!to.query.address || to.query.address == '') {
-    clearGeocode();
-  }
-  if (to.query.zipcode && to.query.zipcode != from.query.zipcode) {
-    if (import.meta.env.VITE_DEBUG) console.log('fillBufferForAddressOrLocationOrZipcode is running, DataStore.zipcodes.features:', DataStore.zipcodes.features);
-    let zipcodesData = DataStore.zipcodes;
-    let zipcode;
-    if (zipcodesData) {
-      zipcode = zipcodesData.features.filter(item => item.properties.CODE == to.query.zipcode)[0];
-    }
-    if (import.meta.env.VITE_DEBUG) console.log('router.afterEach has zipcode and is calling MapStore.fillBufferForAddressOrLocationOrZipcode');
-    if (zipcode) {
-      MapStore.geolocation = null;
-      MainStore.selectedZipcode = to.query.zipcode;
-      MapStore.fillZipcodeCenter(zipcode);
-      MapStore.fillBufferForAddressOrLocationOrZipcode();
-    }
-  } else if (!to.query.address && !to.query.zipcode) {
-    MapStore.bufferForAddressOrLocationOrZipcode = null;
-  }
-  if (to.query.services != from.query.services) {
-    if (to.query.services && to.query.services.length) {
-      MainStore.selectedServices = to.query.services.split(',');
+  router.afterEach(async (to, from) => {
+    const DataStore = useDataStore();
+    const MainStore = useMainStore();
+    const MapStore = useMapStore();
+    const GeocodeStore = useGeocodeStore();
+    if (import.meta.env.VITE_DEBUG) console.log('router.afterEach to:', to, 'from:', from);
+    // if (to.query.resource && to.query.resource != from.query.resource) {
+    if (to.query.resource) {
+      DataStore.selectedResource = to.query.resource;
     } else {
-      MainStore.selectedServices = [];
+      DataStore.selectedResource = null;
     }
-  }
-});
+    if (to.query.address && to.query.address != from.query.address) {
+      MainStore.selectedZipcode = null;
+      await getGeocodeAndPutInStore(to.query.address);
+      if (import.meta.env.VITE_DEBUG) console.log('router.afterEach is calling MapStore.fillBufferForAddressOrLocationOrZipcode, to.query.address:', to.query.address);
+      if (GeocodeStore.aisData.features) {
+        MapStore.fillBufferForAddressOrLocationOrZipcode();
+      }
+    } else if (!to.query.address || to.query.address == '') {
+      clearGeocode();
+    }
+    if (to.query.zipcode && to.query.zipcode != from.query.zipcode) {
+      if (import.meta.env.VITE_DEBUG) console.log('fillBufferForAddressOrLocationOrZipcode is running, DataStore.zipcodes.features:', DataStore.zipcodes.features);
+      let zipcodesData = DataStore.zipcodes;
+      let zipcode;
+      if (zipcodesData) {
+        zipcode = zipcodesData.features.filter(item => item.properties.CODE == to.query.zipcode)[0];
+      }
+      if (import.meta.env.VITE_DEBUG) console.log('router.afterEach has zipcode and is calling MapStore.fillBufferForAddressOrLocationOrZipcode');
+      if (zipcode) {
+        MapStore.geolocation = null;
+        MainStore.selectedZipcode = to.query.zipcode;
+        MapStore.fillZipcodeCenter(zipcode);
+        MapStore.fillBufferForAddressOrLocationOrZipcode();
+      }
+    } else if (!to.query.address && !to.query.zipcode) {
+      MapStore.bufferForAddressOrLocationOrZipcode = null;
+    }
+    if (to.query.services != from.query.services) {
+      if (to.query.services && to.query.services.length) {
+        MainStore.selectedServices = to.query.services.split(',');
+      } else {
+        MainStore.selectedServices = [];
+      }
+    }
+  });
 
-export default router
+  return router;
+};
+
+export default initRouter;

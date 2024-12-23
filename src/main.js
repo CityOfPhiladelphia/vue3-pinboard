@@ -9,7 +9,7 @@ if (import.meta.env.VITE_DEBUG) console.log('test, import.meta.env.VITE_DEBUG:',
 import { createI18n } from 'vue-i18n'
 
 import App from './App.vue'
-import router from './router'
+import initRouter from './router'
 
 import mergeDeep from './util/merge-deep';
 
@@ -139,8 +139,10 @@ export default function pinboard(config) {
   console.log('ConfigStore:', ConfigStore);
   ConfigStore.config = config;
 
-  app.use(router)
+  const router = initRouter(config.publicPath);
+  console.log('router:', router);
 
+  app.use(router);
   app.mount('#app')
 };
 
