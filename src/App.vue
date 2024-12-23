@@ -19,12 +19,12 @@ const ConfigStore = useConfigStore();
 const $config = ConfigStore.config;
 const MainStore = useMainStore();
 
-if (!import.meta.env.VITE_PUBLICPATH) {
-  MainStore.publicPath = '/';
+if ($config.publicPath) {
+  MainStore.publicPath = $config.publicPath;
 } else {
-  MainStore.publicPath = import.meta.env.VITE_PUBLICPATH;
+  MainStore.publicPath = '/';
 }
-if (import.meta.env.VITE_DEBUG == 'true') console.log('import.meta.env.VITE_PUBLICPATH:', import.meta.env.VITE_PUBLICPATH, 'MainStore.publicPath:', MainStore.publicPath);
+if (import.meta.env.VITE_DEBUG == 'true') console.log('$config.publicPath:', $config.publicPath, 'MainStore.publicPath:', MainStore.publicPath);
 
 // ROUTER
 const route = useRoute();

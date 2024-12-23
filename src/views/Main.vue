@@ -49,7 +49,6 @@ const DataStore = useDataStore();
 const route = useRoute();
 const router = useRouter();
 
-const publicPath = ref('/');
 const isMapVisible = ref(false);
 const isAlertModalOpen = ref(false);
 // const currentBuffer = ref(null);
