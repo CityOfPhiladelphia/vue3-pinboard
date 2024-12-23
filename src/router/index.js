@@ -17,7 +17,7 @@ const getGeocodeAndPutInStore = async(address) => {
   if (!GeocodeStore.aisData.features) {
     MainStore.currentAddress = null;
     MapStore.bufferForAddressOrLocationOrZipcode = null;
-    if (import.meta.env.VITE_DEBUG == 'true') console.log('getGeocodeAndPutInStore, calling not-found');
+     console.log('getGeocodeAndPutInStore, calling not-found');
     return;
   }
   MainStore.selectedZipcode = null;
@@ -56,7 +56,7 @@ const initData = async() => {
 }
 
 const initRouter = (publicPath) => {
-  console.log('router/index.js initRouter is running, publicPath:', publicPath);
+  if (import.meta.env.VITE_DEBUG) console.log('router/index.js initRouter is running, publicPath:', publicPath);
   const router = createRouter({
     history: createWebHistory(publicPath),
     routes: [

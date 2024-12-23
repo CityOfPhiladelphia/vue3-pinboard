@@ -90,7 +90,7 @@ onMounted(async () => {
     canvas.setAttribute('tabindex', -1);
 
     let geojson = featureCollection(DataStore.currentData);
-    console.log('geojson:', geojson);
+    if (import.meta.env.VITE_DEBUG) console.log('geojson:', geojson);
     map.getSource('resources').setData(geojson);
 
     map.addLayer($config.mapLayer, 'addressMarker');
@@ -149,7 +149,7 @@ onMounted(async () => {
 
   // add the address marker and camera icon sources
   const markerImage = await map.loadImage(markerSrc.value)
-  if (import.meta.env.VITE_DEBUG == 'true') console.log('markerImage:', markerImage);
+   console.log('markerImage:', markerImage);
   map.addImage('marker-blue', markerImage.data);
   const cameraImage = await map.loadImage(cameraSrc.value)
   map.addImage('camera-icon', cameraImage.data);
@@ -159,7 +159,7 @@ onMounted(async () => {
   // map.addControl(new maplibregl.GeolocateControl(), 'bottom-right');
 
   map.on('moveend', () => {
-    // if (import.meta.env.VITE_DEBUG == 'true') console.log('map moveend event, e:', e, 'map.getZoom()', map.getZoom(), 'map.getStyle().layers:', map.getStyle().layers, 'map.getStyle().sources:', map.getStyle().sources);
+    //  console.log('map moveend event, e:', e, 'map.getZoom()', map.getZoom(), 'map.getStyle().layers:', map.getStyle().layers, 'map.getStyle().sources:', map.getStyle().sources);
     if (MapStore.cyclomediaOn) {
       map.getZoom() > 16.5 ? MapStore.cyclomediaRecordingsOn = true : MapStore.cyclomediaRecordingsOn = false;
       if (MapStore.cyclomediaRecordingsOn) {
@@ -180,7 +180,7 @@ onMounted(async () => {
 
   // if a cyclomedia recording circle is clicked, set its coordinates in the MapStore
   map.on('click', 'cyclomediaRecordings', (e) => {
-    // if (import.meta.env.VITE_DEBUG == 'true') console.log('cyclomediaRecordings click, e:', e, 'e.features[0]:', e.features[0]);
+    //  console.log('cyclomediaRecordings click, e:', e, 'e.features[0]:', e.features[0]);
     e.clickOnLayer = true;
     MapStore.clickedCyclomediaRecordingCoords = [ e.lngLat.lng, e.lngLat.lat ];
   });
@@ -204,7 +204,7 @@ onMounted(async () => {
     MainStore.lastSelectMethod = 'map';
     // const feature = e.features[0];
     // const properties = e.features[0].properties;
-    // if (import.meta.env.VITE_DEBUG == 'true') console.log('click, e:', e, 'feature:', feature, 'properties:', properties);
+    //  console.log('click, e:', e, 'feature:', feature, 'properties:', properties);
     const selectedResourceId = e.features[0].properties._featureId;
     MapStore.latestSelectedResourceFromMap = selectedResourceId;
     let query = {...route.query};
@@ -219,7 +219,7 @@ onMounted(async () => {
   });
 
   map.on('mouseenter', 'resources', (e) => {
-    if (import.meta.env.VITE_DEBUG == 'true') console.log('mouseenter, e:', e);
+     console.log('mouseenter, e:', e);
     if (e.features.length > 0) {
       map.getCanvas().style.cursor = 'pointer'
     }
@@ -247,7 +247,7 @@ watch(
   () => MapStore.geolocation,
   async newGeolocation => {
     MapStore.fillBufferForAddressOrLocationOrZipcode();
-    if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue geolocation watch, newGeolocation:', newGeolocation);
+     console.log('Map.vue geolocation watch, newGeolocation:', newGeolocation);
     if (newGeolocation) {
       map.setCenter(newGeolocation);
       map.getSource('geolocationMarker').setData(point(newGeolocation));
@@ -260,7 +260,7 @@ watch(
 watch(
   () => MapStore.bufferForAddressOrLocationOrZipcode,
   async newBuffer => {
-    if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue bufferForAddressOrLocationOrZipcode watch, newBuffer:', newBuffer);
+     console.log('Map.vue bufferForAddressOrLocationOrZipcode watch, newBuffer:', newBuffer);
     if (newBuffer && map.getSource('buffer')) {
       map.getSource('buffer').setData(newBuffer);
     } else if (map.getSource('buffer')) {
@@ -273,7 +273,7 @@ watch(
   () => DataStore.currentData,
   async newData => {
   let geojson = featureCollection(newData);
-    // if (import.meta.env.VITE_DEBUG == 'true') console.log('geojson:', geojson, 'map.getStyle().sources.resources.data:', map.getStyle().sources.resources.data);
+    //  console.log('geojson:', geojson, 'map.getStyle().sources.resources.data:', map.getStyle().sources.resources.data);
   if (import.meta.env.VITE_DEBUG) console.log('map.getSource("resources"):', map.getSource('resources'));
   if (map.getSource('resources')) {
     map.getSource('resources').setData(geojson);
@@ -345,7 +345,7 @@ watch(
 watch(
   () => GeocodeStore.aisData,
   async newAddress => {
-    if (import.meta.env.VITE_DEBUG == 'true') console.log('MapStore aisData watch, newAddress:', newAddress);
+     console.log('MapStore aisData watch, newAddress:', newAddress);
     if (newAddress.features && newAddress.features[0].geometry.coordinates.length) {
       const newCoords = newAddress.features[0].geometry.coordinates;
       map.setCenter(newCoords);
@@ -374,7 +374,7 @@ const pwdCoordinates = computed(() => {
 watch(
   () => pwdCoordinates.value,
   newCoords => {
-  if (import.meta.env.VITE_DEBUG == 'true') console.log('Map pwdCoordinates watch, newCoords:', newCoords, 'MapStore.addressMarker:', MapStore.addressMarker);
+   console.log('Map pwdCoordinates watch, newCoords:', newCoords, 'MapStore.addressMarker:', MapStore.addressMarker);
   if (newCoords.length) {
     const address = point(newCoords);
     map.getSource('addressMarker').setData(address);
@@ -428,31 +428,31 @@ watch(
 )
 
 // const setLabelLayers = (newLabelLayers) => {
-//   if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue setLabelLayers, newLabelLayers:', newLabelLayers, 'map.getStyle().layers:', map.getStyle().layers);
+//    console.log('Map.vue setLabelLayers, newLabelLayers:', newLabelLayers, 'map.getStyle().layers:', map.getStyle().layers);
 //     if (newLabelLayers.length) {
 //       newLabelLayers.forEach(layer => {
 //         if (!map.getSource(layer.id)) {
-//           // if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue setLabelLayers, NOT THERE, layer:', layer, 'layer.id:', layer.id, 'JSON.parse(JSON.stringify(layer.source)):', JSON.parse(JSON.stringify(layer.source)));
+//           //  console.log('Map.vue setLabelLayers, NOT THERE, layer:', layer, 'layer.id:', layer.id, 'JSON.parse(JSON.stringify(layer.source)):', JSON.parse(JSON.stringify(layer.source)));
 //           map.addSource(layer.id, JSON.parse(JSON.stringify(layer.source)));
 //         } else {
-//           // if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue setLabelLayers, YES THERE, layer:', layer, 'layer.id:', layer.id, 'JSON.parse(JSON.stringify(layer.source)):', JSON.parse(JSON.stringify(layer.source)));
+//           //  console.log('Map.vue setLabelLayers, YES THERE, layer:', layer, 'layer.id:', layer.id, 'JSON.parse(JSON.stringify(layer.source)):', JSON.parse(JSON.stringify(layer.source)));
 //           map.getSource(layer.id).setData(layer.source.data);
 //         }
 //       })
 //     }
-//     // if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue setLabelLayers, map.getStyle:', map.getStyle(), 'map.getStyle().layers:', map.getStyle().layers, 'map.getStyle().sources:', map.getStyle().sources);
+//     //  console.log('Map.vue setLabelLayers, map.getStyle:', map.getStyle(), 'map.getStyle().layers:', map.getStyle().layers, 'map.getStyle().sources:', map.getStyle().sources);
 // }
 
 const imagerySelected = ref('2023');
 
 const toggleImagery = () => {
-  if (import.meta.env.VITE_DEBUG == 'true') console.log('toggleImagery, map.getStyle:', map.getStyle(), '$mapConfig.mapLayers:', $mapConfig.mapLayers);
+   console.log('toggleImagery, map.getStyle:', map.getStyle(), '$mapConfig.mapLayers:', $mapConfig.mapLayers);
   if (!MapStore.imageryOn) {
     MapStore.imageryOn = true;
     map.addLayer($mapConfig.mapLayers[imagerySelected.value], 'cyclomediaRecordings')
     map.addLayer($mapConfig.mapLayers.imageryLabels, 'cyclomediaRecordings')
   } else {
-    if (import.meta.env.VITE_DEBUG == 'true') console.log('map.getStyle().layers:', map.getStyle().layers);
+     console.log('map.getStyle().layers:', map.getStyle().layers);
     MapStore.imageryOn = false;
     map.removeLayer(imagerySelected.value);
     map.removeLayer('imageryLabels');
@@ -478,7 +478,7 @@ const removeAllCyclomediaMapLayers = () => {
 
 // toggle cyclomedia on and off
 const toggleCyclomedia = async() => {
-  if (import.meta.env.VITE_DEBUG == 'true') console.log('toggleCyclomedia, map.getStyle().sources:', map.getStyle().sources, 'map.getStyle().layers:', map.getStyle().layers);
+   console.log('toggleCyclomedia, map.getStyle().sources:', map.getStyle().sources, 'map.getStyle().layers:', map.getStyle().layers);
   MapStore.cyclomediaOn = !MapStore.cyclomediaOn;
   if (MapStore.cyclomediaOn) {
     MapStore.eagleviewOn = false;
@@ -486,11 +486,11 @@ const toggleCyclomedia = async() => {
     if (zoom > 16.5) {
       await updateCyclomediaRecordings();
       if (MapStore.cyclomediaCameraLngLat) {
-        if (import.meta.env.VITE_DEBUG == 'true') console.log('in toggleCyclomedia, calling updateCyclomediaCameraLngLat, MapStore.cyclomediaCameraLngLat:', MapStore.cyclomediaCameraLngLat);
+         console.log('in toggleCyclomedia, calling updateCyclomediaCameraLngLat, MapStore.cyclomediaCameraLngLat:', MapStore.cyclomediaCameraLngLat);
         updateCyclomediaCameraLngLat(MapStore.cyclomediaCameraLngLat);
       }
       if (MapStore.cyclomediaCameraHFov && MapStore.cyclomediaCameraYaw) {
-        if (import.meta.env.VITE_DEBUG == 'true') console.log('calling updateCyclomediaCameraViewcone');
+         console.log('calling updateCyclomediaCameraViewcone');
         updateCyclomediaCameraViewcone(MapStore.cyclomediaCameraHFov, MapStore.cyclomediaCameraYaw);
       }
     }
@@ -508,7 +508,7 @@ let cyclomediaRecordingsClient = new CyclomediaRecordingsClient(
 );
 
 const updateCyclomediaRecordings = async () => {
-  // if (import.meta.env.VITE_DEBUG == 'true') console.log('updateCyclomediaRecordings is running');
+  //  console.log('updateCyclomediaRecordings is running');
   const bounds = map.getBounds();
   cyclomediaRecordingsClient.getRecordings(
     bounds,
@@ -532,7 +532,7 @@ const updateCyclomediaRecordings = async () => {
         })
       }
       geojson.features = features;
-      // if (import.meta.env.VITE_DEBUG == 'true') console.log("map.getSource('cyclomediaRecordings'):", 'map.getStyle().layers:', map.getStyle().layers);
+      //  console.log("map.getSource('cyclomediaRecordings'):", 'map.getStyle().layers:', map.getStyle().layers);
       map.getSource('cyclomediaRecordings').setData(geojson);
       // I don't know why this works - maybe because the mergeDeep is still running
       $mapConfig.pwdDrawnMapStyle.sources.cyclomediaRecordings.data.features = features;
@@ -542,7 +542,7 @@ const updateCyclomediaRecordings = async () => {
 
 // everything for adding, moving, and orienting the cyclomedia camera icon and viewcone
 const updateCyclomediaCameraLngLat = (lngLat) => {
-  // if (import.meta.env.VITE_DEBUG == 'true') console.log('updateCyclomediaCameraLngLat is running, lngLat:', lngLat);
+  //  console.log('updateCyclomediaCameraLngLat is running, lngLat:', lngLat);
   if (!MapStore.cyclomediaOn) {
     return;
   } else {
@@ -553,7 +553,7 @@ const updateCyclomediaCameraLngLat = (lngLat) => {
 }
 
 const updateCyclomediaCameraAngle = (newOrientation) => {
-  // if (import.meta.env.VITE_DEBUG == 'true') console.log('updateCyclomediaCameraAngle is running, newOrientation:', newOrientation);
+  //  console.log('updateCyclomediaCameraAngle is running, newOrientation:', newOrientation);
   if (!newOrientation) {
     newOrientation = MapStore.cyclomediaCameraYaw;
   }
@@ -564,7 +564,7 @@ const updateCyclomediaCameraViewcone = (cycloHFov, cycloYaw) => {
   const halfAngle = cycloHFov / 2.0;
   let angle1 = cycloYaw - halfAngle;
   let angle2 = cycloYaw + halfAngle;
-  if (import.meta.env.VITE_DEBUG == 'true') console.log('updateCyclomediaCameraViewcone, cycloHFov:', cycloHFov, 'halfAngle:', halfAngle, 'angle1:', angle1, 'cycloYaw:', cycloYaw, 'angle2:', angle2);
+   console.log('updateCyclomediaCameraViewcone, cycloHFov:', cycloHFov, 'halfAngle:', halfAngle, 'angle1:', angle1, 'cycloYaw:', cycloYaw, 'angle2:', angle2);
   const watchedZoom = map.getZoom();
   let distance;
   if (watchedZoom < 9) {
@@ -596,10 +596,10 @@ const updateCyclomediaCameraViewcone = (cycloHFov, cycloYaw) => {
   const cyclomediaCameraLngLat = MapStore.cyclomediaCameraLngLat;
   let options = { units: 'feet' };
   if (!cyclomediaCameraLngLat) {
-    if (import.meta.env.VITE_DEBUG == 'true') console.log('no cyclomediaCameraLngLat');
+     console.log('no cyclomediaCameraLngLat');
     return;
   }
-  if (import.meta.env.VITE_DEBUG == 'true') console.log('cyclomediaCameraLngLat:', cyclomediaCameraLngLat);
+   console.log('cyclomediaCameraLngLat:', cyclomediaCameraLngLat);
 
   var destination1 = destination([ cyclomediaCameraLngLat[0], cyclomediaCameraLngLat[1] ], distance, angle1, options);
   var destination2 = destination([ cyclomediaCameraLngLat[0], cyclomediaCameraLngLat[1] ], distance, angle2, options);

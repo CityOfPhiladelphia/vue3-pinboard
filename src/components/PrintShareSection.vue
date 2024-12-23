@@ -41,7 +41,7 @@ const isMobile = computed(() => {
 });
 
 const clickedShare = () => {
-  console.log('clickedShare is running');
+  if (import.meta.env.VITE_DEBUG) console.log('clickedShare is running');
   var dummy = document.createElement('input'),
     text = window.location.href;
 
@@ -58,7 +58,7 @@ const clickedShare = () => {
 };
 
 const clickedPrint = () => {
-  console.log('clickedPrint is running');
+  if (import.meta.env.VITE_DEBUG) console.log('clickedPrint is running');
   MainStore.printCheckboxes = [ props.item._featureId ];
   router.push({ name: 'printView'  });
 }

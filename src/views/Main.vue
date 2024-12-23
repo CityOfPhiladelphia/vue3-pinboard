@@ -63,7 +63,7 @@ const addressInputPlaceholder = ref(null);
 const showForceHolidayBanner = ref(false);
 const showAutomaticHolidayBanner = ref(false);
 
-console.log('watch test');
+if (import.meta.env.VITE_DEBUG) console.log('watch test');
 
 if ($config.app.logoLink && $config.app.logoLink == 'none') {
   brandingLink.value = {
@@ -399,7 +399,7 @@ watch(
 watch(
   () => dataStatus.value,
   async nextDataStatus => {
-    console.log('watch dataStatus, nextDataStatus:', nextDataStatus);
+    if (import.meta.env.VITE_DEBUG) console.log('watch dataStatus, nextDataStatus:', nextDataStatus);
     if (nextDataStatus === 'success') {
       filterPoints();
     }

@@ -48,12 +48,12 @@ export const useDataStore = defineStore('DataStore', {
     
       await axios.request(config)
       .then((response) => {
-        console.log(JSON.stringify(response.data));
+        if (import.meta.env.VITE_DEBUG) console.log(JSON.stringify(response.data));
         this.agoToken = response.data;
         // this.$store.commit('setAgoToken', response.data.token);
       })
       .catch((error) => {
-        console.log(error);
+        if (import.meta.env.VITE_DEBUG) console.log(error);
       });
     },
     async fillResources() {
@@ -71,7 +71,7 @@ export const useDataStore = defineStore('DataStore', {
         if (dataConfig.dependent) {
           dependent = this.sources[dataConfig.dependent];
         }
-        console.log('source:', source, 'dataConfig:', dataConfig, 'params:', params, 'dependent:', dependent);
+        if (import.meta.env.VITE_DEBUG) console.log('source:', source, 'dataConfig:', dataConfig, 'params:', params, 'dependent:', dependent);
 
         if (params && params.where && typeof params.where === 'function') {
           params.where = params.where(dependent.data);
@@ -83,7 +83,7 @@ export const useDataStore = defineStore('DataStore', {
         if (response.status === 200) {
           let data = await response.data;
 
-          console.log('dataConfig.options.success:', dataConfig.options.success, 'dependent:', dependent);
+          if (import.meta.env.VITE_DEBUG) console.log('dataConfig.options.success:', dataConfig.options.success, 'dependent:', dependent);
           if (dataConfig.options.success) {
             dataConfig.options.success(data, dependent);
           }
@@ -91,13 +91,13 @@ export const useDataStore = defineStore('DataStore', {
     
           // for (let [rowKey, rowValue] of Object.entries(value)) {
           //   if ( rowKey == 'hide_on_finder' && rowValue == true ){
-          //     //console.log('deleted entry', database[key])
+          //     //if (import.meta.env.VITE_DEBUG) console.log('deleted entry', database[key])
           //     delete database[key];
           //   }
           // }
 
           if (data.features) {
-            console.log('data.features.length:', data.features.length);
+            if (import.meta.env.VITE_DEBUG) console.log('data.features.length:', data.features.length);
             data.features = data.features.filter(item => item.geometry);
             data.features = data.features.filter(item => item.hide_on_finder !== true);
             if ($config.hiddenRefine) {
@@ -106,7 +106,7 @@ export const useDataStore = defineStore('DataStore', {
                 data.features = data.features.filter(item => getter(item) == true);
               }
             }
-            console.log('data.features.length:', data.features.length);
+            if (import.meta.env.VITE_DEBUG) console.log('data.features.length:', data.features.length);
             for (let i=0; i<data.features.length; i++) {
               // if (data.features[i].geometry) {
               data.features[i]._featureId = source + '_' + i;
@@ -120,7 +120,7 @@ export const useDataStore = defineStore('DataStore', {
               // data.rows[i]._featureId = source + '_' + i;
               if (data.rows[i].lon && data.rows[i].lat) {
                 // const geo = point([data.rows[i].lon, data.rows[i].lat]);
-                // console.log('geo:', geo);
+                // if (import.meta.env.VITE_DEBUG) console.log('geo:', geo);
                 data.features[j] = point([data.rows[i].lon, data.rows[i].lat], data.rows[i]);
                 data.features[j]._featureId = source + '_' + j;
                 data.features[j].properties._featureId = source + '_' + j;
@@ -137,13 +137,13 @@ export const useDataStore = defineStore('DataStore', {
           } else if (data.length > 0) {
             response.features = [];
             // let features = [];
-            console.log('3rd option, data.features:', response.features);
+            if (import.meta.env.VITE_DEBUG) console.log('3rd option, data.features:', response.features);
             let j = 0;
             for (let i=0; i<data.length; i++) {
               // data.rows[i]._featureId = source + '_' + i;
               if (data[i].longitude && data[i].latitude) {
                 // const geo = point([data.rows[i].lon, data.rows[i].lat]);
-                // console.log('geo:', geo);
+                // if (import.meta.env.VITE_DEBUG) console.log('geo:', geo);
                 response.features[j] = point([data[i].longitude, data[i].latitude], data[i]);
                 response.features[j]._featureId = source + '_' + j;
                 response.features[j].properties._featureId = source + '_' + j;
@@ -156,7 +156,7 @@ export const useDataStore = defineStore('DataStore', {
                 response.features = response.features.filter(item => getter(item) == true);
               }
             }
-            console.log('3rd option 2, response.features:', response.features);
+            if (import.meta.env.VITE_DEBUG) console.log('3rd option 2, response.features:', response.features);
           }
           this.sources[source] = response;
         }
@@ -183,11 +183,11 @@ export const useDataStore = defineStore('DataStore', {
           // this.loadingRcos = false;
         } else {
           // this.loadingRcos = false;
-          if (import.meta.env.VITE_DEBUG == 'true') console.warn('fillZipcodes - await resolved but HTTP status was not successful');
+           console.warn('fillZipcodes - await resolved but HTTP status was not successful');
         }
       } catch {
         // this.loadingRcos = false;
-        if (import.meta.env.VITE_DEBUG == 'true') console.error('fillZipcodes - await never resolved, failed to fetch data');
+         console.error('fillZipcodes - await never resolved, failed to fetch data');
       }
     },
     async fillHolidays() {
@@ -197,10 +197,10 @@ export const useDataStore = defineStore('DataStore', {
           const data = await response.json()
           this.holidays = data.holidays;
         } else {
-          if (import.meta.env.VITE_DEBUG == 'true') console.warn('stormwaterData - await resolved but HTTP status was not successful')
+           console.warn('stormwaterData - await resolved but HTTP status was not successful')
         }
       } catch {
-        if (import.meta.env.VITE_DEBUG == 'true') console.error('stormwaterData - await never resolved, failed to fetch data')
+         console.error('stormwaterData - await never resolved, failed to fetch data')
       }
     },
   },

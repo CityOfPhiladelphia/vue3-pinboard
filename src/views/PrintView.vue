@@ -41,9 +41,9 @@ const database = computed(() => {
 const items = computed(() => {
   let filteredData;
   if (database.value) {
-    console.log('in PrintView.vue items computed, database.value:', database.value);
+    if (import.meta.env.VITE_DEBUG) console.log('in PrintView.vue items computed, database.value:', database.value);
     filteredData = database.value.filter(item => {
-      // console.log('in PrintView.vue items computed, item._featureId:', item._featureId, 'printCheckboxes.value:', printCheckboxes.value, 'printCheckboxes.value.includes(item._featureId):', printCheckboxes.value.includes(item._featureId));
+      // if (import.meta.env.VITE_DEBUG) console.log('in PrintView.vue items computed, item._featureId:', item._featureId, 'printCheckboxes.value:', printCheckboxes.value, 'printCheckboxes.value.includes(item._featureId):', printCheckboxes.value.includes(item._featureId));
       return printCheckboxes.value.includes(item._featureId)
     });
   }
@@ -61,7 +61,7 @@ onMounted(async () => {
 // methods
 
 const clickedBackToHome = () => {
-  console.log('clickedBackToHome is running');
+  if (import.meta.env.VITE_DEBUG) console.log('clickedBackToHome is running');
   let startQuery = { ...route.query };
   router.push({ name: 'home', query: { ...startQuery } });
 };

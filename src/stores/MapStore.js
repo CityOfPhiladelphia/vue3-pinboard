@@ -52,7 +52,7 @@ export const useMapStore = defineStore("MapStore", {
       if (import.meta.env.VITE_DEBUG) console.log('geofindError is running, error:', error);
     },
     async geolocate() {
-      console.log('geolocate is running');
+      if (import.meta.env.VITE_DEBUG) console.log('geolocate is running');
       if (!this.geolocation) {
         navigator.geolocation.getCurrentPosition(this.geofindSuccess, this.geofindError, { enableHighAccuracy: true, timeout: 1000, maximumAge: 0, distanceFilter: 5 });
       } else {
@@ -70,7 +70,7 @@ export const useMapStore = defineStore("MapStore", {
       } else if (useGeocodeStore().aisData.features) {
         if (import.meta.env.VITE_DEBUG) console.log('fillBufferForAddressOrLocationOrZipcode is running, useGeocodeStore().aisData.features:', useGeocodeStore().aisData.features);
         let addressPoint = point(useGeocodeStore().aisData.features[0].geometry.coordinates);
-        // if (import.meta.env.VITE_DEBUG == 'true') console.log('fillBufferForAddressOrLocationOrZipcode is running, addressPoint:', addressPoint, 'addressBuffer:', addressBuffer, 'lng:', lng, 'lat:', lat);
+        //  console.log('fillBufferForAddressOrLocationOrZipcode is running, addressPoint:', addressPoint, 'addressBuffer:', addressBuffer, 'lng:', lng, 'lat:', lat);
         this.bufferForAddressOrLocationOrZipcode = buffer(addressPoint, this.searchDistance, {units: 'miles'});
       } else if (useMainStore().selectedZipcode) {
         let zipcodesData = useDataStore().zipcodes;

@@ -123,7 +123,7 @@ export default function pinboard(config) {
 
   const i18nProject = config.i18n.data.messages;
   const messages = mergeDeep(i18nFromFiles.i18n.data.messages, i18nProject);
-  if (import.meta.env.VITE_DEBUG == 'true') console.log('i18nFromFiles:', i18nFromFiles, 'messages:', messages);
+   console.log('i18nFromFiles:', i18nFromFiles, 'messages:', messages);
   const i18n = createI18n({
     legacy: false,
     globalInjection: true,
@@ -136,11 +136,11 @@ export default function pinboard(config) {
   app.use(createPinia())
 
   const ConfigStore = useConfigStore();
-  console.log('ConfigStore:', ConfigStore);
+  if (import.meta.env.VITE_DEBUG) console.log('ConfigStore:', ConfigStore);
   ConfigStore.config = config;
 
   const router = initRouter(config.publicPath);
-  console.log('router:', router);
+  if (import.meta.env.VITE_DEBUG) console.log('router:', router);
 
   app.use(router);
   app.mount('#app')

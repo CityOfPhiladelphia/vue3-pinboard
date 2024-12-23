@@ -62,7 +62,7 @@ const locationClass = computed(() => {
 // const plusIconWeight = computed(() => {
 //   let value = 'fas';
 //   let regularExists = findIconDefinition({ prefix: 'far', iconName: 'plus' });
-//   // console.log('expandCollapse.vue computed, library:', library, 'regularExists:', regularExists);
+//   // if (import.meta.env.VITE_DEBUG) console.log('expandCollapse.vue computed, library:', library, 'regularExists:', regularExists);
 //   if (regularExists) {
 //     value = 'far';
 //   }
@@ -187,12 +187,12 @@ onMounted(() => {
       }
     }
     if (values.includes(true)) {
-      // console.log('ExpandCollapse mounted, values includes true, printCheckboxes:', printCheckboxes, 'props.item._featureId:', props.item._featureId, 'printCheckboxes.includes(props.item_featureId):', printCheckboxes.includes(props.item_featureId));
+      // if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse mounted, values includes true, printCheckboxes:', printCheckboxes, 'props.item._featureId:', props.item._featureId, 'printCheckboxes.includes(props.item_featureId):', printCheckboxes.includes(props.item_featureId));
       document.getElementById('checkbox'+props.item._featureId).checked = true;
     }
 
     // window.addEventListener('keydown', (e) => {
-    //   console.log('keydown is running, e', e);
+    //   if (import.meta.env.VITE_DEBUG) console.log('keydown is running, e', e);
     //   if (e.keyCode === 32 && e.target === document.body) {
     //     e.preventDefault();
     //   }
@@ -201,7 +201,7 @@ onMounted(() => {
     // let divButton = document.querySelector('#refine-top');
     // divButton.addEventListener('keypress', activate.bind(this));
     // function activate(e) {
-    //   console.log('activate, e:', e, 'e.path[0]:', e.path[0]);
+    //   if (import.meta.env.VITE_DEBUG) console.log('activate, e:', e, 'e.path[0]:', e.path[0]);
     //   if (e.type === 'keypress' && [ 13, 32 ].includes(e.keyCode) && e.srcElement.id == 'refine-top') {
     //     expandRefine();
     //   }
@@ -238,20 +238,20 @@ const siteName = computed(() => {
 });
 
 const clickCheckBox = (e) => {
-  console.log('clickCheckBox is running, e:', e, 'props.item._featureId:', props.item._featureId);
+  if (import.meta.env.VITE_DEBUG) console.log('clickCheckBox is running, e:', e, 'props.item._featureId:', props.item._featureId);
   $emit('print-box-checked', props.item._featureId);
 };
 
 const openPrintView = (e) => {
   e.stopPropagation();
-  console.log('openPrintView is running, e:', e, 'props.item._featureId:', props.item._featureId);
+  if (import.meta.env.VITE_DEBUG) console.log('openPrintView is running, e:', e, 'props.item._featureId:', props.item._featureId);
   window.open('./resource-view/' + props.item._featureId, '_blank');
 };
 
 const isElementInViewport = (el) => {
-  console.log('el:', el);
+  if (import.meta.env.VITE_DEBUG) console.log('el:', el);
   const rect = el.getBoundingClientRect();
-  // console.log('bounding box', rect);
+  // if (import.meta.env.VITE_DEBUG) console.log('bounding box', rect);
   const visibility = {
     // TODO the 108 below is account for the combined height of the
     // app header and address header. this is not a good long-term
@@ -265,7 +265,7 @@ const isElementInViewport = (el) => {
     bottom: rect.bottom <= (window.innerHeight || document.documentElement.clientHeight),
     right: rect.right <= (window.innerWidth || document.documentElement.clientWidth),
   };
-  // console.log('visibility', visibility);
+  // if (import.meta.env.VITE_DEBUG) console.log('visibility', visibility);
 
   // return if all sides are visible
   return Object.values(visibility).every(val => val);
@@ -283,7 +283,7 @@ const expandLocation = () => {
     delete query.resource;
     router.push({ name: 'home', query });
   }
-  if (import.meta.env.VITE_DEBUG == 'true') console.log('ExpandCollapse expandLocation after selectedResource is defined');
+  if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse expandLocation after selectedResource is defined');
 };
 
 const openLocation = () => {
@@ -298,7 +298,7 @@ const openLocation = () => {
 };
 
 const makeID = (itemTitle) =>{
-  // console.log('itemTitle:', itemTitle);
+  // if (import.meta.env.VITE_DEBUG) console.log('itemTitle:', itemTitle);
   let value;
   if (itemTitle) {
     value = itemTitle.replace(/\s+/g, '-').toLowerCase();

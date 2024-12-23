@@ -34,17 +34,17 @@ defineProps({
 });
 
 const clearSearch = () => {
-  if (import.meta.env.VITE_DEBUG == 'true') console.log('clearSearch is running');
+   console.log('clearSearch is running');
   MainStore.searchValue = '';
 }
 
 const searchPlaceholder = computed(() => {
   const searchTypes = $config.searchBar.searchTypes;
   const searchTypesLength = searchTypes.length;
-  console.log('searchTypes:', searchTypes, 'searchTypes.length:', searchTypes.length);
+  if (import.meta.env.VITE_DEBUG) console.log('searchTypes:', searchTypes, 'searchTypes.length:', searchTypes.length);
   let value = 'Search by '
   for (let i=0; i<searchTypes.length; i++) {
-    console.log('i:', i, 'searchTypes[i]:', searchTypes[i]);
+    if (import.meta.env.VITE_DEBUG) console.log('i:', i, 'searchTypes[i]:', searchTypes[i]);
     value += searchTypes[i];
     if (searchTypes.length > 2 && i == searchTypesLength - 2) {
       value += ', or ';
@@ -120,7 +120,7 @@ const handleSubmit = (val) => {
       if (import.meta.env.VITE_DEBUG) console.log('in handleSubmit, checking checkboxText');
       // let match = checkboxText.value.filter((value) => value.toLowerCase() === val.toLowerCase());
       for (let key of Object.keys(checkboxText.value)) {
-        console.log('key:', key);
+        if (import.meta.env.VITE_DEBUG) console.log('key:', key);
         if (key.toLowerCase() == val.toLowerCase()) {
           if (import.meta.env.VITE_DEBUG) console.log('in handleSubmit, checking checkboxText - its there');
           // alert('There is already a checkbox or radio button for that search term');
