@@ -1,5 +1,7 @@
 <script setup>
 
+import { ref, computed, onMounted } from 'vue';
+
 import { useMainStore } from '../stores/MainStore.js';
 const MainStore = useMainStore();
 import { useDataStore } from '../stores/DataStore.js';
