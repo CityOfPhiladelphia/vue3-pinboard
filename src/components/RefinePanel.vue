@@ -136,6 +136,7 @@ const selectedArray = computed(() => {
   // if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selL:', selL, 'selected.value:', selected.value);
   let compiled = [];
   if (Object.keys(selL).length) {
+    if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed, in first if, selL:', selL);
     for (let value of Object.keys(selL)) {
       if (import.meta.env.VITE_DEBUG) console.log('in selectedArray computed, value:', value, 'selL[value]:', selL[value]);
       if (value.split('_')[0] == 'checkbox') {
@@ -162,6 +163,7 @@ const selectedArray = computed(() => {
       }
     }
   } else if (refineType.value !== 'categoryField_value') {
+    if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed, in first else if, selected.value:', selected.value);
     let sel = selected.value;
     if (sel.length) {
       for (let selected of sel) {
@@ -169,8 +171,12 @@ const selectedArray = computed(() => {
       }
     }
   } else {
-    if (selected.value) {
+    if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed, in second else, selected.value:', selected.value);
+    if (selected.value && selected.value.length) {
+      if (import.meta.env.VITE_DEBUG) console.log('selected.value:', selected.value);
       compiled.push(selected.value);
+    } else {
+      compiled = [];
     }
   }
   return compiled;
@@ -403,7 +409,10 @@ watch(
   () => selectedServices.value.length,
   async nextSelectedServices => {
     if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedServices is firing:', selectedServices.value);
-    selected.value = selectedServices.value;
+    if (selectedServices.value.length) {
+      selected.value = selectedServices.value;
+    }
+    // selected.value = selectedServices.value;
     for (let key of Object.keys(refineList.value)) {
       for (let key2 of Object.keys(refineList.value[key])) {
         if (key2 === 'radio' || key2 === 'checkbox') {
@@ -617,16 +626,16 @@ onMounted(async () => {
   }
 });
 
-const getCategoryFieldValue = (section) => {
-  if (import.meta.env.VITE_DEBUG) console.log('getCategoryFieldValue is running, section:', section);
+const getCategoryFieldValue = (selected) => {
+  if (import.meta.env.VITE_DEBUG) console.log('getCategoryFieldValue is running, selected:', selected);
   let selectedCategory;
-  if (section.length) {
-    let sectionLower = section.toLowerCase().replaceAll(' ', '');
+  if (selected.length) {
+    let selectedLower = selected[0].toLowerCase().replaceAll(' ', '');
     let i18nCategories = Object.keys(ConfigStore.config.i18n.data.messages[i18nLocale.value].sections);
     if (import.meta.env.VITE_DEBUG) console.log('18nCategories:', i18nCategories);
     for (let category of i18nCategories) {
       let categoryLower = category.toLowerCase().replaceAll(' ', '');
-      if (categoryLower === sectionLower || categoryLower === sectionLower + 's') {
+      if (categoryLower === selectedLower || categoryLower === selectedLower + 's') {
         selectedCategory = category;
       }
     }
@@ -746,6 +755,7 @@ const closeBox = (e, box) => {
   if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, box:', box, 'e:', e);
   if (refineType.value === 'categoryField_value') {
     selected.value = null;
+    if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, selected.value:', selected.value);
     selectedList.value = [];
     // $emit('watched-submitted-checkbox-value');
     return;
@@ -1093,6 +1103,7 @@ const checkboxChange = (e) => {
               :icon="[timesIconWeight,'times']"
             />
           </button>
+
           <button
             v-if="refineType == 'categoryField_value' && selected != null && i18nEnabled"
             class="box-value column is-narrow"
@@ -1104,6 +1115,7 @@ const checkboxChange = (e) => {
               :icon="[timesIconWeight,'times']"
             />
           </button>
+
           <button
             v-if="refineType == 'categoryField_value' && selected != null && !i18nEnabled"
             class="box-value column is-narrow"
