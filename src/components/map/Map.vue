@@ -124,6 +124,10 @@ onMounted(async () => {
           .setMaxWidth("300px")
           .addTo(map);
         
+        if ($config.showBuildingFootprint) {
+          map.getSource('buildingFootprints').setData(dataPoint.buildingFootprint);
+        }
+        
         if (!route.query.address) {
           map.setCenter(dataPoint.geometry.coordinates);
         }
@@ -301,6 +305,10 @@ watch(
         if (popup.length) {
           popup[0].remove();
         }
+
+        if ($config.showBuildingFootprint) {
+          map.getSource('buildingFootprints').setData({ type: 'FeatureCollection', features: [] });
+        }
       }
       if (newSelectedResource) {
         if(import.meta.env.VITE_DEBUG) console.log('Map.vue DataStore.selectedResource watch, newSelectedResource:', newSelectedResource);
@@ -342,6 +350,9 @@ watch(
           .setMaxWidth("300px")
           .addTo(map);
 
+        if ($config.showBuildingFootprint) {
+          map.getSource('buildingFootprints').setData(dataPoint.buildingFootprint);
+        }
       }
     }
   }

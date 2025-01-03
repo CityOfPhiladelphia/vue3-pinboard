@@ -105,6 +105,13 @@ const pwdDrawnMapStyle = mergeDeep(imageryInfo,{
         features: []
       },
     },
+    buildingFootprints: {
+      type: 'geojson',
+      data: {
+        type: 'FeatureCollection',
+        features: []
+      },
+    },
     buffer: {
       type: 'geojson',
       data: {
@@ -238,6 +245,27 @@ const pwdDrawnMapStyle = mergeDeep(imageryInfo,{
         'circle-stroke-width': 1,
         'circle-stroke-color': 'white',
       },
+    },
+    {
+      id: 'buildingFootprintsFill',
+      type: 'fill',
+      source: 'buildingFootprints',
+      layout: {},
+      paint: {
+        'fill-color': 'rgb(0,102,255)',
+        'fill-opacity': 0.4,
+        'fill-outline-color': 'rgb(0,102,255)',
+      }
+    },
+    {
+      id: 'buildingFootprintsLine',
+      type: 'line',
+      source: 'buildingFootprints',
+      layout: {},
+      paint: {
+        'line-color': 'rgb(0,102,255)',
+        'line-width': 2,
+      }
     },
   ],
 });
