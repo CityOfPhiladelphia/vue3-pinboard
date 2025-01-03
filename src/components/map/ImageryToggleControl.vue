@@ -61,8 +61,8 @@ button {
 .img-src {
   margin-left: -6px;
   margin-top: -1px;
-  width: 32px;
-  height: 32px;
+  width: 33px;
+  height: 33px;
   max-width: 300%;
   border-radius: 2px;
 }
