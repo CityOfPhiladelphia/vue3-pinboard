@@ -44,6 +44,7 @@ import ImageryToggleControl from './ImageryToggleControl.vue';
 import CyclomediaControl from './CyclomediaControl.vue';
 import CyclomediaPanel from './CyclomediaPanel.vue';
 import CyclomediaRecordingsClient from '../../util/recordings-client.js';
+import OverlayLegend from './OverlayLegend.vue';
 
 // import ImageryDropdownControl from '@/components/map/ImageryDropdownControl.vue';
 
@@ -656,11 +657,11 @@ const updateCyclomediaCameraViewcone = (cycloHFov, cycloYaw) => {
       @set-imagery="setImagery"
     /> -->
 
-    <!-- <OverlayLegend
+    <OverlayLegend
       v-if="$config.legendControl"
       :items="$config.legendControl.legend.data"
       :options="{ shape: 'circle' }"
-    /> -->
+    />
 
   </div>
   <KeepAlive>
