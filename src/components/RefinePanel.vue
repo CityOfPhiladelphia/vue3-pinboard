@@ -763,6 +763,8 @@ const closeBox = (e, box) => {
     const { [test]: removedProperty, ...exceptBoth } = selectedList.value;
     if (import.meta.env.VITE_DEBUG) console.log('2 exceptBoth:', exceptBoth, 'it\'s there in selectedList WITH radio, box:', box, 'selectedList.value["radio_" + section]:', selectedList.value['radio_' + section]);
     selectedList.value = exceptBoth;
+    let boxIndex = selected.value.indexOf(box);
+    selected.value.splice(boxIndex, 1);
     // $emit('watched-submitted-checkbox-value');
   } else if (selected.value.includes(section)) {
     // if (import.meta.env.VITE_DEBUG) console.log('its in the array');
@@ -1042,7 +1044,6 @@ const checkboxChange = (e) => {
           id="selected-boxes"
           class="selected-boxes columns is-mobile"
         >
-        <!-- @click="clickBox" -->
           <button
             v-for="box in keywordsEntered"
             class="box-value column is-narrow"
