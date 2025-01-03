@@ -28,7 +28,13 @@ const $emit = defineEmits(['updateCameraYaw', 'updateCameraLngLat', 'updateCamer
 
 const selectedResourceCoords = computed(() => {
   // const dataPoint = DataStore.currentData.filter(dataPoint => dataPoint._featureId === DataStore.selectedResource)[0];
-  const dataSource = DataStore.sources[DataStore.appType].data.features;
+  let dataSource;
+  if (DataStore.sources[DataStore.appType].data.features) {
+    dataSource = DataStore.sources[DataStore.appType].data.features;
+  } else if (DataStore.sources[DataStore.appType].features) {
+    dataSource = DataStore.sources[DataStore.appType].features;
+  }
+
   if (import.meta.env.VITE_DEBUG) console.log('selectedResourceCoords, dataSource:', dataSource, 'DataStore.selectedResource:', DataStore.selectedResource);
   const dataPoint = dataSource.filter(dataPoint => dataPoint._featureId === DataStore.selectedResource)[0];
   if (import.meta.env.VITE_DEBUG) console.log('selectedResourceCoords, dataPoint:', dataPoint);

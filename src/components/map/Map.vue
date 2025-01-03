@@ -220,7 +220,7 @@ onMounted(async () => {
   });
 
   map.on('mouseenter', 'resources', (e) => {
-     console.log('mouseenter, e:', e);
+    if (import.meta.env.VITE_DEBUG) console.log('mouseenter, e:', e);
     if (e.features.length > 0) {
       map.getCanvas().style.cursor = 'pointer'
     }
@@ -284,7 +284,7 @@ watch(
 watch(
   () => DataStore.selectedResource,
   async (newSelectedResource, oldSelectedResource) => {
-    if (import.meta.env.VITE_DEBUG) console.log('map.isStyleLoaded():', map.isStyleLoaded(), 'newSelectedResource:', newSelectedResource, 'oldSelectedResource:', oldSelectedResource);
+    if (import.meta.env.VITE_DEBUG) console.log('Map.vue DataStore.selectedResource watch, map.isStyleLoaded():', map.isStyleLoaded(), 'newSelectedResource:', newSelectedResource, 'oldSelectedResource:', oldSelectedResource);
     if (map.isStyleLoaded()) {
       if (oldSelectedResource) {
         map.setPaintProperty(
@@ -303,6 +303,7 @@ watch(
         }
       }
       if (newSelectedResource) {
+        if(import.meta.env.VITE_DEBUG) console.log('Map.vue DataStore.selectedResource watch, newSelectedResource:', newSelectedResource);
         if (map.getSource('resources')) {
           map.setPaintProperty(
             'resources',
@@ -315,28 +316,32 @@ watch(
             ]
           )
         };
+        if (import.meta.env.VITE_DEBUG) console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources[DataStore.appType].data:', DataStore.sources[DataStore.appType].data, 'DataStore.sources[DataStore.appType].data.features:', DataStore.sources[DataStore.appType].data.features);
+        
+        let dataPoint;
         if (DataStore.sources[DataStore.appType].data.features) {
           if (import.meta.env.VITE_DEBUG) console.log('DataStore.sources[DataStore.appType].data.features:', DataStore.sources[DataStore.appType].data.features, 'newSelectedResource:', newSelectedResource);
-          const dataPoint = DataStore.sources[DataStore.appType].data.features.filter(item => item._featureId == newSelectedResource)[0];
-          if (import.meta.env.VITE_DEBUG) console.log('dataPoint:', dataPoint);
-          if (MainStore.lastSelectMethod == 'row') {
-            map.setCenter(dataPoint.geometry.coordinates);
-          }
-
-          const popup = document.getElementsByClassName('maplibregl-popup');
-          if (popup.length) {
-            popup[0].remove();
-          }
-          new maplibregl.Popup({ className: 'my-class' })
-            .setLngLat(dataPoint.geometry.coordinates)
-            .setHTML(dataPoint.properties[$config.locationInfo.siteNameField])
-            .setMaxWidth("300px")
-            .addTo(map);
-
-          if (import.meta.env.VITE_DEBUG) console.log('Map.vue selectedResource watch, dataPoint:', dataPoint);
-          // MapStore.cyclomediaCameraLngLat = dataPoint.geometry.coordinates;
-          // updateCyclomediaCameraLngLat(dataPoint.geometry.coordinates);
+          dataPoint = DataStore.sources[DataStore.appType].data.features.filter(item => item._featureId == newSelectedResource)[0];
+        } else if (DataStore.sources[DataStore.appType].features) {
+          if (import.meta.env.VITE_DEBUG) console.log('DataStore.sources[DataStore.appType].data.features:', DataStore.sources[DataStore.appType].data.features, 'newSelectedResource:', newSelectedResource);
+          dataPoint = DataStore.sources[DataStore.appType].features.filter(item => item._featureId == newSelectedResource)[0];
         }
+
+        if (import.meta.env.VITE_DEBUG) console.log('dataPoint:', dataPoint);
+        if (MainStore.lastSelectMethod == 'row') {
+          map.setCenter(dataPoint.geometry.coordinates);
+        }
+
+        const popup = document.getElementsByClassName('maplibregl-popup');
+        if (popup.length) {
+          popup[0].remove();
+        }
+        new maplibregl.Popup({ className: 'my-class' })
+          .setLngLat(dataPoint.geometry.coordinates)
+          .setHTML(dataPoint.properties[$config.locationInfo.siteNameField])
+          .setMaxWidth("300px")
+          .addTo(map);
+
       }
     }
   }
