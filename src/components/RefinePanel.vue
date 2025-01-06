@@ -408,11 +408,16 @@ watch(
 watch(
   () => selectedServices.value.length,
   async nextSelectedServices => {
-    if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedServices is firing:', selectedServices.value);
+    if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedServices is firing, selectedServices.value:', selectedServices.value);
     if (selectedServices.value.length) {
       selected.value = selectedServices.value;
+    } else {
+      if ($config.refine.type === 'categoryField_value') {
+        selected.value = null;
+      } else {
+        selected.value = [];
+      }
     }
-    // selected.value = selectedServices.value;
     for (let key of Object.keys(refineList.value)) {
       for (let key2 of Object.keys(refineList.value[key])) {
         if (key2 === 'radio' || key2 === 'checkbox') {
@@ -448,7 +453,7 @@ watch(
 
             if (selected.value.length) {
               for (let group of Object.keys(uniq)) {
-                if (import.meta.env.VITE_DEBUG) console.log('group:', group);
+                // if (import.meta.env.VITE_DEBUG) console.log('group:', group);
                 for (let dep of Object.keys(uniq[group])) {
                   for (let field of Object.keys(uniq[group][dep])) {
                     if (dep == 'checkbox' && selected.value.includes(uniq[group][dep][field].unique_key)) {
