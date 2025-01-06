@@ -2,6 +2,10 @@
 .main-ec-content {
   font-size: 14px;
   margin-bottom: 2rem;
+
+  a {
+    text-decoration: underline;
+  }
 }
 
 .list-holder {
@@ -46,4 +50,8 @@ ul {
 
 .center {
   text-align: center;
+}
+
+.website-div {
+  word-break: break-all;
 }
