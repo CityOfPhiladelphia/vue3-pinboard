@@ -1,0 +1,67 @@
+
+.main-greeting {
+  margin: 2rem;
+}
+
+.greeting-button {
+  background-color: #0f4d90 !important;
+  border-color: #0f4d90 !important;
+  font-size: 1rem;
+  color: white !important;
+  cursor: pointer;
+  margin: 1rem;
+}
+
+.greeting-button:hover {
+  background-color: #444444 !important;
+}
+
+.section-header {
+  background-color: #0f4d90;
+  font-size: 16px;
+  color: white;
+  padding: 4px;
+  padding-left: 8px;
+}
+
+.underlined {
+  text-decoration: underline;
+}
+
+.intro-list {
+  margin: 1rem;
+}
+
+.custom-section {
+  font-size: 14px;
+  margin-left: 8px;
+  margin-top: 4px;
+  margin-top: 4px;
+  margin-bottom: 12px;
+}
+
+.is-rtl {
+  direction: rtl
+}
+
+.custom-ul {
+  margin-left: 4rem;
+  font-size: 14px;
+}
+
+.big-cell-pad {
+  font-size: 14px;
+  padding: 4px;
+  margin: 0px !important;
+}
+
+.small-cell-pad {
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  padding-right: 4px !important;
+  padding-left: 0px !important;
+}
+
+.no-margin {
+  margin: 0px;
+}
