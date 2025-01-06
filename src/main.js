@@ -3,6 +3,7 @@ import { createPinia } from 'pinia'
 import { useConfigStore } from './stores/ConfigStore.js';
 import { useDataStore } from './stores/DataStore.js';
 import { useMainStore } from './stores/MainStore.js';
+import VueGtag from "vue-gtag";
 
 if (import.meta.env.VITE_DEBUG) console.log('test, import.meta.env.VITE_DEBUG:', import.meta.env.VITE_DEBUG);
 
@@ -24,6 +25,7 @@ import "@fortawesome/fontawesome-pro/css/solid.min.css";
 import './assets/main_pin.scss';
 import './assets/style.scss';
 import './assets/intro.scss';
+import './assets/card.scss';
 import '@creativebulma/bulma-tooltip/dist/bulma-tooltip.min.css';
 // import "bulma-checkradio/dist/css/bulma-checkradio.min.css";
 
@@ -145,6 +147,14 @@ export default function pinboard(config) {
 
   const router = initRouter(config.publicPath);
   if (import.meta.env.VITE_DEBUG) console.log('router:', router);
+
+  app.use(VueGtag, {
+    disableScriptLoad: true,
+    config: { 
+      id: 'GTM-MC6CR2',
+      // id: 'G-NHET8T5XY8',
+    }
+  }, router);
 
   app.use(router);
   app.mount('#app')

@@ -1,0 +1,49 @@
+
+.main-ec-content {
+  font-size: 14px;
+  margin-bottom: 2rem;
+}
+
+.list-holder {
+  margin: 1rem;
+}
+
+.is-rtl {
+  direction: rtl;
+}
+
+ul {
+  list-style-type: disc;
+}
+
+.table-intro  {
+  margin-bottom: 16px;
+}
+
+.card-button {
+  border-width: 0px;
+  color: #0f4d90;
+}
+
+.card-button:hover {
+  color: black;
+}
+
+.card-button:focus:not(:active), .card-button.is-focused:not(:active) {
+  box-shadow: none !important;
+}
+
+.card-button-text {
+  font-family: "OpenSans-Regular", "Open Sans", sans-serif;
+  font-size: 14px;
+  padding-left: 5px;
+  text-transform: none;
+}
+
+.is-warning {
+  margin-bottom: 0px !important;
+}
+
+.center {
+  text-align: center;
+}

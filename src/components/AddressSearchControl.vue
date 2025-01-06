@@ -7,6 +7,7 @@ import { useMainStore } from '../stores/MainStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
 import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
+import { event } from 'vue-gtag'
 
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
@@ -157,11 +158,11 @@ const handleSubmit = (val) => {
     const searchCategory = Object.keys(query)[0];
     const value = query[searchCategory];
     MainStore.currentSearch = value;
+    event(searchCategory + '-search', {
+      'event_category': $config.gtag.category,
+      'event_label': value,
+    })
   }
-  // $gtag.event(searchBarType + '-search', {
-  //   'event_category': store.state.gtag.category,
-  //   'event_label': value,
-  // })
 };
 
 const holder = computed(() => {

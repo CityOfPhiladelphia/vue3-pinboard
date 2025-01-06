@@ -8,6 +8,7 @@ import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
 import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
+import { event } from 'vue-gtag'
 
 const MainStore = useMainStore();
 const MapStore = useMapStore();
@@ -374,19 +375,19 @@ const clickedSelectAll = () => {
 
 const clickedViewList = () => {
   MainStore.shouldShowGreeting = false;
-  // $gtag.event('click', {
-  //   'event_category': store.state.gtag.category,
-  //   'event_label': 'view list',
-  // });
+  event('click', {
+    'event_category': $config.gtag.category,
+    'event_label': 'view list',
+  });
 };
 
 const clickedViewMap = () => {
   MainStore.shouldShowGreeting = false;
   $emit('clicked-view-map');
-  // $gtag.event('click', {
-  //   'event_category': store.state.gtag.category,
-  //   'event_label': 'view map',
-  // });
+  event('click', {
+    'event_category': $config.gtag.category,
+    'event_label': 'view map',
+  });
 };
 
 const parseAddress = (address) => {

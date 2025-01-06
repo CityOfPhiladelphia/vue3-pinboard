@@ -7,6 +7,7 @@ import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
 import { ref, computed, getCurrentInstance, onBeforeMount, onMounted, watch, nextTick } from 'vue';
+import { event } from 'vue-gtag'
 
 import { findIconDefinition } from '@fortawesome/fontawesome-svg-core';
 
@@ -491,7 +492,7 @@ watch(
 //       newSelection = nextSelected.filter(x => !oldSelected.includes(x));
 //       if (newSelection.length) {
 //         // this.$gtag.event('refine-checkbox-click', {
-//         //   'event_category': MainStore.gtag.category,
+//         //   'event_category': $config.gtag.category,
 //         //   'event_label': newSelection[0],
 //         // });
 //       }
@@ -499,7 +500,7 @@ watch(
 //       newSelection = nextSelected;
 //       if (newSelection.length) {
 //         // this.$gtag.event('refine-checkbox-click', {
-//         //   'event_category': MainStore.gtag.category,
+//         //   'event_category': $config.gtag.category,
 //         //   'event_label': newSelection,
 //         // });
 //       }
@@ -675,33 +676,33 @@ const calculateColumns = (ind, indName) => {
   return value;
 };
 
-const clickedRefineBox = (item) => {
-  // if (import.meta.env.VITE_DEBUG) console.log('clickedRefineBox, item:', item, 'typeof item:', typeof item, 'selected.value:', selected.value);
-  let category = MainStore.gtag.category;
-  setTimeout(function() {
-    if (typeof item === 'object') {
-      if (selected.value.includes(item.unique_key)) {
-        // gtag.event('refine', {
-        //   'event_category': category,
-        //   'event_label': item.unique_key,
-        // })
-      }
-    } else if (typeof item === 'string') {
-      if (import.meta.env.VITE_DEBUG) console.log('selected.value:', selected.value);
-      if (selected.value.includes(item)) {
-        // gtag.event('refine', {
-        //   'event_category': category,
-        //   'event_label': item,
-        // })
-      }
-    }
-  }, 2000);
-};
+// const clickedRefineBox = (item) => {
+//   if (import.meta.env.VITE_DEBUG) console.log('clickedRefineBox, item:', item, 'typeof item:', typeof item, 'selected.value:', selected.value);
+//   let category = $config.gtag.category;
+//   setTimeout(function() {
+//     if (typeof item === 'object') {
+//       if (selected.value.includes(item.unique_key)) {
+//         event('refine', {
+//           'event_category': category,
+//           'event_label': item.unique_key,
+//         })
+//       }
+//     } else if (typeof item === 'string') {
+//       if (import.meta.env.VITE_DEBUG) console.log('selected.value:', selected.value);
+//       if (selected.value.includes(item)) {
+//         // gtag.event('refine', {
+//         //   'event_category': category,
+//         //   'event_label': item,
+//         // })
+//       }
+//     }
+//   }, 2000);
+// };
 
-const clickBox = (e) => {
-  if (import.meta.env.VITE_DEBUG) console.log('clickBox is running, e:', e);
-  e.stopPropagation();
-};
+// const clickBox = (e) => {
+//   if (import.meta.env.VITE_DEBUG) console.log('clickBox is running, e:', e);
+//   e.stopPropagation();
+// };
 
 const closeZipcodeBox = (e, box) => {
   e.stopPropagation();
@@ -983,7 +984,7 @@ const expandRefine = () => {
   if (import.meta.env.VITE_DEBUG) console.log('expandRefine is running, tagValue:', tagValue);
   // if (window.innerWidth <= 767) { // converted from rems
   // $gtag.event('refine-panel-open', {
-  //   'event_category': MainStore.gtag.category,
+  //   'event_category': $config.gtag.category,
   //   'event_label': tagValue,
   // })
   MainStore.refineOpen = !MainStore.refineOpen;
