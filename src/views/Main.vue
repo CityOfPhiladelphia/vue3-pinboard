@@ -584,7 +584,7 @@ const checkServices = (row) => {
       return selectedServices.includes(value);
     case 'categoryField_array':
       let servicesSplit = $config.refine.value(row);
-      if (import.meta.env.VITE_DEBUG) console.log('servicesSplit:', servicesSplit);
+      // if (import.meta.env.VITE_DEBUG) console.log('servicesSplit:', servicesSplit);
       if (typeof servicesSplit === 'string') {
         servicesSplit = servicesSplit.split(',');
       }
