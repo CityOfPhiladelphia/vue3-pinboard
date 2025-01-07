@@ -625,18 +625,16 @@ const locationsPanelClass = computed(() => {
               :item="item"
             />
 
-            <!-- v-if="$config.customComps && Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource" -->
             <expand-collapse-content
-              v-if="item._featureId == DataStore.selectedResource"
+              v-if="$config.customComps && Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource"
               :item="item"
               :is-map-visible="isMapVisible"
               :is-mobile="isMobile"
             />
 
-            <!-- v-if="!$config.customComps || !Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource" -->
             <div
               v-if="!Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource"
-              :class="isMobile ? 'main-content-mobile' : 'main-content'"
+              class="main-ec-content"
             >
               <div class="columns top-section">
                 <div class="column is-6">
@@ -903,32 +901,8 @@ const locationsPanelClass = computed(() => {
   margin-bottom: .5rem !important;
 }
 
-.main-content {
-  padding-top: .5rem;
-  padding-bottom: 1.5rem;
-}
-
 .app-button:focus {
   color: white !important;
-}
-
-.card-button {
-  border-width: 0px !important;
-  color: #0f4d90 !important;
-}
-
-.card-button:hover {
-  color: black !important;
-}
-
-.card-button:focus:not(:active), .card-button.is-focused:not(:active) {
-  box-shadow: none !important;
-}
-.card-button-text {
-  font-family: "OpenSans-Regular", "Open Sans", sans-serif;
-  font-size: 14px;
-  padding-left: 5px;
-  text-transform: none;
 }
 
 .top-section {

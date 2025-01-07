@@ -63,9 +63,8 @@ onMounted(async () => {
 // methods
 
 const clickedBackToHome = () => {
-  if (import.meta.env.VITE_DEBUG) console.log('clickedBackToHome is running');
-  let startQuery = { ...route.query };
-  router.push({ name: 'home', query: { ...startQuery } });
+  // if (import.meta.env.VITE_DEBUG) console.log('clickedBackToHome is running');
+  router.go(-1);
 };
 
 const parseAddress = (address) => {
@@ -249,13 +248,13 @@ const i18nLanguages = computed(() => {
           :item="item"
         />
         <div
-          v-if="!$config.customComps || !Object.keys($config.customComps).includes('expandCollapseContent')"
+          v-if="!Object.keys($config.customComps).includes('expandCollapseContent')"
+          class="main-ec-content"
         >
-          <!-- :class="isMobile ? 'main-content-mobile' : 'main-content'" -->
           <div class="columns">
             <div class="column is-6">
               <div
-                v-if="item.street_address"
+                v-if="item.properties.street_address"
                 class="columns is-mobile"
               >
                 <div class="column is-1">
@@ -263,7 +262,7 @@ const i18nLanguages = computed(() => {
                 </div>
                 <div
                   class="column is-11"
-                  v-html="parseAddress(item.street_address)"
+                  v-html="parseAddress(item.properties.street_address)"
                 >
                 </div>
               </div>
@@ -272,7 +271,7 @@ const i18nLanguages = computed(() => {
             <div class="column is-6">
 
               <div
-                v-if="item.phone_number"
+                v-if="item.properties.phone_number"
                 class="columns is-mobile"
               >
                 <div
@@ -281,12 +280,12 @@ const i18nLanguages = computed(() => {
                   <font-awesome-icon icon="phone" />
                 </div>
                 <div class="column is-11">
-                  {{ item.phone_number }}
+                  {{ item.properties.phone_number }}
                 </div>
               </div>
 
               <div
-                v-if="item.email"
+                v-if="item.properties.email"
                 class="columns is-mobile"
               >
                 <div
@@ -295,12 +294,12 @@ const i18nLanguages = computed(() => {
                   <font-awesome-icon icon="envelope" />
                 </div>
                 <div class="column is-11">
-                  <a :href="`mailto:${item.email}`">{{ item.email }}</a>
+                  <a :href="`mailto:${item.properties.email}`">{{ item.properties.email }}</a>
                 </div>
               </div>
 
               <div
-                v-if="item.website"
+                v-if="item.properties.website"
                 class="columns is-mobile website-div"
               >
                 <div
@@ -311,16 +310,16 @@ const i18nLanguages = computed(() => {
                 <div class="column is-11">
                   <a
                     target="_blank"
-                    :href="makeValidUrl(item.website)"
+                    :href="makeValidUrl(item.properties.website)"
                   >
-                    {{ item.website }}
+                    {{ item.properties.website }}
                     <font-awesome-icon icon="external-link-alt" />
                   </a>
                 </div>
               </div>
 
               <div
-                v-if="item.facebook_name"
+                v-if="item.properties.facebook_name"
                 class="columns is-mobile"
               >
                 <div
@@ -331,7 +330,7 @@ const i18nLanguages = computed(() => {
                 <div class="column is-11">
                   <a
                     target="_blank"
-                    :href="item.facebook_name"
+                    :href="item.properties.facebook_name"
                   >
                     Facebook
                   </a>
@@ -339,7 +338,7 @@ const i18nLanguages = computed(() => {
               </div>
 
               <div
-                v-if="item.twitter"
+                v-if="item.properties.twitter"
                 class="columns is-mobile"
               >
                 <div
@@ -350,7 +349,7 @@ const i18nLanguages = computed(() => {
                 <div class="column is-11">
                   <a
                     target="_blank"
-                    :href="item.twitter"
+                    :href="item.properties.twitter"
                   >
                     Twitter
                   </a>
@@ -361,14 +360,14 @@ const i18nLanguages = computed(() => {
           </div>
 
           <div
-            v-if="item.services_offered"
+            v-if="item.properties.services_offered"
           >
             <h3>
               Services offered
             </h3>
             <div class="columns is-multiline is-gapless">
               <div
-                v-for="i in parseServiceList(item.services_offered)"
+                v-for="i in parseServiceList(item.properties.services_offered)"
                 :key="i"
                 class="column is-half"
               >
@@ -378,13 +377,13 @@ const i18nLanguages = computed(() => {
           </div>
 
           <div
-            v-if="item.tags && item.tags.length"
+            v-if="item.properties.tags && item.properties.tags.length"
           >
             <h3>
               Tags
             </h3>
             <div>
-              {{ parseTagsList(item.tags) }}
+              {{ parseTagsList(item.properties.tags) }}
             </div>
           </div>
         </div>
