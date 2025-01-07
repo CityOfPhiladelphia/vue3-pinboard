@@ -486,3 +486,15 @@ a {
   border-bottom-color: rgb(33, 118, 210);
   border-left-color: rgb(33, 118, 210);
 }
+
+.maplibregl-popup-close-button {
+  font-size: 20px !important;
+}
+
+.maplibregl-popup-content {
+  font-size: 14px !important;
+  padding-bottom: 1rem !important;
+  padding-left: 1rem !important;
+  padding-top: 1rem !important;
+  padding-right: 1.5rem !important;
+}
