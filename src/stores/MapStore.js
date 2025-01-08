@@ -70,7 +70,7 @@ export const useMapStore = defineStore("MapStore", {
       } else if (useGeocodeStore().aisData.features) {
         if (import.meta.env.VITE_DEBUG) console.log('fillBufferForAddressOrLocationOrZipcode is running, useGeocodeStore().aisData.features:', useGeocodeStore().aisData.features);
         let addressPoint = point(useGeocodeStore().aisData.features[0].geometry.coordinates);
-        //  console.log('fillBufferForAddressOrLocationOrZipcode is running, addressPoint:', addressPoint, 'addressBuffer:', addressBuffer, 'lng:', lng, 'lat:', lat);
+        // if (import.meta.env.VITE_DEBUG) console.log('fillBufferForAddressOrLocationOrZipcode is running, addressPoint:', addressPoint, 'addressBuffer:', addressBuffer, 'lng:', lng, 'lat:', lat);
         this.bufferForAddressOrLocationOrZipcode = buffer(addressPoint, this.searchDistance, {units: 'miles'});
       } else if (useMainStore().selectedZipcode) {
         let zipcodesData = useDataStore().zipcodes;

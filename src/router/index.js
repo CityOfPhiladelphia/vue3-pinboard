@@ -17,7 +17,7 @@ const getGeocodeAndPutInStore = async(address) => {
   if (!GeocodeStore.aisData.features) {
     MainStore.currentAddress = null;
     MapStore.bufferForAddressOrLocationOrZipcode = null;
-     console.log('getGeocodeAndPutInStore, calling not-found');
+    if (import.meta.env.VITE_DEBUG) console.log('getGeocodeAndPutInStore, calling not-found');
     return;
   }
   MainStore.selectedZipcode = null;

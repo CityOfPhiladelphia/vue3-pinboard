@@ -589,11 +589,11 @@ watch(
 // });
 
 onMounted(async () => {
-  // console.log('refinePanel.vue mounted, library:', library);
+  // if (import.meta.env.VITE_DEBUG) console.log('refinePanel.vue mounted, library:', library);
   let divButton = document.querySelector('#refine-top');
   divButton.addEventListener('keypress', activate.bind(this));
   function activate(e) {
-    // console.log('activate, e:', e, 'e.path[0]:', e.path[0]);
+    // if (import.meta.env.VITE_DEBUG) console.log('activate, e:', e, 'e.path[0]:', e.path[0]);
     if (e.type === 'keypress' && [ 13, 32 ].includes(e.keyCode) && e.srcElement.id == 'refine-top') {
       expandRefine();
     }

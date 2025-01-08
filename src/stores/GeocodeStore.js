@@ -11,13 +11,13 @@ export const useGeocodeStore = defineStore("GeocodeStore", {
   actions: {
     // async checkAisData(parameter) {
     //   try {
-    //      console.log('checkAisData is running, parameter:', parameter);
+    //     if (import.meta.env.VITE_DEBUG) console.log('checkAisData is running, parameter:', parameter);
     //     const response = await fetch(`https://api.phila.gov/ais/v1/search/${encodeURIComponent(parameter)}?include_units=false`)
     //     if (response.ok) {
-    //        console.log('check AIS - await resolved and HTTP status is successful')
+    //       if (import.meta.env.VITE_DEBUG) console.log('check AIS - await resolved and HTTP status is successful')
     //       this.aisDataChecked = await response.json()
     //     } else {
-    //        console.log('check AIS - await resolved but HTTP status was not successful')
+    //       if (import.meta.env.VITE_DEBUG) console.log('check AIS - await resolved but HTTP status was not successful')
     //       this.aisDataChecked = {}
     //     }
     //   } catch {
@@ -26,17 +26,17 @@ export const useGeocodeStore = defineStore("GeocodeStore", {
     // },
     async fillAisData(address) {
       try {
-         console.log('Address - fillAisData is running, address:', address)
+        if (import.meta.env.VITE_DEBUG) console.log('Address - fillAisData is running, address:', address)
         const response = await fetch(`https://api.phila.gov/ais/v1/search/${encodeURIComponent(address)}?include_units=false`)
         if (response.ok) {
-           console.log('Address - await resolved and HTTP status is successful')
+          if (import.meta.env.VITE_DEBUG) console.log('Address - await resolved and HTTP status is successful')
           this.aisData = await response.json()
         } else {
-           console.log('Address - await resolved but HTTP status was not successful')
+          if (import.meta.env.VITE_DEBUG) console.log('Address - await resolved but HTTP status was not successful')
           this.aisData = await response.json()
         }
       } catch {
-         console.error('Address - await never resolved, failed to fetch address data')
+        if (import.meta.env.VITE_DEBUG) console.error('Address - await never resolved, failed to fetch address data')
       }
     },
   },

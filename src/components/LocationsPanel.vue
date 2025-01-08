@@ -22,7 +22,7 @@ const ConfigStore = useConfigStore();
 const $config = ConfigStore.config;
 const CustomGreeting = $config.customComps.customGreeting;
 const ExpandCollapseContent = $config.customComps.expandCollapseContent;
-console.log('ExpandCollapseContent:', ExpandCollapseContent);
+if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapseContent:', ExpandCollapseContent);
 
 const route = useRoute();
 const router = useRouter();

@@ -35,7 +35,7 @@ defineProps({
 });
 
 const clearSearch = () => {
-   console.log('clearSearch is running');
+  if (import.meta.env.VITE_DEBUG) console.log('clearSearch is running');
   MainStore.searchValue = '';
 }
 
