@@ -14,20 +14,17 @@ import initRouter from './router'
 
 import mergeDeep from './util/merge-deep';
 
-// import "bulma-checkradio/dist/css/bulma-checkradio.min.css";
 import 'vue-good-table-next/dist/vue-good-table-next.css'
-import "bulma";
-import '@phila/phila-ui-core/dist/styles/scss/all.scss';
-import "bulma-checkradio/dist/css/bulma-checkradio.min.css";
-// import './assets/main.scss';
 import "@fortawesome/fontawesome-pro/css/fontawesome.min.css";
 import "@fortawesome/fontawesome-pro/css/solid.min.css";
+import "bulma-checkradio/dist/css/bulma-checkradio.min.css";
+import '@creativebulma/bulma-tooltip/dist/bulma-tooltip.min.css';
+import "bulma";
+import '@phila/phila-ui-core/dist/styles/scss/all.scss';
 import './assets/main_pin.scss';
-import './assets/style.scss';
 import './assets/intro.scss';
 import './assets/card.scss';
-import '@creativebulma/bulma-tooltip/dist/bulma-tooltip.min.css';
-// import "bulma-checkradio/dist/css/bulma-checkradio.min.css";
+import './assets/style.scss';
 
 import PhilaUICore from "@phila/phila-ui-core";
 import AppHeader from "@phila/phila-ui-app-header";
