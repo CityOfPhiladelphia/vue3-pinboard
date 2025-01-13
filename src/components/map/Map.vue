@@ -6,7 +6,7 @@ import { useGeocodeStore } from '../../stores/GeocodeStore.js';
 import { useDataStore } from '../../stores/DataStore.js';
 import { useConfigStore } from '../../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
-import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
 
 import $mapConfig from '../../mapConfig';
 const $config = useConfigStore().config;
@@ -89,8 +89,8 @@ onMounted(async () => {
 
   // if (import.meta.env.VITE_DEBUG) console.log('Map.vue onMounted, DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]);
 
-  map.on('load', () => {
-    map.resize();
+  map.on('load', async() => {
+    // map.resize();
     
     let canvas = document.querySelector(".maplibregl-canvas");
     canvas.setAttribute('tabindex', -1);
@@ -158,6 +158,8 @@ onMounted(async () => {
     }
 
     if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 6, map.getStyle().layers:', map.getStyle().layers);
+    await nextTick();
+    map.resize();
   })
 
   // add the address marker and camera icon sources
