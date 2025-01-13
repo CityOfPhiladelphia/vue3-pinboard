@@ -386,28 +386,28 @@ const setHeights = () => {
   }
   const mainRow = document.querySelector('#main-row');
   if (isMobile.value && MainStore.shouldShowGreeting) {
-    mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+headerOffsetHeight+holidayBannerOffsetHeight+addressSearchHolderOffsetHeight}px)`);
+    mainRow.style.setProperty('height', `calc(100dvh - ${refinePanelOffsetHeight+headerOffsetHeight+holidayBannerOffsetHeight+addressSearchHolderOffsetHeight}px)`);
   } else if (isMobile.value) {
-    mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+headerOffsetHeight+holidayBannerOffsetHeight+addressSearchHolderOffsetHeight+46}px)`);
+    mainRow.style.setProperty('height', `calc(100dvh - ${refinePanelOffsetHeight+headerOffsetHeight+holidayBannerOffsetHeight+addressSearchHolderOffsetHeight+46}px)`);
   } else {
-    mainRow.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+46}px)`);
+    mainRow.style.setProperty('height', `calc(100dvh - ${refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+46}px)`);
   }
   const map = document.querySelector('#map');
   if (isMobile.value && !MapStore.cyclomediaOn) {
-    map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+headerOffsetHeight+holidayBannerOffsetHeight+addressSearchHolderOffsetHeight+46}px)`);
+    map.style.setProperty('height', `calc(100dvh - ${refinePanelOffsetHeight+headerOffsetHeight+holidayBannerOffsetHeight+addressSearchHolderOffsetHeight+46}px)`);
   } else if (isMobile.value) {
-    map.style.setProperty('height', `calc(50vh - ${(refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+84)/2}px)`);
+    map.style.setProperty('height', `calc(50dvh - ${(refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+84)/2}px)`);
   } else if (!MapStore.cyclomediaOn) {
-    map.style.setProperty('height', `calc(100vh - ${refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+46}px)`);
+    map.style.setProperty('height', `calc(100dvh - ${refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+46}px)`);
   } else {
-    map.style.setProperty('height', `calc(50vh - ${(refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+44)/2}px)`);
+    map.style.setProperty('height', `calc(50dvh - ${(refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+44)/2}px)`);
   }
 
   const cyclomediaPanel = document.querySelector('#cyclomedia-panel');
   if (isMobile.value && MapStore.cyclomediaOn) {
-    cyclomediaPanel.style.setProperty('height', `calc(50vh - ${(refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+84)/2}px)`);
+    cyclomediaPanel.style.setProperty('height', `calc(50dvh - ${(refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+84)/2}px)`);
   } else if (MapStore.cyclomediaOn) {
-    cyclomediaPanel.style.setProperty('height', `calc(50vh - ${(refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+44)/2}px)`);
+    cyclomediaPanel.style.setProperty('height', `calc(50dvh - ${(refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+44)/2}px)`);
   }
 }
 
@@ -997,6 +997,7 @@ const footerLinks = computed(() => {
   </div>
   <div
     v-show="toggleButtonsVisible"
+    class="toggle-buttons-holder"
   >
     <button
       class="capitalized toggle-button toggle-button-left"
@@ -1096,7 +1097,6 @@ const footerLinks = computed(() => {
 .toggle-button {
   padding: 0px;
   font-family: "Montserrat-Bold", "Montserrat Bold", "Montserrat", sans-serif;
-  // font-family: "ArialMT", "Arial", sans-serif !important;
   font-weight: 700 !important;
   font-size: 18px;
   height: 46px;
