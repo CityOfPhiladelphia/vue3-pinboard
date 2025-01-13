@@ -1486,6 +1486,7 @@ const checkboxChange = (e) => {
     .refine-holder {
       padding-left: 12px;
       padding-right: 12px;
+      margin: 0px;
     }
   }
 
@@ -1535,9 +1536,22 @@ const checkboxChange = (e) => {
     // height: 3rem;
     position: relative;
 
+    #refine-panel-component {
+      max-width: 100dvw;
+      // padding: 1rem;
+      margin: 0px;
+    }
+
     .refine-bottom {
-      // height: calc(100vh - 130px);
+      // width: 100dvw;
+      padding: 1rem;
+      margin: 0px;
       overflow-y: auto;
+    }
+
+    .refine-holder {
+      padding-left: 12px;
+      padding-right: 12px;
     }
 
     .clear-all {
@@ -1592,11 +1606,16 @@ const checkboxChange = (e) => {
     }
 
     .service-group-holder-x {
+      max-width: 100dvw;
       padding-top: 0px;
       padding-bottom: 12px;
+      margin-left: 0px;
+      margin-right: 0px;
       margin-bottom: 12px;
-      padding-left: 6px !important;
-      padding-right: 6px !important;
+      // padding-left: 6px !important;
+      // padding-right: 6px !important;
+      // padding-left: 1rem !important;
+      // padding-right: 1rem !important;
       border-bottom: 1px solid black;
       &:first-of-type{
         // padding-left: 0px;
@@ -1621,9 +1640,10 @@ const checkboxChange = (e) => {
     }
 
     #multiple-field-groups-div {
-      padding-left: 16px;
-      padding-right: 16px;
-      // overflow-y: scroll;
+      width: 100dvw;
+      padding-left: 1rem;
+      padding-right: 1rem;
+      margin: 0px;
     }
   }
 

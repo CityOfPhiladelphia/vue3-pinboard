@@ -54,7 +54,7 @@ a {
 .main {
   position: fixed;
   height: 100dvh !important;
-  width: 100vw;
+  width: 100dvw;
   padding-top: 0px;
 }
 
@@ -334,7 +334,7 @@ a {
   }
 
   .map-panel {
-    height: 300px;
+    height: 100%;
   }
 
   .map-panel.cyclomedia-eagleview {
@@ -342,9 +342,8 @@ a {
   }
 
   .map-class {
-    height: 300px;
+    height: 100%;
   }
-
 
 	/* Force table to not be like tables anymore */
   .horizontal-table {
