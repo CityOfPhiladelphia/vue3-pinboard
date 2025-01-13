@@ -409,7 +409,10 @@ const setHeights = () => {
   } else if (MapStore.cyclomediaOn) {
     cyclomediaPanel.style.setProperty('height', `calc(50dvh - ${(refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+44)/2}px)`);
   }
-}
+
+  const mapStoreMap = MapStore.map;
+  mapStoreMap.resize();
+};
 
 watch(
   () => MapStore.cyclomediaOn,

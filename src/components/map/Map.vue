@@ -87,6 +87,8 @@ onMounted(async () => {
     attributionControl: false,
   });
 
+  MapStore.map = map;
+
   // if (import.meta.env.VITE_DEBUG) console.log('Map.vue onMounted, DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]);
 
   map.on('load', async() => {

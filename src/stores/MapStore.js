@@ -13,6 +13,7 @@ export const useMapStore = defineStore("MapStore", {
     const ConfigStore = useConfigStore();
     const $config = ConfigStore.config;
     return {
+      map: null,
       searchDistance: $config.searchBar.searchDistance,
       currentMapStyle: 'pwdDrawnMapStyle',
       currentAddressCoords: [],
