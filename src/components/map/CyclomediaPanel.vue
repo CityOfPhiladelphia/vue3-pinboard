@@ -66,88 +66,90 @@ watch(
 const navBarExpanded = ref(false);
 
 const setNewLocation = async (coords) => {
-  if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue setNewLocation, coords:', coords);
-  const today = new Date();
-  const year = MapStore.cyclomediaYear;
-  let thisYear, lastYear;
-  let params = {};
-  if (year) {
-    lastYear = `${year}-01-01`;
-    thisYear = `${year + 1}-01-01`;
-    params = {
-      coordinate: coords,
-      dateRange: { from: lastYear, to: thisYear },
-    };
-  } else {
-    params = {
-      coordinate: coords,
-      orientation: { pitch: 0 },
-    };
-  }
-  if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue setNewLocation, lastYear:', lastYear, 'thisYear:', thisYear, 'coords:', coords);
-  const response = await StreetSmartApi.open(
-    params,
-    {
-      viewerType: StreetSmartApi.ViewerType.PANORAMA,
-      srs: 'EPSG:4326',
-      panoramaViewer: {
-        closable: false,
-        maximizable: false,
-      },
+  if (MapStore.cyclomediaOn) {
+    // if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue setNewLocation, coords:', coords);
+    const today = new Date();
+    const year = MapStore.cyclomediaYear;
+    let thisYear, lastYear;
+    let params = {};
+    if (year) {
+      lastYear = `${year}-01-01`;
+      thisYear = `${year + 1}-01-01`;
+      params = {
+        coordinate: coords,
+        dateRange: { from: lastYear, to: thisYear },
+      };
+    } else {
+      params = {
+        coordinate: coords,
+        orientation: { pitch: 0 },
+      };
     }
-  )
-  let viewer = response[0];
-  if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue setNewLocation, viewer:', viewer, 'response:', response);
-  viewer.toggleNavbarExpanded(navBarExpanded.value);
-  viewer.toggleButtonEnabled('panorama.elevation', false);
-  viewer.toggleButtonEnabled('panorama.reportBlurring', false);
+    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue setNewLocation, lastYear:', lastYear, 'thisYear:', thisYear, 'coords:', coords);
+    const response = await StreetSmartApi.open(
+      params,
+      {
+        viewerType: StreetSmartApi.ViewerType.PANORAMA,
+        srs: 'EPSG:4326',
+        panoramaViewer: {
+          closable: false,
+          maximizable: false,
+        },
+      }
+    )
+    let viewer = response[0];
+    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue setNewLocation, viewer:', viewer, 'response:', response);
+    viewer.toggleNavbarExpanded(navBarExpanded.value);
+    viewer.toggleButtonEnabled('panorama.elevation', false);
+    viewer.toggleButtonEnabled('panorama.reportBlurring', false);
 
-  for (let overlay of viewer.props.overlays) {
-    if (overlay.id === 'surfaceCursorLayer') {
-      if (overlay.visible === true) {
-        viewer.toggleOverlay(overlay);
+    for (let overlay of viewer.props.overlays) {
+      if (overlay.id === 'surfaceCursorLayer') {
+        if (overlay.visible === true) {
+          viewer.toggleOverlay(overlay);
+        }
       }
     }
-  }
 
-  viewer.on('VIEW_CHANGE', function(e) {
-    if (import.meta.env.VITE_DEBUG) console.log('on VIEW_CHANGE fired, type:', e.type, 'detail:', e.detail, 'viewer.props:', viewer.props, 'viewer.props.orientation.xyz:', viewer.props.orientation.xyz, 'MapStore.cyclomediaCameraXyz:', MapStore.cyclomediaCameraXyz);
-    if (MapStore.cyclomediaOn) {
-      MapStore.cyclomediaCameraYaw = e.detail.yaw;
-      MapStore.cyclomediaCameraHFov = e.detail.hFov;
-      $emit('updateCameraYaw', e.detail.yaw);
-      $emit('updateCameraHFov', e.detail.hFov, e.detail.yaw);
+    viewer.on('VIEW_CHANGE', function(e) {
+      if (import.meta.env.VITE_DEBUG) console.log('on VIEW_CHANGE fired, type:', e.type, 'detail:', e.detail, 'viewer.props:', viewer.props, 'viewer.props.orientation.xyz:', viewer.props.orientation.xyz, 'MapStore.cyclomediaCameraXyz:', MapStore.cyclomediaCameraXyz);
+      if (MapStore.cyclomediaOn) {
+        MapStore.cyclomediaCameraYaw = e.detail.yaw;
+        MapStore.cyclomediaCameraHFov = e.detail.hFov;
+        $emit('updateCameraYaw', e.detail.yaw);
+        $emit('updateCameraHFov', e.detail.hFov, e.detail.yaw);
+        if (viewer.props.orientation.xyz !== MapStore.cyclomediaCameraXyz) {
+          const lngLat = [ viewer.props.orientation.xyz[0], viewer.props.orientation.xyz[1] ];
+          MapStore.setCyclomediaCameraLngLat(lngLat, viewer.props.orientation.xyz);
+          $emit('updateCameraLngLat', lngLat);
+        }
+      }
+    });
+
+    viewer.on('VIEW_LOAD_END', function(e) {
+      if (import.meta.env.VITE_DEBUG) console.log('on VIEW_LOAD_END fired, type:', e.type, 'e:', e, 'viewer.props.orientation:', viewer.props.orientation, 'viewer.props:', viewer.props);
+      if (import.meta.env.VITE_DEBUG) console.log('update cyclomedia date, viewer.props.recording.year:', viewer.props.recording.year);
+      MapStore.cyclomediaYear = viewer.props.recording.year;
+      const orientation = viewer.getOrientation();
+      if (import.meta.env.VITE_DEBUG) console.log('orientation:', orientation);
       if (viewer.props.orientation.xyz !== MapStore.cyclomediaCameraXyz) {
         const lngLat = [ viewer.props.orientation.xyz[0], viewer.props.orientation.xyz[1] ];
         MapStore.setCyclomediaCameraLngLat(lngLat, viewer.props.orientation.xyz);
         $emit('updateCameraLngLat', lngLat);
+        const orientation = viewer.getOrientation();
+        if (import.meta.env.VITE_DEBUG) console.log('orientation:', orientation);
+        $emit('updateCameraYaw', orientation.yaw);
+        $emit('updateCameraHFov', orientation.hFov, orientation.yaw);
       }
-    }
-  });
+    });
 
-  viewer.on('VIEW_LOAD_END', function(e) {
-    if (import.meta.env.VITE_DEBUG) console.log('on VIEW_LOAD_END fired, type:', e.type, 'e:', e, 'viewer.props.orientation:', viewer.props.orientation, 'viewer.props:', viewer.props);
-    if (import.meta.env.VITE_DEBUG) console.log('update cyclomedia date, viewer.props.recording.year:', viewer.props.recording.year);
-    MapStore.cyclomediaYear = viewer.props.recording.year;
+    if (!MapStore.currentAddressCoords.length) {
+      $emit('updateCameraLngLat', coords);
+    }
     const orientation = viewer.getOrientation();
-    if (import.meta.env.VITE_DEBUG) console.log('orientation:', orientation);
-    if (viewer.props.orientation.xyz !== MapStore.cyclomediaCameraXyz) {
-      const lngLat = [ viewer.props.orientation.xyz[0], viewer.props.orientation.xyz[1] ];
-      MapStore.setCyclomediaCameraLngLat(lngLat, viewer.props.orientation.xyz);
-      $emit('updateCameraLngLat', lngLat);
-      const orientation = viewer.getOrientation();
-      if (import.meta.env.VITE_DEBUG) console.log('orientation:', orientation);
-      $emit('updateCameraYaw', orientation.yaw);
-      $emit('updateCameraHFov', orientation.hFov, orientation.yaw);
-    }
-  });
-
-  if (!MapStore.currentAddressCoords.length) {
-    $emit('updateCameraLngLat', coords);
+    $emit('updateCameraYaw', orientation.yaw);
+    $emit('updateCameraHFov', orientation.hFov, orientation.yaw);
   }
-  const orientation = viewer.getOrientation();
-  $emit('updateCameraYaw', orientation.yaw);
-  $emit('updateCameraHFov', orientation.hFov, orientation.yaw);
 }
 
 watch(
