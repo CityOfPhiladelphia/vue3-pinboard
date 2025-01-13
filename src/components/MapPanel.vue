@@ -6,7 +6,7 @@ import { useMapStore } from '../stores/MapStore.js'
 const MapStore = useMapStore();
 import Map from './map/Map.vue';
 
-defineEmits(['geolocate']);
+defineEmits(['geolocate', 'popup-clicked']);
 
 // import { useDataStore } from '../stores/DataStore.js';
 // const DataStore = useDataStore();
@@ -29,6 +29,7 @@ const mapPanelClass = computed(() => {
   >
     <Map
       @geolocate="$emit('geolocate')"
+      @popup-clicked="$emit('popup-clicked')"
     />
   </div>
 </template>

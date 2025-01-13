@@ -868,6 +868,13 @@ const footerLinks = computed(() => {
   }
 });
 
+const popupClicked = () => {
+  if (import.meta.env.VITE_DEBUG) console.log('popupClicked is running');
+  if (isMobile.value) {
+    toggleToList();
+  }
+};
+
 </script>
 
 <template>
@@ -989,6 +996,7 @@ const footerLinks = computed(() => {
           @clear-search="clearSearchTriggered"
           @toggleMap="toggleToMap"
           @geolocate="geolocate"
+          @popup-clicked="popupClicked"
         />
           <!-- @geolocate-control-fire="geolocateControlFire" -->
       </div>

@@ -12,7 +12,7 @@ import $mapConfig from '../../mapConfig';
 const $config = useConfigStore().config;
 if (import.meta.env.VITE_DEBUG) console.log('Map.vue $config:', $config, '$mapConfig:', $mapConfig);
 
-defineEmits(['geolocate']);
+const $emit = defineEmits(['geolocate', 'popupClicked']);
 
 // PACKAGE IMPORTS
 import maplibregl from 'maplibre-gl';
@@ -65,6 +65,11 @@ const isMobile = computed(() => {
   return MainStore.isMobileDevice || MainStore.windowDimensions.width < 768;
 });
 
+const clickedPopup = () => {
+  if (import.meta.env.VITE_DEBUG) console.log('clickedPopup');
+  $emit('popupClicked');
+}
+
 onMounted(async () => {
   if (import.meta.env.VITE_DEBUG) console.log('Map.vue onMounted');
   
@@ -110,6 +115,7 @@ onMounted(async () => {
       )
     };
     if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 2, DataStore.selectedResource:', DataStore.selectedResource);
+    
     if (DataStore.sources[DataStore.appType]) {
       const dataPoint = DataStore.sources[DataStore.appType].data.features.filter(item => item._featureId == DataStore.selectedResource)[0];
       if (import.meta.env.VITE_DEBUG) console.log('dataPoint:', dataPoint);
@@ -120,9 +126,11 @@ onMounted(async () => {
         }
         new maplibregl.Popup({ className: 'my-class' })
           .setLngLat(dataPoint.geometry.coordinates)
-          .setHTML(dataPoint.properties[$config.locationInfo.siteNameField])
+          .setHTML(`<div id="popup-div">${dataPoint.properties[$config.locationInfo.siteNameField]}</div>`)
           .setMaxWidth("300px")
           .addTo(map);
+
+        document.getElementById('popup-div').addEventListener('click', clickedPopup);
         
         if ($config.showBuildingFootprint) {
           map.getSource('buildingFootprints').setData(dataPoint.buildingFootprint);
@@ -346,9 +354,11 @@ watch(
         }
         new maplibregl.Popup({ className: 'my-class' })
           .setLngLat(dataPoint.geometry.coordinates)
-          .setHTML(dataPoint.properties[$config.locationInfo.siteNameField])
+          .setHTML(`<div id="popup-div">${dataPoint.properties[$config.locationInfo.siteNameField]}</div>`)
           .setMaxWidth("300px")
           .addTo(map);
+
+        document.getElementById('popup-div').addEventListener('click', clickedPopup);
 
         if ($config.showBuildingFootprint) {
           map.getSource('buildingFootprints').setData(dataPoint.buildingFootprint);
