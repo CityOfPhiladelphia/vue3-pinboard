@@ -368,6 +368,14 @@ watch(
   }
 );
 
+watch(
+  () => route.query,
+  async() => {
+    await nextTick();
+    setHeights();
+  }
+)
+
 const setHeights = () => {
   // if (import.meta.env.VITE_DEBUG) console.log('setHeights is running');
   let header = document.querySelector("#app-header");
