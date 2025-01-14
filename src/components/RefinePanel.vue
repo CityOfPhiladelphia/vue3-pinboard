@@ -1512,7 +1512,7 @@ const checkboxChange = (e) => {
     }
 
     .clear-all {
-      margin-top: 10px;
+      margin-top: 12px;
       border-style: none;
       background-color: rgb(240, 240, 240);
       height: 20px;
