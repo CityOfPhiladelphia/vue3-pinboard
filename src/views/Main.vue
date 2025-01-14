@@ -695,11 +695,11 @@ const checkKeywords = (row) => {
     } else if ($config.tags && $config.tags.type == 'fieldValues') {
       for (let tag of $config.tags.tags) {
         // if (import.meta.env.VITE_DEBUG) console.log('tag:', tag, 'tag.field:', tag.field, 'row.attributes[tag.field]:', row.attributes[tag.field]);
-        if (tag.type == 'boolean' && row.attributes[tag.field] == 'Yes') {
+        if (tag.type == 'boolean' && row.properties[tag.field] == 'Yes') {
           description.push(tag.value);
-        } else if (tag.type == 'value' && row.attributes[tag.field] !== null && row.attributes[tag.field] != ' ') {
-          // if (import.meta.env.VITE_DEBUG) console.log('in else if, row.attributes[tag.field]:', row.attributes[tag.field]);
-          let value = row.attributes[tag.field].toLowerCase();
+        } else if (tag.type == 'value' && row.properties[tag.field] !== null && row.properties[tag.field] != ' ') {
+          // if (import.meta.env.VITE_DEBUG) console.log('in else if, row.properties[tag.field]:', row.properties[tag.field]);
+          let value = row.properties[tag.field].toLowerCase();
           // if (import.meta.env.VITE_DEBUG) console.log('value.split(","):', value.split(','));
           description = description.concat(value.split(','));
         }
