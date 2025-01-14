@@ -794,6 +794,7 @@ const closeBox = (e, box) => {
 };
 
 const clearAll = (e) => {
+  e.stopPropagation();
   if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, e:', e);
   let startQuery = { ...route.query };
   if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, startQuery1:', startQuery);
