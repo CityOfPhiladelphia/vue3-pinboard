@@ -125,7 +125,7 @@ const initRouter = (publicPath) => {
         MainStore.selectedServices = [];
       }
     }
-    if (to.query.keyword) {
+    if (to.query.keyword && to.query.keyword.length) {
       MainStore.selectedKeywords = to.query.keyword.split(',');
     }
   });

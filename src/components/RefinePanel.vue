@@ -808,24 +808,24 @@ const clearAll = (e) => {
     lat: null,
     lng: null,
   };
-  for (let selected of Object.keys(selectedList.value)) {
-    if (import.meta.env.VITE_DEBUG) console.log('clearAll is running, selected:', selected, 'selectedList.value[selected]:', selectedList.value[selected]);
-    if (Array.isArray(selectedList.value[selected])) {
-      for (let i=selectedList.value[selected].length-1;i>=0;i--) {
-        if (import.meta.env.VITE_DEBUG) console.log('clearAll is running, i:', i);
-        closeBox(e, selectedList.value[selected][i]);
-      }
-    } else {
-      closeBox(e, selectedList.value[selected]);
-    }
-  }
+  // for (let selected of Object.keys(selectedList.value)) {
+  //   // if (import.meta.env.VITE_DEBUG) console.log('clearAll is running, selected:', selected, 'selectedList.value[selected]:', selectedList.value[selected]);
+  //   if (Array.isArray(selectedList.value[selected])) {
+  //     for (let i=selectedList.value[selected].length-1;i>=0;i--) {
+  //       // if (import.meta.env.VITE_DEBUG) console.log('clearAll is running, i:', i);
+  //       closeBox(e, selectedList.value[selected][i]);
+  //     }
+  //   } else {
+  //     closeBox(e, selectedList.value[selected]);
+  //   }
+  // }
 
   MainStore.selectedKeywords = [];
   
-  for (let keyword of keywordsEntered.value) {
-    if (import.meta.env.VITE_DEBUG) console.log('clearAll is running, keyword:', keyword);
-    closeKeywordsBox(e, keyword);
-  }
+  // for (let keyword of keywordsEntered.value) {
+  //   if (import.meta.env.VITE_DEBUG) console.log('clearAll is running, keyword:', keyword);
+  //   await closeKeywordsBox(e, keyword);
+  // }
 
   if (refineType.value === 'categoryField_value') {
     selected.value = null;
