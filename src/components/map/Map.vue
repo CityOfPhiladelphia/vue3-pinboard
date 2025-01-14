@@ -452,8 +452,8 @@ watch(
   () => MapStore.zipcodeCenter,
   async newZipcodeCenter => {
     if (import.meta.env.VITE_DEBUG) console.log('Map.vue zipcodeCenter watch, newZipcodeCenter:', newZipcodeCenter);
-    if (newZipcodeCenter) {
-      map.setCenter(newZipcodeCenter.geometry.coordinates);
+    if (newZipcodeCenter.length) {
+      map.setCenter(newZipcodeCenter);
     }
   }
 )

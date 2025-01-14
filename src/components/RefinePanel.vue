@@ -821,6 +821,9 @@ const clearAll = (e) => {
   // }
 
   MainStore.selectedKeywords = [];
+  MainStore.selectedZipcode = null;
+  MapStore.zipcodeCenter = [];
+  MainStore.currentSearch = null;
   
   // for (let keyword of keywordsEntered.value) {
   //   if (import.meta.env.VITE_DEBUG) console.log('clearAll is running, keyword:', keyword);
