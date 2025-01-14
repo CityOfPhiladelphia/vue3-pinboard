@@ -1,9 +1,6 @@
 
 .main-greeting {
-  margin-left: 2rem;
-  margin-bottom: 2rem;
-  margin-top: 1rem;
-  margin-right: 1rem;
+  margin: 2rem;
 }
 
 .greeting-button {
@@ -12,11 +9,20 @@
   font-size: 1rem;
   color: white !important;
   cursor: pointer;
-  margin: 1rem;
+  margin: .5rem;
 }
 
 .greeting-button:hover {
   background-color: #444444 !important;
+}
+
+.first-title {
+  padding-top: 0px !important;
+}
+
+.app-buttons {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
 }
 
 .section-header {

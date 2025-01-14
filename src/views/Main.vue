@@ -1065,26 +1065,6 @@ const popupClicked = () => {
   padding: 12px;
 }
 
-.skip-to-main-content-link {
-  position: absolute;
-  left: -9999px;
-  z-index: 999;
-  padding: .5em;
-  background-color: #0f4d90;
-  color: white;
-  opacity: 0;
-  text-decoration: underline;
-}
-
-.skip-to-main-content-link:focus {
-  left: 0px;
-  opacity: 1;
-}
-
-.skip-to-main-content-link:hover {
-  color: white;
-}
-
 #app-header {
   .trusted-site-hidden {
     display: none;

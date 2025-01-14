@@ -1513,7 +1513,7 @@ const checkboxChange = (e) => {
       font-size: .8rem;
       color: #0f4d90 !important;
       text-decoration: underline;
-      padding-left: 16px;
+      padding-left: 8px;
       padding-right: 12px;
       cursor: pointer;
     }
