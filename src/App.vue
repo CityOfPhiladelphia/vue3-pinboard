@@ -9,7 +9,7 @@ import { computed, getCurrentInstance, onBeforeMount, watch } from 'vue';
 
 import { RouterView } from 'vue-router'
 
-import isMobileDevice from './util/is-mobile-device';
+// import isMobileDevice from './util/is-mobile-device';
 import isMac from './util/is-mac'; // this can probably be removed from App.vue, and only run in main.js
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
@@ -34,7 +34,8 @@ const instance = getCurrentInstance();
 const locale = computed(() => instance.appContext.config.globalProperties.$i18n.locale);
 
 onBeforeMount(async () => {
-  MainStore.isMobileDevice = isMobileDevice();
+  MainStore.isMobileDevice = false;
+  // MainStore.isMobileDevice = isMobileDevice();
   MainStore.isMac = isMac();
   await router.isReady()
   if (import.meta.env.VITE_DEBUG) console.log('App onBeforeMount, route.params:', route.params, 'route.query:', route.query);
