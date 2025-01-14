@@ -796,7 +796,7 @@ const closeBox = (e, box) => {
 const clearAll = (e) => {
   if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, e:', e);
   let startQuery = { ...route.query };
-  // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, startQuery1:', startQuery);
+  if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, startQuery1:', startQuery);
   delete startQuery['address'];
   delete startQuery['zipcode'];
   delete startQuery['keyword'];
@@ -818,8 +818,11 @@ const clearAll = (e) => {
       closeBox(e, selectedList.value[selected]);
     }
   }
+
+  MainStore.selectedKeywords = [];
   
   for (let keyword of keywordsEntered.value) {
+    if (import.meta.env.VITE_DEBUG) console.log('clearAll is running, keyword:', keyword);
     closeKeywordsBox(e, keyword);
   }
 
