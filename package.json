@@ -22,6 +22,7 @@
     "dev": "vite",
     "build": "vite build",
     "build:development": "vite build --mode=development",
+    "build:production": "vite build --mode=production",
     "build-watch": "vite build --watch",
     "serve": "vite serve",
     "preview": "vite preview",
