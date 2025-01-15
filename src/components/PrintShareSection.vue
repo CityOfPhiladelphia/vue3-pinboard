@@ -1,93 +1,98 @@
+<script setup>
+
+import { useMainStore } from '../stores/MainStore.js';
+import { useRoute, useRouter } from 'vue-router';
+import { computed } from 'vue';
+import * as bulmaToast from 'bulma-toast'
+
+bulmaToast.setDefaults({
+  position: 'top-center',
+  type: 'is-success',
+  dismissible: true,
+  closeOnClick: true,
+  zIndex: 9999,
+});
+
+const route = useRoute();
+const router = useRouter();
+
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
+
+const MainStore = useMainStore();
+
+const props = defineProps({
+  'item': {
+    type: Object,
+    default: {},
+  },
+});
+
+const showPrintAndShare = computed(() => {
+  let value = false;
+  if (route.name == 'home') {
+    value = true;
+  }
+  return value;
+});
+
+const isMobile = computed(() => {
+  return MainStore.isMobileDevice || MainStore.windowDimensions.width < 768;
+});
+
+const clickedShare = () => {
+  if (import.meta.env.VITE_DEBUG) console.log('clickedShare is running');
+  var dummy = document.createElement('input'),
+    text = window.location.href;
+
+  document.body.appendChild(dummy);
+  dummy.value = text;
+  dummy.select();
+  document.execCommand('copy');
+  document.body.removeChild(dummy);
+
+  bulmaToast.toast({
+    message: t('copiedUrl'),
+    type: 'is-success',
+  })
+};
+
+const clickedPrint = () => {
+  if (import.meta.env.VITE_DEBUG) console.log('clickedPrint is running');
+  MainStore.printCheckboxes = [ props.item._featureId ];
+  router.push({ name: 'printView'  });
+}
+
+</script>
+
 <template>
   <div>
     <div
-        v-if="showPrintAndShare"
-        style="text-align:right;"
+      v-if="showPrintAndShare"
+      style="text-align:right;"
+    >
+      <button
+        class="button is-small card-button"
+        @click="clickedShare"
       >
-        <button
-          class="button is-small card-button"
-          @click="clickedShare"
-        >
-          <font-awesome-icon icon="share-alt" />
-          <span class="card-button-text">
-            {{ $t('share') }}
-          </span>
-        </button>
-        <button
-          v-if="!isMobile"
-          class="button is-small card-button"
-          @click="clickedPrint"
-        >
-          <font-awesome-icon icon="print" />
-          <span class="card-button-text">
-            {{ $t('print') }}
-          </span>
-        </button>
-      </div>
+        <font-awesome-icon icon="share-alt" />
+        <span class="card-button-text">
+          {{ $t('share') }}
+        </span>
+      </button>
+      <button
+        v-if="!isMobile"
+        class="button is-small card-button"
+        @click="clickedPrint"
+      >
+        <font-awesome-icon icon="print" />
+        <span class="card-button-text">
+          {{ $t('print') }}
+        </span>
+      </button>
+    </div>
   </div>
 </template>
-
-<script>
-
-export default {
-  name: 'PrintShareSection',
-  props: {
-    'item': {
-      type: Object,
-      default: {},
-    },
-  },
-  computed: {
-    showPrintAndShare() {
-      let value = false;
-      if (this.$route.name == 'home') {
-        value = true;
-      }
-      return value;
-    },
-    copiedUrl() {
-      return this.$i18n.messages[this.i18nLocale]['copiedUrl'];
-    },
-    isMobileOrTablet() {
-      return this.$store.state.isMobileOrTablet;
-    },
-    i18nLocale() {
-      return this.$i18n.locale;
-    },
-    i18nEnabled() {
-      if (this.$config.i18n && this.$config.i18n.enabled) {
-        return true;
-      } else {
-        return false;
-      }
-    },
-  },
-  methods: {
-    clickedShare() {
-      console.log('clickedShare is running');
-      var dummy = document.createElement('input'),
-        text = window.location.href;
-
-      document.body.appendChild(dummy);
-      dummy.value = text;
-      dummy.select();
-      document.execCommand('copy');
-      document.body.removeChild(dummy);
-
-      this.$success(this.copiedUrl, {
-        duration: 3000,
-        closeOnClick: true,
-      });
-    },
-    clickedPrint() {
-      console.log('clickedPrint is running');
-      this.$store.commit('setPrintCheckboxes', [ this.item._featureId ]);
-      this.$router.push({ name: 'printView'  });
-    },
-  },
-};
-
-</script>
 
 <style>
 

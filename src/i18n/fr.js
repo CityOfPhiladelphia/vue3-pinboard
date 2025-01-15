@@ -10,6 +10,8 @@ export default {
       address: 'Recherche à partir de l’adresse',
       keyword: 'french Search by keyword',
     },
+    map: 'Carte',
+    list: 'Liste',
     viewMap: 'Voir la carte',
     viewList: 'Voir la liste',
     viewAccessible: 'Afficher la liste accessible des emplacements des sites',

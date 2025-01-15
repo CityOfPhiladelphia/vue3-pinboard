@@ -1,4 +1,3 @@
-import { ref, computed } from 'vue'
 import { defineStore, acceptHMRUpdate } from 'pinia'
 
 export const useMainStore = defineStore('MainStore', {
@@ -8,11 +7,9 @@ export const useMainStore = defineStore('MainStore', {
       selectedZipcode: null,
       refineList: {},
       printCheckboxes: [],
-      lastPinboardSearchMethod: null,
       shouldShowGreeting: true,
       currentSearch: null,
-      fullScreen: {},
-      alertResponse: null,
+      // alertResponse: null,
       gtag: {
         category: 'unspecified-pinboard-app'
       },
@@ -22,37 +19,19 @@ export const useMainStore = defineStore('MainStore', {
         current: false,
         start_date: '',
       },
-      agoToken: null,
       selectedKeywords: [],
       selectedServices: [],
       lastSelectMethod: '',
       publicPath: null,
-      isMobileDevice: null,
+      isMobileDevice: false,
       isMac: null,
-
       addressSearchRunning: false,
       searchValue: '',
       windowDimensions: {},
       currentAddress: '',
-      currentLang: null,
-
-      // pageTitle: '',
-      // datafetchRunning: false,
-      // lastClickCoords: [0,0],
-      // currentParcelGeocodeParameter: '',
-      // otherParcelGeocodeParameter: '',
-      // currentParcelAddress:'',
-      // otherParcelAddress:'',
-      // currentTopic: 'property',
-      // currentNearbyDataType: null,
-      // currentNearbyTimeInterval: {},
-      // dataSourcesLoadedArray: [],
-      // clickedRow: [],
-      // clickedMarkerId: null,
-      // hoveredStateId: null,
-      // selectedParcelId: null,
-      // fullScreenMapEnabled: false,
-      // fullScreenTopicsEnabled: false,
+      subsections: [],
+      firstRouteLoaded: false,
+      submittedCheckboxValue: null,
     };
   },
 
@@ -63,9 +42,6 @@ export const useMainStore = defineStore('MainStore', {
     setCurrentGeocodeParameter(value) {
       this.currentGeocodeParameter = value;
     },
-    // setLastSearchMethod(searchMethod) {
-    //   this.lastSearchMethod = searchMethod;
-    // },
     setCurrentNearbyDataType(data) {
       this.currentNearbyDataType = data;
     },

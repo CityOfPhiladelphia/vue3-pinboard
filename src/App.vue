@@ -1,73 +1,52 @@
 <script setup>
-if (import.meta.env.VITE_DEBUG == 'true') console.log('App.vue setup is running in debug mode');
+
+if (import.meta.env.VITE_DEBUG) console.log('App.vue setup is running in debug mode');
+
+import { useMainStore } from './stores/MainStore.js';
+import { useConfigStore } from './stores/ConfigStore.js';
+import { useRoute, useRouter } from 'vue-router';
+import { computed, getCurrentInstance, onBeforeMount, watch } from 'vue';
 
 import { RouterView } from 'vue-router'
 
-import isMobileDevice from './util/is-mobile-device';
+// import isMobileDevice from './util/is-mobile-device';
 import isMac from './util/is-mac'; // this can probably be removed from App.vue, and only run in main.js
-
-import i18nFromFiles from './i18n/i18n.js';
-const languages = i18nFromFiles.i18n.languages;
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 // STORES
-import { useDataStore } from '@/stores/DataStore.js'
-const DataStore = useDataStore();
-import { useMainStore } from '@/stores/MainStore.js'
+const ConfigStore = useConfigStore();
+const $config = ConfigStore.config;
 const MainStore = useMainStore();
 
-if (!import.meta.env.VITE_PUBLICPATH) {
-  MainStore.publicPath = '/';
+if ($config.publicPath) {
+  MainStore.publicPath = $config.publicPath;
 } else {
-  MainStore.publicPath = import.meta.env.VITE_PUBLICPATH;
+  MainStore.publicPath = '/';
 }
-if (import.meta.env.VITE_DEBUG == 'true') console.log('import.meta.env.VITE_PUBLICPATH:', import.meta.env.VITE_PUBLICPATH, 'MainStore.publicPath:', MainStore.publicPath);
+if (import.meta.env.VITE_DEBUG) console.log('$config.publicPath:', $config.publicPath, 'MainStore.publicPath:', MainStore.publicPath);
 
 // ROUTER
-import { useRouter, useRoute } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
-
-import { onMounted, computed, getCurrentInstance, watch } from 'vue';
-
-// COMPONENTS
-import LocationsPanel from '@/components/LocationsPanel.vue';
-import MapPanel from '@/components/MapPanel.vue';
-import RefinePanel from '@/components/RefinePanel.vue';
 
 const instance = getCurrentInstance();
 const locale = computed(() => instance.appContext.config.globalProperties.$i18n.locale);
 
-onMounted(async () => {
-  MainStore.appVersion = import.meta.env.VITE_VERSION;
-  MainStore.isMobileDevice = isMobileDevice();
+onBeforeMount(async () => {
+  MainStore.isMobileDevice = false;
+  // MainStore.isMobileDevice = isMobileDevice();
   MainStore.isMac = isMac();
   await router.isReady()
-  // if (import.meta.env.VITE_DEBUG == 'true') console.log('App onMounted, route.params.topic:', route.params.topic, 'route.params.address:', route.params.address);
-  if (route.name === 'not-found') {
-    router.push({ name: 'home' });
-  }
+  if (import.meta.env.VITE_DEBUG) console.log('App onBeforeMount, route.params:', route.params, 'route.query:', route.query);
 
-  // const main = document.getElementById('main');
-  // main.scrollTop = -main.scrollHeight;
+  if (route.query.lang) {
+    instance.appContext.config.globalProperties.$i18n.locale = route.query.lang;
+  }
 
   window.addEventListener('resize', handleWindowResize);
   handleWindowResize();
-
-  DataStore.fillResources();
-  DataStore.fillHolidays();
-  DataStore.fillZipcodes();
 });
-
-const links = [
-  {
-    type: 'native',
-    href: 'https://phila.formstack.com/forms/atlas_feedback_form',
-    text: 'Feedback',
-    attrs: {
-      target: '_blank',
-    },
-  },
-];
 
 const handleWindowResize = () => {
   const rootElement = document.getElementById('app');
@@ -76,6 +55,7 @@ const handleWindowResize = () => {
   const rootHeight = rootStyle.getPropertyValue('height');
   const rootWidthNum = parseInt(rootWidth.replace('px', ''));
   const rootHeightNum = parseInt(rootHeight.replace('px', ''));
+  // if (import.meta.env.VITE_DEBUG) console.log('handleWindowResize, rootElement:', rootElement, 'rootWidth:', rootWidth, 'rootHeight:', rootHeight, 'rootWidthNum:', rootWidthNum, 'rootHeightNum:', rootHeightNum);
 
   const dim = {
     width: rootWidthNum,
@@ -85,37 +65,19 @@ const handleWindowResize = () => {
 }
 
 watch(
-  () => MainStore.currentLang,
-  (newLang, oldLang) => {
-    if (import.meta.env.VITE_DEBUG == 'true') console.log('watch MainStore.currentLang:', newLang, oldLang, 'locale.value:', locale.value);
-    if (newLang != locale.value) {
-      if (import.meta.env.VITE_DEBUG == 'true') console.log('setting locale:', newLang);
-      // const instance = getCurrentInstance();
-      if (import.meta.env.VITE_DEBUG == 'true') console.log('instance:', instance);
-      if (instance) {
-        if (import.meta.env.VITE_DEBUG == 'true') console.log('instance:', instance);
-        if (newLang) {
-          instance.appContext.config.globalProperties.$i18n.locale = newLang;
-        } else {
-          instance.appContext.config.globalProperties.$i18n.locale = 'en-US';
-        }
-      }
-    }
-  }
-)
-
-watch(
   () => locale.value,
   (newLocale, oldLocale) => {
-    if (import.meta.env.VITE_DEBUG == 'true') console.log('watch locale:', newLocale, oldLocale);
-    if (newLocale === MainStore.currentLang) {
-      return;
-    } else if (newLocale && newLocale != 'en-US') {
-      MainStore.currentLang = newLocale;
-      router.push({ query: { 'lang': newLocale }});
+    if (import.meta.env.VITE_DEBUG) console.log('watch locale:', newLocale, oldLocale);
+    let startQuery = { ...route.query };
+
+    delete startQuery['lang'];
+    if (import.meta.env.VITE_DEBUG) console.log('watch i18nLocale, startQuery:', startQuery);
+
+    if (newLocale !== 'en-US') {
+      let query = { 'lang': newLocale };
+      router.push({ query: { ...startQuery, ...query }});
     } else {
-      MainStore.currentLang = null;
-      router.push({ fullPath: route.path });
+      router.push({ query: { ...startQuery }});
     }
   }
 )
@@ -126,78 +88,52 @@ watch(
     document.title = newPageTitle;
   }
 )
+
+const i18nEnabled = computed(() => {
+  if ($config.i18n && $config.i18n.enabled) {
+    return true;
+  } else {
+    return false;
+  }
+});
+
 const appTitle = computed(() => {
-  return 'Vue3 Pinboard'
-  // let version = 'Atlas';
-  // if (import.meta.env.VITE_VERSION == 'cityatlas'){
-  //   version = 'CityAtlas';
-  // }
-  // return version;
-})
+  let value;
+  if ($config.app.title) {
+    value = $config.app.title;
+  } else if (i18nEnabled.value) {
+    value = t('app.title');
+  }
+  return value;
+});
 
 </script>
 
 <template>
-  <router-view></router-view>
-  <!-- <a
+  <a
     href="#main"
     class="skip-to-main-content-link"
   >Skip to main content</a>
-
-  <app-header
-    :app-title="appTitle"
-    :app-subtitle="'test'"
-    app-link="/"
-    :is-sticky="true"
-    :is-fluid="true"
+  
+  <div
+    v-if="!MainStore.firstRouteLoaded"
+    id="spinner-holder"
+    class="is-flex is-justify-content-center"
   >
-    <template #mobile-nav>
-      <mobile-nav :links="links" />
-    </template>
-    <template #lang-selector-nav>
-      <lang-selector
-        :languages="languages"
+    <div
+      id="loading-spinner"
+      class="is-flex is-justify-content-center is-flex-direction-column"
+    >
+      <font-awesome-icon
+        icon="fa-solid fa-spinner"
+        class="fa-6x center-spinner"
+        spin
       />
-    </template>
-  </app-header>
-
-  <main
-    id="main"
-    class="main-column invisible-scrollbar"
-  >
-    <refine-panel />
-
-    <div class="main-row">
-      <div
-        v-if="!isMobileDevice() && MainStore.windowDimensions.width > 768"
-        class="topics-holder"
-      >
-        <locations-panel />
-      </div>
-
-      <div
-        class="map-panel-holder"
-      >
-        <map-panel />
-      </div>
-
-      <div
-        v-if="isMobileDevice() || MainStore.windowDimensions.width <= 768"
-        class="topics-holder"
-      >
-        <locations-panel />
+      <div class="mt-6">
+        Loading {{ appTitle.toLowerCase() }}
       </div>
     </div>
-  </main>
+  </div>
 
-  <app-footer
-    :is-sticky="true"
-    :is-hidden-mobile="true"
-    :links="links"
-  /> -->
-
-
+  <router-view></router-view>
 </template>
-
-<style>
-</style>

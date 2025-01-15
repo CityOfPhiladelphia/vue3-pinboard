@@ -10,6 +10,8 @@ export default {
       address: 'Поиск по адресу',
       keyword: 'russian Search by keyword',
     },
+    map: 'карта',
+    list: 'Список',
     viewMap: 'Посмотреть на карте',
     viewList: 'Посмотреть список',
     viewAccessible: 'Посмотреть список расположения доступных центров',

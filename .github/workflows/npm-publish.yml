@@ -11,16 +11,42 @@ on:
 jobs:
   publish-npm:
     runs-on: ubuntu-latest
-    environment: production
+    environment: development
     permissions:
       contents: read
       id-token: write
+    
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v3
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v3
         with:
           node-version: '20.x'
-          registry-url: https://registry.npmjs.org/
-      - run: npm publish --access public
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          printf "//registry.npmjs.com/:_authToken=${NODE_AUTH_TOKEN}\n@fortawesome:registry=https://npm.fontawesome.com/\n//npm.fontawesome.com/:_authToken=${FONTAWESOME_NPM_AUTH_TOKEN}" >> ~/.npmrc
+          npm ci
+          npm run build:development
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+          FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FA_AUTH_TOKEN }}
+          VITE_CYCLOMEDIA_API_KEY: ${{ secrets.VITE_CYCLOMEDIA_API_KEY }}
+          VITE_CYCLOMEDIA_PASSWORD: ${{ secrets.VITE_CYCLOMEDIA_PASSWORD }}
+          VITE_CYCLOMEDIA_USERNAME: ${{ secrets.VITE_CYCLOMEDIA_USERNAME }}
+          VITE_AGO_USERNAME: ${{ secrets.VITE_AGO_USERNAME }}
+          VITE_AGO_PASSWORD: ${{ secrets.VITE_AGO_PASSWORD }}
+          VITE_DEBUG: ${{ secrets.VITE_DEBUG }}
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org/'
+
+      - name: Publish to npm
+        run: |
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        
+          

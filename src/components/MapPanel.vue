@@ -1,13 +1,23 @@
 <script setup>
 
-import { useMapStore } from '@/stores/MapStore.js'
-const MapStore = useMapStore();
-import Map from '@/components/map/Map.vue';
+import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
 
-import { computed } from 'vue';
+import { useMapStore } from '../stores/MapStore.js'
+const MapStore = useMapStore();
+import Map from './map/Map.vue';
+
+defineEmits(['geolocate', 'popup-clicked']);
+
+// import { useDataStore } from '../stores/DataStore.js';
+// const DataStore = useDataStore();
+// await DataStore.fillZipcodes();
 
 const mapPanelClass = computed(() => {
-  return 'map-panel';
+  if (MapStore.cyclomediaOn || MapStore.eagleviewOn) {
+    return 'map-panel cyclomedia-eagleview';
+  } else {
+    return 'map-panel';
+  }
 });
 
 </script>
@@ -17,7 +27,10 @@ const mapPanelClass = computed(() => {
     id="map-panel"
     :class="mapPanelClass"
   >
-    <Map />
+    <Map
+      @geolocate="$emit('geolocate')"
+      @popup-clicked="$emit('popup-clicked')"
+    />
   </div>
 </template>
 

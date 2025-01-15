@@ -1,68 +1,176 @@
-import { defineStore } from 'pinia'
+import { defineStore, acceptHMRUpdate } from 'pinia';
 import axios from 'axios';
+import { point } from '@turf/helpers';
 
-import appConfig from '@/app/main.js';
-// if (import.meta.env.VITE_DEBUG) console.log('appConfig:', appConfig);
-// if (import.meta.env.VITE_DEBUG) console.log('appConfig.dataSources:', appConfig.dataSources);
+import qs from 'qs';
 
-const appType = appConfig.app.type;
-const data = appConfig.dataSources[appType];
-const params = data.options.params;
+import { useConfigStore } from './ConfigStore.js';
 
 export const useDataStore = defineStore('DataStore', {
   state: () => {
     return {
-      // printCheckboxes: [],
+      agoToken: null,
       selectedResource: null,
-      latestSelectedResourceFromExpand: null,
-      appType: appType,
+      appType: null,
       sources: {},
       databaseWithoutHiddenItems: [],
       currentData: [],
       subsections: {},
       zipcodes: {},
       holidays: {},
+      loadingSources: true,
     };
   },
 
   actions: {
+    async fillAppType() {
+      const ConfigStore = useConfigStore();
+      this.appType = ConfigStore.config.app.type;
+    },
+    async fillAgoToken() {
+      let data = qs.stringify({
+        'f': 'json',
+        'username': import.meta.env.VITE_AGO_USERNAME,
+        'password': import.meta.env.VITE_AGO_PASSWORD,
+        'referer': 'https://www.mydomain.com' 
+      });
+    
+      let config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: 'https://www.arcgis.com/sharing/rest/generateToken',
+        headers: { 
+          'Content-Type': 'application/x-www-form-urlencoded', 
+          // 'Authorization': 'Basic Og=='
+        },
+        data : data
+      };
+    
+      await axios.request(config)
+      .then((response) => {
+        if (import.meta.env.VITE_DEBUG) console.log(JSON.stringify(response.data));
+        this.agoToken = response.data;
+        // this.$store.commit('setAgoToken', response.data.token);
+      })
+      .catch((error) => {
+        if (import.meta.env.VITE_DEBUG) console.log(error);
+      });
+    },
     async fillResources() {
-      if (import.meta.env.VITE_DEBUG) console.log('data:', data, 'params:', params);
-      const response = await axios.get(data.url, { params });
-      if (response.status === 200) {
-        let data = await response.data;
+      const $config = useConfigStore().config;
 
-        // if (this.$config.hiddenRefine) {
-        //   for (let field in this.$config.hiddenRefine) {
-        //     let getter = this.$config.hiddenRefine[field];
-        //     let val = getter(value);
-        //     if (val === false) {
-        //       delete database[key];
-        //     }
-        //   }
-        // }
-  
-        // for (let [rowKey, rowValue] of Object.entries(value)) {
-        //   if ( rowKey == 'hide_on_finder' && rowValue == true ){
-        //     //console.log('deleted entry', database[key])
-        //     delete database[key];
-        //   }
-        // }
-
-        for (let i=0; i<data.features.length; i++) {
-          data.features[i]._featureId = appType + '_' + i;
-          data.features[i].properties._featureId = appType + '_' + i;
+      for (let source in $config.dataSources) {
+        
+        const dataConfig = $config.dataSources[source];
+        const params = dataConfig.options.params;
+        if ($config.agoTokenNeeded) {
+          params.token = this.agoToken.token;
+        };
+        
+        let dependent;
+        if (dataConfig.dependent) {
+          dependent = this.sources[dataConfig.dependent];
         }
-        this.sources[appType] = data;
+        if (import.meta.env.VITE_DEBUG) console.log('source:', source, 'dataConfig:', dataConfig, 'params:', params, 'dependent:', dependent);
+
+        if (params && params.where && typeof params.where === 'function') {
+          params.where = params.where(dependent.data);
+        }
+
+        const response = await axios.get(dataConfig.url, { params });
+        if (import.meta.env.VITE_DEBUG) console.log('fillResources is running, params:', params, 'response:', response);
+        
+        if (response.status === 200) {
+          let data = await response.data;
+
+          if (import.meta.env.VITE_DEBUG) console.log('dataConfig.options.success:', dataConfig.options.success, 'dependent:', dependent);
+          if (dataConfig.options.success) {
+            dataConfig.options.success(data, dependent);
+          }
+          // if (import.meta.env.VITE_DEBUG) console.log('data:', data, 'params:', params);
+    
+          // for (let [rowKey, rowValue] of Object.entries(value)) {
+          //   if ( rowKey == 'hide_on_finder' && rowValue == true ){
+          //     //if (import.meta.env.VITE_DEBUG) console.log('deleted entry', database[key])
+          //     delete database[key];
+          //   }
+          // }
+
+          if (data.features) {
+            if (import.meta.env.VITE_DEBUG) console.log('data.features.length:', data.features.length);
+            data.features = data.features.filter(item => item.geometry);
+            data.features = data.features.filter(item => item.hide_on_finder !== true);
+            if ($config.hiddenRefine) {
+              for (let field in $config.hiddenRefine) {
+                let getter = $config.hiddenRefine[field];
+                data.features = data.features.filter(item => getter(item) == true);
+              }
+            }
+            if (import.meta.env.VITE_DEBUG) console.log('data.features.length:', data.features.length);
+            for (let i=0; i<data.features.length; i++) {
+              // if (data.features[i].geometry) {
+              data.features[i]._featureId = source + '_' + i;
+              data.features[i].properties._featureId = source + '_' + i;
+              // }
+            }
+          } else if (data.rows) {
+            data.features = [];
+            let j = 0;
+            for (let i=0; i<data.rows.length; i++) {
+              // data.rows[i]._featureId = source + '_' + i;
+              if (data.rows[i].lon && data.rows[i].lat) {
+                // const geo = point([data.rows[i].lon, data.rows[i].lat]);
+                // if (import.meta.env.VITE_DEBUG) console.log('geo:', geo);
+                data.features[j] = point([data.rows[i].lon, data.rows[i].lat], data.rows[i]);
+                data.features[j]._featureId = source + '_' + j;
+                data.features[j].properties._featureId = source + '_' + j;
+                j = j+1;
+              }
+              if ($config.hiddenRefine) {
+                for (let field in $config.hiddenRefine) {
+                  let getter = $config.hiddenRefine[field];
+                  data.features = data.features.filter(item => getter(item) == true);
+                }
+              }
+            }
+            delete data.rows;
+          } else if (data.length > 0) {
+            response.features = [];
+            // let features = [];
+            if (import.meta.env.VITE_DEBUG) console.log('3rd option, data.features:', response.features);
+            let j = 0;
+            for (let i=0; i<data.length; i++) {
+              // data.rows[i]._featureId = source + '_' + i;
+              if (data[i].longitude && data[i].latitude) {
+                // const geo = point([data.rows[i].lon, data.rows[i].lat]);
+                // if (import.meta.env.VITE_DEBUG) console.log('geo:', geo);
+                response.features[j] = point([data[i].longitude, data[i].latitude], data[i]);
+                response.features[j]._featureId = source + '_' + j;
+                response.features[j].properties._featureId = source + '_' + j;
+                j = j+1;
+              }
+            }
+            if ($config.hiddenRefine) {
+              for (let field in $config.hiddenRefine) {
+                let getter = $config.hiddenRefine[field];
+                response.features = response.features.filter(item => getter(item) == true);
+              }
+            }
+            if (import.meta.env.VITE_DEBUG) console.log('3rd option 2, response.features:', response.features);
+          }
+          this.sources[source] = response;
+        }
       }
+      this.loadingSources = false;
+      return;
     },
     async fillZipcodes() {
       try{
-        let url = '//services.arcgis.com/fLeGjb7u4uXqeF9q/arcgis/rest/services/Zipcodes_Poly/FeatureServer/0/query';
+        let url = 'https://services.arcgis.com/fLeGjb7u4uXqeF9q/arcgis/rest/services/Zipcodes_Poly/FeatureServer/0/query';
         let params = {
           where: '1=1',
           outFields: '*',
-          f: 'pjson',
+          f: 'geojson',
           outSR: 4326,
         };
 
@@ -70,14 +178,16 @@ export const useDataStore = defineStore('DataStore', {
         if (response.status === 200) {
           let data = await response.data;
           this.zipcodes = data;
+          if (import.meta.env.VITE_DEBUG) console.log('fillZipcodes complete, data:', data);
+          return;
           // this.loadingRcos = false;
         } else {
           // this.loadingRcos = false;
-          if (import.meta.env.VITE_DEBUG == 'true') console.warn('fillZipcodes - await resolved but HTTP status was not successful');
+           console.warn('fillZipcodes - await resolved but HTTP status was not successful');
         }
       } catch {
         // this.loadingRcos = false;
-        if (import.meta.env.VITE_DEBUG == 'true') console.error('fillZipcodes - await never resolved, failed to fetch data');
+         console.error('fillZipcodes - await never resolved, failed to fetch data');
       }
     },
     async fillHolidays() {
@@ -87,11 +197,16 @@ export const useDataStore = defineStore('DataStore', {
           const data = await response.json()
           this.holidays = data.holidays;
         } else {
-          if (import.meta.env.VITE_DEBUG == 'true') console.warn('stormwaterData - await resolved but HTTP status was not successful')
+           console.warn('stormwaterData - await resolved but HTTP status was not successful')
         }
       } catch {
-        if (import.meta.env.VITE_DEBUG == 'true') console.error('stormwaterData - await never resolved, failed to fetch data')
+         console.error('stormwaterData - await never resolved, failed to fetch data')
       }
     },
   },
 });
+
+// this is from https://pinia.vuejs.org/cookbook/hot-module-replacement.html
+if (import.meta.hot) {
+  import.meta.hot.accept(acceptHMRUpdate(useDataStore, import.meta.hot))
+};

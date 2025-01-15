@@ -1,70 +1,37 @@
 
 <script setup>
 
-// import { mapState } from 'vuex';
-// import ExpandCollapse from './ExpandCollapse.vue';
-import transforms from '../app/util/transforms.js';
+import { useMainStore } from '../stores/MainStore.js';
+import { useMapStore } from '../stores/MapStore.js';
+import { useGeocodeStore } from '../stores/GeocodeStore.js';
+import { useDataStore } from '../stores/DataStore.js';
+import { useConfigStore } from '../stores/ConfigStore.js';
+import { useRoute, useRouter } from 'vue-router';
+import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
+import { event } from 'vue-gtag'
 
-// import { Dropdown } from '@phila/phila-ui';
-
-// import SingleCheckbox from './SingleCheckbox.vue';
-// import PrintShareSection from '@phila/pinboard/src/components/PrintShareSection';
-
-import $config from '@/config.js';
-import appConfig from '@/app/main.js';
-// if (import.meta.env.VITE_DEBUG) console.log('appConfig:', appConfig);
-
-import { computed, onMounted, ref, getCurrentInstance, watch } from 'vue';
-import { useMainStore } from '@/stores/MainStore.js'
 const MainStore = useMainStore();
-import { useMapStore } from '@/stores/MapStore.js'
 const MapStore = useMapStore();
-import { useGeocodeStore } from '@/stores/GeocodeStore.js'
 const GeocodeStore = useGeocodeStore();
-import { useDataStore } from '@/stores/DataStore.js'
 const DataStore = useDataStore();
 
-import AddressSearchControl from '@/components/AddressSearchControl.vue';
-import PrintShareSection from '@/components/PrintShareSection.vue';
-import ExpandCollapse from '@/components/ExpandCollapse.vue';
+import PrintShareSection from './PrintShareSection.vue';
+import ExpandCollapse from './ExpandCollapse.vue';
 
-import { useRoute, useRouter } from 'vue-router';
-import ExpandCollapseContent from '@/app/components/ExpandCollapseContent.vue';
-
-import CustomGreeting from '@/app/components/customGreeting.vue';
-
-const version = import.meta.env.VITE_VERSION;
+const ConfigStore = useConfigStore();
+const $config = ConfigStore.config;
+const CustomGreeting = $config.customComps.customGreeting;
+const ExpandCollapseContent = $config.customComps.expandCollapseContent;
+if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapseContent:', ExpandCollapseContent);
 
 const route = useRoute();
 const router = useRouter();
 
-const address = computed(() => MainStore.currentAddress);
-
 const instance = getCurrentInstance();
-import { useI18n } from 'vue-i18n'
-const { t } = useI18n()
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 const $emit = defineEmits([ 'clear-bad-address' ]);
-
-
-// const zipCode = computed(() => {
-//   if (GeocodeStore.aisData && GeocodeStore.aisData.features) {
-//     return GeocodeStore.aisData.features[0].properties.zip_code + '-' + GeocodeStore.aisData.features[0].properties.zip_4;
-//   }
-//   return '';
-// });
-
-const currentItems = computed(() => {
-  return DataStore.covidFreeMealSites.features;
-});
-
-
-// components: {
-//   ExpandCollapse,
-//   Dropdown,
-//   SingleCheckbox,
-//   PrintShareSection,
-// },
 
 const props = defineProps({
   isMapVisible: {
@@ -79,21 +46,23 @@ const sortBy = ref('Alphabetically');
 const printCheckboxes = ref([]);
 const selectAllCheckbox = ref(false);
 
-
 onMounted(async () => {
-  // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue mounted, appConfig:', appConfig, 'i18nLocale.value:', i18nLocale.value);
-  if (!appConfig.greeting && (!appConfig.customComps || !appConfig.customComps.customGreeting)) {
+  if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue mounted, $config:', $config, 'i18nLocale.value:', i18nLocale.value, 'route.query:', route.query);
+  const routeQueryKeys = Object.keys(route.query);
+  let routeChanged = false;
+  if (routeQueryKeys.length == 1 && !routeQueryKeys.includes('lang') || routeQueryKeys.length > 1) {
+    routeChanged = true;
+  }
+  if (routeChanged || !$config.greeting && (!$config.customComps || !$config.customComps.customGreeting)) {
     MainStore.shouldShowGreeting = false;
   }
 
   let value, valueWithMiles;
-  if (appConfig.searchBar.searchDistance && appConfig.searchBar.searchDistance != 1) {
-    value = appConfig.searchBar.searchDistance;
-    // valueWithMiles = appConfig.searchBar.searchDistance + ' ' + $i18n.messages[i18nLocale.value]['miles'];
-    valueWithMiles = appConfig.searchBar.searchDistance + ' ' + t('miles');
+  if ($config.searchBar.searchDistance && $config.searchBar.searchDistance != 1) {
+    value = $config.searchBar.searchDistance;
+    valueWithMiles = $config.searchBar.searchDistance + ' ' + t('miles');
   } else {
     value = 1;
-    // valueWithMiles = 1 + ' ' + $i18n.messages[i18nLocale.value]['mile'];
     valueWithMiles = 1 + ' ' + t('mile');
   }
   searchDistance.value = valueWithMiles;
@@ -102,14 +71,11 @@ onMounted(async () => {
   printCheckboxes.value = MainStore.printCheckboxes;
 });
 
-
-
-
 // COMPUTED
 const tagsPhrase = computed(() => {
   let value;
-  if (appConfig.locationInfo.tagsPhrase) {
-    value = appConfig.locationInfo.tagsPhrase;
+  if ($config.locationInfo.tagsPhrase) {
+    value = $config.locationInfo.tagsPhrase;
   } else {
     value = 'Tags';
   }
@@ -118,7 +84,6 @@ const tagsPhrase = computed(() => {
 
 const searchDistanceOptions = computed(() => {
   return [
-    // '1 ' + $i18n.messages[i18nLocale.value]['mile'],
     '1 ' + t('mile'),
     '2 ' + t('miles'),
     '3 ' + t('miles'),
@@ -129,18 +94,8 @@ const searchDistanceOptions = computed(() => {
 
 const anySearch = computed(() => {
   let value = true;
-  if (Object.keys(appConfig).includes('anySearch')) {
-    value = appConfig.anySearch
-  } //else {
-  //   value = true;
-  // }
-  return value;
-});
-
-const showPrintAndShare = computed(() => {
-  let value = false;
-  if (route.name == 'home') {
-    value = true;
+  if (Object.keys($config).includes('anySearch')) {
+    value = $config.anySearch
   }
   return value;
 });
@@ -154,14 +109,19 @@ const sortByOptions = computed(() => {
 
 const allowPrint = computed(() => {
   let value = false;
-  if (appConfig.allowPrint) {
+  if ($config.allowPrint) {
     value = true;
   }
   return value;
 });
 
 const database = computed(() => {
-  return DataStore.sources[DataStore.appType].rows || DataStore.sources[DataStore.appType].features || DataStore.sources[DataStore.appType].data;
+  let value = {}
+  if (DataStore.sources[DataStore.appType]) {
+    // if (import.meta.env.VITE_DEBUG) console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]);
+    value = DataStore.sources[DataStore.appType].data.rows || DataStore.sources[DataStore.appType].data.features || DataStore.sources[DataStore.appType].features;
+  }
+  return value;
 });
 
 const databaseLength = computed(() => {
@@ -170,124 +130,11 @@ const databaseLength = computed(() => {
 
 const summarySentenceStart = computed(() => {
   let sentence = t('showing') + ' ' + currentData.value.length + ' ' + t('outOf') + ' ' + databaseLength.value + ' ' + t('results');
-  if (selectedKeywords.value.length || zipcodeEntered.value || addressEntered.value || selectedServices.value.length) {
-    sentence += ' ' + t('for') + ' ';
-  }
   return sentence;
-});
-
-const summarySentenceEnd = computed(() => {
-  let sentence = '';
-  if (selectedKeywords.value.length) {
-    for (let keyword of selectedKeywords.value) {
-      sentence += '"' + keyword + '"';
-      if (zipcodeEntered.value || addressEntered.value || selectedServices.value.length) {
-        sentence += ' : ';
-      }
-    }
-  }
-  if (zipcodeEntered.value) {
-    sentence += zipcodeEntered.value;
-
-    sentence += ' - ';
-    sentence += searchDistance.value;
-
-    // let word;
-    // if (searchDistance.value == 1) {
-    //   word = ' ' + $i18n.messages[i18nLocale.value]['mile'];
-    // } else {
-    //   word = ' ' + $i18n.messages[i18nLocale.value]['miles'];
-    // }
-    // sentence += word;
-
-    if (selectedServices.value.length) {
-      sentence += ' : ';
-    }
-  }
-  if (addressEntered.value) {
-    sentence += addressEntered.value;
-    sentence += ' - ';
-    sentence += searchDistance.value;
-
-    // let word;
-    // if (searchDistance.value == 1) {
-    //   word = ' ' + $i18n.messages[i18nLocale.value]['mile'];
-    // } else {
-    //   word = ' ' + $i18n.messages[i18nLocale.value]['miles'];
-    // }
-    // sentence += word;
-    
-    if (selectedServices.value.length) {
-      sentence += ' : ';
-    }
-  }
-  if (selectedServices.value.length) {
-    if (typeof selectedServices.value == 'string') {
-      // if (import.meta.env.VITE_DEBUG) console.log('t(selectedServices.value):', t(selectedServices.value));
-      sentence += t(selectedServices.value);
-    } else {
-      if (Array.isArray(refineList.value)) {
-        for (let service of selectedServices.value) {
-          sentence += service;
-          if (selectedServices.value.indexOf(service) < selectedServices.value.length-1) {
-            sentence += ' : ';
-          }
-        }
-      } else {
-        for (let service of selectedServices.value) {
-          // if (import.meta.env.VITE_DEBUG) console.log('in summarySentenceEnd, if else for service:', service);
-          let refineList = refineList.value;
-          for (let key of Object.keys(refineList)) {
-            for (let key2 of Object.keys(refineList[key])) {
-              if (key2 === 'radio' || key2 === 'checkbox') {
-                for (let key3 of Object.keys(refineList[key][key2])) {
-                  if (refineList[key][key2][key3].unique_key == service) {
-                    sentence += t([key][key3]);//.toLowerCase();
-                  }
-                }
-              }
-            }
-          }
-          if (selectedServices.value.indexOf(service) < selectedServices.value.length-1) {
-            sentence += ' : ';
-          }
-        }
-      }
-    }
-  }
-  return sentence;
-});
-
-const refineList = computed(() => {
-  return MainStore.refineList;
 });
 
 const i18nLocale = computed(() => {
   return instance.appContext.config.globalProperties.$i18n.locale;
-});
-
-const zipcodeEntered = computed(() => {
-  return MainStore.selectedZipcode;
-});
-
-const geocode = computed(() => {
-  return GeocodeStore.aisData;
-});
-
-const addressEntered = computed(() => {
-  let address;
-  let routeAddress = route.query.address;
-  if (import.meta.env.VITE_DEBUG) console.log('addressEntered computed, routeAddress:', routeAddress);
-  if (geocode.value && geocode.value.properties && geocode.value.properties.street_address) {
-    address = geocode.value.properties.street_address;
-  } else if (routeAddress) {
-    address = routeAddress;
-  }
-  return address;
-});
-
-const watchPositionOn = computed(() => {
-  return MapStore.watchPositionOn;
 });
 
 const shouldShowGreeting = computed(() => {
@@ -296,7 +143,7 @@ const shouldShowGreeting = computed(() => {
 
 const i18nEnabled = computed(() => {
   let value;
-  if (appConfig.i18n && appConfig.i18n.enabled) {
+  if ($config.i18n && $config.i18n.enabled) {
     value = true;
   } else {
     value = false;
@@ -306,34 +153,10 @@ const i18nEnabled = computed(() => {
 
 const hasCustomGreeting = computed(() => {
   let value = false;
-  if (appConfig.customComps) {
-    value = Object.keys(appConfig.customComps).includes('customGreeting');
+  if ($config.customComps) {
+    value = Object.keys($config.customComps).includes('customGreeting');
   }
   return value;
-});
-
-const greetingText = computed(() => {
-  let value;
-  if (appConfig.greeting) {
-    value = appConfig.greeting.message;
-  } else {
-    value = null;
-  }
-  return value;
-});
-
-const greetingOptions = computed(() => {
-  let value;
-  if (appConfig.greeting) {
-    value = appConfig.greeting.options;
-  } else {
-    value = {};
-  }
-  return value;
-});
-
-const zipcode = computed(() => {
-  return MainStore.selectedZipcode;
 });
 
 const geocodeStatus = computed(() => {
@@ -346,24 +169,9 @@ const geocodeStatus = computed(() => {
   }
 });
 
-const zipcodeCenter = computed(() => {
-  return MapStore.zipcodeCenter;
-});
-
 const sortDisabled = computed(() => {
   let value;
-  let geocode, zipCenter, watchPos;
-  if (geocodeStatus.value) {
-    geocode = geocodeStatus.value;
-  }
-  if (zipcodeCenter.value) {
-    zipCenter = zipcodeCenter.value;
-  }
-  if (watchPositionOn.value) {
-    watchPos = watchPositionOn.value;
-  }
-  // if (import.meta.env.VITE_DEBUG) console.log('computed sortDisabled, geocode:', geocode, 'zipcodeCenter:', zipcodeCenter);
-  if (geocode || zipCenter[0] || watchPos) {
+  if (MapStore.bufferForAddressOrLocationOrZipcode) {
     value = false;
   } else {
     value = true;
@@ -372,49 +180,23 @@ const sortDisabled = computed(() => {
 });
 
 const isMobile = computed(() => {
-  return MainStore.isMobileDevice;
-})
-
-const selectedKeywords = computed(() => {
-  return MainStore.selectedKeywords;
-});
-
-const selectedServices = computed(() => {
-  return MainStore.selectedServices;
-});
-
-const selectedResource = computed(() => {
-  return DataStore.selectedResource;
+  return MainStore.isMobileDevice || MainStore.windowDimensions.width < 768;
 });
 
 const currentData = computed(() => {
-  let locations;
-  if (DataStore.sources[DataStore.appType].rows) {
-    locations = [...DataStore.sources[DataStore.appType].rows];
-  } else if (DataStore.sources[DataStore.appType].features) {
-    locations = [...DataStore.sources[DataStore.appType].features];
-  } else if (DataStore.sources[DataStore.appType].data) {
-    locations = [...DataStore.sources[DataStore.appType].data];
-  }
-
-  let currentQuery = { ...route.query };
-  let currentQueryKeys = Object.keys(currentQuery);
-
-  // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue currentData computed, currentQuery:', currentQuery, 'currentQueryKeys:', currentQueryKeys);
+  let locations = [...DataStore.currentData];
 
   let valOrGetter = locationInfo.value.siteName;
   const valOrGetterType = typeof valOrGetter;
   let val;
 
-  if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue, currentData, sortBy.value:', sortBy.value, 'locations:', locations, 'valOrGetter:', valOrGetter, 'valOrGetterType:', valOrGetterType);
-
-  // if (currentQueryKeys.includes('address')) {
+  // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue, currentData, sortBy.value:', sortBy.value, 'locations:', locations, 'valOrGetter:', valOrGetter, 'valOrGetterType:', valOrGetterType);
   if (sortBy.value == 'Distance') {
     if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue currentData computed, sortBy.value:', sortBy.value);
     val = 'distance';
     // if (import.meta.env.VITE_DEBUG) console.log('it includes address');
     locations.sort(function(a, b) {
-      if (import.meta.env.VITE_DEBUG) console.log('a:', a, 'b:', b, 'val:', val);
+      // if (import.meta.env.VITE_DEBUG) console.log('a:', a, 'b:', b, 'val:', val);
       if (a[val] < b[val]) {
         return -1;
       }
@@ -455,24 +237,23 @@ const currentDataList = computed(() => {
 
 const dataStatus = computed(() => {
   let value;
-  if (DataStore.sources[appConfig.app.type]) {
-    value = DataStore.sources[appConfig.app.type].status;
+  if (DataStore.sources[$config.app.type]) {
+    value = DataStore.sources[$config.app.type].status;
   }
   return 'success';
 });
 
 const locationInfo = computed(() => {
-  return appConfig.locationInfo;
+  return $config.locationInfo;
 });
 
 const noLocations = computed(() => {
   return t('noLocations');
 });
 
-const copiedUrl = computed(() => {
-  return t('copiedUrl');
+const loadingSources = computed(() => {
+  return DataStore.loadingSources;
 });
-
 
 watch(
   () => i18nLocale,
@@ -488,14 +269,15 @@ watch(
 );
 
 watch(
-  () => searchDistance,
+  () => searchDistance.value,
   async nextSearchDistance => {
+    if (import.meta.env.VITE_DEBUG) console.log('watch searchDistance, nextSearchDistance:', nextSearchDistance, 'parseInt(nextSearchDistance):', parseInt(nextSearchDistance));
     MapStore.searchDistance = parseInt(nextSearchDistance);
   }
 );
 
 watch(
-  () => selectAllCheckbox,
+  () => selectAllCheckbox.value,
   async nextSelectAllCheckbox => {
     if (import.meta.env.VITE_DEBUG) console.log('watch selectAllCheckbox, nextSelectAllCheckbox:', nextSelectAllCheckbox);
     if (nextSelectAllCheckbox == false) {
@@ -518,17 +300,20 @@ watch(
 );
 
 watch(
-  () => zipcode,
-  async nextZipcode => {
-    MainStore.shouldShowGreeting = false;
+  () => route.query,
+  async nextRoute => {
+    if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel watch route, nextRoute:', nextRoute);
+    const routeQueryKeys = Object.keys(route.query);
+    if (routeQueryKeys.length == 1 && !routeQueryKeys.includes('lang') || routeQueryKeys.length > 1) {
+      MainStore.shouldShowGreeting = false;
+    }
   }
-);
+)
 
 watch(
-  () => geocodeStatus,
+  () => geocodeStatus.value,
   async nextGeocodeStatus => {
-    MainStore.shouldShowGreeting = false;
-    if (nextGeocodeStatus == null) {
+    if (nextGeocodeStatus != 'success') {
       sortBy.value = 'Alphabetically';
     } else {
       sortBy.value = 'Distance';
@@ -537,9 +322,9 @@ watch(
 )
 
 watch(
-  () => zipcodeCenter,
-  async nextZipcodeCenter => {
-    if (nextZipcodeCenter[0]) {
+  () => MainStore.selectedZipcode,
+  async nextSelectedZipcode => {
+    if (nextSelectedZipcode) {
       sortBy.value = 'Distance';
     } else {
       sortBy.value = 'Alphabetically';
@@ -547,63 +332,13 @@ watch(
   }
 );
 
-watch(
-  () => selectedKeywords,
-  async nextSelectedKeywords => {
-    // if (import.meta.env.VITE_DEBUG) console.log('watch, nextSelectedKeywords:', nextSelectedKeywords);
-    MainStore.shouldShowGreeting = false;
-  }
-);
-
-watch(
-  () => selectedServices,
-  async nextSelectedServices => {
-    // if (import.meta.env.VITE_DEBUG) console.log('watch, nextSelectedServices:', nextSelectedServices);
-    if (nextSelectedServices.length) {
-      MainStore.shouldShowGreeting = false;
-    }
-  }
-);
-
-watch(
-  () => selectedResource,
-  async nextselectedResource => {
-    // if (import.meta.env.VITE_DEBUG) console.log('watch, nextselectedResource:', nextselectedResource);
-    MainStore.shouldShowGreeting = false;
-  }
-);
-
-
 // METHODS
-const clickedShare = () => {
-  if (import.meta.env.VITE_DEBUG) console.log('clickedShare is running');
-  var dummy = document.createElement('input'),
-    text = window.location.href;
-
-  document.body.appendChild(dummy);
-  dummy.value = text;
-  dummy.select();
-  document.execCommand('copy');
-  document.body.removeChild(dummy);
-
-  this.$success(copiedUrl.value, {
-    duration: 3000,
-    closeOnClick: true,
-  });
-};
-
 const clearBadAddress = () => {
   $emit('clear-bad-address');
 };
 
-// clickedSinglePrint(item) {
-//   if (import.meta.env.VITE_DEBUG) console.log('clickedSinglePrint is running');
-//   store.commit('setPrintCheckboxes', [ item._featureId ]);
-//   router.push({ name: 'printView'  });
-// },
-
 const clickedPrint = () => {
-  MainStore.selectedZipcode = null;
+  // MainStore.selectedZipcode = null;
   if (import.meta.env.VITE_DEBUG) console.log('clickedPrint is running');
   if (!printCheckboxes.value.length) {
     this.$warning(noLocations.value, {
@@ -612,7 +347,8 @@ const clickedPrint = () => {
     });
     return;
   }
-  router.push({ name: 'printView'  });
+  let startQuery = { ...route.query };
+  router.push({ name: 'printView', query: { ...startQuery } });
 };
 
 const printBoxChecked = (id) => {
@@ -639,18 +375,21 @@ const clickedSelectAll = () => {
 
 const clickedViewList = () => {
   MainStore.shouldShowGreeting = false;
-  // $gtag.event('click', {
-  //   'event_category': store.state.gtag.category,
-  //   'event_label': 'view list',
-  // });
+  event('click', {
+    'event_category': $config.gtag.category,
+    'event_label': 'view list',
+  });
 };
 
-const getLocationsList = () => {
-  const locations = sources.value[appConfig.app.type].data.rows;
-  return locations;
+const clickedViewMap = () => {
+  MainStore.shouldShowGreeting = false;
+  $emit('clicked-view-map');
+  event('click', {
+    'event_category': $config.gtag.category,
+    'event_label': 'view map',
+  });
 };
 
-// TODO: handle edge cases
 const parseAddress = (address) => {
   const formattedAddress = address.replace(/(Phila.+)/g, city => `<div>${city}</div>`).replace(/^\d+\s[A-z]+\s[A-z]+/g, lineOne => `<div>${lineOne}</div>`).replace(/,/, '');
   return formattedAddress;
@@ -680,10 +419,18 @@ const makeValidUrl = (url) => {
   return newUrl;
 };
 
+const locationsPanelClass = computed(() => {
+  if (isMobile.value) {
+    return 'invisible-scrollbar';
+  } else {
+    return '';
+  }
+});
+
 </script>
 
 <template>
-  <div id="locations-panel-content" class="locations">
+  <div id="locations-panel-content" :class="locationsPanelClass + ' locations'">
 
     <div
       v-if="shouldShowGreeting"
@@ -692,12 +439,28 @@ const makeValidUrl = (url) => {
       <custom-greeting
         v-if="shouldShowGreeting && hasCustomGreeting"
         @view-list="clickedViewList"
+        @view-map="clickedViewMap"
+        :database="database"
+        :isMobile="isMobile"
       />
-
     </div>
 
     <div
-      v-if="!shouldShowGreeting && dataStatus === 'success'"
+      v-if="!shouldShowGreeting && loadingSources"
+      class="columns is-vcentered is-align-content-center has-text-centered loading-data"
+    >
+      <!-- Loading Data -->
+      <div class="column">
+        <font-awesome-icon
+          icon="fa-solid fa-spinner"
+          class="fa-6x center-spinner"
+          spin
+        />
+      </div>
+    </div>
+
+    <div
+      v-if="!shouldShowGreeting && !loadingSources && dataStatus === 'success'"
       class="summary-and-location-container"
     >
       
@@ -757,6 +520,7 @@ const makeValidUrl = (url) => {
               class="column is-6-tablet is-7-desktop p-0"
             >
               <dropdown
+                id="sortby-dropdown"
                 v-model="sortBy"
                 :options="sortByOptions"
                 :placeholder="$t('sortBy')"
@@ -767,6 +531,7 @@ const makeValidUrl = (url) => {
               class="column is-6-tablet is-5-desktop p-0"
             >
               <dropdown
+                id="distance-dropdown"
                 v-model="searchDistance"
                 :options="searchDistanceOptions"
                 :placeholder="$t('distance')"
@@ -784,6 +549,7 @@ const makeValidUrl = (url) => {
             class="mb-1 p-0 mobile-dropdown-container column is-6"
           >
             <dropdown
+              id="sortby-dropdown"
               v-model="sortBy"
               :options="sortByOptions"
               placeholder="Sort By"
@@ -794,6 +560,7 @@ const makeValidUrl = (url) => {
             class="mb-1 p-0 mobile-dropdown-container column is-6"
           >
             <dropdown
+              id="distance-dropdown"
               v-model="searchDistance"
               :options="searchDistanceOptions"
               placeholder="Distance"
@@ -806,7 +573,7 @@ const makeValidUrl = (url) => {
           v-if="geocodeStatus !== 'error'"
           class="mt-2 mb-2"
         >
-          {{ summarySentenceStart }} <b><i>{{ summarySentenceEnd }}</i></b>
+          {{ summarySentenceStart }}
         </div>
       </div>
 
@@ -853,26 +620,26 @@ const makeValidUrl = (url) => {
             :checked="selectAllCheckbox"
             @print-box-checked="printBoxChecked"
           >
+            <print-share-section
+              v-if="item._featureId == DataStore.selectedResource"
+              :item="item"
+            />
 
             <expand-collapse-content
-              v-if="appConfig.customComps && Object.keys(appConfig.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource"
+              v-if="$config.customComps && Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource"
               :item="item"
               :is-map-visible="isMapVisible"
+              :is-mobile="isMobile"
             />
 
             <div
-              v-if="!appConfig.customComps || !Object.keys(appConfig.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource"
-              :class="isMobile ? 'main-content-mobile' : 'main-content'"
+              v-if="!Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource"
+              class="main-ec-content"
             >
-              <print-share-section
-                :item="item"
-              >
-              </print-share-section>
-
               <div class="columns top-section">
                 <div class="column is-6">
                   <div
-                    v-if="item.street_address"
+                    v-if="item.properties.street_address"
                     class="columns is-mobile"
                   >
                     <div class="column is-1">
@@ -880,7 +647,7 @@ const makeValidUrl = (url) => {
                     </div>
                     <div
                       class="column is-11"
-                      v-html="parseAddress(item.street_address)"
+                      v-html="parseAddress(item.properties.street_address)"
                     >
                     </div>
                   </div>
@@ -889,7 +656,7 @@ const makeValidUrl = (url) => {
                 <div class="column is-6">
 
                   <div
-                    v-if="item.phone_number"
+                    v-if="item.properties.phone_number"
                     class="columns is-mobile"
                   >
                     <div
@@ -898,12 +665,12 @@ const makeValidUrl = (url) => {
                       <font-awesome-icon icon="phone" />
                     </div>
                     <div class="column is-11">
-                      {{ item.phone_number }}
+                      {{ item.properties.phone_number }}
                     </div>
                   </div>
 
                   <div
-                    v-if="item.email"
+                    v-if="item.properties.email"
                     class="columns is-mobile"
                   >
                     <div
@@ -912,12 +679,12 @@ const makeValidUrl = (url) => {
                       <font-awesome-icon icon="envelope" />
                     </div>
                     <div class="column is-11">
-                      <a :href="`mailto:${item.email}`">{{ item.email }}</a>
+                      <a :href="`mailto:${item.properties.email}`">{{ item.properties.email }}</a>
                     </div>
                   </div>
 
                   <div
-                    v-if="item.website"
+                    v-if="item.properties.website"
                     class="columns is-mobile website-div"
                   >
                     <div
@@ -928,16 +695,16 @@ const makeValidUrl = (url) => {
                     <div class="column is-11">
                       <a
                         target="_blank"
-                        :href="makeValidUrl(item.website)"
+                        :href="makeValidUrl(item.properties.website)"
                       >
-                        {{ item.website }}
+                        {{ item.properties.website }}
                         <font-awesome-icon icon="external-link-alt" />
                       </a>
                     </div>
                   </div>
 
                   <div
-                    v-if="item.facebook_name"
+                    v-if="item.properties.facebook_name"
                     class="columns is-mobile"
                   >
                     <div
@@ -948,7 +715,7 @@ const makeValidUrl = (url) => {
                     <div class="column is-11">
                       <a
                         target="_blank"
-                        :href="item.facebook_name"
+                        :href="item.properties.facebook_name"
                       >
                         Facebook
                       </a>
@@ -956,7 +723,7 @@ const makeValidUrl = (url) => {
                   </div>
 
                   <div
-                    v-if="item.twitter"
+                    v-if="item.properties.twitter"
                     class="columns is-mobile"
                   >
                     <div
@@ -967,7 +734,7 @@ const makeValidUrl = (url) => {
                     <div class="column is-11">
                       <a
                         target="_blank"
-                        :href="item.twitter"
+                        :href="item.properties.twitter"
                       >
                         Twitter
                       </a>
@@ -978,7 +745,7 @@ const makeValidUrl = (url) => {
               </div>
 
               <div
-                v-if="item.services_offered"
+                v-if="item.properties.services_offered"
               >
                 <h3 v-if="!i18nEnabled">
                   Services offered
@@ -992,7 +759,7 @@ const makeValidUrl = (url) => {
                   class="columns is-multiline is-gapless"
                 >
                   <div
-                    v-for="i in parseServiceList(item.services_offered)"
+                    v-for="i in parseServiceList(item.properties.services_offered)"
                     :key="i"
                     class="column is-half"
                   >
@@ -1005,7 +772,7 @@ const makeValidUrl = (url) => {
                   class="columns is-multiline is-gapless"
                 >
                   <div
-                    v-for="service in parseServiceList(item.services_offered)"
+                    v-for="service in parseServiceList(item.properties.services_offered)"
                     :key="service"
                     class="column is-half"
                   >
@@ -1017,7 +784,7 @@ const makeValidUrl = (url) => {
               </div>
 
               <div
-                v-if="item.tags && item.tags.length"
+                v-if="item.properties.tags && item.properties.tags.length"
               >
                 <h3 v-if="!i18nEnabled">
                   {{ tagsPhrase }}
@@ -1026,7 +793,7 @@ const makeValidUrl = (url) => {
                   {{ $t(tagsPhrase) }}
                 </h3>
                 <div>
-                  {{ parseTagsList(item.tags) }}
+                  {{ parseTagsList(item.properties.tags) }}
                 </div>
               </div>
             </div>
@@ -1043,8 +810,11 @@ const makeValidUrl = (url) => {
 
 <style lang="scss">
 
+.loading-data {
+  height: 100%;
+}
+
 .mobile-dropdown-container {
-  // margin-left: -10px;
   margin-right: -10px;
 }
 
@@ -1052,32 +822,27 @@ const makeValidUrl = (url) => {
   padding-top: 0px !important;
 }
 
+#dd-sortby-dropdown {
+  // font-size: 14px;
+}
+
+#dd-distance-dropdown {
+  // font-size: 14px;
+}
+
 .locations-panel {
   overflow-y: visible !important;
-  // width: 100%;
 }
 
 .summary-and-location-container {
-  // padding: 1rem;
-  // width: 100%;
   overflow-y: visible;
 }
 
 .summary-container {
-  // position: absolute;
   padding-left: 1rem;
-  // padding-right: 1rem;
   padding-top: 1rem;
-  // background-color: rgba(225, 225, 225, 1);
-  // width: 48%;
   z-index:9;
   background:#fff
-}
-
-@media (max-width: 767px) {
-  .summary-container {
-    // width: 100%;
-  }
 }
 
 .location-container {
@@ -1093,13 +858,11 @@ const makeValidUrl = (url) => {
     width: 100%;
     position: sticky;
     top: 0;
-    width: 100%;
   }
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
   .location-container {
-    // padding-top: 170px;
     width: 100%;
   }
 
@@ -1113,14 +876,9 @@ const makeValidUrl = (url) => {
   .loc-panel-widget {
     padding-top: 0px !important;
   }
-
 }
 
 @media (max-width: 767px) {
-  .location-container {
-    // padding-top: 120px;
-  }
-
   .summary-container {
     position: sticky;
     top: 0;
@@ -1143,32 +901,8 @@ const makeValidUrl = (url) => {
   margin-bottom: .5rem !important;
 }
 
-.main-content {
-  padding-top: .5rem;
-  padding-bottom: 1.5rem;
-}
-
 .app-button:focus {
   color: white !important;
-}
-
-.card-button {
-  border-width: 0px !important;
-  color: #0f4d90 !important;
-}
-
-.card-button:hover {
-  color: black !important;
-}
-
-.card-button:focus:not(:active), .card-button.is-focused:not(:active) {
-  box-shadow: none !important;
-}
-.card-button-text {
-  font-family: "OpenSans-Regular", "Open Sans", sans-serif;
-  font-size: 14px;
-  padding-left: 5px;
-  text-transform: none;
 }
 
 .top-section {
@@ -1176,15 +910,11 @@ const makeValidUrl = (url) => {
 }
 
 .button.disabled, fieldset.disabled .button {
-  // background-color: #878787 !important;
-  // border-color: #878787 !important;
   background-color: #cfcfcf !important;
   border-color: #cfcfcf !important;
 }
 
 .button.disabled, fieldset.disabled .button {
-  // background-color: #878787 !important;
-  // border-color: #878787 !important;
   background-color: #cfcfcf !important;
   border-color: #cfcfcf !important;
   cursor: not-allowed;
@@ -1192,6 +922,14 @@ const makeValidUrl = (url) => {
 
 .button.disabled:focus:not(:active), .button.disabled.is-medium:focus:not(:active), .button.disabled.is-default:focus:not(:active) {
   box-shadow: 0 0 0 0em #25cef7 !important;
+}
+
+#locations-panel-content {
+  scroll-margin-top: 200px;
+}
+
+#location-container {
+  scroll-margin-top: 200px;
 }
 
 </style>

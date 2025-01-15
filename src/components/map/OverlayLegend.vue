@@ -1,6 +1,6 @@
 <script setup>
 
-import { computed, defineProps } from 'vue';
+import { computed } from 'vue';
 
 const props = defineProps({
   'position': {
@@ -70,10 +70,11 @@ const keys = computed(() => {
   font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
   position: absolute;
   bottom: 0px;
-  right: 45px !important;
+  left: 0px;
   padding: 10px;
   z-index: 2;
 }
+/* right: 45px !important; */
 
 .legend-overlay .legend-overlay-inner {
   display: inline-block;

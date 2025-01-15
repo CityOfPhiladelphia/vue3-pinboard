@@ -1,32 +1,25 @@
 <script setup>
 
-import useSharedFunctions from '@/composables/useSharedFunctions.js';
-// const { getSiteName } = useSharedFunctions();
-// import { library } from '@fortawesome/fontawesome-svg-core';
-import { findIconDefinition } from '@fortawesome/fontawesome-svg-core';
+import { useMainStore } from '../stores/MainStore.js';
+import { useMapStore } from '../stores/MapStore.js';
+import { useDataStore } from '../stores/DataStore.js';
+import { useConfigStore } from '../stores/ConfigStore.js';
+import { useRoute, useRouter } from 'vue-router';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
 
-import { useMainStore } from '@/stores/MainStore.js'
 const MainStore = useMainStore();
-import { useMapStore } from '@/stores/MapStore.js'
 const MapStore = useMapStore();
-import { useDataStore } from '@/stores/DataStore.js'
 const DataStore = useDataStore();
 
-import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 
-import { ref, computed, defineProps, onMounted, watch } from 'vue';
-
-import $config from '@/app/main.js'
-// if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse.vue $config:', $config);
+const ConfigStore = useConfigStore();
+const $config = ConfigStore.config;
 
 const $emit = defineEmits(['print-box-checked']);
 
 const props = defineProps({
-  // isMapVisible: Boolean,
-  // item: Object,
-  // checked: Boolean,
   isMapVisible: {
     type: Boolean,
     default: true,
@@ -41,7 +34,7 @@ const props = defineProps({
 });
   
 const printCheckboxes = computed(() => {
-  return DataStore.printCheckboxes;
+  return MainStore.printCheckboxes;
 })
 
 const allowPrint = computed(() => {
@@ -69,7 +62,7 @@ const locationClass = computed(() => {
 // const plusIconWeight = computed(() => {
 //   let value = 'fas';
 //   let regularExists = findIconDefinition({ prefix: 'far', iconName: 'plus' });
-//   // console.log('expandCollapse.vue computed, library:', library, 'regularExists:', regularExists);
+//   // if (import.meta.env.VITE_DEBUG) console.log('expandCollapse.vue computed, library:', library, 'regularExists:', regularExists);
 //   if (regularExists) {
 //     value = 'far';
 //   }
@@ -94,48 +87,38 @@ const i18nEnabled = computed(() => {
   return value;
 });
 
-const subsections = computed(() => {
-  return $config.subsections || {};
-});
+// const subsections = computed(() => {
+//   return $config.subsections || {};
+// });
 
 const section = computed(() => {
   let section;
-  let category;
-  if (props.item.properties) {
-    category = props.item.properties['CATEGORY'] || props.item.properties['category'];
+  if (props.item.properties && $config.fieldsUsed) {
+    section = props.item.properties[$config.fieldsUsed.section];
   }
-  if (Object.keys(subsections.value).length) {
-    section = subsections.value[category];
-  } else if ($config.sections) {
-    section = props.item.site_type;
+  if ($config.subsections) {
+    section = $config.subsections[props.item.properties[$config.fieldsUsed.subsection]];
   }
   return section;
 });
 
-const sectionItem = computed(() => {
-  let sectionItem = {};
-  if (Object.keys(subsections.value).length) {
-    sectionItem = $config.sections;
-  }
-  return sectionItem;
-});
+// const sectionItem = computed(() => {
+//   let sectionItem = {};
+//   if (Object.keys(subsections.value).length) {
+//     sectionItem = $config.sections;
+//   }
+//   return sectionItem;
+// });
 
 const sectionTitle = computed(() => {
   let sectionTitle;
-  if (Object.keys(subsections.value).length) {
-    // sectionTitle = section.value;
-    sectionTitle = $config.sections[section.value].titleSingular;
-  } else if ($config.sections) {
-    sectionTitle = props.item.site_type;
-  }
+  sectionTitle = $config.sections[section.value].titleSingular;
   return sectionTitle;
 });
 
 const sectionColor = computed(() => {
   let sectionColor;
-  if (Object.keys(subsections.value).length) {
-    sectionColor = $config.sections[section.value].color;
-  } else if ($config.sections) {
+  if (section.value) {
     sectionColor = $config.sections[section.value].color;
   }
   return sectionColor;
@@ -169,16 +152,18 @@ watch(
 
 watch(
   () => props.isMapVisible,
-  nextIsMapVisible => {
-    console.log('ExpandCollapse watch isMapVisible');
+  async(nextIsMapVisible) => {
+    // if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse watch isMapVisible');
     if (!nextIsMapVisible) {
-      if (latestSelectedResourceFromMap) {
-        console.log('ExpandCollapse is reporting map is invisible and there is a latestSelectedResourceFromMap:', latestSelectedResourceFromMap);
-        if (latestSelectedResourceFromMap === props.item._featureId) {
-          const el = $el;
+      await nextTick();
+      if (latestSelectedResourceFromMap.value) {
+        // if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse is reporting map is invisible and there is a latestSelectedResourceFromMap.value:', latestSelectedResourceFromMap.value);
+        if (latestSelectedResourceFromMap.value === props.item._featureId) {
+          const el = document.getElementsByClassName(props.item._featureId)[0];
           const visible = isElementInViewport(el);
+          // if (import.meta.env.VITE_DEBUG) console.log('el:', el, 'visible:', visible);
           if (!visible) {
-            console.log('ExpandCollapse in if in if');
+            // if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse in if in if');
             el.scrollIntoView({ block: 'center' });
           }
         }
@@ -194,20 +179,20 @@ onMounted(() => {
     }
 
     let values = []
-    // if (printCheckboxes.length) {
-    //   for (let checkbox of printCheckboxes) {
-    //     if (checkbox == props.item._featureId) {
-    //       values.push(true);
-    //     }
-    //   }
-    // }
+    if (printCheckboxes.value.length) {
+      for (let checkbox of printCheckboxes.value) {
+        if (checkbox == props.item._featureId) {
+          values.push(true);
+        }
+      }
+    }
     if (values.includes(true)) {
-      // console.log('ExpandCollapse mounted, values includes true, printCheckboxes:', printCheckboxes, 'props.item._featureId:', props.item._featureId, 'printCheckboxes.includes(props.item_featureId):', printCheckboxes.includes(props.item_featureId));
+      // if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse mounted, values includes true, printCheckboxes:', printCheckboxes, 'props.item._featureId:', props.item._featureId, 'printCheckboxes.includes(props.item_featureId):', printCheckboxes.includes(props.item_featureId));
       document.getElementById('checkbox'+props.item._featureId).checked = true;
     }
 
     // window.addEventListener('keydown', (e) => {
-    //   console.log('keydown is running, e', e);
+    //   if (import.meta.env.VITE_DEBUG) console.log('keydown is running, e', e);
     //   if (e.keyCode === 32 && e.target === document.body) {
     //     e.preventDefault();
     //   }
@@ -216,7 +201,7 @@ onMounted(() => {
     // let divButton = document.querySelector('#refine-top');
     // divButton.addEventListener('keypress', activate.bind(this));
     // function activate(e) {
-    //   console.log('activate, e:', e, 'e.path[0]:', e.path[0]);
+    //   if (import.meta.env.VITE_DEBUG) console.log('activate, e:', e, 'e.path[0]:', e.path[0]);
     //   if (e.type === 'keypress' && [ 13, 32 ].includes(e.keyCode) && e.srcElement.id == 'refine-top') {
     //     expandRefine();
     //   }
@@ -224,8 +209,7 @@ onMounted(() => {
 });
 
 const siteName = computed(() => {
-  // const route = useRoute();
-  if (import.meta.env.VITE_DEBUG) console.log('siteName computed');
+  // if (import.meta.env.VITE_DEBUG) console.log('siteName computed');
   if (!props.item) {
     return;
   }
@@ -237,59 +221,37 @@ const siteName = computed(() => {
   let currentQueryKeys = Object.keys(currentQuery);
 
   if (valOrGetterType === 'function') {
-    // const state = this.$store.state;
     const getter = valOrGetter;
-    if (currentQueryKeys.includes('address') || currentQueryKeys.includes('zipcode')) {// || this.$store.state.map.watchPositionOn) {
-      // console.log('props.item:', props.item);
-      if (props.item && props.item.distance) {
-        val = '(' + props.item.distance.toFixed(2) + 'miles) ' + getter(props.item);
-        // val = '(' + props.item.distance.toFixed(2) + 'miles) ' + getter(props.item, transforms);
-        // val = '(' + props.item.distance.toFixed(2) + ' ' + this.$i18n.messages[this.i18nLocale]['miles'] + ') ' + getter(props.item, transforms);
-      } else {
-        // console.log('getSiteName else is running');
-        // val = '(' + props.item.distance.toFixed(2) + ' miles) ' + getter(state);
-        // val = getter(state);
-        // val = getter(props.item, transforms);
-        val = getter(props.item);
-      }
+    if (props.item && props.item.distance) {
+      val = '(' + props.item.distance.toFixed(2) + ' miles) ' + getter(props.item);
     } else {
-      if (props.item) {
-        val = getter(props.item);
-        // val = getter(props.item, transforms);
-      } //else {
-      //   val = getter(state);
-      // }
+      val = getter(props.item);
     }
   } else {
-    if (currentQueryKeys.includes('address')) {
-      // console.log('props.item:', props.item);
-      if (props.item.distance) {
-        val = props.item.distance.toFixed(2) + ' miles - ' + props.item[valOrGetter];
-      } else {
-        val = props.item[valOrGetter];
-      }
+    if (props.item && props.item.distance) {
+      val = props.item.distance.toFixed(2) + ' miles - ' + props.item[valOrGetter];
     } else {
       val = props.item[valOrGetter];
     }
   }
-  // console.log('getSiteName val:', val);
   return val;
 });
 
 const clickCheckBox = (e) => {
-  console.log('clickCheckBox is running, e:', e, 'props.item._featureId:', props.item._featureId);
+  if (import.meta.env.VITE_DEBUG) console.log('clickCheckBox is running, e:', e, 'props.item._featureId:', props.item._featureId);
   $emit('print-box-checked', props.item._featureId);
 };
 
 const openPrintView = (e) => {
   e.stopPropagation();
-  console.log('openPrintView is running, e:', e, 'props.item._featureId:', props.item._featureId);
+  if (import.meta.env.VITE_DEBUG) console.log('openPrintView is running, e:', e, 'props.item._featureId:', props.item._featureId);
   window.open('./resource-view/' + props.item._featureId, '_blank');
 };
 
 const isElementInViewport = (el) => {
+  if (import.meta.env.VITE_DEBUG) console.log('el:', el);
   const rect = el.getBoundingClientRect();
-  // console.log('bounding box', rect);
+  // if (import.meta.env.VITE_DEBUG) console.log('bounding box', rect);
   const visibility = {
     // TODO the 108 below is account for the combined height of the
     // app header and address header. this is not a good long-term
@@ -303,14 +265,13 @@ const isElementInViewport = (el) => {
     bottom: rect.bottom <= (window.innerHeight || document.documentElement.clientHeight),
     right: rect.right <= (window.innerWidth || document.documentElement.clientWidth),
   };
-  // console.log('visibility', visibility);
+  // if (import.meta.env.VITE_DEBUG) console.log('visibility', visibility);
 
   // return if all sides are visible
   return Object.values(visibility).every(val => val);
 };
 
 const expandLocation = () => {
-  // locationOpen.value = !locationOpen.value;
   MainStore.lastSelectMethod = 'row';
   const selectedResourceId = props.item._featureId;
   let query = {...route.query};
@@ -322,7 +283,7 @@ const expandLocation = () => {
     delete query.resource;
     router.push({ name: 'home', query });
   }
-  if (import.meta.env.VITE_DEBUG == 'true') console.log('ExpandCollapse expandLocation after selectedResource is defined');
+  if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse expandLocation after selectedResource is defined');
 };
 
 const openLocation = () => {
@@ -337,7 +298,7 @@ const openLocation = () => {
 };
 
 const makeID = (itemTitle) =>{
-  // console.log('itemTitle:', itemTitle);
+  // if (import.meta.env.VITE_DEBUG) console.log('itemTitle:', itemTitle);
   let value;
   if (itemTitle) {
     value = itemTitle.replace(/\s+/g, '-').toLowerCase();
@@ -419,13 +380,11 @@ const makeID = (itemTitle) =>{
               v-if="!locationOpen"
               class="plus-icon"
               :icon="['fas', 'plus']"
-              />
-              <!-- :icon="[plusIconWeight, 'plus']" -->
-              <font-awesome-icon
+            />
+            <font-awesome-icon
               v-if="locationOpen"
-              :icon="['fas', 'plus']"
-              />
-              <!-- :icon="[plusIconWeight, 'minus']" -->
+              :icon="['fas', 'minus']"
+            />
           </div>
         </div>
       </div>
@@ -438,8 +397,6 @@ const makeID = (itemTitle) =>{
   </div>
 </template>
 
-
-<!-- @import "../assets/scss/main.scss"; -->
 <style lang="scss">
 
 .expand-collapse-checkbox {

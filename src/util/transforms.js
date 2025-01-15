@@ -4,7 +4,7 @@ export default {
   date: {
     transform: function (value) {
       let valueTransformed;
-      // console.log('date transform running, value:', value, 'typeof value:', typeof value);
+      // if (import.meta.env.VITE_DEBUG) console.log('date transform running, value:', value, 'typeof value:', typeof value);
       if (typeof value === 'string') {
         valueTransformed = format(parseISO(value), 'MM/dd/yyyy');
       } else {
@@ -15,7 +15,7 @@ export default {
   },
   toLocaleDateString: {
     transform: function(epoch){
-      // console.log('toLocaleDateString transform, epoch:', epoch, typeof epoch);
+      // if (import.meta.env.VITE_DEBUG) console.log('toLocaleDateString transform, epoch:', epoch, typeof epoch);
       let value;
       if (typeof epoch !== 'number') {
         value = epoch;

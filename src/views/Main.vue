@@ -1,10 +1,18 @@
 <script setup>
 
-import $config from '@/config.js';
-import appConfig from '@/app/main.js';
-// if (import.meta.env.VITE_DEBUG) console.log('appConfig:', appConfig);
+import { useMainStore } from '../stores/MainStore.js';
+import { useMapStore } from '../stores/MapStore.js';
+import { useGeocodeStore } from '../stores/GeocodeStore.js';
+import { useDataStore } from '../stores/DataStore.js';
+import { useConfigStore } from '../stores/ConfigStore.js';
+import { useRoute, useRouter } from 'vue-router';
+import { ref, computed, getCurrentInstance, onMounted, watch, onBeforeMount, nextTick } from 'vue';
+import { event } from 'vue-gtag'
 
-import proj4 from 'proj4';
+const ConfigStore = useConfigStore();
+const $config = ConfigStore.config;
+// if (import.meta.env.VITE_DEBUG) console.log('$config:', $config);
+
 import { format } from 'date-fns';
 import { parseISO } from 'date-fns';
 import { subWeeks } from 'date-fns';
@@ -15,287 +23,105 @@ import Fuse from 'fuse.js'
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
-import { point } from '@turf/helpers';
-import buffer from '@turf/buffer';
-import centerOfMass from '@turf/center-of-mass';
-import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
+import { featureCollection } from '@turf/helpers';
+import { pointsWithinPolygon } from '@turf/points-within-polygon';
 import distance from '@turf/distance';
 import AlertBanner from '../components/AlertBanner.vue';
-import PhilaModal from '../components/PhilaModal.vue';
-
-import isMobileDevice from '../util/is-mobile-device';
-import isMac from '../util/is-mac'; // this can probably be removed from App.vue, and only run in main.js
+// import buffer from '@turf/buffer';
+// import centerOfMass from '@turf/center-of-mass';
+// import { booleanPointInPolygon } from '@turf/boolean-point-in-polygon';
 
 // COMPONENTS
-import LocationsPanel from '@/components/LocationsPanel.vue';
-import MapPanel from '@/components/MapPanel.vue';
-import RefinePanel from '@/components/RefinePanel.vue';
+import LocationsPanel from '../components/LocationsPanel.vue';
+import MapPanel from '../components/MapPanel.vue';
+import RefinePanel from '../components/RefinePanel.vue';
+import AddressSearchControl from '../components/AddressSearchControl.vue';
 
-import { computed, onBeforeMount, onMounted, watch, ref, reactive, getCurrentInstance, nextTick } from 'vue';
 const instance = getCurrentInstance();
-const locale = computed(() => instance.appContext.config.globalProperties.$i18n.locale);
 // if (import.meta.env.VITE_DEBUG) console.log('instance.appContext.config.globalProperties.$i18n:', instance.appContext.config.globalProperties.$i18n);
 
 // STORES
-import { useMapStore } from '@/stores/MapStore.js';
 const MapStore = useMapStore();
-import { useMainStore } from '@/stores/MainStore.js'
 const MainStore = useMainStore();
-import { useGeocodeStore } from '@/stores/GeocodeStore.js'
 const GeocodeStore = useGeocodeStore();
-import { useDataStore } from '@/stores/DataStore.js'
 const DataStore = useDataStore();
 
 // ROUTER
-import { useRouter, useRoute } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 
-const publicPath = ref('/');
 const isMapVisible = ref(false);
-const isModalOpen = ref(false);
 const isAlertModalOpen = ref(false);
-const isLarge = ref(true);
-const currentBuffer = ref(null);
+// const currentBuffer = ref(null);
 const buttonText = ref('app.viewMap');
-const appLink = ref('/');
-const myValue = ref('');
-const brandingImage = ref(null);
+
 const brandingLink = ref(null);
-// const brandingLink = ref({
-//   href: 'https://www.phila.gov/',
-//   target: '_blank',
-// });
+const appLink = ref('/');
+
 const searchString = ref(null);
 const refineEnabled = ref(true);
-const searchBarType = ref('address');
 const addressInputPlaceholder = ref(null);
-const submittedCheckboxValue = ref(null);
 const showForceHolidayBanner = ref(false);
 const showAutomaticHolidayBanner = ref(false);
 
+if (import.meta.env.VITE_DEBUG) console.log('watch test');
 
-// OLD ONCREATED
-// let root = document.getElementsByTagName( 'html' )[0]; // '0' to assign the first (and only `HTML` tag)
-// root.setAttribute( 'class', 'invisible-scrollbar' );
-
-// if (import.meta.env.VITE_DEBUG) console.log('Pinboard Main.vue created, appConfig:', appConfig);
-if (appConfig.map) {
-  if (appConfig.map.shouldInitialize === false) {
-    MapStore.shouldInitialize = false
-  }
-}
-
-if (appConfig.app.logoSrc) {
-  brandingImage.value = {
-    src: appConfig.app.logoSrc,
-    alt: appConfig.app.logoAlt,
-    width: appConfig.app.logoWidth || "200px",
-  }
-}
-
-if (appConfig.app.logoLink && appConfig.app.logoLink == 'none') {
+if ($config.app.logoLink && $config.app.logoLink == 'none') {
   brandingLink.value = {
     style: 'pointer-events: none',
   }
-} else {
-  // brandingLink.value = {
-  //   href: appConfig.app.logoLink,
-  //   target: '_blank',
-  // }
 }
 
-// window.addEventListener("popstate", (event) => {
-//   if (import.meta.env.VITE_DEBUG) console.log('popstate event:', document.location, event.state);
-//   // handlePopStateChange();
-//   // filterPoints();
-//   location.reload();
-// });
-
-if (appConfig.refineEnabled === false) {
+if ($config.refineEnabled === false) {
   refineEnabled.value = false;
 }
 
-
-
 // computed
 
+const brandingImage = computed(() => {
+  let value = null;
+  if (!isMobile.value) {
+    if ($config.app.logoSrc) {
+      value = {
+        src: $config.app.logoSrc,
+        alt: $config.app.logoAlt,
+        width: $config.app.logoWidth || "200px",
+      }
+    }
+  }
+  return value;
+});
+
 const isMobile = computed(() => {
-  return MainStore.isMobileDevice;
+  return MainStore.isMobileDevice || MainStore.windowDimensions.width < 768;
 });
 
 const i18nLocale = computed(() => {
   return instance.appContext.config.globalProperties.$i18n.locale;
 });
 
-const refineList = computed(() => {
-  return MainStore.refineList;
-});
-
-const checkboxText = computed(() => {
-  let text = []
-  let refineList = refineList.value;
-  for (let key of Object.keys(refineList)) {
-    for (let key2 of Object.keys(refineList[key])) {
-      if (key2 === 'radio' || key2 === 'checkbox') {
-        for (let key3 of Object.keys(refineList[key][key2])) {
-          text.push(t([key][key3].toLowerCase()));
-        }
-      }
-    }
-  }
-  return text;
-});
-
-const printCheckboxes = computed(() => {
-  return MainStore.printCheckboxes;
-});
-
-const selectedZipcode = computed(() => {
-  return MainStore.selectedZipcode;
-});
-
-const zipcodeData = computed(() => {
-  let zipcode;
-  if (DataStore.zipcodes) {
-    let zipcodesData = DataStore.zipcodes;
-    let selectedZipcode = selectedZipcode.value;
-    if (zipcodesData && selectedZipcode) {
-      zipcode = zipcodesData.features.filter(test => test.attributes.CODE == selectedZipcode)[0];
-    }
-  }
-  return zipcode;
-});
-
 const refineTitle = computed(() => {
-  return appConfig.refine.title;
+  return $config.refine.title;
 });
 
-const projection4326 = computed(() => {
-  return "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
-});
-
-const projection2272 = computed(() => {
-  return "+proj=lcc +lat_1=40.96666666666667 +lat_2=39.93333333333333 +lat_0=39.33333333333334 +lon_0=-77.75 +x_0=600000 +y_0=0 +ellps=GRS80 +datum=NAD83 +to_meter=0.3048006096012192 +no_defs";
-});
-
-const projection3857 = computed(() => {
-  return "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs";
-});
-
-const shouldShowGreeting = computed(() => {
-  return MainStore.shouldShowGreeting;
-});
-
-// const locationsPanelClass = computed(() => {
-//   let value;
-//   if (isMobile.value) {
-//     value = 'invisible-scrollbar';
-//   } else {
-//     value = '';
-//   }
-//   return value;
-// });
-
-const footerLinks = computed(() => {
-  if (appConfig.footer) {
-    let newValues = []
-    for (let i of appConfig.footer) {
-      let value = {}
-      for (let j of Object.keys(i)) {
-        // if (import.meta.env.VITE_DEBUG) console.log('i:', i, 'j:', j);
-        if (!i18nEnabled.value || j !== "text") {
-          value[j] = i[j];
-        } else {
-          value[j] = t(i[j]);
-        }
-      }
-      newValues.push(value)
-    }
-    return newValues;
-  }
-});
-
-const appTitle = computed(() => {
-  let value;
-  if (appConfig.app.title) {
-    value = appConfig.app.title;
-  } else if (i18nEnabled.value) {
-    // if (import.meta.env.VITE_DEBUG) console.log('t("app.title"):', t('app.title'));
-    value = t('app.title');
-  }
-  return value;
-});
-
-const appSubTitle = computed(() => {
-  let value;
-  
-  if (appConfig.app.subtitle) {
-    value = appConfig.app.subtitle;
-  } else if (i18nEnabled.value) {
-    // if (import.meta.env.VITE_DEBUG) console.log('t("app.subtitle"):', t('app.subtitle'));
-    value = t('app.subtitle'); 
-  }
-  return value;
-});
-
-const i18nLanguages = computed(() => {
-  let values = [];
-  // if (import.meta.env.VITE_DEBUG) console.log('i18nLanguages, appConfig.i18n:', appConfig.i18n);
-  if (appConfig.i18n.languages) {
-    values = appConfig.i18n.languages;
-  } // else {
-    // for (let key of Object.keys($i18n.messages)) {
-    //   let value = {};
-    //   // if (import.meta.env.VITE_DEBUG) console.log('in loop, key:', key, '$i18n.locale:', $i18n.locale, '$i18n.messages[key]:', $i18n.messages[key]);
-    //   value.language = key;
-    //   value.title = $i18n.messages[key].language;
-    //   values.push(value);
-    // }
-    // values = instance.appContext.config.globalProperties.$i18n.availableLocales;
-  // }
-  // if (import.meta.env.VITE_DEBUG) console.log('end of i18nLanguages, values:', values);
-  return values;
-});
-
-const feedbackLink = computed(() => {
-  let value;
-  if (appConfig.footer && appConfig.footer.feedback && appConfig.footer.feedback.link) {
-    value = appConfig.footer.feedback.link;
-  }
-  return value;
-});
-
-const alertResponse = computed(() => {
-  return MainStore.alertResponse || null;
-});
-
-// const shouldShowHeaderAlert = computed(() => {
-//   let value = false;
-//   if (appConfig.alerts && appConfig.alerts.header) {
-//     value = appConfig.alerts.header.enabled(store.state);
-//   }
-//   return value;
-// });
-
-const alertModalHeader = computed(() => {
+const alertModalTitle = computed(() => {
   let value = '';
-  if (appConfig.alerts && appConfig.alerts.modal && appConfig.alerts.modal.header) {
-    value = appConfig.alerts.modal.header;
+  if ($config.alerts && $config.alerts.modal && $config.alerts.modal.title) {
+    value = $config.alerts.modal.title;
   }
   return value;
 });
 
 const alertModalBody = computed(() => {
   let value = '';
-  if (appConfig.alerts && appConfig.alerts.modal && appConfig.alerts.modal.body) {
-    value = appConfig.alerts.modal.body;
+  if ($config.alerts && $config.alerts.modal && $config.alerts.modal.body) {
+    value = $config.alerts.modal.body;
   }
   return value;
 });
 
 const i18nEnabled = computed(() => {
-  if (appConfig.i18n && appConfig.i18n.enabled) {
+  if ($config.i18n && $config.i18n.enabled) {
     return true;
   } else {
     return false;
@@ -303,33 +129,11 @@ const i18nEnabled = computed(() => {
 });
 
 const i18nSelectorHidden = computed(() => {
-  if (appConfig.i18n && appConfig.i18n.selectorHidden) {
+  if ($config.i18n && $config.i18n.selectorHidden) {
     return true;
   } else {
     return false;
   }
-});
-
-const geocodeStatus = computed(() => {
-  if (GeocodeStore.aisData.features && GeocodeStore.aisData.features.length) {
-    return 'success';
-  } else if (GeocodeStore.aisData.status == 404) {
-    return 'error';
-  } else if (!GeocodeStore.aisData.features) {
-    return 'none';
-  }
-});
-
-const geocodeResult = computed(() => {
-  return GeocodeStore.aisData || {};
-});
-
-const geocodeGeom = computed(() => {
-  return GeocodeStore.aisData.features[0].geometry;
-});
-
-const bufferList = computed(() => {
-  return MapStore.bufferList;
 });
 
 const selectedKeywords = computed(() => {
@@ -342,109 +146,25 @@ const selectedServices = computed(() => {
 
 const dataStatus = computed(() => {
   let value;
-  if (DataStore.sources[appConfig.app.type]) {
-    value = DataStore.sources[appConfig.app.type].status;
+  if (DataStore.sources[$config.app.type]) {
+    if (DataStore.sources[$config.app.type].status === 200) {
+      value = 'success';
+    } else if (DataStore.sources[$config.app.type].status === 404) {
+      value = 'error';
+    } else {
+      value = null;
+    }
   }
-  return 'success';
+  return value;
 });
 
 const database = computed(() => {
-  return DataStore.sources[DataStore.appType].rows || DataStore.sources[DataStore.appType].features || DataStore.sources[DataStore.appType].data;
-});
-
-// const database = computed(() => {
-//   if (store.state.sources[$appType].data) {
-
-//     let database = store.state.sources[$appType].data.rows || store.state.sources[$appType].data.features || store.state.sources[$appType].data.records;
-//     // if (import.meta.env.VITE_DEBUG) console.log('computed database is running, database:', database, '$appType:', $appType);
-
-//     for (let [key, value] of Object.entries(database)) {
-
-//       if (appConfig.hiddenRefine) {
-//         for (let field in appConfig.hiddenRefine) {
-//           let getter = appConfig.hiddenRefine[field];
-//           let val = getter(value);
-//           if (val === false) {
-//             delete database[key];
-//           }
-//         }
-//       }
-
-//       for (let [rowKey, rowValue] of Object.entries(value)) {
-//         if ( rowKey == 'hide_on_finder' && rowValue == true ){
-//           //if (import.meta.env.VITE_DEBUG) console.log('deleted entry', database[key])
-//           delete database[key];
-//         }
-//       }
-
-//     }
-//     //filter empty values from deleted database
-//     let finalDB = database.filter(_ => true);
-
-//     // if (import.meta.env.VITE_DEBUG) console.log('Main.vue database computed, finalDB:', finalDB);
-//     let languages = []
-//     for (let row of finalDB) {
-//       if (row.attributes && row.attributes.language) {
-//         let langs = row.attributes.language.split(',');
-//         // if (import.meta.env.VITE_DEBUG) console.log('row.attributes.language:', row.attributes.language, 'langs:', langs);
-//         for (let lang of langs) {
-//           if (!languages.includes(lang.trim())) {
-//             languages.push(lang.trim());
-//           }
-//         }
-//       }
-//     }
-//     if (import.meta.env.VITE_DEBUG) console.log('languages:', languages);
-
-//     return finalDB;
-//   }
-// });
-
-// const shouldLoadCyclomediaWidget = computed(() => {
-//   return appConfig.cyclomedia && appConfig.cyclomedia.enabled && !isMobile.value;
-// });
-
-// const cyclomediaActive = computed(() => {
-//   return store.state.cyclomedia.active;
-// });
-
-// const cycloLatlng = computed(() => {
-//   if (store.state.cyclomedia.orientation.xyz !== null) {
-//     const xyz = store.state.cyclomedia.orientation.xyz;
-//     return [ xyz[1], xyz[0] ];
-//   }
-//   const center = appConfig.map.center;
-//   return center;
-// });
-
-// const cycloRotationAngle = computed(() => {
-//   return store.state.cyclomedia.orientation.yaw * (180/3.14159265359);
-// });
-
-// const cycloHFov = computed(() => {
-//   return store.state.cyclomedia.orientation.hFov;
-// });
-
-const selectedResource = computed(() => {
-  return DataStore.selectedResource;
-});
-
-const sourcesWatched = computed(() => {
-  let sources = Object.keys(DataStore.sources);
-  const index = sources.indexOf('compiled');
-  if (index > -1) {
-    sources.splice(index, 1);
-
-    // let sourcesWatched = [];
-    let sourcesWatched = {};
-
-    for (let source of sources) {
-      sourcesWatched[source] = DataStore.sources[source].data;
-    }
-    return sourcesWatched;
-  } else {
-    return null
+  let value = {}
+  if (DataStore.sources[DataStore.appType]) {
+    // if (import.meta.env.VITE_DEBUG) console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]);
+    value = DataStore.sources[DataStore.appType].data.rows || DataStore.sources[DataStore.appType].data.features || DataStore.sources[DataStore.appType].features;
   }
+  return value;
 });
 
 const layoutDescription = computed(() => {
@@ -463,18 +183,6 @@ const layoutDescription = computed(() => {
   return value;
 });
 
-const refinePanelClass = computed(() => {
-  let value;
-  if (isMobile.value && refineOpen.value) {
-    value = 'mobile-refine-panel-holder-open';
-  } else if (refineOpen.value) {
-    value = 'refine-panel-holder-open';
-  } else {
-    value = 'refine-panel-holder';
-  }
-  return value;
-});
-
 const locationsPanelVisible = computed(() => {
   return !isMobile.value || layoutDescription.value !== 'mobileRefineOpen' && !isMapVisible.value;
 });
@@ -483,20 +191,12 @@ const mapPanelVisible = computed(() => {
   return !isMobile.value || layoutDescription.value !== 'mobileRefineOpen' && isMapVisible.value;
 });
 
-const toggleButtonVisible = computed(() => {
-  return isMobile.value && layoutDescription.value !== 'mobileRefineOpen';
+const toggleButtonsVisible = computed(() => {
+  return isMobile.value && layoutDescription.value !== 'mobileRefineOpen' && !MainStore.shouldShowGreeting;
 });
 
 const refineOpen = computed(() => {
   return MainStore.refineOpen;
-});
-
-const lastPinboardSearchMethod = computed(() => {
-  return MainStore.lastPinboardSearchMethod;
-});
-
-const searchDistance = computed(() => {
-  return MapStore.searchDistance;
 });
 
 const holidays = computed(() => {
@@ -531,25 +231,11 @@ const justPassedHolidayClosure = computed(() => {
   return false;
 });
 
-const closureMessage = computed(() => {
-  let holiday = MainStore.holiday;
-  let message;
-  if (currentHolidayClosure.value) {
-    message = t('holidayClosure') + holiday.holiday_label + ' ' + format(parseISO(holiday.start_date), 'MM/dd/yyyy');
-  } else if (futureHolidayClosure.value) {
-    message = t('futureHolidayClosure') + holiday.holiday_label + ' ' + format(parseISO(holiday.start_date), 'MM/dd/yyyy');
-    // message = t('futureHolidayClosure') + transforms.toLocaleDateString.transform(item.attributes.close_holiday_start);
-  } else {
-    message = null;
-  }
-  return message;
-});
-
 const closureMessageAllSites = computed(() => {
   let holiday = MainStore.holiday;
   let message;
-  if (appConfig.holidays && appConfig.holidays.forceBannerMessage) {
-    message = t(appConfig.holidays.forceBannerMessage);
+  if ($config.holidays && $config.holidays.forceBannerMessage) {
+    message = t($config.holidays.forceBannerMessage);
   } else if (currentHolidayClosure.value) {
     message = t(holiday.holiday_label) + ' - ' + t('holidayClosureAllSites');// + holiday.holiday_label + ' ' + format(parseISO(holiday.start_date), 'MM/dd/yyyy');
   } else if (futureHolidayClosure.value) {
@@ -564,7 +250,7 @@ const closureMessageAllSites = computed(() => {
   return message;
 });
 
-  // watch
+// watch
 watch(
   () => holidays,
   async nextHolidays => {
@@ -588,7 +274,6 @@ watch(
     for (let holiday of nextHolidays.holidays) {
       // if (import.meta.env.VITE_DEBUG) console.log('holiday.start_date:', holiday.start_date, parseISO(format(holiday.start_date, 'T')));
       // if (import.meta.env.VITE_DEBUG) console.log('currentUnixDate:', currentUnixDate, 'holiday.start_date:', holiday.start_date, parseInt(format(parseISO(holiday.start_date), 'T')));
-
       let oneWeekAhead = parseInt(format(subWeeks(parseISO(holiday.start_date), 1), 'T'));
       let actualHoliday = parseInt(format(parseISO(holiday.start_date), 'T'));
       let oneWeekBehind = parseInt(format(addWeeks(parseISO(holiday.start_date), 1), 'T'));
@@ -604,9 +289,7 @@ watch(
       } else if (currentUnixDate <= oneWeekBehind && currentUnixDate > actualHoliday) {
         holi.holiday_label = holiday.holiday_label;
         holi.just_passed = true;
-        // holi.start_date = holiday.start_date;
       }
-
       // if (import.meta.env.VITE_DEBUG) console.log('holiday.start_date:', holiday.start_date, format(holiday.start_date, 'T'));
     }
     // if (import.meta.env.VITE_DEBUG) console.log('watch holidays, holi.holiday_label:', holi.holiday_label, 'holi.coming_soon:', holi.coming_soon, 'holi.current:', holi.current);
@@ -622,59 +305,13 @@ watch(
 );
 
 watch(
-  () => searchDistance,
-  async nextSearchDistance => {
-    // if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch searchDistance, nextSearchDistance:', nextSearchDistance);
-    if (lastPinboardSearchMethod.value == 'geocode') {
-      runBuffer();
-    // } else if (MapStore.watchPositionOn) {
-    //   runBuffer({coordinates: [ store.state.map.location.lng, store.state.map.location.lat ]});
-    } else if (lastPinboardSearchMethod.value == 'zipcode') {
-      if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch searchDistance and lastPinboardSearchMethod is zipcode');
-      let nextZipcodeData = zipcodeData.value;
-      if (nextZipcodeData) {
-        let geo = {
-          geometry: {
-            coordinates: nextZipcodeData.geometry.rings,
-            type: "Polygon"
-          },
-          type: "Feature",
-        };
-        runZipcodeBuffer(geo);
-      }
-    }
-  }
-);
-
-watch(
-  () => zipcodeData,
-  async nextZipcodeData => {
-    if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch zipcodeData, nextZipcodeData:', nextZipcodeData);
-    if (nextZipcodeData) {
-      if (import.meta.env.VITE_DEBUG) console.log('watch zipcodeData setting currentBuffer to shape');
-      let geo = {
-        geometry: {
-          coordinates: nextZipcodeData.geometry.rings,
-          type: "Polygon"
-        },
-        type: "Feature",
-      };
-      runZipcodeFindCenter(geo);
-      runZipcodeBuffer(geo);
-    } else {
-      if (import.meta.env.VITE_DEBUG) console.log('watch zipcodeData setting currentBuffer to null');
-      currentBuffer.value = null;
-    }
-  }
-);
-
-watch(
   () => i18nLocale,
   async nexti18nLocale => {
     // if (import.meta.env.VITE_DEBUG) console.log('watch i18nLocale, nexti18nLocale:', nexti18nLocale);
     let startQuery = { ...route.query };
 
     delete startQuery['lang'];
+    if (import.meta.env.VITE_DEBUG) console.log('watch i18nLocale, startQuery:', startQuery);
 
     if (nexti18nLocale !== 'en-US') {
       let query = { 'lang': nexti18nLocale };
@@ -683,80 +320,38 @@ watch(
       router.push({ query: { ...startQuery }});
     }
 
-    // $gtag.event('language-click', {
-    //   'event_category': store.state.gtag.category,
-    //   'event_label': nexti18nLocale,
-    // })
-  }
-);
-
-// this has to do with using the compiled data source
-// watch(
-//   () => sourcesWatched,
-//   async nextSourcesWatched => {
-//     if (import.meta.env.VITE_DEBUG) console.log('watch sourcesWatched, nextSourcesWatched:', nextSourcesWatched);
-//     let allSourceValues = [];
-//     for (let value of Object.keys(nextSourcesWatched)) {
-//       allSourceValues.push(nextSourcesWatched[value]);
-//     }
-//     if (!allSourceValues.includes(null)) {
-//       setUpData(nextSourcesWatched);
-//     }
-//   }
-// );
-
-watch(
-  () => geocodeStatus,
-  async nextGeocodeStatus => {
-    if (nextGeocodeStatus === 'success') {
-      runBuffer();
-    } else if (nextGeocodeStatus === null && lastPinboardSearchMethod.value != 'zipcode' && lastPinboardSearchMethod.value != 'zipcodeKeyword') {
-      currentBuffer.value = null;
-    } else if (nextGeocodeStatus === 'error') {
-      if (import.meta.env.VITE_DEBUG) console.log('Main.vue watch geocodeStatus, nextGeocodeStatus is an error:', nextGeocodeStatus);
-      geocodeFailed();
-    }
+    event('language-click', {
+      'event_category': $config.gtag.category,
+      'event_label': nexti18nLocale,
+    })
   }
 );
 
 watch(
-  () => currentBuffer.value,
+  () => MapStore.bufferForAddressOrLocationOrZipcode,
+  async nextBufferForAddressOrLocationOrZipcode => {
+    // if (Object.keys(nextBufferForAddressOrLocationOrZipcode).length) {
+      if (import.meta.env.VITE_DEBUG) console.log('watch MapStore.bufferForAddressOrLocationOrZipcode is calling filterPoints, nextBufferForAddressOrLocationOrZipcode:', nextBufferForAddressOrLocationOrZipcode);
+      filterPoints();
+    // }
+  }
+);
+
+watch(
+  () => selectedServices.value,
   async => {
-    if (import.meta.env.VITE_DEBUG) console.log('watch currentBuffer.value is calling filterPoints');
-    filterPoints();
-  }
-);
-
-watch(
-  () => selectedServices,
-  async => {
+    if (import.meta.env.VITE_DEBUG) console.log('watch selectedServices is firing');
     if (database.value) {
+      if (import.meta.env.VITE_DEBUG) console.log('watch selectedServices is calling filterPoints');
       filterPoints();
     }
   }
 );
 
-// this seems unnecessary because it will now follow the router, instead of set it
-// watch(
-//   () => selectedResource,
-//   async nextselectedResource => {
-//     let startQuery = { ...route.query };
-//     if (import.meta.env.VITE_DEBUG) console.log('watch selectedResource fired, startQuery:', startQuery, 'nextselectedResource:', nextselectedResource, 'nextselectedResource.length:', nextselectedResource.length);
-
-//     delete startQuery['resource'];
-
-//     if (nextselectedResource) {
-//       let query = { 'resource': nextselectedResource };
-//       router.push({ query: { ...startQuery, ...query }});
-//     } else {
-//       router.push({ query: { ...startQuery }});
-//     }
-//   }
-// );
-
 watch(
-  () => selectedKeywords,
-  async => {
+  () => selectedKeywords.value.length,
+  async nextKeywords => {
+    if (import.meta.env.VITE_DEBUG) console.log('watch selectedKeywords is firing, nextKeywords:', nextKeywords);
     if (database.value) {
       filterPoints();
     }
@@ -764,41 +359,117 @@ watch(
 );
 
 watch(
-  () => dataStatus,
+  () => dataStatus.value,
   async nextDataStatus => {
+    if (import.meta.env.VITE_DEBUG) console.log('watch dataStatus, nextDataStatus:', nextDataStatus);
     if (nextDataStatus === 'success') {
       filterPoints();
     }
   }
 );
 
-onMounted(async () => {
-  let body = document.body;
-  body.classList.remove('print-view');
-  body.classList.add('main-view');
+watch(
+  () => route.query,
+  async() => {
+    await nextTick();
+    setHeights();
+  }
+)
 
-  if (import.meta.env.VITE_DEBUG) console.log('in Main.vue mounted, route.query:', route.query);
+const setHeights = () => {
+  // if (import.meta.env.VITE_DEBUG) console.log('setHeights is running');
+  let header = document.querySelector("#app-header");
+  let headerOffsetHeight = header.offsetHeight;
+  // if (import.meta.env.VITE_DEBUG) console.log('header:', header, 'header.offsetHeight:', header.offsetHeight);
+  let addressSearchHolder = document.querySelector("#address-search-holder");
+  let addressSearchHolderOffsetHeight = addressSearchHolder.offsetHeight;
+  const refinePanel = document.querySelector('#refine-panel-component');
+  let refinePanelOffsetHeight = refinePanel.offsetHeight;
+  const holidayBanner = document.querySelector('#holiday-banner');
+  let holidayBannerOffsetHeight;
+  if (holidayBanner) {
+    holidayBannerOffsetHeight = holidayBanner.offsetHeight;
+  } else {
+    holidayBannerOffsetHeight = 0;
+  }
+  const mainRow = document.querySelector('#main-row');
+  if (isMobile.value && MainStore.shouldShowGreeting) {
+    mainRow.style.setProperty('height', `calc(100dvh - ${refinePanelOffsetHeight+headerOffsetHeight+holidayBannerOffsetHeight+addressSearchHolderOffsetHeight}px)`);
+  } else if (isMobile.value) {
+    mainRow.style.setProperty('height', `calc(100dvh - ${refinePanelOffsetHeight+headerOffsetHeight+holidayBannerOffsetHeight+addressSearchHolderOffsetHeight+46}px)`);
+  } else {
+    mainRow.style.setProperty('height', `calc(100dvh - ${refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+46}px)`);
+  }
+  const map = document.querySelector('#map');
+  if (isMobile.value && !MapStore.cyclomediaOn) {
+    map.style.setProperty('height', `calc(100dvh - ${refinePanelOffsetHeight+headerOffsetHeight+holidayBannerOffsetHeight+addressSearchHolderOffsetHeight+46}px)`);
+  } else if (isMobile.value) {
+    map.style.setProperty('height', `calc(50dvh - ${(refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+84)/2}px)`);
+  } else if (!MapStore.cyclomediaOn) {
+    map.style.setProperty('height', `calc(100dvh - ${refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+46}px)`);
+  } else {
+    map.style.setProperty('height', `calc(50dvh - ${(refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+44)/2}px)`);
+  }
 
-  // store.commit('setLastSearchMethod', 'zipcode');
-  // if (import.meta.env.VITE_DEBUG) console.log('in Main.vue onMounted, appConfig:', appConfig, 'window.location.href:', window.location.href);
-  appConfig.searchBar.searchTypes.forEach(item => {
+  const cyclomediaPanel = document.querySelector('#cyclomedia-panel');
+  if (isMobile.value && MapStore.cyclomediaOn) {
+    cyclomediaPanel.style.setProperty('height', `calc(50dvh - ${(refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+84)/2}px)`);
+  } else if (MapStore.cyclomediaOn) {
+    cyclomediaPanel.style.setProperty('height', `calc(50dvh - ${(refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+44)/2}px)`);
+  }
+
+  const mapStoreMap = MapStore.map;
+  mapStoreMap.resize();
+};
+
+watch(
+  () => MapStore.cyclomediaOn,
+  async() => {
+    await nextTick();
+    setHeights();
+  }
+);
+
+watch(
+  () => refineOpen.value,
+  async() => {
+    await nextTick();
+    setHeights();
+  }
+);
+
+watch(
+  () => MainStore.shouldShowGreeting,
+  async() => {
+    if (isMobile.value) {
+      await nextTick();
+      setHeights();
+    }
+  }
+)
+
+onBeforeMount(() => {
+  if ($config.appLink) {
+    appLink.value = $config.appLink;
+  } else {
+    appLink.value = '.';
+  }
+});
+
+onMounted(async() => {
+  await nextTick();
+  setHeights();
+
+  $config.searchBar.searchTypes.forEach(item => {
     if (route.query[item]) {
-      // if (import.meta.env.VITE_DEBUG) console.log('App.vue mounted item:', item, 'searchBarType:', searchBarType);
-      // $controller.handleSearchFormSubmit(route.query[item], item);
       searchString.value = route.query[item];
     }
   });
 
-  if (route.query.address) {
-    MainStore.lastPinboardSearchMethod = 'geocode';
-  } else if (route.query.zipcode) {
-    MainStore.lastPinboardSearchMethod = 'zipcode';
-  }
-
   if (route.query.resource) {
     if (import.meta.env.VITE_DEBUG) console.log('App.vue mounted, route.query.resource:', route.query.resource);
     let selectedResource = [ route.query.resource ];
-    DataStore.selectedResource = selectedResource;
+    DataStore.selectedResource = selectedResource[0];
   }
   
   if (route.query.lang) {
@@ -806,7 +477,7 @@ onMounted(async () => {
     i18nLocale.value = route.query.lang;
   }
 
-  if (appConfig.searchBar) {
+  if ($config.searchBar) {
     let routeQuery = Object.keys(route.query);
     // if (import.meta.env.VITE_DEBUG) console.log('App.vue mounted in searchTypes section, route:', route, 'routeQuery:', routeQuery, 'Object.keys(route.query)[0]', Object.keys(route.query)[0]);
     let value;
@@ -816,124 +487,74 @@ onMounted(async () => {
       }
     }
     MainStore.currentSearch = value
-
-    addressInputPlaceholder.value = appConfig.searchBar.placeholder;
+    addressInputPlaceholder.value = $config.searchBar.placeholder;
   }
 
-  if (appConfig.appLink) {
-    appLink.value = appConfig.appLink;
-  } else {
-    appLink.value = '.';
-  }
-
-  // if (import.meta.env.VITE_DEBUG) console.log('Main.vue mounted store.state.sources[appConfig.app.type].data:', store.state.sources[appConfig.app.type].data, 'Object.keys(store.state.sources):', Object.keys(store.state.sources));
-  // if (!store.state.sources[appConfig.app.type].data && appConfig.dataSources) {
-  //   $controller.dataManager.fetchData();
+  // if ($config.appLink) {
+  //   appLink.value = $config.appLink;
+  // } else {
+  //   appLink.value = '.';
   // }
 
   if (!i18nEnabled.value) {
-    buttonText.value = isMapVisible.value ? 'Toggle to resource list' : 'Toggle to map';
+    buttonText.value = isMapVisible.value ? 'List' : 'Map';
   } else {
-    buttonText.value = isMapVisible.value ? 'app.viewList' : 'app.viewMap';
+    buttonText.value = isMapVisible.value ? 'app.list' : 'app.map';
   }
 
-  if (appConfig.alerts && appConfig.alerts.modal && appConfig.alerts.modal.enabled) {
+  if ($config.alerts && $config.alerts.modal && $config.alerts.modal.enabled) {
     isAlertModalOpen.value = true;
   }
 
-  // if (appConfig.gtag && appConfig.gtag.category) {
-  //   store.commit('setGtagCategory', appConfig.gtag.category);
+  // if ($config.gtag && $config.gtag.category) {
+  //   store.commit('setGtagCategory', $config.gtag.category);
   // }
 
-  if (appConfig.app.trustedSite && appConfig.app.trustedSite === 'hidden') {
+  if ($config.app.trustedSite && $config.app.trustedSite === 'hidden') {
     let trusted = document.getElementById('trusted-site');
     if (import.meta.env.VITE_DEBUG) console.log('trusted:', trusted);
     trusted.classList.add("trusted-site-hidden");
   }
 
-  if (appConfig.app.skipGreeting) {
+  if ($config.app.skipGreeting) {
     MainStore.shouldShowGreeting = false;
   }
 
-  if (appConfig.holidays && appConfig.holidays.automaticBanner) {
+  if ($config.holidays && $config.holidays.automaticBanner) {
     showAutomaticHolidayBanner.value = true;
+    await nextTick();
+    setHeights();
   }
 
-  if (appConfig.holidays && appConfig.holidays.forceBanner) {
+  if ($config.holidays && $config.holidays.forceBanner) {
     showForceHolidayBanner.value = true;
+    await nextTick();
+    setHeights();
   }
 
-  // let currentYear = format(new Date(), 'yyyy');
-  // let currentMonth = format(new Date(), 'MM');
-  // let currentDay = format(new Date(), 'dd');
-  // // let dateStart = new Date(currentYear, currentMonth-1, currentDay);
-  // let dateStart = new Date(2023, 5, 8);
-  // if (import.meta.env.VITE_DEBUG) console.log('currentYear:', currentYear, 'currentMonth:', currentMonth, 'currentDay:', currentDay, 'dateStart:', dateStart, 'dateStartUnix:', parseInt(format(dateStart, 'T')));
-  // let currentUnixDate = parseInt(format(dateStart, 'T'));
+  filterPoints();
 
-  // let holidays = store.state.sources.holidays;
-
-  // if (import.meta.env.VITE_DEBUG) console.log('Main.vue mounted, currentUnixDate:', currentUnixDate, 'holidays:', holidays);
-
-
-  // if (import.meta.env.VITE_DEBUG) console.log('Main.vue mounted, store.state.sources[$appType].data.features:', store.state.sources[$appType].data.features)
 });
 
-// methods
-const closeHolidayBanner = () => {
+// METHODS
+const closeHolidayBanner = async() => {
   showAutomaticHolidayBanner.value = false;
   showForceHolidayBanner.value = false;
-  // let holiday = {
-  //   holiday_label: '',
-  //   coming_soon: false,
-  //   current: false,
-  //   start_date: '',
-  // };
-  // store.commit('setHoliday', holiday);
+  await nextTick();
+  setHeights();
 };
 
-// handlePopStateChange() {
-//   if (import.meta.env.VITE_DEBUG) console.log('Main.vue handlePopStateChange is running');
-//   location.reload();
-// },
-const geolocateControlFire = async(e) => {
-  // if (import.meta.env.VITE_DEBUG) console.log('Pinboard Main.vue geolocateControlFire is running, e.coords.latitude:', e.coords.latitude, 'e.coords.longitude:', e.coords.longitude);
-  if (e.lng != null) {
-
-    clearGeocodeAndZipcode();
-
-    await nextTick()
-    MainStore.lastPinboardSearchMethod = 'geolocate';
-    runBuffer({ coordinates: [ e.lng, e.lat ] });
-    if (MainStore.shouldShowGreeting) {
-      MainStore.shouldShowGreeting = false;
-    }
-    
-  } else {
-    // if (import.meta.env.VITE_DEBUG) console.log('Main.vue geolocateControlFire is running, remove currentBuffer.value');
-    MapStore.bufferShape = null;
-    currentBuffer.value = null;
-  }
-};
+const geolocate = () => {
+  clearGeocodeAndZipcode();
+  MapStore.geolocate();
+  MainStore.selectedZipcode = null;
+}
 
 const clearGeocodeAndZipcode = async() => {
   let startQuery = { ...route.query };
   delete startQuery['address'];
   delete startQuery['zipcode'];
-  if (lastPinboardSearchMethod.value == 'zipcodeKeyword') {
-    delete startQuery['keyword'];
-    MainStore.selectedKeywords = [];
-  }
   router.push({ query: { ...startQuery }});
-  // $controller.resetGeocode();
-  MainStore.selectedZipcode = null;
-  MapStore.zipcodeCenter = [];
-  MainStore.currentSearch = null;
-};
-
-const watchedSubmittedCheckboxValue = () => {
-  if (import.meta.env.VITE_DEBUG) console.log('Main.vue watchedSubmittedCheckboxValue is running');
-  submittedCheckboxValue.value = null;
 };
 
 const clearBadAddress = () => {
@@ -942,132 +563,8 @@ const clearBadAddress = () => {
   delete startQuery['address'];
   router.push({ query: startQuery });
   searchString.value = '';
-  // $controller.resetGeocode();
   MainStore.currentSearch = null;
 };
-
-const geocodeFailed = () => {
-  if (import.meta.env.VITE_DEBUG) console.log('geocodeFailed is running');
-  MapStore.bufferShape = null;
-};
-
-const compareArrays = (arr1, arr2) => {
-  const finalArray = [];
-  arr1.forEach((e1) => arr2.forEach((e2) =>
-    {
-      if (e1 === e2) {
-        finalArray.push(e1);
-      }
-    }
-  ));
-  return finalArray;
-};
-
-// const handleSubmit = (val) => {
-//   let query;
-//   // let searchBarType;
-//   let valAsFloat = parseFloat(val.substring(0));
-//   let valToString = valAsFloat.toString();
-//   let checkVals = val === valToString;
-//   if (import.meta.env.VITE_DEBUG) console.log('handleSubmit 1, val.substring(0):', val.substring(0), 'valAsFloat:', valAsFloat, 'checkVals:', checkVals, 'appConfig.searchBar.searchTypes:', appConfig.searchBar.searchTypes);
-  
-//   let startQuery = { ...route.query };
-  
-//   if (isNaN(valAsFloat)) {
-//     if (!appConfig.searchBar.searchTypes.includes('keyword')) {
-//       if (import.meta.env.VITE_DEBUG) console.log('cannot search keywords');
-//       this.$warning(`Please search an address`, {
-//         duration: 4000,
-//         closeOnClick: true,
-//       });
-//       return;
-//     } else {
-//       if (import.meta.env.VITE_DEBUG) console.log('in handleSubmit, checking checkboxText');
-//       if (checkboxText.value.includes(val.toLowerCase())) {
-//         if (import.meta.env.VITE_DEBUG) console.log('in handleSubmit, checking checkboxText - its there');
-//         // alert('There is already a checkbox or radio button for that search term');
-//         submittedCheckboxValue.value = val;
-//         if (MainStore.shouldShowGreeting && !isMobile.value) {
-//           MainStore.refineOpen = true;
-//         }
-//         return;
-//       }
-//       MainStore.lastPinboardSearchMethod = 'keyword';
-//       let startKeyword;
-//       if (startQuery['keyword'] && startQuery['keyword'] != '') {
-//         startKeyword = startQuery['keyword'];
-//         val = startKeyword + ',' + val;
-//       }
-//       query = { ...startQuery, ...{ 'keyword': val }};
-//       // this.searchBarType = 'keyword';
-//       // searchBarType = 'keyword';
-//     }
-//   } else if (checkVals) {
-//     if (import.meta.env.VITE_DEBUG) console.log('its a zipcode');
-//     if (appConfig.allowZipcodeSearch) {
-
-//       MapStore.watchPositionOn = false;
-//       MainStore.lastPinboardSearchMethod = 'zipcode';
-//       query = { 'zipcode': val };
-//       // this.searchBarType = 'zipcode';
-//       // searchBarType = 'zipcode';
-//     } else if (appConfig.allowZipcodeInDataSearch) {
-//       // query = { 'zipcode': val };
-//       // this.searchBarType = 'zipcode';
-//       // searchBarType = 'zipcode';
-
-//       MapStore.watchPositionOn = false;
-//       MainStore.lastPinboardSearchMethod = 'zipcodeKeyword';
-
-//       clearGeocodeAndZipcode();
-//       MapStore.bufferShape = null;
-//       currentBuffer.value = null;
-      
-//       let startKeyword;
-//       if (startQuery['keyword'] && startQuery['keyword'] != '') {
-//         startKeyword = startQuery['keyword'];
-//         val = startKeyword + ',' + val;
-//       }
-//       query = { ...startQuery, ...{ 'keyword': val }};
-//       // this.searchBarType = 'keyword';
-//       // searchBarType = 'keyword';
-//     }
-//   } else {
-//     if (import.meta.env.VITE_DEBUG) console.log('its an address');
-
-//     if (lastPinboardSearchMethod.value == 'zipcodeKeyword') {
-//       if (import.meta.env.VITE_DEBUG) console.log('startQuery:', startQuery);
-//       delete startQuery['keyword'];
-//       MainStore.selectedKeywords = [];
-//     }
-
-//     MapStore.watchPositionOn = false;
-
-//     query = { ...startQuery, ...{ 'address': val }};
-//     MainStore.lastPinboardSearchMethod = 'geocode';
-//     // this.searchBarType = 'address';
-//     // searchBarType = 'address';
-//   }
-//   delete startQuery['address'];
-//   delete startQuery['keyword'];
-//   delete startQuery['zipcode'];
-//   if (import.meta.env.VITE_DEBUG) console.log('handleSubmit is running, valAsFloat:', valAsFloat, 'startQuery:', startQuery, 'route.query:', route.query, 'query:', query, 'val:', val, 'val.substring(0, 1):', val.substring(0, 1));
-//   router.push({ query: { ...startQuery, ...query }});
-//   // searchString = query[this.searchBarType];
-//   const searchCategory = Object.keys(query)[0];
-//   const value = query[searchCategory];
-//   // $gtag.event(searchBarType + '-search', {
-//   //   'event_category': store.state.gtag.category,
-//   //   'event_label': value,
-//   // })
-//   MainStore.currentSearch = value;
-//   MapStore.zipcodeCenter = [];
-//   // $controller.handleSearchFormSubmit(val, searchBarType);
-
-//   // if (store.state.shouldShowGreeting && !isMobile.value) {
-//   //   store.commit('setRefineOpen', true);
-//   // }
-// };
 
 const clearSearchTriggered = () => {
   let startQuery = { ...route.query };
@@ -1077,796 +574,506 @@ const clearSearchTriggered = () => {
   delete startQuery['keyword'];
   // if (import.meta.env.VITE_DEBUG) console.log('in clearSearchTriggered2, route.query:', route.query, 'startQuery:', startQuery);
   router.push({ query: startQuery });
-  searchString = '';
+  searchString.value = '';
   MainStore.selectedKeywords = [];
   MainStore.selectedZipcode = null;
-  MapStore.bufferShape = null;
-  // controller.resetGeocode();
+  MapStore.bufferForAddressOrLocationOrZipcode = null;
   MainStore.currentSearch = null;
 };
 
-// this has to do with the compiled data source
-// const setUpData = (theSources) => {
-//   if (import.meta.env.VITE_DEBUG) console.log('Pinboard App.vue setUpData is running, theSources:', theSources);
-//   let compiled = {
-//     key: 'compiled',
-//     data: {
-//       'records':[],
-//     },
-//     status: 'success',
-//   }
-//   let keys = Object.keys(theSources);
-//   if (keys.length > 1) {
-//     if (import.meta.env.VITE_DEBUG) console.log('theSources:', theSources, 'appConfig.dataSources:', appConfig.dataSources);
-//     for (let key of keys) {
-//       if (import.meta.env.VITE_DEBUG) console.log('source:', key);
-//       if (theSources[key].features && appConfig.dataSources[key].compile) {
-//         for (let point of theSources[key].features) {
-//           // if (import.meta.env.VITE_DEBUG) console.log('point:', point);
-//           compiled.data.push(point);
-//         }
-//       } else if (theSources[key].records && appConfig.dataSources[key].compile) {
-//         for (let point of theSources[key].records) {
-//           let featureId = point._featureId.split('-')[1];
-//           if (appConfig.app.categorizeCompiled) {
-//             point.fields.category_type = featureId;
-//           }
-//           // if (import.meta.env.VITE_DEBUG) console.log('point:', point);
-//           compiled.data.records.push(point);
-//         }
-//       }
-//     }
-//     // if (import.meta.env.VITE_DEBUG) console.log('compiled:', compiled);
-//     store.commit('setSourceData', compiled);
-//     store.commit('setSourceStatus', compiled);
-//   }
-//   // if (import.meta.env.VITE_DEBUG) console.log('end of setUpData, store.state.sources:', store.state.sources);
-// };
+const checkServices = (row) => {
+  // if (import.meta.env.VITE_DEBUG) console.log('Main.vue checkServices is running, index:', index, 'row:', row);
+  const selectedServices = MainStore.selectedServices;
+  if (!selectedServices.length) {
+    return true;
+  }
+  let value;
+  let selectedGroups = [];
+  switch ($config.refine.type) {
+    case 'categoryField_value':
+      value = $config.refine.value(row);
+      return selectedServices.includes(value);
+    case 'categoryField_array':
+      let servicesSplit = $config.refine.value(row);
+      // if (import.meta.env.VITE_DEBUG) console.log('servicesSplit:', servicesSplit);
+      if (typeof servicesSplit === 'string') {
+        servicesSplit = servicesSplit.split(',');
+      }
+      if (servicesSplit) {
+        let servicesFiltered = servicesSplit.filter(f => selectedServices.includes(f));
+        return servicesFiltered.length == selectedServices.length;
+      }
+    case 'multipleFields':
+      for (let field in $config.refine.multipleFields) {
+        if (selectedServices.includes(field)) {
+          let getter = $config.refine.multipleFields[field];
+          let val = getter(row);
+          if (!val) {
+            return false;
+          }
+        }
+      }
+      return true;
+    case 'multipleFieldGroups':
+      let booleanConditions = [];
+      for (let value of selectedServices) {
+        // if (import.meta.env.VITE_DEBUG) console.log('value:', value);
+        let valueGroup = value.split('_', 1)[0];
+        if (!selectedGroups.includes(valueGroup)) selectedGroups.push(valueGroup);
+      }
+      for (let group of selectedGroups) {
+        // if (import.meta.env.VITE_DEBUG) console.log('group:', group);
+        let groupValues = [];
+        for (let service of selectedServices) {
+          if (service.split('_', 1)[0] === group) {
+            let dependentServices = [];
+            let radioOrCheckbox;
+            if (group !== 'keyword' && service.split('_', 1)[0] === group && $config.refine.multipleFieldGroups[group]['radio']) radioOrCheckbox = 'radio';
+            else if (group !== 'keyword' && service.split('_', 1)[0] === group && $config.refine.multipleFieldGroups[group]['checkbox']) radioOrCheckbox = 'checkbox';
+            let dependentGroups = $config.refine.multipleFieldGroups[group][radioOrCheckbox][service.split('_')[1]]['dependentGroups'] || [];
+            let getter = $config.refine.multipleFieldGroups[group][radioOrCheckbox][service.split('_')[1]]['value'];
+            for (let service of selectedServices) {
+              if (dependentGroups.length && dependentGroups.includes(service.split('_')[0])) dependentServices.push(service.split('_')[1]);
+            }
+            let val = getter(row, dependentServices);
+            groupValues.push(val);
+          }
+        }
+        switch ($config.refine.andOr) {
+          case 'and':
+            if (groupValues.includes(false)) booleanConditions.push(false);
+            else booleanConditions.push(true);
+            break;
+          case 'or':
+            if (groupValues.includes(true)) booleanConditions.push(true);
+            else booleanConditions.push(false);
+            break;
+          default:
+            if (groupValues.includes(true)) booleanConditions.push(true);
+            else booleanConditions.push(false);
+        }
+      }
 
-const runBuffer = (coords) => {
-  let searchDistance = searchDistance.value;
-  if (import.meta.env.VITE_DEBUG) console.log('runBuffer is running, coords:', coords, 'searchDistance.value:', searchDistance.value, 'geocodeGeom.value:', geocodeGeom.value);
-  if (coords && coords.coordinates[0] != null) {
-    const geocodePoint = point(coords.coordinates);
-    const pointBuffer = buffer(geocodePoint, searchDistance, { units: 'miles' });
-    currentBuffer.value = pointBuffer;
-    MapStore.bufferShape = pointBuffer;
-  } else if (geocodeGeom.value) {
-    const geocodePoint = point(geocodeGeom.value.coordinates);
-    const pointBuffer = buffer(geocodePoint, searchDistance, { units: 'miles' });
-    currentBuffer.value = pointBuffer;
-    MapStore.bufferShape = pointBuffer;
+      if (booleanConditions.includes(false)) return false;
+      else return true;
+    default:
+      return true;
   }
 };
 
-const runZipcodeBuffer = (geo) => {
-  if (import.meta.env.VITE_DEBUG) console.log('Main.vue runZipcodeBuffer is running, geo:', geo);
-  let searchDistance = searchDistance.value;
-  const polygonBuffer = buffer(geo, searchDistance, { units: 'miles' });
-  currentBuffer.value = polygonBuffer;
-  MapStore.zipcodeBufferShape = polygonBuffer;
+const getDistances = (row) => {
+  if (import.meta.env.VITE_DEBUG) console.log('getDistances, row:', row);
+  if (row.geometry) {
+    let comparePoint;
+    if (GeocodeStore.aisData.features) {
+      comparePoint = GeocodeStore.aisData.features[0].geometry;
+    } else if (MapStore.zipcodeCenter) {
+      comparePoint = MapStore.zipcodeCenter;
+    } else if (MapStore.geolocation) {
+      comparePoint = MapStore.geolocation;
+    }
+    row.distance = distance(comparePoint, row.geometry, { units: 'miles' });
+  }
 };
 
-const runZipcodeFindCenter = (geo) => {
-  let zipcodeCenter = centerOfMass(geo);
-  if (import.meta.env.VITE_DEBUG) console.log('Main.vue runZipcodeFindCenter is running, geo:', geo, 'zipcodeCenter:', zipcodeCenter);
-  MapStore.zipcodeCenter = zipcodeCenter.geometry.coordinates;
-};
+const checkKeywords = (row) => {
+  // if (import.meta.env.VITE_DEBUG) console.log('checkKeywords, row:', row, '$config.tags', $config.tags, 'selectedKeywords.value:', selectedKeywords.value, 'selectedKeywords.value.length:', selectedKeywords.value.length);
+  let booleanKeywords;
+  if (selectedKeywords.value.length > 0) {
+    booleanKeywords = false;
+    let description = [];
+    if (Array.isArray(row.properties.tags)) {
+      description = row.properties.tags;
+    } else if (row.properties.tags) {
+      description = row.properties.tags.split(', ');
+    } else if ($config.tags && $config.tags.type == 'tagLocation') {
+      if (Array.isArray($config.tags.location(row))) {
+        description = $config.tags.location(row);
+      } else if ($config.tags.location(row)) {
+        description = $config.tags.location(row).split(', ');
+      }
+    } else if ($config.tags && $config.tags.type == 'fieldValues') {
+      for (let tag of $config.tags.tags) {
+        // if (import.meta.env.VITE_DEBUG) console.log('tag:', tag, 'tag.field:', tag.field, 'row.attributes[tag.field]:', row.attributes[tag.field]);
+        if (tag.type == 'boolean' && row.properties[tag.field] == 'Yes') {
+          description.push(tag.value);
+        } else if (tag.type == 'value' && row.properties[tag.field] !== null && row.properties[tag.field] != ' ') {
+          // if (import.meta.env.VITE_DEBUG) console.log('in else if, row.properties[tag.field]:', row.properties[tag.field]);
+          let value = row.properties[tag.field].toLowerCase();
+          // if (import.meta.env.VITE_DEBUG) console.log('value.split(","):', value.split(','));
+          description = description.concat(value.split(','));
+        }
+      }
+    }
+    // if (import.meta.env.VITE_DEBUG) console.log('still going, selectedKeywords.value[0]:', selectedKeywords.value[0], 'row.properties.tags:', row.properties.tags, 'description:', description);
+
+    let threshold = 0.2;
+    if ($config.searchBar.fuseThreshold) {
+      threshold = $config.searchBar.fuseThreshold;
+    };
+
+    const options = {
+      // isCaseSensitive: false,
+      // includeScore: false,
+      // shouldSort: true,
+      // includeMatches: false,
+      // findAllMatches: true,
+      minMatchCharLength: 3,
+      location: 0,
+      threshold: threshold,
+      // distance: 100,
+      // useExtendedSearch: false,
+      // ignoreLocation: false,
+      // ignoreFieldNorm: false,
+
+      // keys: [
+      //   "title",
+      //   "author.firstName"
+      // ]
+    };
+
+    const fuse = new Fuse(description, options);
+    let results = {};
+    for (let keyword of selectedKeywords.value) {
+      // if (import.meta.env.VITE_DEBUG) console.log('in selectedKeywords loop, keyword.toString():', keyword.toString(), 'description:', description);//'description[0].split(","):', description[0].split(','));
+      if ($config.skipFuse) {
+        let keywordString = '' + keyword;
+        // if (import.meta.env.VITE_DEBUG) console.log('skipFuse, keywordString:', keywordString);
+        if (description.includes(keywordString)) {
+          // if (import.meta.env.VITE_DEBUG) console.log('19148 is in description');
+          results[keyword] = ['true'];
+        }
+      } else {
+        if (import.meta.env.VITE_DEBUG) console.log('fuse.search(keyword):', fuse.search(keyword), 'description:', description);
+        results[keyword] = fuse.search(keyword);
+      }
+    }
+    for (let keyword of Object.keys(results)) {
+      if (results[keyword].length > 0) {
+        booleanKeywords = true;
+      }
+    }
+  } else {
+    booleanKeywords = true;
+  }
+  return booleanKeywords;
+}
 
 const filterPoints = () => {
-  if (import.meta.env.VITE_DEBUG) console.log('App.vue filterPoints is running, database.value:', database.value);
+  if (import.meta.env.VITE_DEBUG) console.log('Main.vue filterPoints is running, database.value:', database.value);
   const filteredRows = [];
 
   if (!database.value) {
     return;
   }
+  let startQuery = { ...route.query };
+  if (!Object.keys(startQuery)) {
+    if (import.meta.env.VITE_DEBUG) console.log('Main.vue filterPoints is running, no startQuery');
+    DataStore.currentData = database.value;
+    return;
+  }
 
-  for (const [index, row] of [ ...database.value.entries() ]) {
-    // if (import.meta.env.VITE_DEBUG) console.log('row:', row, 'index:', index);
-    let booleanServices;
-    const selectedServices = MainStore.selectedServices;
-    // if (import.meta.env.VITE_DEBUG) console.log('row.services_offered:', row.services_offered);
+  const buffer = MapStore.bufferForAddressOrLocationOrZipcode;
+  // if (import.meta.env.VITE_DEBUG) console.log('buffer', buffer);
+  let pointsAfterBuffer = database.value;
+  
+  // do buffer check without loop first
+  if (buffer) {
+    if (import.meta.env.VITE_DEBUG) console.log('Main.vue filterPoints is running, buffer:', buffer);
+    pointsAfterBuffer = pointsWithinPolygon(featureCollection(database.value), buffer).features;
+  }
+  if (import.meta.env.VITE_DEBUG) console.log('pointsAfterBuffer', pointsAfterBuffer);
 
-    if (appConfig.refine && appConfig.refine.type && ['multipleFields', 'multipleFieldGroups', 'multipleDependentFieldGroups'].includes(appConfig.refine.type)) {
-      let booleanConditions = [];
-
-      if (selectedServices.length === 0) {
-        booleanConditions.push(true);
-      } else {
-
-        // if refine.type = multipleFields
-        if (appConfig.refine.type === 'multipleFields') {
-          for (let field in appConfig.refine.multipleFields) {
-            if (selectedServices.includes(field)) {
-
-              let getter = appConfig.refine.multipleFields[field];
-              let val = getter(row);
-              booleanConditions.push(val);
-            }
-          }
-        } else if (appConfig.refine.type === 'multipleFieldGroups') {
-          // if refine.type = multipleFieldGroups
-          let selectedGroups = [];
-          for (let value of selectedServices) {
-            // if (import.meta.env.VITE_DEBUG) console.log('App.vue filterPoints value:', value);
-            let valueGroup;
-            if (value) {
-              valueGroup = value.split('_', 1)[0];
-            }
-            if (valueGroup && !selectedGroups.includes(valueGroup)) {
-              selectedGroups.push(valueGroup)
-            }
-          }
-          if (import.meta.env.VITE_DEBUG) console.log('App.vue filterPoints is running on multipleFieldGroups, selectedServices:', selectedServices, 'selectedGroups:', selectedGroups);
-          let groupValues = [];
-          for (let group of selectedGroups) {
-            let groupBooleanConditions = [];
-            for (let service of selectedServices) {
-              if (import.meta.env.VITE_DEBUG) console.log('App.vue filterPoints loop, service:', service);
-              if (group !== 'keyword' && service.split('_', 1)[0] === group && appConfig.refine.multipleFieldGroups[group]['radio']) {
-                // if (import.meta.env.VITE_DEBUG) console.log('group:', group, 'appConfig.refine.multipleFieldGroups[group]["radio"]:', appConfig.refine.multipleFieldGroups[group]['radio']);
-                let dependentGroups = appConfig.refine.multipleFieldGroups[group]['radio'][service.split('_')[1]]['dependentGroups'] || [];
-                // if (import.meta.env.VITE_DEBUG) console.log('dependentGroup:', dependentGroup, 'service.split("_", 1)[0]:', service.split('_', 1)[0], 'service.split("_")[1]:', service.split('_')[1], 'group', group, 'appConfig.refine.multipleFieldsGroups[group]', appConfig.refine.multipleFieldsGroups[group], 'appConfig.refine.multipleFieldsGroups[group][service.split("_")[1]]:', appConfig.refine.multipleFieldsGroups[group][service.split('_')[1]]);
-                let getter = appConfig.refine.multipleFieldGroups[group]['radio'][service.split('_')[1]]['value'];
-                let dependentServices = [];
-                for (let service of selectedServices) {
-                  if (dependentGroups.length && dependentGroups.includes(service.split('_')[0])) {
-                    dependentServices.push(service.split('_')[1]);
-                  }
-                }
-                // if (import.meta.env.VITE_DEBUG) console.log('getter:', getter, 'dependentGroups:', dependentGroups, 'selectedServices:', selectedServices, 'dependentServices:', dependentServices);
-                let val = getter(row, dependentServices);
-                groupBooleanConditions.push(val);
-              }
-              if (group !== 'keyword' && service.split('_', 1)[0] === group && appConfig.refine.multipleFieldGroups[group]['checkbox']) {
-                // if (import.meta.env.VITE_DEBUG) console.log('group:', group, 'appConfig.refine.multipleFieldGroups[group]["dependent"]:', appConfig.refine.multipleFieldGroups[group]['dependent']);
-                let dependentGroups = appConfig.refine.multipleFieldGroups[group]['checkbox'][service.split('_')[1]]['dependentGroups'] || [];
-                // if (import.meta.env.VITE_DEBUG) console.log('dependentGroup:', dependentGroup, 'service.split("_", 1)[0]:', service.split('_', 1)[0], 'service.split("_")[1]:', service.split('_')[1], 'group', group, 'appConfig.refine.multipleFieldsGroups[group]', appConfig.refine.multipleFieldsGroups[group], 'appConfig.refine.multipleFieldsGroups[group][service.split("_")[1]]:', appConfig.refine.multipleFieldsGroups[group][service.split('_')[1]]);
-                let getter = appConfig.refine.multipleFieldGroups[group]['checkbox'][service.split('_')[1]]['value'];
-                let dependentServices = [];
-                for (let service of selectedServices) {
-                  if (dependentGroups.length && dependentGroups.includes(service.split('_')[0])) {
-                    dependentServices.push(service.split('_')[1]);
-                  }
-                }
-                // if (import.meta.env.VITE_DEBUG) console.log('getter:', getter, 'dependentGroups:', dependentGroups, 'selectedServices:', selectedServices, 'dependentServices:', dependentServices);
-                let val = getter(row, dependentServices);
-                groupBooleanConditions.push(val);
-              }
-            }
-            // if (import.meta.env.VITE_DEBUG) console.log('appConfig.refine.andOr:', appConfig.refine.andOr, 'group:', group, 'groupBooleanConditions:', groupBooleanConditions);
-            if (appConfig.refine.andOr) {
-              if (appConfig.refine.andOr == 'and') {
-                if (groupBooleanConditions.includes(false)) {
-                  booleanConditions.push(false);
-                } else {
-                  booleanConditions.push(true);
-                }
-              } else if (appConfig.refine.andOr == 'or') {
-                if (groupBooleanConditions.includes(true)) {
-                  booleanConditions.push(true);
-                } else {
-                  booleanConditions.push(false);
-                }
-              }
-            } else {
-              if (groupBooleanConditions.includes(true)) {
-                booleanConditions.push(true);
-              } else if (groupBooleanConditions.length) {
-                booleanConditions.push(false);
-              }
-            }
-          }
-        } else {
-          // if refine.type = multipleDependentFieldGroups
-          let selectedGroups = [];
-          for (let value of selectedServices) {
-            let valueGroup = value.split('_', 1)[0]
-            if (!selectedGroups.includes(valueGroup)) {
-              selectedGroups.push(valueGroup)
-            }
-          }
-          // if (import.meta.env.VITE_DEBUG) console.log('App.vue filterPoints is running on multipleDependentFieldGroups, selectedServices:', selectedServices, 'selectedGroups:', selectedGroups);
-          let groupValues = [];
-          for (let group of selectedGroups) {
-            let groupBooleanConditions = [];
-            for (let service of selectedServices) {
-              if (service.split('_', 1)[0] === group) {
-                let ind = appConfig.refine.multipleDependentFieldGroups[group]['independent'];
-                let serviceEnd = service.split('_')[1];
-                // if (import.meta.env.VITE_DEBUG) console.log('ind:', ind, 'serviceEnd:', serviceEnd, 'selectedServices:', selectedServices);
-                let getter;
-                if (appConfig.refine.multipleDependentFieldGroups[group]['dependent'][service.split('_')[1]]) {
-                  getter = appConfig.refine.multipleDependentFieldGroups[group]['dependent'][service.split('_')[1]]['value'];
-                  let dependentServices = [];
-                  if (ind) {
-                    for (let service of selectedServices) {
-                      if (Object.keys(ind).includes(service.split('_')[1])) {
-                        dependentServices.push(service.split('_')[1]);
-                      }
-                    }
-                  }
-                  let val = getter(row, dependentServices);
-                  // if (import.meta.env.VITE_DEBUG) console.log('getter:', getter, 'selectedServices:', selectedServices, 'dependentServices:', dependentServices, 'val:', val);
-                  groupBooleanConditions.push(val);
-                }
-              }
-            }
-            // if (import.meta.env.VITE_DEBUG) console.log('groupBooleanConditions:', groupBooleanConditions);
-            if (groupBooleanConditions.includes(true) || !groupBooleanConditions.length) {
-              booleanConditions.push(true);
-            } else {
-              booleanConditions.push(false);
-            }
-          }
-        }
-      }
-      // if (import.meta.env.VITE_DEBUG) console.log('booleanConditions:', booleanConditions);
-      if (!booleanConditions.includes(false)) {
-        booleanServices = true
-      }
-
-    // if refine.type = categoryField_value
-    } else if (appConfig.refine && appConfig.refine.type === 'categoryField_value') {
-      if (selectedServices.length === 0) {
-        booleanServices = true;
-      } else {
-        let value = appConfig.refine.value(row);
-        booleanServices = selectedServices.includes(value);
-      }
-
-    } else {
-      // the original default version, or refine.type = 'categoryField_array'
-      // if (import.meta.env.VITE_DEBUG) console.log('in else, row:', row, 'row.services_offered:', row.services_offered);
-      let servicesSplit;
-      if (appConfig.refine) {
-        servicesSplit = appConfig.refine.value(row);
-      } else if (row.services_offered) {
-        servicesSplit = row.services_offered;
-      }
-
-      // if (import.meta.env.VITE_DEBUG) console.log('1 servicesSplit:', servicesSplit, 'typeof servicesSplit:', typeof servicesSplit);
-      if (typeof servicesSplit === 'string') {
-        servicesSplit = servicesSplit.split(',');
-      }
-      // if (import.meta.env.VITE_DEBUG) console.log('2 servicesSplit:', servicesSplit, 'typeof servicesSplit:', typeof servicesSplit);
-
-      if (selectedServices.length === 0) {
-        booleanServices = true;
-      } else {
-        let servicesFiltered = [];
-        if (servicesSplit) {
-          servicesFiltered = servicesSplit.filter(f => selectedServices.includes(f));
-        }
-        // if (import.meta.env.VITE_DEBUG) console.log('servicesFiltered:', servicesFiltered, 'selectedServices:', selectedServices);
-        booleanServices = servicesFiltered.length == selectedServices.length;
-      }
-      // if (import.meta.env.VITE_DEBUG) console.log('services else is running, row:', row, 'selectedServices:', selectedServices, 'booleanServices:', booleanServices);
-    }
-
-    // if (import.meta.env.VITE_DEBUG) console.log('about to do buffer stuff, row:', row);
-    let booleanBuffer = false;
-    if (!currentBuffer.value) {
-      // if (import.meta.env.VITE_DEBUG) console.log('!currentBuffer.value');
-      booleanBuffer = true;
-    } else if (row.latlng) {
-      if (import.meta.env.VITE_DEBUG) console.log('row.latlng:', row.latlng);
-      if (import.meta.env.VITE_DEBUG) console.log('buffer else if 1 is running, row:', row, 'booleanBuffer:', booleanBuffer, 'typeof row.latlng[0]:', typeof row.latlng[0], 'MapStore.zipcodeCenter:', MapStore.zipcodeCenter);
-      if (typeof row.latlng[0] === 'number' && row.latlng[0] !== null) {
-        const rowPoint = point([ row.latlng[1], row.latlng[0] ]);
-        let geocodedPoint, options, theDistance;
-        if (GeocodeStore.aisData) {
-          geocodedPoint = point(GeocodeStore.aisData.features[0].geometry.coordinates);
-          options = { units: 'miles' };
-          theDistance = distance(geocodedPoint, rowPoint, options);
-          row.distance = theDistance;
-        } else if (MapStore.zipcodeCenter[0]) {
-          // if (import.meta.env.VITE_DEBUG) console.log('inside zipcode center else if');
-          let zipcodeCenter = point(MapStore.zipcodeCenter);
-          options = { units: 'miles' };
-          theDistance = distance(zipcodeCenter, rowPoint, options);
-          row.distance = theDistance;
-        } //else if (MapStore.watchPositionOn) {
-        //   if (import.meta.env.VITE_DEBUG) console.log('inside watchPositionOn else if');
-        //   geocodedPoint = point([ store.state.map.location.lng, store.state.map.location.lat ]);
-        //   options = { units: 'miles' };
-        //   theDistance = distance(geocodedPoint, rowPoint, options);
-        //   row.distance = theDistance;
-        // }
-        // if (import.meta.env.VITE_DEBUG) console.log('rowPoint:', rowPoint, 'currentBuffer.value:', currentBuffer.value, 'booleanPointInPolygon(rowPoint, currentBuffer.value):', booleanPointInPolygon(rowPoint, currentBuffer.value));
-        if (booleanPointInPolygon(rowPoint, buffer)) {
-          booleanBuffer = true;
-        }
-        // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 1 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
-      } else if (typeof row.latlng[0] === 'string' && row.latlng[0] !== null) {
-        // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 1 ELSE IF');
-        const rowPoint = point([ parseFloat(row.latlng[1]), parseFloat(row.latlng[0]) ]);
-        if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
-          booleanBuffer = true;
-        }
-      }
-    } else if (row.lat && row.lon) {
-      // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 2 is running, row:', row, 'booleanBuffer:', booleanBuffer);
-      if (typeof row.lat === 'number' && typeof row.lon === 'number') {
-        let projection = getProjection(row);
-        let lnglat;
-        if (projection === '3857') {
-          lnglat = proj4(projection3857, projection4326, [ row.lon, row.lat ]);
-        } else if (projection === '2272') {
-          lnglat = proj4(projection2272, projection4326, [ row.lon, row.lat ]);
-        } else {
-          lnglat = [ row.lon, row.lat ];
-        }
-        const rowPoint = point(lnglat);
-        if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
-          booleanBuffer = true;
-        }
-        // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 2 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
-      }
-    } else if (row.geo && row.geo.coordinates) {
-      // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 is running, row:', row, 'booleanBuffer:', booleanBuffer);
-      if (typeof row.geo.coordinates[0] === 'number' && typeof row.geo.coordinates[1] === 'number') {
-        let projection = getProjection(row);
-        let lnglat;
-        if (projection === '3857') {
-          lnglat = proj4(projection3857, projection4326, [ row.geo.coordinates[0], row.geo.coordinates[1] ]);
-        } else if (projection === '2272') {
-          lnglat = proj4(projection2272, projection4326, [ row.geo.coordinates[0], row.geo.coordinates[1] ]);
-        } else {
-          lnglat = [ row.geo.coordinates[0], row.geo.coordinates[1] ];
-        }
-        const rowPoint = point(lnglat);
-
-        let geocodedPoint, options, theDistance;
-        if (GeocodeStore.aisData) {
-          geocodedPoint = point(GeocodeStore.aisData.features[0].geometry.coordinates);
-          options = { units: 'miles' };
-          theDistance = distance(geocodedPoint, rowPoint, options);
-          row.distance = theDistance;
-        } else if (MapStore.zipcodeCenter[0]) {
-          // if (import.meta.env.VITE_DEBUG) console.log('inside zipcode center else if');
-          let zipcodeCenter = point(MapStore.zipcodeCenter);
-          options = { units: 'miles' };
-          theDistance = distance(zipcodeCenter, rowPoint, options);
-          row.distance = theDistance;
-        }
-
-        if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
-          booleanBuffer = true;
-        }
-        // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
-      }
-    } else if (row.geometry && row.geometry.x) {
-      // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 is running, row:', row, 'booleanBuffer:', booleanBuffer);
-      if (typeof row.geometry.x === 'number' && typeof row.geometry.y === 'number') {
-        let projection = getProjection(row);
-        let lnglat;
-        if (projection === '3857') {
-          lnglat = proj4(projection3857, projection4326, [ row.geometry.x, row.geometry.y ]);
-        } else if (projection === '2272') {
-          lnglat = proj4(projection2272, projection4326, [ row.geometry.x, row.geometry.y ]);
-        } else {
-          lnglat = [ row.geometry.x, row.geometry.y ];
-        }
-        const rowPoint = point(lnglat);
-
-        let geocodedPoint, options, theDistance;
-        if (GeocodeStore.aisData) {
-          geocodedPoint = point(GeocodeStore.aisData.features[0].geometry.coordinates);
-          options = { units: 'miles' };
-          theDistance = distance(geocodedPoint, rowPoint, options);
-          row.distance = theDistance;
-        } else if (MapStore.zipcodeCenter[0]) {
-          // if (import.meta.env.VITE_DEBUG) console.log('inside zipcode center else if');
-          let zipcodeCenter = point(MapStore.zipcodeCenter);
-          options = { units: 'miles' };
-          theDistance = distance(zipcodeCenter, rowPoint, options);
-          row.distance = theDistance;
-        }
-
-        if (booleanPointInPolygon(rowPoint, currentBuffer.value)) {
-          booleanBuffer = true;
-        }
-        // if (import.meta.env.VITE_DEBUG) console.log('buffer else if 3 IF is running, row:', row, 'rowPoint:', rowPoint, 'booleanBuffer:', booleanBuffer);
-      }
-    } else {
-      // if (import.meta.env.VITE_DEBUG) console.log('neither ran');
-      // booleanBuffer = true;
-    }
-
+  // for (const [index, row] of [ ...pointsAfterBuffer.entries( )]) {
+  for (let row of pointsAfterBuffer) {
+    // if (import.meta.env.VITE_DEBUG) console.log('row:', row);
     let booleanKeywords = true;
-    // if (import.meta.env.VITE_DEBUG) console.log('row:', row, 'appConfig.tags', appConfig.tags, 'selectedKeywords.value:', selectedKeywords.value, 'selectedKeywords.value.length:', selectedKeywords.value.length);
-    if (selectedKeywords.value.length > 0) {
-      booleanKeywords = false;
-      let description = [];
-      if (Array.isArray(row.tags)) {
-        description = row.tags;
-      } else if (row.tags) {
-        description = row.tags.split(', ');
-      } else if (appConfig.tags && appConfig.tags.type == 'tagLocation') {
-        if (Array.isArray(appConfig.tags.location(row))) {
-          description = appConfig.tags.location(row);
-        } else if (appConfig.tags.location(row)) {
-          description = appConfig.tags.location(row).split(', ');
-        }
-      } else if (appConfig.tags && appConfig.tags.type == 'fieldValues') {
-        for (let tag of appConfig.tags.tags) {
-          // if (import.meta.env.VITE_DEBUG) console.log('tag:', tag, 'tag.field:', tag.field, 'row.attributes[tag.field]:', row.attributes[tag.field]);
-          if (tag.type == 'boolean' && row.attributes[tag.field] == 'Yes') {
-            description.push(tag.value);
-          } else if (tag.type == 'value' && row.attributes[tag.field] !== null && row.attributes[tag.field] != ' ') {
-            // if (import.meta.env.VITE_DEBUG) console.log('in else if, row.attributes[tag.field]:', row.attributes[tag.field]);
-            // description.push(row.attributes[tag.field].charAt(0) + row.attributes[tag.field].substring(1).toLowerCase());
-            let value = row.attributes[tag.field].toLowerCase();
-            // if (import.meta.env.VITE_DEBUG) console.log('value.split(","):', value.split(','));
-            description = description.concat(value.split(','));
-          }
-        }
-      }
-      // if (import.meta.env.VITE_DEBUG) console.log('still going, selectedKeywords.value[0]:', selectedKeywords.value[0], 'row.tags:', row.tags, 'description:', description);
+    let booleanServices = checkServices(row);
 
-      let threshold = 0.2;
-      if (appConfig.searchBar.fuseThreshold) {
-        threshold = appConfig.searchBar.fuseThreshold;
-      };
-
-      const options = {
-        // isCaseSensitive: false,
-        // includeScore: false,
-        // shouldSort: true,
-        // includeMatches: false,
-        // findAllMatches: true,
-        minMatchCharLength: 3,
-        location: 0,
-        threshold: threshold,
-        // distance: 100,
-        // useExtendedSearch: false,
-        // ignoreLocation: false,
-        // ignoreFieldNorm: false,
-
-        // keys: [
-        //   "title",
-        //   "author.firstName"
-        // ]
-      };
-
-      const fuse = new Fuse(description, options);
-      let results = {};
-      for (let keyword of selectedKeywords.value) {
-        // if (import.meta.env.VITE_DEBUG) console.log('in selectedKeywords loop, keyword.toString():', keyword.toString(), 'description:', description);//'description[0].split(","):', description[0].split(','));
-        if (appConfig.skipFuse) {
-          let keywordString = '' + keyword;
-          // if (import.meta.env.VITE_DEBUG) console.log('skipFuse, keywordString:', keywordString);
-          if (description.includes(keywordString)) {
-            // if (import.meta.env.VITE_DEBUG) console.log('19148 is in description');
-            results[keyword] = ['true'];
-          }
-        } else {
-          // if (import.meta.env.VITE_DEBUG) console.log('fuse.search(keyword):', fuse.search(keyword), 'description:', description);
-          results[keyword] = fuse.search(keyword);
-        }
-      }
-      // const result = fuse.search(selectedKeywords.value[0]);
-      // if (import.meta.env.VITE_DEBUG) console.log('App.vue filterPoints booleanKeywords section, result:', result, 'results:', results);
-      // if (result.length > 0) {
-      //   booleanKeywords = true;
-      // }
-      for (let keyword of Object.keys(results)) {
-        if (results[keyword].length > 0) {
-          booleanKeywords = true;
-        }
-      }
+    if (booleanServices) {
+      booleanKeywords = checkKeywords(row);
     }
 
-    // if (import.meta.env.VITE_DEBUG) console.log('booleanServices:', booleanServices, 'booleanBuffer:', booleanBuffer, 'booleanKeywords:', booleanKeywords);
+    // only get distances if there is a reason
+    if (buffer && booleanServices && booleanKeywords) {
+      getDistances(row);
+    } else {
+      row.distance = null;
+    }
 
-    if (booleanServices && booleanBuffer && booleanKeywords) {
+    // if (import.meta.env.VITE_DEBUG) console.log('booleanServices:', booleanServices, 'booleanKeywords:', booleanKeywords);
+    if (booleanServices && booleanKeywords) {
+      // if (import.meta.env.VITE_DEBUG) console.log('Main.vue filterPoints is pushing a row, row:', row);
       filteredRows.push(row);
     }
   }
-  // if (import.meta.env.VITE_DEBUG) console.log('filteredRows:', filteredRows);
 
+  // if (import.meta.env.VITE_DEBUG) console.log('filteredRows:', filteredRows);
   DataStore.currentData = filteredRows;
 };
 
 // todo move to Map.vue
-const toggleMap = () => {
-  const newIsMapVisible = !isMapVisible.value;
-  if (import.meta.env.VITE_DEBUG) console.log('toggleMap is running');
-  if (newIsMapVisible === true) {
-    if (import.meta.env.VITE_DEBUG) console.log('toggleMap is running, newIsMapVisible.value === true');
-    // if (import.meta.env.VITE_DEBUG) console.log('setTimeout function is running');
-    // let themap = store.map;
-    // setTimeout(function() {
-    //   if (import.meta.env.VITE_DEBUG) console.log('mapbox running map resize now');
-    //   themap.resize();
-    //   if (import.meta.env.VITE_DEBUG) console.log('mapbox ran map resize');
-    // }, 250);
-  }
-  if (!i18nEnabled) {
-    buttonText.value = newIsMapVisible ? 'Toggle to resource list' : 'Toggle to map';
-  } else {
-    buttonText.value = newIsMapVisible ? 'app.viewList' : 'app.viewMap';
-  }
+const toggleToMap = () => {
+  if (import.meta.env.VITE_DEBUG) console.log('toggleToMap is running');
+  isMapVisible.value = true;
 };
 
-const toggleModal = () => {
-  isModalOpen = !isModalOpen;
-  toggleBodyClass('no-scroll');
-};
-
-const showModal = () => {
-  isModalOpen = true;
-  toggleBodyClass('no-scroll');
+const toggleToList = () => {
+  if (import.meta.env.VITE_DEBUG) console.log('toggleToList is running');
+  isMapVisible.value = false;
 };
 
 const closeModal = () => {
-  isModalOpen = false;
-  isAlertModalOpen = false;
-  toggleBodyClass('no-scroll');
+  isAlertModalOpen.value = false;
 };
 
-const toggleBodyClass = (className) => {
-  const el = document.body;
-  return isOpen ? el.classList.add(className) : el.classList.remove(className);
+const appTitle = computed(() => {
+  let value;
+  if ($config.app.title) {
+    value = $config.app.title;
+  } else if (i18nEnabled.value) {
+    // if (import.meta.env.VITE_DEBUG) console.log('t("app.title"):', t('app.title'));
+    value = t('app.title');
+  }
+  return value;
+});
+
+const appSubTitle = computed(() => {
+  let value;
+  if (!isMobile.value) {
+    if ($config.app.subtitle) {
+      value = $config.app.subtitle;
+    } else if (i18nEnabled.value) {
+      // if (import.meta.env.VITE_DEBUG) console.log('t("app.subtitle"):', t('app.subtitle'));
+      value = t('app.subtitle'); 
+    }
+  }
+  return value;
+});
+
+const i18nLanguages = computed(() => {
+  let values = [];
+  // if (import.meta.env.VITE_DEBUG) console.log('i18nLanguages, $config.i18n:', $config.i18n);
+  if ($config.i18n.languages) {
+    values = $config.i18n.languages;
+  }
+  return values;
+});
+
+const footerLinks = computed(() => {
+  if ($config.footer) {
+    let newValues = []
+    for (let i of $config.footer) {
+      let value = {}
+      for (let j of Object.keys(i)) {
+        // if (import.meta.env.VITE_DEBUG) console.log('i:', i, 'j:', j);
+        if (!i18nEnabled.value || j !== "text") {
+          value[j] = i[j];
+        } else {
+          value[j] = t(i[j]);
+        }
+      }
+      newValues.push(value)
+    }
+    return newValues;
+  }
+});
+
+const popupClicked = () => {
+  if (import.meta.env.VITE_DEBUG) console.log('popupClicked is running');
+  if (isMobile.value) {
+    toggleToList();
+  }
 };
 
 </script>
 
 <template>
-  <PhilaModal
-    v-show="isModalOpen"
-    @close="closeModal"
+
+<app-header
+  :app-title="appTitle"
+  :app-subtitle="appSubTitle"
+  :app-link="appLink"
+  :is-sticky="true"
+  :is-fluid="true"
+  :branding-image="brandingImage"
+  :branding-link="brandingLink"
   >
-    <div slot="body">
-      <p>The resource finder helps you locate services related to a particular topic. You can browse the list of providers, search by keyword or address, and narrow your results by category.</p>
-
-      <p>The providers are listed alphabetically. To learn about what they offer and where they are, select their name. This will expand their listing and locate them on the map. You can also:
-        <ul>
-      <li><b>Search by location or keyword.</b> To find service providers near you, select “Address” in the dropdown and enter a street address. To search for a specific term, select “Keyword” in the dropdown and enter your term.</li>
-      <li><b>Choose a category.</b> If you’re looking for a specific type of resource, select the appropriate topic under “Filter list by category.” You can pick multiple categories.</li>
-        </ul></p>
-      <p>If you’re interested in a particular service or resource, contact the provider to learn more and confirm that it’s still available.</p>
-
-    </div>
-  </PhilaModal>
-
-  <PhilaModal
-    v-show="isAlertModalOpen"
-    @close="closeModal"
+  <template #mobile-nav>
+    <mobile-nav :links="footerLinks" />
+  </template>
+  
+  <template
+    v-if="i18nEnabled"
+    #lang-selector-nav
   >
-    <div
-      slot="header"
-      v-html="alertModalHeader"
-    />
-    <div
-      slot="body"
-      v-html="alertModalBody"
-    />
-  </PhilaModal>
-
-  <app-header
-    :app-title="appTitle"
-    :app-subtitle="appSubTitle"
-    :app-link="appLink"
-    :is-sticky="true"
-    :is-fluid="true"
-    :branding-image="brandingImage"
-    :branding-link="brandingLink"
-    >
-    <template #mobile-nav>
-      <mobile-nav :links="footerLinks" />
-    </template>
-    <template #lang-selector-nav>
-      <lang-selector
-        :languages="i18nLanguages"
-      />
-    </template>
-    <!-- <mobile-nav
-      slot="mobile-nav"
-      :links="footerLinks"
-    >
-    </mobile-nav> -->
-
-    <!-- <lang-selector
-      slot="lang-selector-nav"
+    <lang-selector
       v-if="i18nEnabled && !i18nSelectorHidden"
       :languages="i18nLanguages"
-    >
-    </lang-selector> -->
+    />
+  </template>
+</app-header>
 
-  </app-header>
+<main id="main" class="main invisible-scrollbar">
 
   <div
-    v-if="showForceHolidayBanner || showAutomaticHolidayBanner && holiday.coming_soon || showAutomaticHolidayBanner && holiday.current"
-    class="holiday-banner"
+    v-show="isAlertModalOpen"
+    class="modalWrapper"
+    @click="closeModal"
   >
-    {{ closureMessageAllSites }}
-    <button
-      class="button is-primary is-small is-pulled-right holiday-banner-close-button"
-      @click="closeHolidayBanner"
+    <modal
+      type="none"
+      :hide-close-button="true"
+      :close="closeModal"
     >
-      x
-    </button>
+      <template #title>
+        {{ alertModalTitle }}
+      </template>
+      <slot>
+        <div class="content">
+          <div
+            v-html="alertModalBody"
+          ></div>
+        </div>
+      </slot>
+      <template #actions-before>
+        <button
+          class="button is-secondary"
+          @click="closeModal"
+        >
+          Close
+        </button>
+      </template>
+    </modal>
   </div>
-
-    <!-- <div
-      v-show="isMobile && !appConfig.searchBar.hide"
-      class="search-bar-container-class"
-    >
-      <phila-ui-address-input
-        :over-map="false"
-        :placeholder="addressInputPlaceholder"
-        @clear-search="clearSearchTriggered"
-        @handle-search-form-submit="handleSubmit"
-      />
-    </div> -->
-
     
-  <main
-    id="main"
+  <div
+    id="main-column"
     class="main-column invisible-scrollbar"
   >
-    <!-- <div
-      v-if="refineEnabled"
-      :class="refinePanelClass"
-    > -->
-    <refine-panel
-      :refine-title="refineTitle"
-      :submitted-checkbox-value="submittedCheckboxValue"
-      @watched-submitted-checkbox-value="watchedSubmittedCheckboxValue"
-      @geolocate-control-fire="geolocateControlFire"
+
+    <div
+      v-if="showForceHolidayBanner || showAutomaticHolidayBanner && holiday.coming_soon || showAutomaticHolidayBanner && holiday.current"
+      id="holiday-banner"
+      class="holiday-banner columns is-mobile"
+    >
+      <div class="column holiday-banner-column is-11">
+        {{ closureMessageAllSites }}
+      </div>
+      <div class="column holiday-banner-column is-1">
+        <button
+          style="height: 100% !important;"
+          class="button is-primary is-small is-pulled-right holiday-banner-close-button"
+          @click="closeHolidayBanner"
+        >
+          x
+        </button>
+      </div>
+    </div>
+
+    <address-search-control
+      v-if="isMobile"
+      :input-id="'address-search-input'"
     />
+
+    <div>
+      <refine-panel
+        :refine-title="refineTitle"
+      />
+      <!-- @geolocate-control-fire="geolocateControlFire" -->
+    </div>
 
     <div
       v-show="!isMobile || isMobile && !refineOpen"
+      id="main-row"
       class="main-row"
     >
       <div
         v-show="locationsPanelVisible"
-        class="topics-holder"
+        class="locations-holder"
       >
         <locations-panel
           :is-map-visible="isMapVisible"
           @clear-bad-address="clearBadAddress"
+          @clicked-view-map="toggleToMap"
         />
       </div>
       <div
         v-show="mapPanelVisible"
+        id="map-panel-holder"
         class="map-panel-holder"
       >
         <map-panel
           @clear-search="clearSearchTriggered"
-          @toggleMap="toggleMap"
-          @geolocate-control-fire="geolocateControlFire"
+          @toggleMap="toggleToMap"
+          @geolocate="geolocate"
+          @popup-clicked="popupClicked"
         />
+          <!-- @geolocate-control-fire="geolocateControlFire" -->
       </div>
     </div>
-  </main>
 
-
+  </div>
   <div
-    v-show="toggleButtonVisible"
-    @click="toggleMap"
+    v-show="toggleButtonsVisible"
+    class="toggle-buttons-holder"
   >
-    <button class="button capitalized is-primary toggle-button is-fullwidth">
-      {{ $t(buttonText) }}
+    <button
+      class="capitalized toggle-button toggle-button-left"
+      :class="isMapVisible ? 'toggle-button-inactive' : 'toggle-button-active'"
+      @click="toggleToList"
+    >
+      <div class="text-div">
+        <font-awesome-icon
+          icon="fa-solid fa-rectangle-list"
+          class="toggle-button-icon"
+        />
+        {{ $t('app.list') }}
+      </div>
+    </button>
+    <button
+      class="capitalized toggle-button toggle-button-right"
+      :class="isMapVisible ? 'toggle-button-active' : 'toggle-button-inactive'"
+      @click="toggleToMap"
+    >
+      <div class="text-div">
+        <font-awesome-icon
+          icon="fa-solid fa-map-marker-alt"
+          class="toggle-button-icon"
+        />
+        {{ $t('app.map') }}
+      </div>
     </button>
   </div>
 
-  <!-- <div
-    class="footer-holder"
-  > -->
-  <!-- id="app-footer" -->
-  <app-footer
-    :is-sticky="true"
-    :is-hidden-mobile="true"
-    :links="footerLinks"
-  >
-  </app-footer>
-  <!-- </div> -->
+</main>
 
-  <!-- </div> -->
+<app-footer
+  :is-sticky="true"
+  :is-hidden-mobile="true"
+  :links="footerLinks"
+>
+</app-footer>
 
 </template>
 
-<!-- @import "../assets/scss/main.scss"; -->
 <style lang="scss">
 
-.skip-to-main-content-link {
-  position: absolute;
-  left: -9999px;
-  z-index: 999;
-  padding: .5em;
-  background-color: #0f4d90;
-  color: white;
-  opacity: 0;
-  text-decoration: underline;
-}
-
-.skip-to-main-content-link:focus {
-  left: 0px;
-  opacity: 1;
-}
-
-.skip-to-main-content-link:hover {
-  color: white;
+.text-div {
+  height: 100%;
+  width: 100%;
+  padding: 12px;
 }
 
 #app-header {
   .trusted-site-hidden {
     display: none;
   }
-
-  // #nav-wrap {
-  //   height: 80px;
-  //   line-height: 80px;
-
-
-  //   #main-nav {
-  //     .columns {
-  //       height: 80px;
-  //       .column {
-  //         height: 80px;
-  //       }
-  //     }
-  //   }
-
-  // }
-  // .container {
-  //   padding-left: 16px !important;
-  //   padding-right: 16px !important;
-  // }
-  // .title-col {
-  //   padding-top: 1rem !important;
-  //   padding-bottom: 1rem !important;
-  // }
-  // h2 {
-  //   font-weight: 100;
-  // }
 }
-
-// .search-bar-container-class {
-//   min-height: 4.5rem;
-// }
 
 .capitalized {
   text-transform: uppercase;
 }
-
-// .header-holder {
-//   background-color: blue;
-// }
-
-// .footer-holder {
-//   background-color: blue;
-//   margin-top: auto;
-// }
-
-// @media screen and (min-width: 768px) {
-//   .title-col {
-//     padding-top: 1rem !important;
-//     padding-bottom: 1rem !important;
-//   }
-// }
-
-// @media screen and (max-width: 767px) {
-//   .title-col {
-//     padding-top: 2rem !important;
-//     padding-bottom: 2rem !important;
-//   }
-// }
-
-// #mobile-menu-close-bar {
-//   height: 50px;
-//   .button {
-//     bottom: 3px !important;
-//   }
-// }
-
-// #mobile-menu-wrap {
-//   height: calc(100% - 105px) !important;
-// }
 
 .mobile-refine-panel-holder-open {
   flex-grow: 1;
@@ -1886,85 +1093,52 @@ const toggleBodyClass = (className) => {
   border-color: #cfcfcf;
 }
 
-// .locations-and-map-panels-holder {
-//   flex-direction: row-reverse;
-//   overflow-y: scroll;
-//   min-height: 0px;
-//   flex-grow: 1;
-//   margin-left: 0px !important;
-//   margin-right: 0px !important;
-//   margin-bottom: 0px !important;
-//   margin-top: 0px !important;
-// }
-
-// .locations-panel-holder {
-//   min-height: 0px;
-//   padding: 0px !important;
-//   overflow-y: scroll;
-//   position: relative;
-// }
-
-// .invisible-scrollbar {
-//   -ms-overflow-style: none;
-//   scrollbar-width: none;
-// }
-
-// .invisible-scrollbar::-webkit-scrollbar {
-//   display: none;
-// }
-
-/* IE10+ CSS styles go here */
-// @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
-
-//   @media (min-width: 768px) {
-//     .locations-and-map-panels-holder {
-//       overflow-y: hidden;
-//       height: 100px;
-//     }
-//   }
-//   @media (max-width: 767px) {
-//     .locations-and-map-panels-holder {
-//       height: 100px;
-//     }
-//     .locations-panel-holder {
-//       overflow-y: hidden;
-//     }
-//   }
-
-// }
-
-// .locations-panel {
-//   overflow-y: hidden;
-// }
-
-// .map-panel-holder {
-//   height: 100%;
-//   padding: 0px !important;
-// }
-
 .toggle-button {
-  background-color: #0f4d90 !important;
+  padding: 0px;
+  font-family: "Montserrat-Bold", "Montserrat Bold", "Montserrat", sans-serif;
+  font-weight: 700 !important;
+  font-size: 18px;
+  height: 46px;
+  border-top-width: 1px;
+  border-bottom-width: 0px;
+  background-color: #f0f0f0;
+  border-color: #cfcfcf !important;
+  color: #0f4d90 !important;
+  width: 50%;
 }
 
-// .overflows {
-//   overflow-y: scroll;
-// }
+.toggle-button-icon {
+  color: inherit;
+}
 
-// .footer-holder a {
-//   text-decoration: underline;
-// }
+.toggle-button-active {
+ background-color: #ffffff;
+}
+
+.toggle-button-inactive {
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+
+.toggle-button-inactive :hover {
+  background-color: #0f4d90;
+  color: #ffffff;
+}
+
+.toggle-button-left {
+  border-left-width: 0px;
+  border-right-width: 1px;
+}
+
+.toggle-button-right {
+  border-left-width: 1px;
+  border-right-width: 0px;
+}
 
 .no-scroll{
   overflow: hidden;
   height: 100vh;
 }
-
-// .toggle-map{
-//   position: fixed;
-//   bottom:0;
-//   width: 100%;
-//   z-index: 1002;
-// }
 
 @media print {
 
@@ -1981,22 +1155,41 @@ const toggleBodyClass = (className) => {
   }
 
   .locations-and-map-panels-holder {
-    // flex-direction: row-reverse;
     overflow-y: visible;
   }
-
-  // .overflows {
-  //   overflow-y: visible;
-  // }
 }
 
 .holiday-banner {
+  margin-top: 0px !important;
+  margin-bottom: 0px !important;
   padding-left: 1rem;
   background-color: #fff7d0;
 }
 
+.holiday-banner-column {
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+}
+
 .holiday-banner-close-button {
-  height: 28px !important;
+  justify-content: center !important;
+  width: 48px !important;
+  height: 100% !important;
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+}
+
+.modalWrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
 </style>

@@ -1,33 +1,35 @@
 <script setup>
 
-import $config from '@/config.js';
-import appConfig from '@/app/main.js';
-// console.log('appConfig:', appConfig);
+import { useMainStore } from '../stores/MainStore.js';
+import { useMapStore } from '../stores/MapStore.js';
+import { useGeocodeStore } from '../stores/GeocodeStore.js';
+import { useDataStore } from '../stores/DataStore.js';
+import { useConfigStore } from '../stores/ConfigStore.js';
+import { useRoute, useRouter } from 'vue-router';
+import { ref, computed, getCurrentInstance, onBeforeMount, onMounted, watch, nextTick } from 'vue';
+import { event } from 'vue-gtag'
+
 import { findIconDefinition } from '@fortawesome/fontawesome-svg-core';
 
+const instance = getCurrentInstance();
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
-import Checkbox from './Checkbox.vue';
-// import Radio from '@phila/phila-ui-radio';
+import TooltipCheckbox from './TooltipCheckbox.vue';
+import Radio from '@phila/phila-ui-radio';
 
 import IconToolTip from './IconToolTip.vue';
 
-import { computed, onBeforeMount, onMounted, watch, ref, reactive, getCurrentInstance } from 'vue';
-const instance = getCurrentInstance();
+const ConfigStore = useConfigStore();
+const $config = ConfigStore.config;
 
 // STORES
-import { useMapStore } from '@/stores/MapStore.js';
 const MapStore = useMapStore();
-import { useMainStore } from '@/stores/MainStore.js'
 const MainStore = useMainStore();
-import { useGeocodeStore } from '@/stores/GeocodeStore.js'
 const GeocodeStore = useGeocodeStore();
-import { useDataStore } from '@/stores/DataStore.js'
 const DataStore = useDataStore();
 
 // ROUTER
-import { useRouter, useRoute } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 
@@ -36,19 +38,28 @@ const props = defineProps({
     type: String,
     default: 'FILTER',
   },
-  submittedCheckboxValue: {
-    type: String,
-    default: null,
-  },
+  // submittedCheckboxValue: {
+  //   type: String,
+  //   default: null,
+  // },
 });
-
-// console.log('instance.appContext.config.globalProperties.$i18n.availableLocales:', instance.appContext.config.globalProperties.$i18n.availableLocales);
 
 const $emit = defineEmits(['geolocate-control-fire', 'watched-submitted-checkbox-value' ]);
 
-const baseUrl = '/';
-const selected = ref([]);
+const selected = ref();
+if ($config.refine.type === 'categoryField_value') {
+  selected.value = null;
+} else {
+  selected.value = [];
+}
 const selectedList = ref({});
+
+const viewerHeight = ref(window.innerHeight);
+const appHeaderHeight = ref(document.querySelector('#app-header').offsetHeight);
+const refineTopHeight = ref(46);
+const bottomHeight = computed(() => {
+  return viewerHeight.value - (appHeaderHeight.value + refineTopHeight.value);
+});
 
 const searchDistance = computed(() => {
   let value = MapStore.searchDistance;
@@ -59,6 +70,10 @@ const searchDistance = computed(() => {
     word = t('miles');
   }
   return value + ' ' + word;
+});
+
+const i18nLocale = computed(() => {
+  return instance.appContext.config.globalProperties.$i18n.locale;
 });
 
 const refineList = computed(() => {
@@ -76,7 +91,7 @@ const anyValueEntered = computed(() => {
 const angleIconWeight = computed(() => {
   let value = 'fas';
   let regularExists = findIconDefinition({ prefix: 'far', iconName: 'angle-down' });
-  // console.log('refinePanel.vue computed, library:', library, 'regularExists:', regularExists);
+  // if (import.meta.env.VITE_DEBUG) console.log('refinePanel.vue computed, library:', library, 'regularExists:', regularExists);
   if (regularExists) {
     value = 'far';
   }
@@ -94,7 +109,7 @@ const timesIconWeight = computed(() => {
 
 const dropdownRefine = computed(() => {
   let value;
-  if (appConfig.dropdownRefine) {
+  if ($config.dropdownRefine) {
     value = true;
   } else {
     value = false;
@@ -103,7 +118,7 @@ const dropdownRefine = computed(() => {
 });
 
 const isMobile = computed(() => {
-  return MainStore.isMobileDevice;
+  return MainStore.isMobileDevice || MainStore.windowDimensions.width < 768;
 });
 
 const NumRefineColumns = computed(() => {
@@ -117,24 +132,62 @@ const NumRefineColumns = computed(() => {
 });
 
 const selectedArray = computed(() => {
-  let test = {...selectedList.value};
-  if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, test:', test);
+  if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selected.value:', selected.value, 'selectedList.value:', selectedList.value);
+  let selL = {...selectedList.value};
+  // if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selL:', selL, 'selected.value:', selected.value);
   let compiled = [];
-  for (let value of Object.keys(test)) {
-    if (import.meta.env.VITE_DEBUG) console.log('in selectedArray computed, value:', value, value.split('_')[0]);
-    if (value.split('_')[0] == 'radio') {
-      // console.log('radio button clicked!');
-      compiled.push(test[value]);
-    } else {
-      for (let selected of selectedList.value[value]) {
+  if (Object.keys(selL).length) {
+    if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed, in first if, selL:', selL);
+    for (let value of Object.keys(selL)) {
+      if (import.meta.env.VITE_DEBUG) console.log('in selectedArray computed, value:', value, 'selL[value]:', selL[value]);
+      if (value.split('_')[0] == 'checkbox') {
+        if (import.meta.env.VITE_DEBUG) console.log('checkbox clicked!');
+        if (Array.isArray(selL[value])) {
+          for (let sel of selL[value]) {
+            if (import.meta.env.VITE_DEBUG) console.log('in selectedArray computed, loop, sel:', sel, 'value:', value, 'selL[value]:', selL[value]);
+            compiled.push(sel);
+          }
+        } else {
+          compiled.push(selL[value]);
+        }
+      } else if (value.split('_')[0] == 'radio') {
+        if (import.meta.env.VITE_DEBUG) console.log('radio button clicked!, selL[value]:', selL[value]);
+        if (typeof selL[value] === 'string') {
+          compiled.push(selL[value]);
+        } else {
+          compiled.push(selL[value][0]);
+        }
+      } else {
+        for (let sel of selL[value]) {
+          compiled.push(sel);
+        }
+      }
+    }
+  } else if (refineType.value !== 'categoryField_value') {
+    if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed, in first else if, selected.value:', selected.value);
+    let sel = selected.value;
+    if (sel.length) {
+      for (let selected of sel) {
         compiled.push(selected);
       }
+    }
+  } else {
+    if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed, in second else, selected.value:', selected.value);
+    if (selected.value && selected.value.length) {
+      if (import.meta.env.VITE_DEBUG) console.log('selected.value:', selected.value);
+      compiled.push(selected.value);
+    } else {
+      compiled = [];
     }
   }
   return compiled;
 });
 
 const refineListTranslated = computed(() => {
+  if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated computed is running, refineList.value:', refineList.value);
+  if (!refineList.value || !Object.keys(refineList.value).length) {
+    return {};
+  }
   let mainObject = {};
   let mainArray = [];
   if (refineType.value === 'categoryField_value') {
@@ -143,14 +196,14 @@ const refineListTranslated = computed(() => {
         value: category.data,
         text: t(category.data),
       });
-      // console.log('refineListTranslated computed, category:', category, 'mainArray:', mainArray);
+      // if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated computed, category:', category, 'mainArray:', mainArray);
     }
     return mainArray;
   } else if (refineType.value !== 'multipleFieldGroups' && refineType.value !== 'multipleDependentFieldGroups') {
     
     if (typeof refineList.value[0] === 'string') {
       for (let refineObject of refineList.value) {
-        // console.log('refineObject:', refineObject, 'typeof refineObject:', typeof refineObject);
+        // if (import.meta.env.VITE_DEBUG) console.log('refineObject:', refineObject, 'typeof refineObject:', typeof refineObject);
         mainObject[refineObject] = {textLabel: t(refineObject), value: refineObject};
       }
       return mainObject;
@@ -158,7 +211,7 @@ const refineListTranslated = computed(() => {
       for (let refineObject of refineList.value) {
         let translatedObject = {}
         for (let category of Object.keys(refineObject)) {
-          // console.log('in refineListTranslated, category:', category);
+          // if (import.meta.env.VITE_DEBUG) console.log('in refineListTranslated, category:', category);
           if (category == 'textLabel') {
             translatedObject[category] = t(refineObject[category]);
           } else {
@@ -168,15 +221,16 @@ const refineListTranslated = computed(() => {
         mainArray.push(translatedObject);
       }
       return mainArray;
-      // console.log('in refineListTranslated, refineObject:', refineObject, 'translatedObject:', translatedObject);
-      // console.log('refineListTranslated computed, category:', category, 't(category):', t(category), 'mainArray:', mainArray);
+      // if (import.meta.env.VITE_DEBUG) console.log('in refineListTranslated, refineObject:', refineObject, 'translatedObject:', translatedObject);
+      // if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated computed, category:', category, 't(category):', t(category), 'mainArray:', mainArray);
     }
   } else if (refineType.value == 'multipleFieldGroups') {
+    if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed, refineType.value:', refineType.value, 'refineList.value:', refineList.value);
     if (refineList.value) {
       for (let category of Object.keys(refineList.value)) {
         mainObject[category] = {};
         for (let dep of Object.keys(refineList.value[category])) {
-          // console.log('dep:', dep);
+          // if (import.meta.env.VITE_DEBUG) console.log('dep:', dep);
           if (dep !== 'tooltip') {
 
             mainObject[category][dep] = [];
@@ -189,7 +243,7 @@ const refineListTranslated = computed(() => {
                 tooltip = {};
                 tooltip.tip = t(refineList.value[category][dep][box].tooltip.tip);
                 tooltip.multiline = refineList.value[category][dep][box].tooltip.multiline
-                // console.log('tooltip:', tooltip, 'refineList.value[category][dep][box].tooltip.tip:', refineList.value[category][dep][box].tooltip.tip);
+                // if (import.meta.env.VITE_DEBUG) console.log('tooltip:', tooltip, 'refineList.value[category][dep][box].tooltip.tip:', refineList.value[category][dep][box].tooltip.tip);
               }
               let keyPairs = {
                 data: data,
@@ -206,15 +260,15 @@ const refineListTranslated = computed(() => {
     }
     return mainObject;
   } else {
-    // console.log('in refineListTranslated else');
+    // if (import.meta.env.VITE_DEBUG) console.log('in refineListTranslated else');
     for (let category of Object.keys(refineList.value)) {
-      // console.log('in refineListTranslated else, first loop');
+      // if (import.meta.env.VITE_DEBUG) console.log('in refineListTranslated else, first loop');
       mainObject[category] = {};
       for (let dep of Object.keys(refineList.value[category])) {
-        // console.log('in loop, dep', dep);
+        // if (import.meta.env.VITE_DEBUG) console.log('in loop, dep', dep);
         mainObject[category][dep] = [];
         for (let box of Object.keys(refineList.value[category][dep])) {
-          // console.log('in inner loop, box:', box, 'dep:', dep);
+          // if (import.meta.env.VITE_DEBUG) console.log('in inner loop, box:', box, 'dep:', dep);
           let data = refineList.value[category][dep][box].unique_key;
           let textLabel = t(refineList.value[category][dep][box].box_label);
           let tooltip;
@@ -236,7 +290,7 @@ const refineListTranslated = computed(() => {
 
 const retractable = computed(() => {
   let value = false;
-  if (appConfig.retractableRefine) {
+  if ($config.retractableRefine) {
     value = true;
   }
   return value;
@@ -264,8 +318,8 @@ const refinePanelClass = computed(() => {
     } else if (refineOpen.value) {
       value = 'refine-panel refine-retractable-open refine-panel-non-mobile invisible-scrollbar';
     }
-  } else if (appConfig.dropdownRefine) {
-    console.log('dropdownRefine is used');
+  } else if ($config.dropdownRefine) {
+    if (import.meta.env.VITE_DEBUG) console.log('dropdownRefine is used');
     value = 'refine-panel refine-dropdown-closed refine-panel-non-mobile-closed invisible-scrollbar';
   } else {
     value = 'refine-panel refine-panel-non-mobile invisible-scrollbar';
@@ -275,15 +329,15 @@ const refinePanelClass = computed(() => {
 
 const infoCircles = computed(() => {
   let value = {};
-  if (appConfig.infoCircles) {
-    value = appConfig.infoCircles;
+  if ($config.infoCircles) {
+    value = $config.infoCircles;
   }
   return value;
 });
 
 const refineType = computed(() => {
-  if (appConfig.refine) {
-    return appConfig.refine.type;
+  if ($config.refine) {
+    return $config.refine.type;
   }
 });
 
@@ -300,7 +354,7 @@ const refineOpen = computed (() => {
 });
 
 const i18nEnabled = computed(() => {
-  if (appConfig.i18n && appConfig.i18n.enabled) {
+  if ($config.i18n && $config.i18n.enabled) {
     return true;
   } else {
     return false;
@@ -314,7 +368,7 @@ const zipcodeEntered = computed(() => {
 const addressEntered = computed(() => {
   let address;
   let routeAddress = route.query.address;
-  // console.log('addressEntered computed, routeAddress:', routeAddress);
+  // if (import.meta.env.VITE_DEBUG) console.log('addressEntered computed, routeAddress:', routeAddress);
   if (geocode.value && geocode.value.data && geocode.value.data.properties && geocode.value.data.properties.street_address) {
     address = geocode.value.data.properties.street_address;
   } else if (routeAddress) {
@@ -329,8 +383,8 @@ const keywordsEntered = computed(() => {
 
 const dataStatus = computed(() => {
   let value;
-  if (DataStore.sources[appConfig.app.type]) {
-    value = DataStore.sources[appConfig.app.type].status;
+  if (DataStore.sources[$config.app.type]) {
+    value = DataStore.sources[$config.app.type].status;
   }
   return 'success';
 });
@@ -339,135 +393,120 @@ const database = computed(() => {
   let value = {}
   if (DataStore.sources[DataStore.appType]) {
     // if (import.meta.env.VITE_DEBUG) console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]);
-    value = DataStore.sources[DataStore.appType].rows || DataStore.sources[DataStore.appType].features || DataStore.sources[DataStore.appType].data;
+    value = DataStore.sources[DataStore.appType].data.rows || DataStore.sources[DataStore.appType].data.features || DataStore.sources[DataStore.appType].data;
   }
   return value;
 });
 
-// const i18nLocale = computed(() => {
-//   return instance.appContext.config.globalProperties.$i18n.locale;
-// });
-
-watch(
-  () => props.submittedCheckboxValue,
-  async nextSubmittedCheckboxValue => {
-    if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch submittedCheckboxValue, nextSubmittedCheckboxValue:', nextSubmittedCheckboxValue);
-    if (nextSubmittedCheckboxValue == null) {
-      return;
-    }
-    let refineList = refineList.value;
-    for (let key of Object.keys(refineList)) {
-      for (let key2 of Object.keys(refineList[key])) {
-        if (key2 === 'radio' || key2 === 'checkbox') {
-          for (let key3 of Object.keys(refineList[key][key2])) {
-            let unique_key = appConfig.refine.multipleFieldGroups[key][key2][key3].unique_key;
-            let i18nValue = t([key][key3]);
-            // console.log('in watch submittedCheckboxValue, key:', key, 'key2:', key2, 'key3:', key3, 'unique_key:', unique_key, 'i18nValue:', i18nValue);
-            if (i18nValue.toLowerCase() === nextSubmittedCheckboxValue.toLowerCase()) {
-
-              selected.value.push(unique_key);
-
-              let uniq = {};
-              let selectedNow = {};
-              for (let group of Object.keys(appConfig.refine.multipleFieldGroups)){
-
-                uniq[group] = { expanded: false };
-                for (let dep of Object.keys(appConfig.refine.multipleFieldGroups[group])){
-                  // console.log('middle loop, dep:', dep, 'group:', group);
-                  if (dep !== 'tooltip') {
-                    uniq[group][dep] = {};
-                    for (let field of Object.keys(appConfig.refine.multipleFieldGroups[group][dep])){
-                      uniq[group][dep][field] = {};
-                      // console.log('field:', field, 'selected:', selected, 'appConfig.refine.multipleFieldGroups[group][field].unique_key:', appConfig.refine.multipleFieldGroups[group][field].unique_key);
-                      if (appConfig.refine.multipleFieldGroups[group][dep][field].i18n_key) {
-                        uniq[group][dep][field].box_label = appConfig.refine.multipleFieldGroups[group][dep][field].i18n_key;
-                      } else {
-                        uniq[group][dep][field].box_label = field;
-                      }
-                      uniq[group][dep][field].unique_key = appConfig.refine.multipleFieldGroups[group][dep][field].unique_key;
-                      uniq[group][dep][field].tooltip = appConfig.refine.multipleFieldGroups[group][dep][field].tooltip;
-                    }
-                  } else {
-                    uniq[group][dep] = appConfig.refine.multipleFieldGroups[group][dep];
-                  }
-                }
-              }
-
-              if (selected.value.length) {
-                for (let group of Object.keys(uniq)) {
-                  for (let dep of Object.keys(uniq[group])) {
-                    for (let field of Object.keys(uniq[group][dep])) {
-                      if (dep == 'checkbox' && selected.value.includes(uniq[group][dep][field].unique_key)) {
-                        // console.log('RefinePanel end of getRefineSearchList, dependent, group:', group, 'dep:', dep, 'field:', field, 'uniq[group][dep][field].unique_key', uniq[group][dep][field].unique_key, 'selected.value:', selected.value);
-                        if (!selectedNow[group]) {
-                          selectedNow[group] = [];
-                        }
-                        selectedNow[group].push(uniq[group][dep][field].unique_key);
-                      } else if (dep == 'radio' && selected.value.includes(uniq[group][dep][field].unique_key)) {
-                        // console.log('RefinePanel end of getRefineSearchList, independent, selected:', selected, 'group:', group, 'dep:', dep, 'field:', field, 'uniq[group][dep][field].unique_key', uniq[group][dep][field].unique_key, 'selected.value:', selected.value);
-                        if (!selectedNow['radio_'+group]) {
-                          selectedNow['radio_'+group] = undefined;
-                        }
-                        selectedNow['radio_'+group] = uniq[group][dep][field].unique_key;
-                      }
-                    }
-                  }
-                }
-              }
-
-              selectedList.value = selectedNow;
-            }
-          }
-        }
-      }
-    }
-    console.log('RefinePanel about to emit watchedSubmittedCheckboxValue');
-    $emit('watched-submitted-checkbox-value');
-  }
-);
-
-// watch(
-//   () => refineOpen,
-//   async nextRefineOpen => {
-//     // console.log('RefinePanel.vue watch refineOpen is firing');
-//     this.$nextTick(() => {
-//       this.$store.map.resize();
-//     });
-//   }
-// );
-
 watch(
   () => database,
   async nextDatabase => {
-    // console.log('watch database is calling getRefineSearchList, nextDatabase:', nextDatabase);
+    // if (import.meta.env.VITE_DEBUG) console.log('watch database is calling getRefineSearchList, nextDatabase:', nextDatabase);
     getRefineSearchList();
   }
 );
 
 watch(
-  () => selected,
-  async (nextSelected, oldSelected) => {
-    console.log('watch selected is firing, nextSelected:', nextSelected, 'oldSelected:', oldSelected);
-    let newSelection;
-    if (refineType.value !== 'categoryField_value') {
-      newSelection = nextSelected.filter(x => !oldSelected.includes(x));
-      if (newSelection.length) {
-        // this.$gtag.event('refine-checkbox-click', {
-        //   'event_category': MainStore.gtag.category,
-        //   'event_label': newSelection[0],
-        // });
-      }
+  () => selectedServices.value.length,
+  async nextSelectedServices => {
+    if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedServices is firing, selectedServices.value:', selectedServices.value);
+    if (selectedServices.value.length) {
+      selected.value = selectedServices.value;
     } else {
-      newSelection = nextSelected;
-      if (newSelection.length) {
-        // this.$gtag.event('refine-checkbox-click', {
-        //   'event_category': MainStore.gtag.category,
-        //   'event_label': newSelection,
-        // });
+      if ($config.refine.type === 'categoryField_value') {
+        selected.value = null;
+      } else {
+        selected.value = [];
+      }
+    }
+    for (let key of Object.keys(refineList.value)) {
+      for (let key2 of Object.keys(refineList.value[key])) {
+        if (key2 === 'radio' || key2 === 'checkbox') {
+          for (let key3 of Object.keys(refineList.value[key][key2])) {
+            let unique_key = $config.refine.multipleFieldGroups[key][key2][key3].unique_key;
+            if (import.meta.env.VITE_DEBUG) console.log('in watch selectedServices, key:', key, 'key2:', key2, 'key3:', key3, 'unique_key:', unique_key);
+
+            let uniq = {};
+            let selectedNow = {};
+            for (let group of Object.keys($config.refine.multipleFieldGroups)){
+
+              uniq[group] = { expanded: false };
+              for (let dep of Object.keys($config.refine.multipleFieldGroups[group])){
+                // if (import.meta.env.VITE_DEBUG) console.log('middle loop, dep:', dep, 'group:', group);
+                if (dep !== 'tooltip') {
+                  uniq[group][dep] = {};
+                  for (let field of Object.keys($config.refine.multipleFieldGroups[group][dep])){
+                    uniq[group][dep][field] = {};
+                    // if (import.meta.env.VITE_DEBUG) console.log('field:', field, 'selected:', selected, '$config.refine.multipleFieldGroups[group][field].unique_key:', $config.refine.multipleFieldGroups[group][field].unique_key);
+                    if ($config.refine.multipleFieldGroups[group][dep][field].i18n_key) {
+                      uniq[group][dep][field].box_label = $config.refine.multipleFieldGroups[group][dep][field].i18n_key;
+                    } else {
+                      uniq[group][dep][field].box_label = field;
+                    }
+                    uniq[group][dep][field].unique_key = $config.refine.multipleFieldGroups[group][dep][field].unique_key;
+                    uniq[group][dep][field].tooltip = $config.refine.multipleFieldGroups[group][dep][field].tooltip;
+                  }
+                } else {
+                  uniq[group][dep] = $config.refine.multipleFieldGroups[group][dep];
+                }
+              }
+            }
+
+            if (selected.value.length) {
+              for (let group of Object.keys(uniq)) {
+                // if (import.meta.env.VITE_DEBUG) console.log('group:', group);
+                for (let dep of Object.keys(uniq[group])) {
+                  for (let field of Object.keys(uniq[group][dep])) {
+                    if (dep == 'checkbox' && selected.value.includes(uniq[group][dep][field].unique_key)) {
+                      // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel end of getRefineSearchList, dependent, group:', group, 'dep:', dep, 'field:', field, 'uniq[group][dep][field].unique_key', uniq[group][dep][field].unique_key, 'selected.value:', selected.value);
+                      if (!selectedNow['checkbox_'+group]) {
+                        selectedNow['checkbox_'+group] = [];
+                      }
+                      selectedNow['checkbox_'+group].push(uniq[group][dep][field].unique_key);
+                    } else if (dep == 'radio' && selected.value.includes(uniq[group][dep][field].unique_key)) {
+                      // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel end of getRefineSearchList, independent, selected:', selected, 'group:', group, 'dep:', dep, 'field:', field, 'uniq[group][dep][field].unique_key', uniq[group][dep][field].unique_key, 'selected.value:', selected.value);
+                      if (!selectedNow['radio_'+group]) {
+                        selectedNow['radio_'+group] = undefined;
+                      }
+                      selectedNow['radio_'+group] = uniq[group][dep][field].unique_key;
+                    }
+                  }
+                }
+              }
+            }
+
+            selectedList.value = selectedNow;
+          }
+        }
       }
     }
   }
 );
+
+// watch(
+//   () => selected.value,
+//   async (nextSelected, oldSelected) => {
+//     if (import.meta.env.VITE_DEBUG) console.log('watch selected is firing, nextSelected:', nextSelected, 'oldSelected:', oldSelected);
+//     let newSelection;
+//     if (refineType.value !== 'categoryField_value') {
+//       newSelection = nextSelected.filter(x => !oldSelected.includes(x));
+//       if (newSelection.length) {
+//         // this.$gtag.event('refine-checkbox-click', {
+//         //   'event_category': $config.gtag.category,
+//         //   'event_label': newSelection[0],
+//         // });
+//       }
+//     } else {
+//       newSelection = nextSelected;
+//       if (newSelection.length) {
+//         // this.$gtag.event('refine-checkbox-click', {
+//         //   'event_category': $config.gtag.category,
+//         //   'event_label': newSelection,
+//         // });
+//       }
+//     }
+//   }
+// );
 
 const arraysEqual = (a, b) => {
   if (a === b) return true;
@@ -488,6 +527,7 @@ const arraysEqual = (a, b) => {
 watch(
   () => selectedArray.value,
   async (nextSelected, lastSelected) => {
+    if (nextSelected === lastSelected) return;
     if (import.meta.env.VITE_DEBUG) console.log('watch selectedArray is firing, nextSelected:', nextSelected, 'lastSelected:', lastSelected);
     // MainStore.selectedServices = nextSelected;
     // if (typeof nextSelected === 'string') {
@@ -498,133 +538,135 @@ watch(
     //   return;
     // }
     if (!arraysEqual(nextSelected, lastSelected)) {
-      router.push({ query: { ...route.query, ...{ services: nextSelected.join(',') }}});
-    }
-  }
-);
-
-watch(
-  () => route.query,
-  async (newQuery, oldQuery) => {
-    if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch route.query is firing, newQuery:', newQuery, 'oldQuery:', oldQuery);
-    // if (newQuery.services) {
-    selectedList.value = {};
-    if (refineType.value !== 'categoryField_value') {
-      const newServices = newQuery.services.split(',');
-      if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch.query route is firing, newServices:', newServices, 'newQuery.services:', newQuery.services);
-      for (let service of newServices) {
-        if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch.query route is firing, service:', service);
-        let category = 'radio_' + service.split('_')[0];
-        selectedList.value[category] = service;
+      let startQuery = { ...route.query };
+      if (nextSelected.length) {
+        if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedArray is firing, nextSelected', nextSelected);
+        router.push({ query: { ...startQuery, ...{ services: nextSelected.join(',') }}});
+      } else {
+        delete startQuery['services'];
+        router.push({ query: { ...startQuery }});
       }
-    } else {
-      // this will need to be changed
-      selectedList.value = newQuery.services;
     }
-    // }
+    await nextTick();
+    refineTopHeight.value = document.querySelector('#refine-top').offsetHeight;
   }
 );
 
 // watch(
+//   () => route.query,
+//   async (newQuery, oldQuery) => {
+//     if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch route.query is firing, newQuery:', newQuery, 'oldQuery:', oldQuery);
+//     // if (newQuery.services) {
+//     selectedList.value = {};
+//     if (newQuery.services && refineType.value !== 'categoryField_value') {
+//       const newServices = newQuery.services.split(',');
+//       if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch.query route is firing, newServices:', newServices, 'newQuery.services:', newQuery.services);
+//       for (let service of newServices) {
+//         const serviceType = service.split('_')[0];
+//         let checkboxOrRadio = Object.keys($config.refine.multipleFieldGroups[serviceType])[0];
+//         if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch.query route is firing, service:', service, 'checkboxOrRadio:', checkboxOrRadio);
+//         let category = checkboxOrRadio + '_' + serviceType;
+//         selectedList.value[category] = service;
+//       }
+//     } else if (newQuery.services) {
+//       // this will need to be changed
+//       selectedList.value = newQuery.services;
+//     }
+//     // }
+//   }
+// );
+
+// watch(
 //   () => selectedServices,
 //   async nextSelectedServices => {
-//     // console.log('RefinePanel watch selectedServices is firing:', nextSelectedServices);
+//     // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedServices is firing:', nextSelectedServices);
 //     selected.value = nextSelectedServices;
 //   }
 // );
 
-onBeforeMount(async () => {
+// onBeforeMount(async () => {
+  
+// });
+
+onMounted(async () => {
+  // if (import.meta.env.VITE_DEBUG) console.log('refinePanel.vue mounted, library:', library);
+  let divButton = document.querySelector('#refine-top');
+  divButton.addEventListener('keypress', activate.bind(this));
+  function activate(e) {
+    // if (import.meta.env.VITE_DEBUG) console.log('activate, e:', e, 'e.path[0]:', e.path[0]);
+    if (e.type === 'keypress' && [ 13, 32 ].includes(e.keyCode) && e.srcElement.id == 'refine-top') {
+      expandRefine();
+    }
+  };
+  if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue mounted is calling getRefineSearchList');
+  await getRefineSearchList();
+
   if (route.query.services) {
-    // console.log('RefinePanel.vue beforeMount is running, selectedList.value:', selectedList.value, 'route.query:', route.query);//, 'route.query.services.split(','):', route.query.services.split(','));
+    // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue beforeMount is running, selectedList.value:', selectedList.value, 'route.query:', route.query);//, 'route.query.services.split(','):', route.query.services.split(','));
     if (refineType.value !== 'categoryField_value') {
       selected.value = route.query.services.split(',');
     } else {
       selected.value = route.query.services;
     }
   }
-});
 
-onMounted(async () => {
-  // console.log('refinePanel.vue mounted, library:', library);
-  let divButton = document.querySelector('#refine-top');
-  divButton.addEventListener('keypress', activate.bind(this));
-  function activate(e) {
-    // console.log('activate, e:', e, 'e.path[0]:', e.path[0]);
-    if (e.type === 'keypress' && [ 13, 32 ].includes(e.keyCode) && e.srcElement.id == 'refine-top') {
-      expandRefine();
+  if (refineType.value === 'multipleFieldGroups') {
+    for (let service of selected.value) {
+      const serviceType = service.split('_')[0];
+      if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue beforeMount 0, serviceType:', serviceType)//, $config.refine.multipleFieldGroups[serviceType]:', $config.refine.multipleFieldGroups[serviceType]);
+      let checkboxOrRadio = Object.keys($config.refine.multipleFieldGroups[serviceType])[0];
+      let category = checkboxOrRadio + '_' + serviceType;
+      if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue beforeMount 1 is running, service:', service, 'serviceType:', serviceType, 'checkboxOrRadio:', checkboxOrRadio, 'category:', category, 'selectedList.value:', selectedList.value);
+      if (checkboxOrRadio == 'checkbox') {
+        if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue beforeMount 2 is running, service:', service, 'serviceType:', serviceType, 'checkboxOrRadio:', checkboxOrRadio, 'category:', category, 'selectedList.value:', selectedList.value);
+        if (selectedList.value[category] && !selectedList.value[category].includes(service)) {
+          selectedList.value[category].push(service);
+        } else {
+          selectedList.value[category] = [];
+          selectedList.value[category].push(service);
+        }
+      } else {
+        selectedList.value[category] = service;
+      }
     }
-  };
-  // console.log('RefinePanel.vue mounted is calling getRefineSearchList');
-  getRefineSearchList();
-  // console.log('mounted still running');
+  }
 });
 
-
-// const clickFirstBoxes = () => {
-//   // console.log('clickFirstBoxes is running');
-//   for (let value of Object.keys(appConfig.refine.multipleFieldGroups)) {
-//     // console.log('clickFirstBoxes is running, appConfig.refine.multipleFieldGroups[value]:', appConfig.refine.multipleFieldGroups[value]);
-//     if (Object.keys(appConfig.refine.multipleFieldGroups[value]).includes('checkbox')) {
-//       let checkbox = appConfig.refine.multipleFieldGroups[value].checkbox;
-//       let firstValue = Object.keys(checkbox)[0];
-//       let unique_key = value+'_'+firstValue;
-//       let element = document.querySelector('[value='+unique_key+']');
-//       // console.log('clickFirstBoxes is running, element:', element, 'unique_key:', unique_key, 'value:', value, 'firstValue:', firstValue, 'appConfig.refine.multipleFieldGroups[value]:', appConfig.refine.multipleFieldGroups[value]);
-//     }
-//   }
-// };
-
-// const manualselectedArray = (nextSelected) => {
-//   window.theRouter = router;
-//   console.log('manualselectedArray is firing, nextSelected:', nextSelected);
-//   MainStore.selectedServices = nextSelected;
-//   if (typeof nextSelected === 'string') {
-//     nextSelected = [nextSelected];
-//   }
-//   console.log('RefinePanel manualselectedArray is firing, nextSelected', nextSelected);
-//   if (!nextSelected.length) {
-//     return;
-//   }
-//   router.push({ query: { ...route.query, ...{ services: nextSelected.join(',') }}});
-// };
-
-const getCategoryFieldValue = (section) => {
-  let sectionLower = section.toLowerCase().replaceAll(' ', '');
-  let i18nCategories = Object.keys(this.$i18n.messages[this.i18nLocale].sections);
+const getCategoryFieldValue = (selected) => {
+  if (import.meta.env.VITE_DEBUG) console.log('getCategoryFieldValue is running, selected:', selected);
   let selectedCategory;
-  for (let category of i18nCategories) {
-    let categoryLower = category.toLowerCase().replaceAll(' ', '');
-    if (categoryLower === sectionLower || categoryLower === sectionLower + 's') {
-      selectedCategory = category;
+  if (selected.length) {
+    let selectedLower = selected[0].toLowerCase().replaceAll(' ', '');
+    let i18nCategories = Object.keys(ConfigStore.config.i18n.data.messages[i18nLocale.value].sections);
+    if (import.meta.env.VITE_DEBUG) console.log('18nCategories:', i18nCategories);
+    for (let category of i18nCategories) {
+      let categoryLower = category.toLowerCase().replaceAll(' ', '');
+      if (categoryLower === selectedLower || categoryLower === selectedLower + 's') {
+        selectedCategory = category;
+      }
     }
   }
   return selectedCategory;
 };
 
-// findTooltip(test) {
-//   console.log('findTooltip is running, test:', test);
-//   return 'test';
-// };
-
 const getBoxValue = (box) => {
-  // console.log('getBoxValue is running, box:', box);
   let value;
-  if (box) {
+  if (box && typeof box != 'object') {
     value = box.replace("_", ".");
   }
+  if (import.meta.env.VITE_DEBUG) console.log('getBoxValue is running, box:', box, 'value:', value);
   return value;
 };
 
 const calculateColumns = (ind, indName) => {
-  // console.log('calculateColumns is running, indName:', indName, 'ind:', ind, 'appConfig.refine.columns', appConfig.refine.columns, 'appConfig.refine.multipleFieldGroups', appConfig.refine.multipleFieldGroups);
+  // if (import.meta.env.VITE_DEBUG) console.log('calculateColumns is running, indName:', indName, 'ind:', ind, '$config.refine.columns', $config.refine.columns, '$config.refine.multipleFieldGroups', $config.refine.multipleFieldGroups);
   let value;
-  // if (isMobile.value || appConfig.refine.columns) {
   if (isMobile.value) {
     value = 1;
-  } else if (appConfig.refine.columns) {
-    if (appConfig.refine.multipleFieldGroups[indName].columns) {
-      // console.log('calculateColumns is running, appConfig.refine.multipleFieldGroups[indName].columns:', appConfig.refine.multipleFieldGroups[indName].columns);
-      value = appConfig.refine.multipleFieldGroups[indName].columns;
+  } else if ($config.refine.columns) {
+    if ($config.refine.multipleFieldGroups[indName].columns) {
+      // if (import.meta.env.VITE_DEBUG) console.log('calculateColumns is running, $config.refine.multipleFieldGroups[indName].columns:', $config.refine.multipleFieldGroups[indName].columns);
+      value = $config.refine.multipleFieldGroups[indName].columns;
     } else {
       value = 1;
     }
@@ -634,57 +676,58 @@ const calculateColumns = (ind, indName) => {
   return value;
 };
 
-const clickedRefineBox = (item) => {
-  // console.log('clickedRefineBox, item:', item, 'typeof item:', typeof item, 'selected.value:', selected.value);
-  let category = MainStore.gtag.category;
-  setTimeout(function() {
-    if (typeof item === 'object') {
-      if (selected.value.includes(item.unique_key)) {
-        // gtag.event('refine', {
-        //   'event_category': category,
-        //   'event_label': item.unique_key,
-        // })
-      }
-    } else if (typeof item === 'string') {
-      console.log('selected.value:', selected.value);
-      if (selected.value.includes(item)) {
-        // gtag.event('refine', {
-        //   'event_category': category,
-        //   'event_label': item,
-        // })
-      }
-    }
-  }, 2000);
-};
+// const clickedRefineBox = (item) => {
+//   if (import.meta.env.VITE_DEBUG) console.log('clickedRefineBox, item:', item, 'typeof item:', typeof item, 'selected.value:', selected.value);
+//   let category = $config.gtag.category;
+//   setTimeout(function() {
+//     if (typeof item === 'object') {
+//       if (selected.value.includes(item.unique_key)) {
+//         event('refine', {
+//           'event_category': category,
+//           'event_label': item.unique_key,
+//         })
+//       }
+//     } else if (typeof item === 'string') {
+//       if (import.meta.env.VITE_DEBUG) console.log('selected.value:', selected.value);
+//       if (selected.value.includes(item)) {
+//         // gtag.event('refine', {
+//         //   'event_category': category,
+//         //   'event_label': item,
+//         // })
+//       }
+//     }
+//   }, 2000);
+// };
 
-const clickBox = (e) => {
-  console.log('clickBox is running, e:', e);
+// const clickBox = (e) => {
+//   if (import.meta.env.VITE_DEBUG) console.log('clickBox is running, e:', e);
+//   e.stopPropagation();
+// };
+
+const closeZipcodeBox = (e, box) => {
   e.stopPropagation();
-};
-
-const closeZipcodeBox = (box) => {
-  console.log('closeZipcodeBox is running');
+  if (import.meta.env.VITE_DEBUG) console.log('closeZipcodeBox is running');
   let startQuery = { ...route.query };
-  console.log('closeZipcodeBox is running, box:', box, 'startQuery:', startQuery);
+  if (import.meta.env.VITE_DEBUG) console.log('closeZipcodeBox is running, box:', box, 'startQuery:', startQuery);
   delete startQuery['zipcode'];
   router.push({ query: { ...startQuery }});
   MainStore.selectedZipcode = null;
-  MapStore.selectedZipcodeCenter = [];
+  MapStore.zipcodeCenter = [];
   MainStore.currentSearch = null;
 };
 
-const closeAddressBox = (box) => {
+const closeAddressBox = (e, box) => {
+  e.stopPropagation();
   let startQuery = { ...route.query };
-  console.log('closeAddressBox is running, box:', box, 'startQuery:', startQuery);
+  if (import.meta.env.VITE_DEBUG) console.log('closeAddressBox is running, e:', e, 'box:', box, 'startQuery:', startQuery);
   delete startQuery['address'];
   router.push({ query: { ...startQuery }});
-  // $controller.resetGeocode();
   MainStore.currentSearch = null;
-  MapStore.bufferShape = null;
 };
 
-const closeKeywordsBox = (box) => {
-  console.log('closeKeywordsBox is running');
+const closeKeywordsBox = (e, box) => {
+  e.stopPropagation();
+  if (import.meta.env.VITE_DEBUG) console.log('closeKeywordsBox is running, e:', e);
   let startQuery = { ...route.query };
   let keywordsArray;
   if (startQuery.keyword && typeof startQuery.keyword === 'string' && startQuery.keyword != '') {
@@ -694,93 +737,110 @@ const closeKeywordsBox = (box) => {
   } else {
     keywordsArray = [];
   }
-  console.log('closeKeywordsBox is running, keywordsArray:', keywordsArray, 'typeof startQuery.keyword:', typeof startQuery.keyword, 'box:', box, 'startQuery.keyword:', startQuery.keyword);
+  if (import.meta.env.VITE_DEBUG) console.log('closeKeywordsBox is running, keywordsArray:', keywordsArray, 'typeof startQuery.keyword:', typeof startQuery.keyword, 'box:', box, 'startQuery.keyword:', startQuery.keyword);
   const index = keywordsArray.indexOf(box);
   if (index > -1) { // only splice array when item is found
-    console.log('in closeKeywordsBox in if 1, keywordsArray:', keywordsArray);
+    if (import.meta.env.VITE_DEBUG) console.log('in closeKeywordsBox in if 1, keywordsArray:', keywordsArray);
     keywordsArray.splice(index, 1); // 2nd parameter means remove one item only
-    console.log('in closeKeywordsBox in if 2, keywordsArray:', keywordsArray);
+    if (import.meta.env.VITE_DEBUG) console.log('in closeKeywordsBox in if 2, keywordsArray:', keywordsArray);
   }
   let newQuery = keywordsArray.toString();
-  // console.log('in closeKeywordsBox, route.query:', route.query, 'startQuery:', startQuery, 'newQuery:', newQuery);
+  // if (import.meta.env.VITE_DEBUG) console.log('in closeKeywordsBox, route.query:', route.query, 'startQuery:', startQuery, 'newQuery:', newQuery);
   if (newQuery.length) {
     router.push({ query: { ...route.query, ...{ keyword: newQuery }}});
   } else {
     router.push({ query: { ...route.query, ...{ keyword: [] } }});
   }
-  searchString.value = '';
+  // searchString.value = '';
   MainStore.selectedKeywords = keywordsArray;
 };
 
-const closeBox = (box) => {
-  console.log('closeBox is running');
+const closeBox = (e, box) => {
+  e.stopPropagation();
+  // if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, box:', box);
+  if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, box:', box, 'e:', e);
   if (refineType.value === 'categoryField_value') {
+    selected.value = null;
+    if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, selected.value:', selected.value);
     selectedList.value = [];
     // $emit('watched-submitted-checkbox-value');
     return;
   }
   let section = box.split('_')[0];
-  // console.log('closeBox is running, section:', section, 'selected.value:', selected.value, 'selected.value[section]:', selected.value[section]);
-  if (selectedList.value[section]) {
-    // console.log('it\'s there in selectedList');
-    let boxIndex = selectedList.value[section].indexOf(box);
-    selectedList.value[section].splice(boxIndex, 1);
+  if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, section:', section, 'selected.value:', selected.value, 'selected.value[section]:', selected.value[section]);
+  if (selectedList.value['checkbox_'+section]) {
+    // if (import.meta.env.VITE_DEBUG) console.log('it\'s there in selectedList');
+    let boxIndex = selectedList.value['checkbox_'+section].indexOf(box);
+    selectedList.value['checkbox_'+section].splice(boxIndex, 1);
     // $emit('watched-submitted-checkbox-value');
   } else if (selectedList.value['radio_' + section]) {
-    // console.log('1 it\'s there in selectedList WITH radio, box:', box, 'selectedList.value["radio_" + section]:', selectedList.value['radio_' + section]);
+    if (import.meta.env.VITE_DEBUG) console.log('1 it\'s there in selectedList WITH radio, box:', box, 'selectedList.value["radio_" + section]:', selectedList.value['radio_' + section]);
     let test = 'radio_' + section;
     const { [test]: removedProperty, ...exceptBoth } = selectedList.value;
+    if (import.meta.env.VITE_DEBUG) console.log('2 exceptBoth:', exceptBoth, 'it\'s there in selectedList WITH radio, box:', box, 'selectedList.value["radio_" + section]:', selectedList.value['radio_' + section]);
     selectedList.value = exceptBoth;
-    // console.log('2 exceptBoth:', exceptBoth, 'it\'s there in selectedList WITH radio, box:', box, 'selectedList.value["radio_" + section]:', selectedList.value['radio_' + section]);
+    let boxIndex = selected.value.indexOf(box);
+    selected.value.splice(boxIndex, 1);
     // $emit('watched-submitted-checkbox-value');
   } else if (selected.value.includes(section)) {
-    // console.log('its in the array');
+    // if (import.meta.env.VITE_DEBUG) console.log('its in the array');
     let boxIndex = selected.value.indexOf(section);
     selected.value.splice(boxIndex, 1);
     // $emit('watched-submitted-checkbox-value');
   } else {
-    // console.log('not there in selected list');
+    if (import.meta.env.VITE_DEBUG) console.log('not there in selected list');
   }
-  // console.log('closeBox is running, box:', box, 'section:', section, 'boxIndex:', boxIndex);
+  // if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, box:', box, 'section:', section, 'boxIndex:', boxIndex);
 };
 
 const clearAll = (e) => {
   e.stopPropagation();
-  console.log('RefinePanel clearAll is running, e:', e);
-  // if (refineType.value === 'multipleFieldGroups' || refineType.value === 'multipleDependentFieldGroups') {
-  //   for (let checkbox of Object.keys(selectedList.value)) {
-  //     console.log('selectedList.value[checkbox]:', selectedList.value[checkbox]);
-  //     if (Array.isArray(selectedList.value[checkbox])) {
-  //       selectedList.value[checkbox].splice(0);
-  //     } else {
-  //       const { [checkbox]: removedProperty, ...exceptBoth } = selectedList.value;
-  //       selectedList.value = exceptBoth;
-  //     }
-  //   }
-  // } else {
-  //   selected.value = [];
-  // }
-  // MainStore.selectedKeywords = [];
-  // MainStore.selectedZipcode = null;
-  // MapStore.zipcodeCenter = [];
-  // MainStore.currentSearch = null;
-  // MapStore.bufferShape = null;
+  if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, e:', e);
   let startQuery = { ...route.query };
+  if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, startQuery1:', startQuery);
   delete startQuery['address'];
   delete startQuery['zipcode'];
   delete startQuery['keyword'];
+  delete startQuery['services'];
+  if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, startQuery2:', startQuery);
   router.push({ query: { ...startQuery }});
-  MapStore.watchPositionOn = false;
   const payload = {
     lat: null,
     lng: null,
   };
-  $emit('geolocate-control-fire', payload);
+  // for (let selected of Object.keys(selectedList.value)) {
+  //   // if (import.meta.env.VITE_DEBUG) console.log('clearAll is running, selected:', selected, 'selectedList.value[selected]:', selectedList.value[selected]);
+  //   if (Array.isArray(selectedList.value[selected])) {
+  //     for (let i=selectedList.value[selected].length-1;i>=0;i--) {
+  //       // if (import.meta.env.VITE_DEBUG) console.log('clearAll is running, i:', i);
+  //       closeBox(e, selectedList.value[selected][i]);
+  //     }
+  //   } else {
+  //     closeBox(e, selectedList.value[selected]);
+  //   }
+  // }
+
+  MainStore.selectedKeywords = [];
+  MainStore.selectedZipcode = null;
+  MapStore.zipcodeCenter = [];
+  MainStore.currentSearch = null;
+  
+  // for (let keyword of keywordsEntered.value) {
+  //   if (import.meta.env.VITE_DEBUG) console.log('clearAll is running, keyword:', keyword);
+  //   await closeKeywordsBox(e, keyword);
+  // }
+
+  if (refineType.value === 'categoryField_value') {
+    selected.value = null;
+  } else {
+    selected.value = [];
+  }
+  // $emit('geolocate-control-fire', payload);
 };
 
-const getRefineSearchList = () => {
-  if (import.meta.env.VITE_DEBUG) console.log('getRefineSearchList is running');
+const getRefineSearchList = async() => {
   let refineData = database.value;
+  if (import.meta.env.VITE_DEBUG) console.log('getRefineSearchList is running, refineData:', refineData);
   if (refineData && refineData.records) {
     refineData = refineData.records;
   }
@@ -790,12 +850,12 @@ const getRefineSearchList = () => {
   let uniqPrep;
   let selected;
 
-  if (!appConfig.refine || appConfig.refine && ['categoryField_array', 'categoryField_value'].includes(appConfig.refine.type)) {
-    console.log('in getRefineSearchList, refineData:', refineData);
+  if (!$config.refine || $config.refine && ['categoryField_array', 'categoryField_value'].includes($config.refine.type)) {
+    if (import.meta.env.VITE_DEBUG) console.log('in getRefineSearchList, refineData:', refineData);
     if(refineData) {
       refineData.forEach((item) => {
-        if (appConfig.refine) {
-          let value = appConfig.refine.value(item);
+        if ($config.refine) {
+          let value = $config.refine.value(item);
           service += `${value},`;
         } else if (item.services_offered) {
           service += `${item.services_offered},`;
@@ -803,13 +863,13 @@ const getRefineSearchList = () => {
       });
     }
 
-    // console.log('RefinePanel.vue, service:', service);
+    // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue, service:', service);
     let serviceArray = service.split(/(,|;)/);
     serviceArray = serviceArray.map(s => s.trim());
-    // console.log('RefinePanel.vue, serviceArray:', serviceArray);
+    // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue, serviceArray:', serviceArray);
 
     const uniqArray = [ ...new Set(serviceArray) ];
-    // console.log('RefinePanel.vue, uniqArray:', uniqArray);
+    // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue, uniqArray:', uniqArray);
 
     // clean up any dangling , or ;
     uniqPrep = uniqArray.filter(a => a.length > 1);
@@ -826,8 +886,8 @@ const getRefineSearchList = () => {
 
     for (let value of uniqPrep) {
       let theTooltip;
-      if (appConfig.infoCircles && Object.keys(appConfig.infoCircles).includes(value)) {
-        theTooltip = appConfig.infoCircles[value];
+      if ($config.infoCircles && Object.keys($config.infoCircles).includes(value)) {
+        theTooltip = $config.infoCircles[value];
       }
       uniq.push({
         data: value,
@@ -840,45 +900,41 @@ const getRefineSearchList = () => {
     selected = uniqArray.filter(a => a.length > 2);
     selected.filter(Boolean); // remove empties
     selected.sort();
-    console.log('uniq:', uniq, 'uniqPrep:', uniqPrep, 'uniqArray:', uniqArray, 'selected:', selected);
+    if (import.meta.env.VITE_DEBUG) console.log('uniq:', uniq, 'uniqPrep:', uniqPrep, 'uniqArray:', uniqArray, 'selected:', selected);
 
-  } else if (appConfig.refine && appConfig.refine.type === 'multipleFields') {
-    uniq = Object.keys(appConfig.refine.multipleFields);
+  } else if ($config.refine && $config.refine.type === 'multipleFields') {
+    uniq = Object.keys($config.refine.multipleFields);
     uniq.sort();
 
-    selected = Object.keys(appConfig.refine.multipleFields);
+    selected = Object.keys($config.refine.multipleFields);
     selected.sort();
   }
 
   if (import.meta.env.VITE_DEBUG) console.log('getRefineSearchList is still running');
-  if (appConfig.refine && appConfig.refine.type === 'multipleFieldGroups') {
+  if ($config.refine && $config.refine.type === 'multipleFieldGroups') {
     uniq = {};
     selected = {};
-    for (let group of Object.keys(appConfig.refine.multipleFieldGroups)){
+    for (let group of Object.keys($config.refine.multipleFieldGroups)){
 
-      // if (Object.keys(appConfig.refine.multipleFieldGroups[group]).includes('checkbox')) {
-      //   console.log('selectedList.value:', selectedList.value, 'Object.keys(appConfig.refine.multipleFieldGroups[group]):', Object.keys(appConfig.refine.multipleFieldGroups[group]));
-      //   selectedList.value[group] = []
-      // }
       if (import.meta.env.VITE_DEBUG) console.log('group:', group);
       uniq[group] = { expanded: false };
-      for (let dep of Object.keys(appConfig.refine.multipleFieldGroups[group])){
-        // console.log('middle loop, dep:', dep, 'group:', group);
+      for (let dep of Object.keys($config.refine.multipleFieldGroups[group])){
+        // if (import.meta.env.VITE_DEBUG) console.log('middle loop, dep:', dep, 'group:', group);
         if (dep !== 'tooltip') {
           uniq[group][dep] = {};
-          for (let field of Object.keys(appConfig.refine.multipleFieldGroups[group][dep])){
+          for (let field of Object.keys($config.refine.multipleFieldGroups[group][dep])){
             uniq[group][dep][field] = {};
-            // console.log('field:', field, 'selected:', selected, 'appConfig.refine.multipleFieldGroups[group][field].unique_key:', appConfig.refine.multipleFieldGroups[group][field].unique_key);
-            if (appConfig.refine.multipleFieldGroups[group][dep][field].i18n_key) {
-              uniq[group][dep][field].box_label = appConfig.refine.multipleFieldGroups[group][dep][field].i18n_key;
+            // if (import.meta.env.VITE_DEBUG) console.log('field:', field, 'selected:', selected, '$config.refine.multipleFieldGroups[group][field].unique_key:', $config.refine.multipleFieldGroups[group][field].unique_key);
+            if ($config.refine.multipleFieldGroups[group][dep][field].i18n_key) {
+              uniq[group][dep][field].box_label = $config.refine.multipleFieldGroups[group][dep][field].i18n_key;
             } else {
               uniq[group][dep][field].box_label = field;
             }
-            uniq[group][dep][field].unique_key = appConfig.refine.multipleFieldGroups[group][dep][field].unique_key;
-            uniq[group][dep][field].tooltip = appConfig.refine.multipleFieldGroups[group][dep][field].tooltip;
+            uniq[group][dep][field].unique_key = $config.refine.multipleFieldGroups[group][dep][field].unique_key;
+            uniq[group][dep][field].tooltip = $config.refine.multipleFieldGroups[group][dep][field].tooltip;
           }
         } else {
-          uniq[group][dep] = appConfig.refine.multipleFieldGroups[group][dep];
+          uniq[group][dep] = $config.refine.multipleFieldGroups[group][dep];
         }
       }
     }
@@ -889,13 +945,13 @@ const getRefineSearchList = () => {
         for (let dep of Object.keys(uniq[group])) {
           for (let field of Object.keys(uniq[group][dep])) {
             if (dep == 'checkbox' && selected.value.includes(uniq[group][dep][field].unique_key)) {
-              // console.log('RefinePanel end of getRefineSearchList, dependent, group:', group, 'dep:', dep, 'field:', field, 'uniq[group][dep][field].unique_key', uniq[group][dep][field].unique_key, 'selected.value:', selected.value);
+              // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel end of getRefineSearchList, dependent, group:', group, 'dep:', dep, 'field:', field, 'uniq[group][dep][field].unique_key', uniq[group][dep][field].unique_key, 'selected.value:', selected.value);
               if (!selected[group]) {
                 selected[group] = [];
               }
               selected[group].push(uniq[group][dep][field].unique_key);
             } else if (dep == 'radio' && selected.value.includes(uniq[group][dep][field].unique_key)) {
-              // console.log('RefinePanel end of getRefineSearchList, independent, selected:', selected, 'group:', group, 'dep:', dep, 'field:', field, 'uniq[group][dep][field].unique_key', uniq[group][dep][field].unique_key, 'selected.value:', selected.value);
+              // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel end of getRefineSearchList, independent, selected:', selected, 'group:', group, 'dep:', dep, 'field:', field, 'uniq[group][dep][field].unique_key', uniq[group][dep][field].unique_key, 'selected.value:', selected.value);
               if (!selected['radio_'+group]) {
                 selected['radio_'+group] = undefined;
               }
@@ -909,49 +965,6 @@ const getRefineSearchList = () => {
     selectedList.value = selected;
   }
 
-  if (appConfig.refine && appConfig.refine.type === 'multipleDependentFieldGroups') {
-    uniq = {};
-    selected = {};
-    for (let group of Object.keys(appConfig.refine.multipleDependentFieldGroups)){
-      // console.log('outer loop, group:', group);
-      uniq[group] = {};
-      for (let dep of Object.keys(appConfig.refine.multipleDependentFieldGroups[group])){
-        // console.log('middle loop, dep:', dep, 'group:', group);
-        uniq[group][dep] = {};
-        for (let field of Object.keys(appConfig.refine.multipleDependentFieldGroups[group][dep])){
-          uniq[group][dep][field] = {};
-          // console.log('inner loop field:', field, 'selected:', selected, 'appConfig.refine.multipleDependentFieldGroups[group][field].unique_key:', appConfig.refine.multipleDependentFieldGroups[group][field].unique_key);
-          if (appConfig.refine.multipleDependentFieldGroups[group][dep][field].i18n_key) {
-            uniq[group][dep][field].box_label = appConfig.refine.multipleDependentFieldGroups[group][dep][field].i18n_key;
-          } else {
-            uniq[group][dep][field].box_label = field;
-          }
-          uniq[group][dep][field].unique_key = appConfig.refine.multipleDependentFieldGroups[group][dep][field].unique_key;
-        }
-      }
-    }
-
-    console.log('RefinePanel end of getRefineSearchList, uniq:', uniq, 'selected:', selected, 'selected.value:', selected.value);
-    if (selected.value.length) {
-      for (let group of Object.keys(uniq)) {
-        for (let dep of Object.keys(uniq[group])) {
-          for (let field of Object.keys(uniq[group][dep])) {
-            if (selected.value.includes(uniq[group][dep][field].unique_key)) {
-              // console.log('RefinePanel end of getRefineSearchList, group:', group, 'field:', field, 'uniq[group][field].unique_key', uniq[group][field].unique_key, 'selected.value:', selected.value);
-              if (!selected[group]) {
-                selected[group] = [];
-              }
-              selected[group].push(uniq[group][dep][field].unique_key);
-            }
-          }
-        }
-      }
-    }
-    console.log('RefinePanel end of getRefineSearchList, selected:', selected);
-    selectedList.value = selected;
-  }
-
-  // refineList.value = uniq;
   MainStore.refineList = uniq;
 
   return uniq;
@@ -963,7 +976,7 @@ const scrollToTop = () => {
 };
 
 const expandCheckbox = (ind) => {
-  console.log('expandCheckbox is running');
+  if (import.meta.env.VITE_DEBUG) console.log('expandCheckbox is running');
   refineList.value[ind].expanded = !refineList.value[ind].expanded;
 };
 
@@ -975,10 +988,10 @@ const expandRefine = () => {
   } else {
     tagValue = 'expand refine panel';
   }
-  console.log('expandRefine is running, tagValue:', tagValue);
+  if (import.meta.env.VITE_DEBUG) console.log('expandRefine is running, tagValue:', tagValue);
   // if (window.innerWidth <= 767) { // converted from rems
   // $gtag.event('refine-panel-open', {
-  //   'event_category': MainStore.gtag.category,
+  //   'event_category': $config.gtag.category,
   //   'event_label': tagValue,
   // })
   MainStore.refineOpen = !MainStore.refineOpen;
@@ -986,10 +999,15 @@ const expandRefine = () => {
 };
 
 const closeRefinePanel = () => {
-  console.log('closeRefinePanel is running');
+  if (import.meta.env.VITE_DEBUG) console.log('closeRefinePanel is running');
   scrollToTop();
   expandRefine();
   clearAll();
+};
+
+const checkboxChange = (e) => {
+  if (import.meta.env.VITE_DEBUG) console.log('checkboxChange is running, e:', e);
+  // e.stopPropagation();
 };
   
 </script>
@@ -1002,34 +1020,130 @@ const closeRefinePanel = () => {
 
     <div
       id="refine-top"
-      :class="refineTitleClass + ' refine-title'"
+      :class="refineTitleClass + ' refine-title is-flex is-flex-direction-row'"
       tabindex="0"
       role="button"
       @click="expandRefine"
     >
+      <div class="refine-top-left is-flex is-flex-direction-row">
 
-      <div
-        class="slider-icon"
-      >
-        <font-awesome-icon icon="sliders-h" />
+        <div
+          class="slider-icon"
+        >
+          <font-awesome-icon icon="sliders-h" />
+        </div>
+
+        <h2
+          v-if="!i18nEnabled"
+          class="refine-label-text"
+        >
+          {{ refineTitle }}
+        </h2>
+
+        <h2
+          v-if="i18nEnabled"
+          class="refine-label-text"
+        >
+          {{ $t('refinePanel.refine') }}
+        </h2>
+
+        <button
+          v-if="!i18nEnabled && (selectedArray.length || anyValueEntered)"
+          class="clear-all"
+          @click.prevent="clearAll"
+        >
+          Clear all
+        </button>
+
+        <button
+          v-if="i18nEnabled && (selectedArray.length || anyValueEntered)"
+          class="clear-all"
+          @click.prevent="clearAll"
+          v-html="$t('refinePanel.clearAll')"
+        />
+
+        <!-- v-if="!isMobile" -->
+        <div
+          id="selected-boxes"
+          class="selected-boxes columns is-mobile"
+        >
+          <button
+            v-for="box in keywordsEntered"
+            class="box-value column is-narrow"
+            @click="(e) => closeKeywordsBox(e, box)"
+          >
+            {{ $t(getBoxValue(box)) }}
+            <font-awesome-icon
+              class="fa-x"
+              :icon="[timesIconWeight,'times']"
+            />
+          </button>
+
+          <button
+            v-if="zipcodeEntered"
+            class="box-value column is-narrow"
+            @click="(e) => closeZipcodeBox(e, zipcodeEntered)"
+          >
+            {{ $t(getBoxValue(zipcodeEntered)) + ' - ' + searchDistance }}
+            <font-awesome-icon
+              class="fa-x"
+              :icon="[timesIconWeight,'times']"
+            />
+          </button>
+
+          <button
+            v-if="addressEntered"
+            class="box-value column is-narrow"
+            @click="(e) => closeAddressBox(e, addressEntered)"
+          >
+            <!-- {{ $t(getBoxValue(addressEntered)) + ' - ' + searchDistance }} -->
+            {{ $t(getBoxValue(addressEntered)) }}
+            <font-awesome-icon
+              class="fa-x"
+              :icon="[timesIconWeight,'times']"
+            />
+          </button>
+
+          <button
+            v-if="refineType !== 'categoryField_value'"
+            v-for="box in selectedArray"
+            class="box-value column is-narrow"
+            @click="(e) => closeBox(e, box)"
+          >
+            {{ $t(getBoxValue(box)) }}
+            <font-awesome-icon
+              class="fa-x"
+              :icon="[timesIconWeight,'times']"
+            />
+          </button>
+
+          <button
+            v-if="refineType == 'categoryField_value' && selected != null && i18nEnabled"
+            class="box-value column is-narrow"
+            @click="(e) => closeBox(e, selected)"
+          >
+            {{ $t('sections.' + getCategoryFieldValue(selected) + '.header') }}
+            <font-awesome-icon
+              class="fa-x"
+              :icon="[timesIconWeight,'times']"
+            />
+          </button>
+
+          <button
+            v-if="refineType == 'categoryField_value' && selected != null && !i18nEnabled"
+            class="box-value column is-narrow"
+            @click="(e) => closeBox(e, selected)"
+          >
+            {{ selected }}
+            <font-awesome-icon
+              class="fa-x"
+              :icon="[timesIconWeight,'times']"
+            />
+          </button>
+        </div>
       </div>
-
-      <h2
-        v-if="!i18nEnabled"
-        class="refine-label-text"
-      >
-        {{ refineTitle }}
-      </h2>
-
-      <h2
-        v-if="i18nEnabled"
-        class="refine-label-text"
-      >
-        {{ $t('refinePanel.refine') }}
-      </h2>
-
       <div
-        class="open-close-icon"
+        class="open-close-icon is-flex is-pulled-right"
       >
         <font-awesome-icon
           v-if="refineOpen && retractable  || refineOpen && isMobile"
@@ -1042,382 +1156,217 @@ const closeRefinePanel = () => {
         />
       </div>
 
-      <button
-        v-if="!i18nEnabled && (selectedArray.length || anyValueEntered)"
-        class="clear-all"
-        @click.prevent="clearAll"
-      >
-        Clear all
-      </button>
+    </div>
 
-      <button
-        v-if="i18nEnabled && (selectedArray.length || anyValueEntered)"
-        class="clear-all"
-        @click.prevent="clearAll"
-        v-html="$t('refinePanel.clearAll')"
-      />
+    <div
+      id="refine-bottom"
+      class="refine-bottom invisible-scrollbar"
+      v-show="!retractable && !isMobile || refineOpen"
+      :style="isMobile ? { 'height': bottomHeight + 'px' } : null"
+    >
 
       <div
-        v-if="!isMobile"
-        id="selected-boxes"
-        class="selected-boxes columns is-mobile"
-        @click="clickBox"
+        v-if="dataStatus === 'success' && ['categoryField_array', 'multipleFields'].includes(refineType)"
+        v-show="!retractable && !isMobile || refineOpen"
+        id="field-div"
+        class="refine-holder"
       >
-        <button
-          v-for="box in keywordsEntered"
-          class="box-value column is-narrow"
-          @click="closeKeywordsBox(box)"
+        <tooltip-checkbox
+          :options="refineListTranslated"
+          :numOfColumns="NumRefineColumns"
+          :small="!isMobile"
+          v-model="selected"
+          :value="selected"
+          value-key="data"
+          text-key="textLabel"
         >
-          {{ $t(getBoxValue(box)) }}
-          <font-awesome-icon
-            class="fa-x"
-            :icon="[timesIconWeight,'times']"
-          />
-        </button>
-
-        <button
-          v-if="zipcodeEntered"
-          class="box-value column is-narrow"
-          @click="closeZipcodeBox(zipcodeEntered)"
-        >
-          {{ $t(getBoxValue(zipcodeEntered)) + ' - ' + searchDistance }}
-          <font-awesome-icon
-            class="fa-x"
-            :icon="[timesIconWeight,'times']"
-          />
-        </button>
-
-        <button
-          v-if="addressEntered"
-          class="box-value column is-narrow"
-          @click="closeAddressBox(addressEntered)"
-        >
-          <!-- {{ $t(getBoxValue(addressEntered)) + ' - ' + searchDistance }} -->
-          {{ $t(getBoxValue(addressEntered)) }}
-          <font-awesome-icon
-            class="fa-x"
-            :icon="[timesIconWeight,'times']"
-          />
-        </button>
-
-        <button
-          v-if="refineType !== 'categoryField_value'"
-          v-for="box in selectedArray"
-          class="box-value column is-narrow"
-          @click="closeBox(box)"
-        >
-          {{ $t(getBoxValue(box)) }}
-          <font-awesome-icon
-            class="fa-x"
-            :icon="[timesIconWeight,'times']"
-          />
-        </button>
-        <button
-          v-if="refineType == 'categoryField_value' && selected.length && i18nEnabled"
-          class="box-value column is-narrow"
-          @click="closeBox(selected)"
-        >
-          {{ $t('sections.' + getCategoryFieldValue(selected) + '.header') }}
-          <font-awesome-icon
-            class="fa-x"
-            :icon="[timesIconWeight,'times']"
-          />
-        </button>
-        <button
-          v-if="refineType == 'categoryField_value' && selected.length && !i18nEnabled"
-          class="box-value column is-narrow"
-          @click="closeBox(selected)"
-        >
-          {{ selected }}
-          <font-awesome-icon
-            class="fa-x"
-            :icon="[timesIconWeight,'times']"
-          />
-        </button>
+        </tooltip-checkbox>
       </div>
 
-    </div>
-
-    <div
-      v-if="dataStatus === 'success' && ['categoryField_array', 'multipleFields'].includes(refineType)"
-      v-show="!retractable && !isMobile || refineOpen"
-      id="field-div"
-      class="refine-holder"
-    >
-      <checkbox
-        :options="refineListTranslated"
-        :numOfColumns="NumRefineColumns"
-        :small="!isMobile"
-        v-model="selected"
-        text-key="textLabel"
-        value-key="data"
-      >
-      </checkbox>
-    </div>
-
-    <div
-      v-if="dataStatus === 'success' && refineType == 'categoryField_value'"
-      v-show="!retractable && !isMobile || refineOpen"
-      id="field-div"
-      class="refine-holder"
-    >
-      <radio
-        v-model="selected"
-        :options="refineListTranslated"
-        text-key="text"
-        value-key="value"
-        :numOfColumns="NumRefineColumns"
-        :small="!isMobile"
-      >
-      </radio>
-    </div>
-
-    <!-- if using multipleFieldGroups option and NOT dropdownRefine -->
-    <div
-      v-if="dataStatus === 'success' && refineType === 'multipleFieldGroups' && !dropdownRefine"
-      v-show="!retractable && !isMobile || refineOpen"
-      id="multiple-field-groups-div"
-      class="columns is-multiline multiple-field-groups"
-    >
       <div
-        v-for="(ind) in Object.keys(refineListTranslated)"
-        :id="'refine-list-'+ind"
-        :key="ind"
-        class="column is-narrow service-group-holder-x"
+        v-if="dataStatus === 'success' && refineType == 'categoryField_value'"
+        v-show="!retractable && !isMobile || refineOpen"
+        id="field-div"
+        class="refine-holder"
       >
-        <div
-          id="columns-div-for-checkboxes"
-          class="columns"
+        <radio
+          v-model="selected"
+          :options="refineListTranslated"
+          text-key="text"
+          value-key="value"
+          :numOfColumns="NumRefineColumns"
+          :small="!isMobile"
         >
-          <radio
-            :id="'radio_'+ind"
-            v-model="selectedList['radio_'+ind]"
-            v-if="refineListTranslated[ind]['radio']"
-            :options="refineListTranslated[ind]['radio']"
-            text-key="textLabel"
-            value-key="data"
-            :small="!isMobile"
-            :num-of-columns="calculateColumns(refineList[ind]['radio'], ind)"
-          >
-            <div
-              :class="isMobile ? 'large-label': 'small-label'"
-              slot="label"
-            >
-              test
-              {{ $t(ind + '.category') }}
-            </div>
-          </radio>
-
-          <checkbox
-            v-if="refineListTranslated[ind]['checkbox']"
-            :options="refineListTranslated[ind]['checkbox']"
-            :small="!isMobile"
-            v-model="selectedList[ind]"
-            text-key="textLabel"
-            value-key="data"
-            shrinkToFit="true"
-            :num-of-columns="calculateColumns(refineList[ind]['checkbox'], ind)"
-          >
-            <div
-              :class="isMobile ? 'large-label': 'small-label'"
-              slot="label"
-            >
-              {{ $t(ind + '.category') }}
-              <icon-tool-tip
-                v-if="!isMobile && refineListTranslated[ind]['tooltip']"
-                :tip="refineListTranslated[ind]['tooltip']"
-                :circle-type="click"
-                :position="refineList[ind]['tooltip']['position']"
-                :multiline="refineList[ind]['tooltip']['multiline']"
-              />
-              <div
-                v-if="isMobile && refineListTranslated[ind]['tooltip']"
-                class="mobile-tooltip"
-              >
-                <font-awesome-icon
-                  icon="info-circle"
-                  class="fa-infoCircle"
-                />
-                {{ $t(refineListTranslated[ind]['tooltip']) }}
-              </div>
-            </div>
-          </checkbox>
-        </div>
+        </radio>
       </div>
-    </div>
 
-    <!-- if using multipleFieldGroups option and dropdownRefine -->
-    <div
-      v-if="dataStatus === 'success' && refineType === 'multipleFieldGroups' && dropdownRefine"
-      id="multiple-field-groups-dropdown-div"
-      class="columns is-multiline multiple-field-groups"
-    >
+      <!-- if using multipleFieldGroups option and NOT dropdownRefine -->
       <div
-        v-for="(ind) in Object.keys(refineListTranslated)"
-        :id="'refine-list-'+ind"
-        :key="ind"
-        class="column"
+        v-if="dataStatus === 'success' && refineType === 'multipleFieldGroups' && !dropdownRefine"
+        v-show="!retractable && !isMobile || refineOpen"
+        id="multiple-field-groups-div"
+        class="columns is-multiline multiple-field-groups"
       >
-
         <div
-          id="columns-div-for-checkboxes"
-          class="columns"
+          v-for="(ind) in Object.keys(refineListTranslated)"
+          :id="'refine-list-'+ind"
+          :key="ind"
+          class="column is-narrow service-group-holder-x"
         >
           <div
-            class="column dropdown-checkbox-div"
-            :style="{ 'width': 100/Object.keys(refineListTranslated).length+'%' }"
+            id="columns-div-for-checkboxes"
+            class="columns"
           >
-            <div
-              class="dropdown-checkbox-header"
-              @click="expandCheckbox(ind)"
-            >
-              {{ $t(ind + '.category') }}
-            </div>
-            <div
-              v-if="refineList[ind].expanded"
-              class="refine-dropdown"
-            >
-              <radio
-                :id="'radio_'+ind"
-                v-model="selectedList['radio_'+ind]"
-                v-if="refineListTranslated[ind]['radio']"
-                :options="refineListTranslated[ind]['radio']"
-                text-key="textLabel"
-                value-key="data"
-                :small="!isMobile"
-                :num-of-columns="calculateColumns(refineList[ind]['radio'], ind)"
-              >
-                <div
-                  slot="label"
-                >
-                </div>
-              </radio>
-
-              <checkbox
-                v-if="refineListTranslated[ind]['checkbox']"
-                :options="refineListTranslated[ind]['checkbox']"
-                :small="!isMobile"
-                v-model="selectedList[ind]"
-                text-key="textLabel"
-                value-key="data"
-                shrinkToFit="true"
-                :num-of-columns="calculateColumns(refineList[ind]['checkbox'], ind)"
-              >
-                <div
-                  slot="label"
-                >
-                </div>
-              </checkbox>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- if using multipleDependentFieldGroups option -->
-    <div
-      v-if="dataStatus === 'success' && refineType === 'multipleDependentFieldGroups'"
-      id="multiple-dependent-field-groups-div"
-      class="columns is-multiline multiple-field-groups"
-    >
-      <div
-        v-for="(ind) in Object.keys(refineListTranslated)"
-        :id="'refine-list-'+ind"
-        :key="ind"
-        class="column is-narrow service-group-holder-x"
-      >
-
-        <div
-          id="columns-div-for-checkboxes"
-          class="columns"
-        >
-          <div class="column">
             <radio
+              :id="'radio_'+ind"
               v-model="selectedList['radio_'+ind]"
               v-if="refineListTranslated[ind]['radio']"
               :options="refineListTranslated[ind]['radio']"
               text-key="textLabel"
               value-key="data"
-              :num-of-columns="1"
               :small="!isMobile"
+              :num-of-columns="calculateColumns(refineList[ind]['radio'], ind)"
             >
-              <div
-                slot="label"
-              >
-                {{ $t(ind + '.category') }}
-                <icon-tool-tip
-                  v-if="Object.keys(infoCircles).includes(ind)"
-                  :item="ind"
-                  :circleData="infoCircles[ind]"
-                  :circleType="'click'"
-                >
-                </icon-tool-tip>
-              </div>
+              <template v-slot:label>
+                <div :class="isMobile ? 'large-label': 'small-label'">
+                  {{ $t(ind + '.category') }}
+                </div>
+              </template>
             </radio>
 
-            <checkbox
+            <tooltip-checkbox
+              v-if="refineListTranslated[ind]['checkbox']"
               :options="refineListTranslated[ind]['checkbox']"
-              :num-of-columns="1"
               :small="!isMobile"
-              v-model="selectedList[ind]"
+              v-model="selectedList['checkbox_'+ind]"
+              :value="selectedList['checkbox_'+ind]"
               text-key="textLabel"
               value-key="data"
               shrinkToFit="true"
+              :num-of-columns="calculateColumns(refineList[ind]['checkbox'], ind)"
             >
-              <div
-                v-if="!refineListTranslated[ind]['radio']"
-                slot="label"
-              >
-                {{ $t(ind + '.category') }}
-                <icon-tool-tip
-                  v-if="Object.keys(infoCircles).includes(ind)"
-                  :item="ind"
-                  :circleData="infoCircles[ind]"
-                  :circleType="'click'"
-                >
-                </icon-tool-tip>
-              </div>
-            </checkbox>
+              <template v-slot:label>
+                <div :class="isMobile ? 'large-label': 'small-label'">
+                  {{ $t(ind + '.category') }}
+                  <icon-tool-tip
+                    v-if="!isMobile && refineListTranslated[ind]['tooltip']"
+                    :tip="refineListTranslated[ind]['tooltip']"
+                    :circle-type="'hover'"
+                    :position="refineList[ind]['tooltip']['position']"
+                    :multiline="refineList[ind]['tooltip']['multiline']"
+                  />
+                  <div
+                    v-if="isMobile && refineListTranslated[ind]['tooltip']"
+                    class="mobile-tooltip"
+                  >
+                    <font-awesome-icon
+                      icon="info-circle"
+                      class="fa-infoCircle"
+                    />
+                    {{ $t(refineListTranslated[ind]['tooltip']) }}
+                  </div>
+                </div>
+              </template>
+            </tooltip-checkbox>
           </div>
         </div>
       </div>
-    </div>
 
-    <div
-      v-if="isMobile && refineOpen"
-      class="columns is-mobile mobile-clear-all"
-    >
+      <!-- if using multipleFieldGroups option and dropdownRefine -->
       <div
-        class="column is-narrow add-margin-left small-side-padding"
-        v-if="!i18nEnabled"
-      >
-        <button
-          class="button apply-filters-button medium-side-padding"
-          @click="expandRefine(); scrollToTop();"
-        >
-          <div class="apply-filters-text">
-            Apply filters
-          </div>
-        </button>
-      </div>
-
-      <div
-        class="column is-narrow add-margin-left small-side-padding"
-        v-if="i18nEnabled"
+        v-if="dataStatus === 'success' && refineType === 'multipleFieldGroups' && dropdownRefine"
+        id="multiple-field-groups-dropdown-div"
+        class="columns is-multiline multiple-field-groups"
       >
         <div
-          class="button apply-filters-button medium-side-padding"
-          @click="expandRefine(); scrollToTop();"
+          v-for="(ind) in Object.keys(refineListTranslated)"
+          :id="'refine-list-'+ind"
+          :key="ind"
+          class="column"
         >
+
           <div
-            v-html="$t('refinePanel.applyFilters')"
-            class="apply-filters-text"
-          />
+            id="columns-div-for-checkboxes"
+            class="columns"
+          >
+            <div
+              class="column dropdown-checkbox-div"
+              :style="{ 'width': 100/Object.keys(refineListTranslated).length+'%' }"
+            >
+              <div
+                class="dropdown-checkbox-header"
+                @click="expandCheckbox(ind)"
+              >
+                {{ $t(ind + '.category') }}
+              </div>
+              <div
+                v-if="refineList[ind].expanded"
+                class="refine-dropdown"
+              >
+                <radio
+                  :id="'radio_'+ind"
+                  v-model="selectedList['radio_'+ind]"
+                  v-if="refineListTranslated[ind]['radio']"
+                  :options="refineListTranslated[ind]['radio']"
+                  text-key="textLabel"
+                  value-key="data"
+                  :small="!isMobile"
+                  :num-of-columns="calculateColumns(refineList[ind]['radio'], ind)"
+                >
+                </radio>
+
+                <tooltip-checkbox
+                  v-if="refineListTranslated[ind]['checkbox']"
+                  :options="refineListTranslated[ind]['checkbox']"
+                  :small="!isMobile"
+                  v-model="selectedList['checkbox_'+ind]"
+                  text-key="textLabel"
+                  value-key="data"
+                  shrinkToFit="true"
+                  :num-of-columns="calculateColumns(refineList[ind]['checkbox'], ind)"
+                >
+                </tooltip-checkbox>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-    </div>
+      <div
+        v-if="isMobile && refineOpen"
+        class="columns is-mobile mobile-clear-all"
+      >
+        <div
+          class="column is-narrow add-margin-left small-side-padding"
+          v-if="!i18nEnabled"
+        >
+          <button
+            class="button apply-filters-button medium-side-padding"
+            @click="expandRefine(); scrollToTop();"
+          >
+            <div class="apply-filters-text">
+              Apply filters
+            </div>
+          </button>
+        </div>
 
+        <div
+          class="column is-narrow add-margin-left small-side-padding"
+          v-if="i18nEnabled"
+        >
+          <div
+            class="button apply-filters-button medium-side-padding"
+            @click="expandRefine(); scrollToTop();"
+          >
+            <div
+              v-html="$t('refinePanel.applyFilters')"
+              class="apply-filters-text"
+            />
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
 </template>
 
@@ -1425,7 +1374,6 @@ const closeRefinePanel = () => {
 @import "../assets/main_pin.scss";
 
 #refine-panel-component {
-  // background: $ghost-grey;
   background: #f0f0f0;
   overflow-x: hidden;
 }
@@ -1434,7 +1382,6 @@ const closeRefinePanel = () => {
 
   .input-checkbox, .input-radio {
     padding-bottom: 8px;
-    // padding-top: 24px;
   }
 
   .checkbox-div {
@@ -1450,11 +1397,6 @@ const closeRefinePanel = () => {
 
 .refine-dropdown-closed {
   height: 6rem;
-}
-
-.refine-retractable-closed {
-  // height: 3rem;
-  // height: 4rem;
 }
 
 .box-value {
@@ -1493,7 +1435,6 @@ const closeRefinePanel = () => {
 
 .refine-panel {
   overflow-y: hidden;
-  // padding: 1rem;
 
   .legend-title{
     margin-bottom: 0;
@@ -1533,14 +1474,6 @@ const closeRefinePanel = () => {
       border-color: #2176d2;
     }
 
-    // .refine-title-open {
-    //   cursor: pointer;
-    // }
-
-    // .retractable-refine-title-open:hover {
-    //   border-color: #f0f0f0;
-    // }
-
     .close-button {
       height: 20px;
       // position: absolute;
@@ -1560,18 +1493,26 @@ const closeRefinePanel = () => {
     .refine-holder {
       padding-left: 12px;
       padding-right: 12px;
+      margin: 0px;
     }
   }
 
   .refine-title {
-    // color: $ben-franklin-blue-dark;
+    flex: 1 0 100%;
     color: #0f4d90;
     margin: 0px !important;
-    display: flex;
-    flex-direction: row;
+
+    .refine-top-left {
+      flex-grow: 11;
+    }
+
+    .open-close-icon {
+      flex-grow: 1;
+      flex-direction: row-reverse;
+    }
 
     .clear-all {
-      margin-top: 10px;
+      margin-top: 12px;
       border-style: none;
       background-color: rgb(240, 240, 240);
       height: 20px;
@@ -1579,7 +1520,7 @@ const closeRefinePanel = () => {
       font-size: .8rem;
       color: #0f4d90 !important;
       text-decoration: underline;
-      padding-left: 16px;
+      padding-left: 8px;
       padding-right: 12px;
       cursor: pointer;
     }
@@ -1602,8 +1543,25 @@ const closeRefinePanel = () => {
     // height: 3rem;
     position: relative;
 
+    #refine-panel-component {
+      max-width: 100dvw;
+      // padding: 1rem;
+      margin: 0px;
+    }
+
+    .refine-bottom {
+      // width: 100dvw;
+      padding: 1rem;
+      margin: 0px;
+      overflow-y: auto;
+    }
+
+    .refine-holder {
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+
     .clear-all {
-      // margin-top: 8px;
       border-style: none;
       background-color: rgb(240, 240, 240);
       height: 30px;
@@ -1642,31 +1600,29 @@ const closeRefinePanel = () => {
 
     .close-button {
       height: 30px;
-      // position: absolute;
-      // top: 10px;
-      // right: 5px;
       border-style: none;
       background-color: rgb(240, 240, 240);
-      // color: $ben-franklin-blue-dark;
       color: #0f4d90;
       padding-left: 0px;
       padding-top: 9px;
-      // padding-bottom: 12px;
       padding-right: 0px;
     }
 
     .refine-title{
-      // margin-bottom: 14px !important;
       cursor: pointer;
-      // height:7vh;
     }
 
     .service-group-holder-x {
+      max-width: 100dvw;
       padding-top: 0px;
       padding-bottom: 12px;
+      margin-left: 0px;
+      margin-right: 0px;
       margin-bottom: 12px;
-      padding-left: 6px !important;
-      padding-right: 6px !important;
+      // padding-left: 6px !important;
+      // padding-right: 6px !important;
+      // padding-left: 1rem !important;
+      // padding-right: 1rem !important;
       border-bottom: 1px solid black;
       &:first-of-type{
         // padding-left: 0px;
@@ -1691,8 +1647,10 @@ const closeRefinePanel = () => {
     }
 
     #multiple-field-groups-div {
-      padding-left: 16px;
-      padding-right: 16px;
+      width: 100dvw;
+      padding-left: 1rem;
+      padding-right: 1rem;
+      margin: 0px;
     }
   }
 
@@ -1735,7 +1693,7 @@ const closeRefinePanel = () => {
 .dropdown-checkbox-div {
   padding: 0px !important;
   position: absolute;
-  z-index: 1001;
+  // z-index: 1001;
   border-style: solid;
   border-width: 1px;
 }
@@ -1750,7 +1708,6 @@ const closeRefinePanel = () => {
 
 .input-label {
   display: inline-block;
-  // color: $ben-franklin-blue-dark;
   color: #0f4d90;
   font-size: 14px;
   margin-bottom: .5rem;
@@ -1758,7 +1715,6 @@ const closeRefinePanel = () => {
 }
 
 .fa-infoCircle {
-  // color: $ben-franklin-blue-dark;
   color: #0f4d90;
   cursor: pointer;
 }
@@ -1792,6 +1748,10 @@ const closeRefinePanel = () => {
   text-transform: uppercase;
 }
 
+.input-wrap {
+  padding-top: 0px !important;
+}
+
 .input-wrap.input-checkbox .is-checkradio+label:hover::before, .input-wrap.input-radio .is-checkradio+label:hover::before {
   border-width: 2px !important;
 }
@@ -1802,8 +1762,9 @@ const closeRefinePanel = () => {
 }
 
 .open-close-icon {
-  padding-top: 8px;
-  font-size: 26px;
+  padding-top: 10px;
+  padding-right: 6px;
+  font-size: 24px;
 }
 
 </style>

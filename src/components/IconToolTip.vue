@@ -1,155 +1,61 @@
+<script setup>
+
+import { computed } from 'vue';
+
+const props = defineProps({
+  tip: {
+    type: String,
+    default: '',
+  },
+  circleType: {
+    type: String,
+    default: 'hover',
+  },
+  position: {
+    type: String,
+    default: 'right',
+  },
+  multiline: {
+    type: Boolean,
+    default: false,
+  },
+});
+    
+//computed
+const tooltipPosition = computed(() => {
+  let value;
+  if (props.position === 'right') {
+    value = 'has-tooltip-right';
+  } else if (props.position === 'bottom') {
+    value = 'has-tooltip-bottom';
+  } else if (props.position === 'left') {
+    value = 'has-tooltip-left';
+  }
+  return value;
+});
+
+const tooltipMultiline = computed(() => {
+  let value;
+  if (props.multiline) {
+    value = 'has-tooltip-multiline';
+  }
+  return value;
+});
+
+</script>
+
 <template>
-  <!-- <div> -->
   <div
     :class="'inline has-tooltip-hidden-mobile has-tooltip-arrow ' + tooltipPosition + ' ' + tooltipMultiline"
     :data-tooltip="tip"
   >
-    <!-- <button class="button" data-tooltip="Tooltip Text">top tooltip</button> -->
-    <!-- :for="item" -->
-    <!-- v-show="Object.keys(infoCirclesData).includes(item)" -->
     <font-awesome-icon
       v-if="circleType === 'hover'"
-      :id="item + '-icon'"
       icon="info-circle"
       class="fa-infoCircle"
     />
-    <!-- data-tooltip="Tooltip Text" -->
-    <!-- @mouseover="infoOn" -->
-    <!-- @mouseout="infoOff" -->
-
-    <font-awesome-icon
-      v-if="circleType === 'click'"
-      :id="item + '-icon'"
-      icon="info-circle"
-      class="fa-infoCircle"
-      @click="infoClick"
-    />
-    <!-- @click="infoClick" -->
-    <div
-      v-if="active"
-      :id="item + '-tooltip'"
-      :class="tipClass"
-      :style="tooltipStyle"
-      v-html="circleData.html"
-    >
-    </div>
   </div>
-  <!-- </div> -->
 </template>
-
-<script>
-
-// import '@creativebulma/bulma-tooltip'
-
-export default {
-  props: {
-    item: {
-
-    },
-    tip: {
-
-    },
-    circleData: {
-
-    },
-    circleType: {
-      type: String,
-      default: 'hover',
-    },
-    position: {
-      type: String,
-      default: 'right',
-    },
-    multiline: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  data() {
-    return {
-      active: false,
-      tipClass: 'popup-tip',
-      tooltipStyle: {},
-    };
-  },
-  computed: {
-    tooltipPosition() {
-      let value;
-      // if (this.isMobile) {
-      //   value = 'has-tooltip-bottom';
-      // } else {
-      if (this.position === 'right') {
-        value = 'has-tooltip-right';
-      } else if (this.position === 'bottom') {
-        value = 'has-tooltip-bottom';
-      } else if (this.position === 'left') {
-        value = 'has-tooltip-left';
-      }
-      // }
-      return value;
-    },
-    tooltipMultiline() {
-      let value;
-      if (this.multiline) {
-        value = 'has-tooltip-multiline';
-      }
-      return value;
-    }
-  },
-  methods: {
-    infoClick(e) {
-      this.active = !this.active;
-      const thisId = this.$props.item + '-icon';
-      const thisIcon = document.getElementById(thisId);
-      const iconStyle = thisIcon.getBoundingClientRect();
-      const rootElement = document.getElementById('app');
-      const rootStyle = window.getComputedStyle(rootElement);
-      const rootWidth = rootStyle.getPropertyValue('width');
-      const rootWidthNum = parseInt(rootWidth.replace('px', ''));
-      const gap = rootWidthNum - iconStyle.right;
-      console.log('iconToolTip mounted, iconStyle:', iconStyle, 'rootWidthNum:', rootWidthNum, 'gap:', gap);
-      if (gap < 250) {
-        this.tooltipStyle = {
-          'top': '-20px',
-          // 'top': iconStyle.top + 20 + 'px',
-          'right': '10px',
-        };
-      } else {
-        this.tooltipStyle = {
-          'top': '-20px',
-          // 'top': iconStyle.top + 20 + 'px',
-        };
-      }
-    },
-    infoOn() {
-      this.active = true;
-      const thisId = this.$props.item + '-icon';
-      const thisIcon = document.getElementById(thisId);
-      const iconStyle = thisIcon.getBoundingClientRect();
-      const rootElement = document.getElementById('app');
-      const rootStyle = window.getComputedStyle(rootElement);
-      const rootWidth = rootStyle.getPropertyValue('width');
-      const rootWidthNum = parseInt(rootWidth.replace('px', ''));
-      const gap = rootWidthNum - iconStyle.right;
-      console.log('iconToolTip mounted, iconStyle:', iconStyle, 'rootWidthNum:', rootWidthNum, 'gap:', gap);
-      if (gap < 250) {
-        this.tooltipStyle = {
-          'top': iconStyle.top + 20 + 'px',
-          'right': '10px',
-        };
-      } else {
-        this.tooltipStyle = {
-          'top': iconStyle.top + 20 + 'px',
-        };
-      }
-    },
-    infoOff() {
-      this.active = false;
-    },
-  },
-};
-
-</script>
 
 <style lang="scss">
 
@@ -160,7 +66,6 @@ export default {
 
 .popup-tip {
   position: absolute;
-  // display: inline-block;
   margin-left: 5px;
   width: 260px;
   background-color: rgb(15, 77, 144);
@@ -210,9 +115,6 @@ ul {
 }
 
 .has-tooltip-right::before {
-  // position: relative !important;
-  // height: 50px;
-  // overflow: visible;
   height: 24px;
   padding-top: 0px !important;
 }

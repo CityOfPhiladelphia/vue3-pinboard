@@ -1,18 +1,33 @@
 <script setup>
 
-import appConfig from '@/app/main.js';
-import { computed } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { useMainStore } from '../stores/MainStore.js';
+// import { useMapStore } from '../stores/MapStore.js';
+// import { useGeocodeStore } from '../stores/GeocodeStore.js';
+// import { useDataStore } from '../stores/DataStore.js';
+import { useConfigStore } from '../stores/ConfigStore.js';
+import { useRoute, useRouter } from 'vue-router';
+import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
+import { event } from 'vue-gtag'
 
-import { useMainStore } from '@/stores/MainStore.js'
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
+
+const ConfigStore = useConfigStore();
+const $config = ConfigStore.config;
+
 const MainStore = useMainStore();
-import { useMapStore } from '@/stores/MapStore.js'
-const MapStore = useMapStore();
+// const MapStore = useMapStore();
 
 const router = useRouter();
 const route = useRoute();
 
+const submittedCheckboxValue = ref(null);
+
 defineProps({
+  // searchPlaceholder: {
+  //   type: String,
+  //   default: 'Search by address',
+  // },
   inputId: {
     type: String,
     default: 'address-search-input',
@@ -20,54 +35,82 @@ defineProps({
 });
 
 const clearSearch = () => {
-  if (import.meta.env.VITE_DEBUG == 'true') console.log('clearSearch is running');
+  if (import.meta.env.VITE_DEBUG) console.log('clearSearch is running');
   MainStore.searchValue = '';
 }
 
-// const fullScreenTopicsEnabled = computed(() => {
-//   return MainStore.fullScreenTopicsEnabled;
-// });
-  
-// const fullScreenMapEnabled = computed(() => {
-//   return MainStore.fullScreenMapEnabled;
-// });
-    
+const searchPlaceholder = computed(() => {
+  const searchTypes = $config.searchBar.searchTypes;
+  const searchTypesLength = searchTypes.length;
+  if (import.meta.env.VITE_DEBUG) console.log('searchTypes:', searchTypes, 'searchTypes.length:', searchTypes.length);
+  let value = 'Search by '
+  for (let i=0; i<searchTypes.length; i++) {
+    if (import.meta.env.VITE_DEBUG) console.log('i:', i, 'searchTypes[i]:', searchTypes[i]);
+    value += searchTypes[i];
+    if (searchTypes.length > 2 && i == searchTypesLength - 2) {
+      value += ', or ';
+    } else if (i == searchTypesLength - 1) {
+      break
+    } else if (searchTypes.length > 2) {
+      value += ', ';
+    } else {
+      value += ' or ';
+    }
+  }
+  return value;
+});
+
+const isMobile = computed(() => {
+  return MainStore.isMobileDevice || MainStore.windowDimensions.width < 768;
+});
+
 const holderWidth = computed(() => {
-  // if (fullScreenTopicsEnabled.value || fullScreenMapEnabled.value) {
-  //   return '40%';
-  // } else {
+  if (isMobile.value) {
+    return '100%';
+  } else {
     return '70%';
-  // }
+  }
 });
 
 const yPosition = computed(() => {
-  // if (fullScreenTopicsEnabled.value) {
-  //   return '88px';
-  // } else {
-    return '10px';
-  // }
+  return '10px';
 });
 
-const setRoute = (input) => {
-  let query = {...route.query};
-  if (import.meta.env.VITE_DEBUG) console.log('query:', query);
-  query.address = address;
-  router.push({ name: 'home', query });
-}
+const refineList = computed(() => {
+  return MainStore.refineList;
+});
+
+const checkboxText = computed(() => {
+  let text = {};
+  let refList = refineList.value;
+  if (Array.isArray(refList)) {
+    for (let ref of refList) text[ref.textLabel] = ref.textLabel;
+  } else {
+    for (let key of Object.keys(refList)) {
+      for (let key2 of Object.keys(refList[key])) {
+        if (key2 === 'radio' || key2 === 'checkbox') {
+          for (let key3 of Object.keys(refList[key][key2])) {
+            text[t(key+'.'+key3).toLowerCase()] = refList[key][key2][key3].unique_key;
+          }
+        }
+      }
+    }
+  }
+  return text;
+});
 
 const handleSubmit = (val) => {
   if (import.meta.env.VITE_DEBUG) console.log('handleSubmit is running, val:', val);
   let query;
-  // let searchBarType;
   let valAsFloat = parseFloat(val.substring(0));
   let valToString = valAsFloat.toString();
   let checkVals = val === valToString;
-  if (import.meta.env.VITE_DEBUG) console.log('handleSubmit 1, val.substring(0):', val.substring(0), 'valAsFloat:', valAsFloat, 'checkVals:', checkVals, 'appConfig.searchBar.searchTypes:', appConfig.searchBar.searchTypes);
+  if (import.meta.env.VITE_DEBUG) console.log('handleSubmit 1, val.substring(0):', val.substring(0), 'valAsFloat:', valAsFloat, 'checkVals:', checkVals, '$config.searchBar.searchTypes:', $config.searchBar.searchTypes);
   
   let startQuery = { ...route.query };
   
   if (isNaN(valAsFloat)) {
-    if (!appConfig.searchBar.searchTypes.includes('keyword')) {
+    if (!$config.searchBar.searchTypes.includes('keyword')) {
       if (import.meta.env.VITE_DEBUG) console.log('cannot search keywords');
       this.$warning(`Please search an address`, {
         duration: 4000,
@@ -76,96 +119,68 @@ const handleSubmit = (val) => {
       return;
     } else {
       if (import.meta.env.VITE_DEBUG) console.log('in handleSubmit, checking checkboxText');
-      if (checkboxText.value.includes(val.toLowerCase())) {
-        if (import.meta.env.VITE_DEBUG) console.log('in handleSubmit, checking checkboxText - its there');
-        // alert('There is already a checkbox or radio button for that search term');
-        submittedCheckboxValue.value = val;
-        if (MainStore.shouldShowGreeting && !isMobile.value) {
-          MainStore.refineOpen = true;
+      // let match = checkboxText.value.filter((value) => value.toLowerCase() === val.toLowerCase());
+      for (let key of Object.keys(checkboxText.value)) {
+        if (import.meta.env.VITE_DEBUG) console.log('key:', key);
+        if (key.toLowerCase() == val.toLowerCase()) {
+          if (import.meta.env.VITE_DEBUG) console.log('in handleSubmit, checking checkboxText - its there');
+          // alert('There is already a checkbox or radio button for that search term');
+          MainStore.selectedServices.push(checkboxText.value[key]);
+          if (MainStore.shouldShowGreeting && !isMobile.value) {
+            MainStore.refineOpen = true;
+          }
+          return;
         }
-        return;
       }
-      MainStore.lastPinboardSearchMethod = 'keyword';
+      MainStore.selectedKeywords.push(val);
       let startKeyword;
       if (startQuery['keyword'] && startQuery['keyword'] != '') {
         startKeyword = startQuery['keyword'];
         val = startKeyword + ',' + val;
       }
       query = { ...startQuery, ...{ 'keyword': val }};
-      // this.searchBarType = 'keyword';
-      // searchBarType = 'keyword';
     }
   } else if (checkVals) {
     if (import.meta.env.VITE_DEBUG) console.log('its a zipcode');
-    if (appConfig.allowZipcodeSearch) {
-
-      MapStore.watchPositionOn = false;
-      MainStore.lastPinboardSearchMethod = 'zipcode';
+    if ($config.allowZipcodeSearch) {
       query = { 'zipcode': val };
-      // this.searchBarType = 'zipcode';
-      // searchBarType = 'zipcode';
-    } else if (appConfig.allowZipcodeInDataSearch) {
-      // query = { 'zipcode': val };
-      // this.searchBarType = 'zipcode';
-      // searchBarType = 'zipcode';
-
-      MapStore.watchPositionOn = false;
-      MainStore.lastPinboardSearchMethod = 'zipcodeKeyword';
-
-      clearGeocodeAndZipcode();
-      MapStore.bufferShape = null;
-      currentBuffer = null;
-      
-      let startKeyword;
-      if (startQuery['keyword'] && startQuery['keyword'] != '') {
-        startKeyword = startQuery['keyword'];
-        val = startKeyword + ',' + val;
-      }
-      query = { ...startQuery, ...{ 'keyword': val }};
-      // this.searchBarType = 'keyword';
-      // searchBarType = 'keyword';
     }
   } else {
     if (import.meta.env.VITE_DEBUG) console.log('its an address');
-
-    if (MainStore.lastPinboardSearchMethod == 'zipcodeKeyword') {
-      if (import.meta.env.VITE_DEBUG) console.log('startQuery:', startQuery);
-      delete startQuery['keyword'];
-      MainStore.selectedKeywords = [];
-    }
-
-    MapStore.watchPositionOn = false;
-
-    query = { ...startQuery, ...{ 'address': val }};
-    MainStore.lastPinboardSearchMethod = 'geocode';
-    // this.searchBarType = 'address';
-    // searchBarType = 'address';
+    query = { 'address': val };
   }
   delete startQuery['address'];
   delete startQuery['keyword'];
   delete startQuery['zipcode'];
   if (import.meta.env.VITE_DEBUG) console.log('handleSubmit is running, valAsFloat:', valAsFloat, 'startQuery:', startQuery, 'route.query:', route.query, 'query:', query, 'val:', val, 'val.substring(0, 1):', val.substring(0, 1));
   router.push({ query: { ...startQuery, ...query }});
-  // searchString = query[this.searchBarType];
-  const searchCategory = Object.keys(query)[0];
-  const value = query[searchCategory];
-  // $gtag.event(searchBarType + '-search', {
-  //   'event_category': store.state.gtag.category,
-  //   'event_label': value,
-  // })
-  MainStore.currentSearch = value;
-  MapStore.zipcodeCenter = [];
-
-  // if (store.state.shouldShowGreeting && !isMobile.value) {
-  //   store.commit('setRefineOpen', true);
-  // }
+  if (query) {
+    const searchCategory = Object.keys(query)[0];
+    const value = query[searchCategory];
+    MainStore.currentSearch = value;
+    event(searchCategory + '-search', {
+      'event_category': $config.gtag.category,
+      'event_label': value,
+    })
+  }
 };
+
+const holder = computed(() => {
+  let value = '';
+  if (isMobile.value) {
+    value = 'address-search-holder';
+  } else {
+    value = 'holder holder-map';
+  }
+  return value;
+});
 
 </script>
 
 <template>
   <div
-    :class="fullScreenTopicsEnabled ? 'holder holder-topics' : 'holder holder-map'"
+    id="address-search-holder"
+    :class="holder"
     :style="{ top: yPosition, width: holderWidth }"
   >
     <div class="field has-addons" :style="{ width: '100%' }">
@@ -173,13 +188,13 @@ const handleSubmit = (val) => {
         <label
           :for="inputId"
           class="search-label"
-        >Search for an address, OPA account, or DOR number</label>
+        >{{ searchPlaceholder }}</label>
         <input
           :id="inputId"
           v-model="MainStore.searchValue"
           class="input address-input"
           type="text"
-          placeholder="Search for an address, OPA account, or DOR number"
+          :placeholder="searchPlaceholder"
           @keydown.enter="handleSubmit(MainStore.searchValue)"
         >
       </div>

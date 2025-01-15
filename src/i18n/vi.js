@@ -10,6 +10,8 @@ export default {
       address: 'Tìm kiểm theo địa chỉ',
       keyword: 'vietnamese Search by keyword',
     },
+    map: 'Bản đồ',
+    list: 'Danh sách',
     viewMap: 'Xem bản đồ',
     viewList: 'Xem danh sách',
     viewAccessible: 'Xem danh sách các địa điểm gần tôi',

@@ -1,76 +1,76 @@
-// @import 'bulma/css/bulma.css';
-// @import "@phila/phila-ui-core/dist/styles/scss/all.scss";
-
 $primary-color: #0f4254;
 $dropdown-menu-min-width: 100px;
 
-html {
-  min-height: 100dvh;
-  overflow-y: hidden !important;
+@media print {
+  .no-print {
+    visibility: hidden;
+  }
+
+  html, body {
+    height: 100%;
+    width: 100%;
+  }
+
+  #app {
+    display: block;
+    height: auto;
+    width: auto;
+    overflow-y: visible !important;
+  }
+
+  table.table thead tr {
+    border: 2px solid #444444 !important;
+  }
+
+  table.table thead tr th {
+    border-bottom: 1px;
+    border-bottom-style: solid !important;
+    border-color: #444444 !important;
+  }
+
+  table.table tbody tr {
+    border: 2px solid #444444 !important;
+  }
+  
+  table.table tbody tr td {
+    border-bottom: 1px;
+    border-bottom-style: solid !important;
+    border-color: #444444 !important;
+  }
 }
 
-body {
-  height: auto;
-  overflow-y: hidden !important;
+#spinner-holder {
+  height: 100dvh;
 }
+
+
+// html, body, #app are not set because it interferes with the print view
 
 a {
   color: #0f4d90;
   font-weight: bold;
 }
 
-#app {
-  height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  overflow-y: hidden;
-  justify-content: space-evenly;
+.main {
+  position: fixed;
+  height: 100dvh !important;
+  width: 100dvw;
+  padding-top: 0px;
 }
 
-.main {
-  height: calc(100vh - 50px);
-  // display: flex;
-  // flex-direction: column;
-  padding-top: 42px !important;
-  margin-top: 0px !important;
+#loading-spinner {
+  height: 100%;
 }
 
 .main-column {
-  height: calc(100vh - 100px);
   display: flex;
   flex-direction: column;
-  padding-top: 42px !important;
-  margin-top: 0px !important;
+  padding: 0px !important;
 }
 
-.main-row {
-  height: calc(100vh - 400px);
-  display: flex;
-  flex-direction: row;
-  // padding-top: 42px !important;
-  margin-top: 0px !important;
-}
-
-.topics-holder {
-  display: flex;
-  flex-direction: column;
-  width: 50% !important;
-  padding: 0;
-  margin: 0;
-  height: calc(100vh - 110px);
-}
-
-.topics-holder-full {
-  width: 100% !important;
-}
-
-#topic-panel-no-topics {
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
-.topic-panel-half {
-  max-width: 46%;
+.branding-col {
+  padding-bottom: 0px !important;
+  padding-top: 0px !important;
 }
 
 .bullet-list {
@@ -78,28 +78,32 @@ a {
   padding-left: 1.5em;
 }
 
+.main-row {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+}
+
 #locations-panel-content {
   flex-grow: 1;
   overflow-y: scroll;
   overflow-x: hidden;
-  padding-left: 12px;
-  padding-right: 12px;
   padding-bottom: 30px !important;
 }
 
-#topic-panel-content {
-  flex-grow: 1;
-  overflow-y: scroll;
-  overflow-x: hidden;
-  padding-left: 12px;
-  padding-right: 12px;
-  padding-bottom: 30px !important;
+.locations-holder {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
 }
 
 .map-panel-holder {
   width: 50%;
-  height: calc(100vh - 110px);
+  padding-top: 0px;
   margin-bottom: 0px;
+  height: 100%;
 }
 
 .map-panel-holder-full {
@@ -135,7 +139,8 @@ a {
 }
 
 .map-panel {
-  height: calc(100vh - 110px);
+  height: 100%;
+  // height: calc(100vh - 110px);
 }
 
 .map-panel.cyclomedia-eagleview {
@@ -253,19 +258,24 @@ a {
   padding-right: 0px;
 }
 
-@media 
-only screen and (max-width: 768px),
-(min-device-width: 768px) and (max-device-width: 1024px)  {
+// @media 
+// only screen and (max-width: 768px),
+// (min-device-width: 768px) and (max-device-width: 1024px)  {
+@media only screen and (max-width: 768px) {
 
   @supports (-webkit-touch-callout: none) {
     /* CSS specific to iOS devices */ 
-    .main {
-      margin-top: 42px !important;
-    }
+    // .main {
+    //   margin-top: 42px !important;
+    // }
   }
   
   @supports not (-webkit-touch-callout: none) {
     /* CSS for other than iOS devices */ 
+  }
+
+  .button {
+    justify-content: center !important;
   }
 
   html {
@@ -280,48 +290,29 @@ only screen and (max-width: 768px),
 
   #app {
     height: 100dvh;
-    display: flex;
-    flex-direction: column;
     overflow-y: hidden;
     overflow-x: hidden;
-    justify-content: space-evenly;
   }
 
   .main {
+    // height: auto;
+    // display: flex;
+    // flex-direction: column;
+    overflow-y: hidden;
+  }
+
+  .main-column {
+    overflow-y: hidden;
+  }
+
+  .locations-holder {
+    width: 100%;
+    overflow-y: hidden;
     height: auto;
-    display: flex;
-    flex-direction: column;
-    overflow-y: scroll;
-  }
-
-  .topics-holder {
-    display: flex;
-    flex-direction: column;
-    width: 100% !important;
-    padding: 0;
-    margin: 0;
-    height: auto;
-  }
-
-  #topic-panel-content {
-    // overflow-y: hidden;
-    overflow-x: hidden;
-    padding-left: 12px;
-    padding-right: 12px;
-  }
-
-  #topic-panel-no-topics {
-    overflow-x: hidden;
-    // overflow-y: hidden;
-    padding-left: 20px;
-    padding-right: 20px;
-    padding-top: 20px !important;
-    padding-bottom: 30px !important;
-    flex-grow: 1;
   }
 
   .map-panel-holder {
-    padding-top: 28px !important;
+    // padding-top: 28px !important;
     width: 100%;
     flex-grow: 1;
     margin-bottom: 0px;
@@ -347,7 +338,7 @@ only screen and (max-width: 768px),
   }
 
   .map-panel {
-    height: 300px;
+    height: 100%;
   }
 
   .map-panel.cyclomedia-eagleview {
@@ -355,9 +346,8 @@ only screen and (max-width: 768px),
   }
 
   .map-class {
-    height: 300px;
+    height: 100%;
   }
-
 
 	/* Force table to not be like tables anymore */
   .horizontal-table {
@@ -404,27 +394,21 @@ only screen and (max-width: 768px),
   
 }
 
-@media 
-only screen and (min-device-width: 768px) and (max-device-width: 1024px) {
-  .map-panel {
-    height: 500px;
-  }
+// @media (min-width: 768px) and (max-width: 1024px) {
 
-  .map-class {
-    height: 500px;
-  }
+//   .locations-holder {
+//     width: 50%;
+//   }
 
-  #topic-panel-no-topics {
-    min-height: calc(100vh - 570px) !important;
-    // height: 60dvh !important;
-  }
+//   .map-panel {
+//     width: 50%;
+//     height: 500px;
+//   }
 
-  #topic-panel-content {
-    min-height: calc(100vh - 700px) !important;
-    // height: 60dvh !important;
-  }
-
-}
+//   .map-class {
+//     height: 500px;
+//   }
+// }
 
 .no-link-at-bottom {
   margin-bottom: 2rem !important;
@@ -506,4 +490,25 @@ only screen and (min-device-width: 768px) and (max-device-width: 1024px) {
 .section-header {
   padding: .5rem;
   margin-bottom: .5rem;
+}
+
+.maplibregl-popup-close-button:focus-visible {
+  outline: 0px solid #0f4d90;
+}
+
+.select:not(.is-multiple):not(.is-loading)::after {
+  border-bottom-color: rgb(33, 118, 210);
+  border-left-color: rgb(33, 118, 210);
+}
+
+.maplibregl-popup-close-button {
+  font-size: 20px !important;
+}
+
+.maplibregl-popup-content {
+  font-size: 14px !important;
+  padding-bottom: 1rem !important;
+  padding-left: 1rem !important;
+  padding-top: 1rem !important;
+  padding-right: 1.5rem !important;
 }

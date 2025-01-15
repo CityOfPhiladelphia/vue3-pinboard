@@ -1,45 +1,43 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import { useConfigStore } from './stores/ConfigStore.js';
+import { useDataStore } from './stores/DataStore.js';
+import { useMainStore } from './stores/MainStore.js';
+import VueGtag from "vue-gtag";
+
+if (import.meta.env.VITE_DEBUG) console.log('test, import.meta.env.VITE_DEBUG:', import.meta.env.VITE_DEBUG);
+
 import { createI18n } from 'vue-i18n'
 
 import App from './App.vue'
-import router from './router'
+import initRouter from './router'
 
-import isMac from './util/is-mac';
 import mergeDeep from './util/merge-deep';
 
 import 'vue-good-table-next/dist/vue-good-table-next.css'
+import "@fortawesome/fontawesome-pro/css/fontawesome.min.css";
+import "@fortawesome/fontawesome-pro/css/solid.min.css";
+import '@creativebulma/bulma-tooltip/dist/bulma-tooltip.min.css';
 import "bulma";
-import './assets/main.scss'
-import './assets/main_pin.scss'
-import './assets/style.scss'
-if (isMac()) {
-  import('./assets/mac-style.scss')
-}
+import '@phila/phila-ui-core/dist/styles/scss/all.scss';
+import "bulma-checkradio/dist/css/bulma-checkradio.min.css";
+import './assets/main_pin.scss';
+import './assets/intro.scss';
+import './assets/card.scss';
+import './assets/style.scss';
+
 import PhilaUICore from "@phila/phila-ui-core";
 import AppHeader from "@phila/phila-ui-app-header";
 import AppFooter from "@phila/phila-ui-app-footer";
+import Callout from "@phila/phila-ui-callout";
 import Dropdown from "@phila/phila-ui-dropdown";
 import MobileNav from "@phila/phila-ui-mobile-nav";
+import Modal from "@phila/phila-ui-modal";
 import NavLink from "@phila/phila-ui-nav-link";
 import Textbox from "@phila/phila-ui-textbox";
 import LangSelector from "@phila/phila-ui-lang-selector";
 import Radio from "@phila/phila-ui-radio";
-
-import appConfig from './app/main.js';
-// console.log('appConfig:', appConfig);
-
-const app = createApp(App);
-
-app.component("AppHeader", AppHeader);
-app.component("AppFooter", AppFooter);
-app.component("Dropdown", Dropdown);
-app.component("MobileNav", MobileNav);
-app.component("NavLink", NavLink);
-app.component("Textbox", Textbox);
-app.component("LangSelector", LangSelector);
-app.component("Radio", Radio);
-app.use(PhilaUICore);
+import Checkbox from "@phila/phila-ui-checkbox";
 
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
@@ -62,8 +60,15 @@ import { faClone } from '@fortawesome/free-solid-svg-icons';
 import { faPhone } from '@fortawesome/free-solid-svg-icons';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { faMinus } from '@fortawesome/free-solid-svg-icons';
+import { faSlidersH } from '@fortawesome/free-solid-svg-icons';
+import { faShareAlt } from '@fortawesome/free-solid-svg-icons';
+import { faPrint } from '@fortawesome/free-solid-svg-icons';
+import { faGlobe } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelope} from '@fortawesome/free-solid-svg-icons';
+import { faCircleInfo } from '@fortawesome/free-solid-svg-icons';
+import { faRectangleList } from '@fortawesome/free-solid-svg-icons';
+import { faLocationCrosshairs } from '@fortawesome/free-solid-svg-icons';
 
-// import { faBars } from '@fortawesome/free-solid-svg-icons';
 library.add(
   faSearch,
   faHome,
@@ -85,29 +90,71 @@ library.add(
   faPhone,
   faPlus,
   faMinus,
+  faSlidersH,
+  faShareAlt,
+  faPrint,
+  faGlobe,
+  faEnvelope,
+  faCircleInfo,
+  faRectangleList,
+  faLocationCrosshairs,
 );
 
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-app.component('FontAwesomeIcon', FontAwesomeIcon)
-
 import VueGoodTablePlugin from 'vue-good-table-next';
-app.use(VueGoodTablePlugin);
-
 import i18nFromFiles from './i18n/i18n.js';
-import i18nProject from './app/i18n/i18n.js';
-const messages = mergeDeep(i18nFromFiles.i18n.data.messages, i18nProject.i18n.data.messages);
-// if (import.meta.env.VITE_DEBUG == 'true') console.log('i18nFromFiles:', i18nFromFiles, 'messages:', messages);
-const i18n = createI18n({
-  legacy: false,
-  globalInjection: true,
-  locale: 'en-US',
-  fallbackLocale: 'en-US',
-  messages: messages
-})
 
-app.use(i18n)
+export default function pinboard(config) {
+  const app = createApp(App);
+  if (import.meta.env.VITE_DEBUG) console.log('config:', config, 'app:', app);
 
-app.use(createPinia())
-app.use(router)
+  app.component("AppHeader", AppHeader);
+  app.component("AppFooter", AppFooter);
+  app.component("Callout", Callout);
+  app.component("Dropdown", Dropdown);
+  app.component("MobileNav", MobileNav);
+  app.component("Modal", Modal);
+  app.component("NavLink", NavLink);
+  app.component("Textbox", Textbox);
+  app.component("LangSelector", LangSelector);
+  app.component("Radio", Radio);
+  app.component("Checkbox", Checkbox);
+  app.use(PhilaUICore);
 
-app.mount('#app')
+  app.component('FontAwesomeIcon', FontAwesomeIcon)
+  app.use(VueGoodTablePlugin);
+
+  const i18nProject = config.i18n.data.messages;
+  const messages = mergeDeep(i18nFromFiles.i18n.data.messages, i18nProject);
+  if (import.meta.env.VITE_DEBUG) console.log('i18nFromFiles:', i18nFromFiles, 'messages:', messages);
+  const i18n = createI18n({
+    legacy: false,
+    globalInjection: true,
+    locale: 'en-US',
+    fallbackLocale: 'en-US',
+    messages: messages
+  })
+  app.use(i18n)
+
+  app.use(createPinia())
+
+  const ConfigStore = useConfigStore();
+  if (import.meta.env.VITE_DEBUG) console.log('ConfigStore:', ConfigStore);
+  ConfigStore.config = config;
+
+  const router = initRouter(config.publicPath);
+  if (import.meta.env.VITE_DEBUG) console.log('router:', router);
+
+  app.use(VueGtag, {
+    disableScriptLoad: true,
+    config: { 
+      id: 'GTM-MC6CR2',
+      // id: 'G-NHET8T5XY8',
+    }
+  }, router);
+
+  app.use(router);
+  app.mount('#app')
+};
+
+export { useDataStore, useMainStore };

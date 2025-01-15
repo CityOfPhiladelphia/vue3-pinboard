@@ -1,15 +1,21 @@
 <script setup>
 
-import appConfig from '@/app/main.js';
+import { useMainStore } from '../stores/MainStore.js';
+import { useMapStore } from '../stores/MapStore.js';
+import { useGeocodeStore } from '../stores/GeocodeStore.js';
+import { useDataStore } from '../stores/DataStore.js';
+import { useConfigStore } from '../stores/ConfigStore.js';
 
-import { getCurrentInstance } from 'vue';
 const instance = getCurrentInstance();
+const ConfigStore = useConfigStore();
+const $config = ConfigStore.config;
+const MainStore = useMainStore();
 
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
 const isMobile = computed(() => {
-  return MainStore.isMobileDevice;
+  return MainStore.isMobileDevice || MainStore.windowDimensions.width < 768;
 });
   
 const i18nLocale = computed(() => {
@@ -17,7 +23,7 @@ const i18nLocale = computed(() => {
 });
 
 const i18nEnabled = computed(() => {
-  if (appConfig.i18n && appConfig.i18n.enabled) {
+  if ($config.i18n && $config.i18n.enabled) {
     return true;
   } else {
     return false;
@@ -28,8 +34,8 @@ const alertContent = computed(() => {
   let value;
   if (i18nEnabled.value) {
     value = t(app.bannerAlert);
-  } else if (appConfig.alerts && appConfig.alerts.header && appConfig.alerts.header.content) {
-    value = appConfig.alerts.header.content;
+  } else if ($config.alerts && $config.alerts.header && $config.alerts.header.content) {
+    value = $config.alerts.header.content;
   } else {
     value = '<b>Until further notice:</b> Please call ahead or check hours of operation while business restrictions are still in effect.'
   }

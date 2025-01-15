@@ -10,6 +10,8 @@ export default {
       address: 'Search by address',
       keyword: 'Search by keyword',
     },
+    map: 'Map',
+    list: 'List',
     viewMap: 'View map',
     viewList: 'View list',
     viewAccessible: 'View accessible list of site locations',

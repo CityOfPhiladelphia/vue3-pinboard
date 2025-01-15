@@ -10,6 +10,8 @@ export default {
       address: '按地址搜索',
       keyword: 'chinese Search by keyword',
     },
+    map: '地图',
+    list: '清单',
     viewMap: '查看地图',
     viewList: '查看列表',
     viewAccessible: '查看机构地点列表',

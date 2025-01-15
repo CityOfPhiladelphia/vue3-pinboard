@@ -1,40 +1,51 @@
 <script setup>
 
-import $config from '@/config';
-if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue $config:', $config);
+import { useMainStore } from '../../stores/MainStore.js';
+import { useMapStore } from '../../stores/MapStore.js';
+import { useGeocodeStore } from '../../stores/GeocodeStore.js';
+import { useDataStore } from '../../stores/DataStore.js';
+import { useConfigStore } from '../../stores/ConfigStore.js';
+import { useRoute, useRouter } from 'vue-router';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
 
-import { ref, onMounted, watch, watchEffect, computed } from 'vue';
+import $mapConfig from '../../mapConfig';
+const $config = useConfigStore().config;
+if (import.meta.env.VITE_DEBUG) console.log('Map.vue $config:', $config, '$mapConfig:', $mapConfig);
+
+const $emit = defineEmits(['geolocate', 'popupClicked']);
 
 // PACKAGE IMPORTS
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 // this was recommended by a comment in https://github.com/mapbox/mapbox-gl-js/issues/9114
 // the official mapbox-gl-draw was blocking map clicks
-import '@/assets/mapbox-gl-draw.min.js'
-import '@/assets/maplibre-gl-draw.css';
+import '../../assets/mapbox-gl-draw.min.js'
+import '../../assets/maplibre-gl-draw.css';
 import destination from '@turf/destination';
 import { point, polygon, multiPolygon, feature, featureCollection } from '@turf/helpers';
+import centerOfMass from '@turf/center-of-mass';
 import bbox from '@turf/bbox';
 import buffer from '@turf/buffer';
 
 // STORES
-import { useMapStore } from '@/stores/MapStore.js';
 const MapStore = useMapStore();
-import { useMainStore } from '@/stores/MainStore.js'
 const MainStore = useMainStore();
-import { useGeocodeStore } from '@/stores/GeocodeStore.js'
 const GeocodeStore = useGeocodeStore();
-import { useDataStore } from '@/stores/DataStore.js'
 const DataStore = useDataStore();
 
 // ROUTER
-import { useRouter, useRoute } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 
 // COMPONENTS
-import AddressSearchControl from '@/components/AddressSearchControl.vue';
-// import ImageryToggleControl from '@/components/map/ImageryToggleControl.vue';
+import AddressSearchControl from '../AddressSearchControl.vue';
+import GeolocateControl from './GeolocateControl.vue';
+import ImageryToggleControl from './ImageryToggleControl.vue';
+import CyclomediaControl from './CyclomediaControl.vue';
+import CyclomediaPanel from './CyclomediaPanel.vue';
+import CyclomediaRecordingsClient from '../../util/recordings-client.js';
+import OverlayLegend from './OverlayLegend.vue';
+
 // import ImageryDropdownControl from '@/components/map/ImageryDropdownControl.vue';
 
 let map;
@@ -46,12 +57,21 @@ const markerSrc = computed(() => {
 // const buildingColumnsSrc = computed(() => {
 //   return MainStore.publicPath + 'images/building-columns-solid.png';
 // })
-// const cameraSrc = computed(() => {
-//   return MainStore.publicPath + 'images/camera.png';
-// })
+const cameraSrc = computed(() => {
+  return MainStore.publicPath + 'images/camera.png';
+})
+
+const isMobile = computed(() => {
+  return MainStore.isMobileDevice || MainStore.windowDimensions.width < 768;
+});
+
+const clickedPopup = () => {
+  if (import.meta.env.VITE_DEBUG) console.log('clickedPopup');
+  $emit('popupClicked');
+}
 
 onMounted(async () => {
-  // if (import.meta.env.VITE_DEBUG) console.log('Map.vue onMounted route.params.topic:', route.params.topic, 'route.params.address:', route.params.address);
+  if (import.meta.env.VITE_DEBUG) console.log('Map.vue onMounted');
   
   // create the maplibre map
   let currentTopicMapStyle = 'pwdDrawnMapStyle';
@@ -59,19 +79,29 @@ onMounted(async () => {
 
   map = new maplibregl.Map({
     container: 'map',
-    style: $config[currentTopicMapStyle],
-    center: $config.cityCenterCoords,
+    style: $mapConfig[currentTopicMapStyle],
+    center: $mapConfig.cityCenterCoords,
     zoom: zoom,
     minZoom: 6,
     maxZoom: 22,
     attributionControl: false,
   });
 
-  if (import.meta.env.VITE_DEBUG) console.log('Map.vue onMounted, DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]);
+  MapStore.map = map;
 
-  map.on('load', () => {
+  // if (import.meta.env.VITE_DEBUG) console.log('Map.vue onMounted, DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]);
+
+  map.on('load', async() => {
+    // map.resize();
+    
     let canvas = document.querySelector(".maplibregl-canvas");
     canvas.setAttribute('tabindex', -1);
+
+    let geojson = featureCollection(DataStore.currentData);
+    if (import.meta.env.VITE_DEBUG) console.log('geojson:', geojson);
+    map.getSource('resources').setData(geojson);
+
+    map.addLayer($config.mapLayer, 'addressMarker');
 
     if (import.meta.env.VITE_DEBUG) console.log('map on load, map.getSource("resources"):', map.getSource('resources'));
     if (map.getSource('resources') && DataStore.selectedResource) {
@@ -86,39 +116,114 @@ onMounted(async () => {
         ]
       )
     };
+    if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 2, DataStore.selectedResource:', DataStore.selectedResource);
+    
     if (DataStore.sources[DataStore.appType]) {
-      const dataPoint = DataStore.sources[DataStore.appType].features.filter(item => item._featureId == DataStore.selectedResource)[0];
+      const dataPoint = DataStore.sources[DataStore.appType].data.features.filter(item => item._featureId == DataStore.selectedResource)[0];
       if (import.meta.env.VITE_DEBUG) console.log('dataPoint:', dataPoint);
-      map.setCenter(dataPoint.geometry.coordinates);
+      if (dataPoint) {
+        const popup = document.getElementsByClassName('maplibregl-popup');
+        if (popup.length) {
+          popup[0].remove();
+        }
+        new maplibregl.Popup({ className: 'my-class' })
+          .setLngLat(dataPoint.geometry.coordinates)
+          .setHTML(`<div id="popup-div">${dataPoint.properties[$config.locationInfo.siteNameField]}</div>`)
+          .setMaxWidth("300px")
+          .addTo(map);
 
-      const popup = document.getElementsByClassName('maplibregl-popup');
-      if (popup.length) {
-        popup[0].remove();
+        document.getElementById('popup-div').addEventListener('click', clickedPopup);
+        
+        if ($config.showBuildingFootprint) {
+          map.getSource('buildingFootprints').setData(dataPoint.buildingFootprint);
+        }
+        
+        if (!route.query.address) {
+          map.setCenter(dataPoint.geometry.coordinates);
+        }
       }
-      new maplibregl.Popup({ className: 'my-class' })
-        .setLngLat(dataPoint.geometry.coordinates)
-        .setHTML(dataPoint.properties.site_name)
-        .setMaxWidth("300px")
-        .addTo(map);
     }
+    
+    if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 3, MapStore.bufferForAddressOrLocationOrZipcode:', MapStore.bufferForAddressOrLocationOrZipcode);
+    if (MapStore.bufferForAddressOrLocationOrZipcode !== null) {
+      map.getSource('buffer').setData(MapStore.bufferForAddressOrLocationOrZipcode);
+    }
+    if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 4');
+    if (DataStore.zipcodes && MainStore.selectedZipcode) {
+
+      if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 5, DataStore.zipcodes:', DataStore.zipcodes, 'MainStore.selectedZipcode:', MainStore.selectedZipcode);
+      const zipcodeData = DataStore.zipcodes.features.filter(item => item.properties.CODE == MainStore.selectedZipcode)[0];
+      map.getSource('zipcode').setData(zipcodeData);
+      const center = centerOfMass(zipcodeData);
+      map.setCenter(center.geometry.coordinates);
+      MapStore.zipcodeCenter = center;
+    }
+
+    if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 6, map.getStyle().layers:', map.getStyle().layers);
+    await nextTick();
+    map.resize();
   })
 
   // add the address marker and camera icon sources
   const markerImage = await map.loadImage(markerSrc.value)
-  if (import.meta.env.VITE_DEBUG == 'true') console.log('markerImage:', markerImage);
+  if (import.meta.env.VITE_DEBUG) console.log('markerImage:', markerImage);
   map.addImage('marker-blue', markerImage.data);
+  const cameraImage = await map.loadImage(cameraSrc.value)
+  map.addImage('camera-icon', cameraImage.data);
 
   // add the unchanged maplibre controls
-  map.addControl(new maplibregl.NavigationControl(), 'bottom-left');
-  map.addControl(new maplibregl.GeolocateControl(), 'bottom-left');
+  map.addControl(new maplibregl.NavigationControl(), 'bottom-right');
+  // map.addControl(new maplibregl.GeolocateControl(), 'bottom-right');
 
-  // if the L&I topic is selected, and a building footprint is clicked, set the selected building number in the LiStore
+  map.on('moveend', () => {
+    // if (import.meta.env.VITE_DEBUG) console.log('map moveend event, e:', e, 'map.getZoom()', map.getZoom(), 'map.getStyle().layers:', map.getStyle().layers, 'map.getStyle().sources:', map.getStyle().sources);
+    if (MapStore.cyclomediaOn) {
+      map.getZoom() > 16.5 ? MapStore.cyclomediaRecordingsOn = true : MapStore.cyclomediaRecordingsOn = false;
+      if (MapStore.cyclomediaRecordingsOn) {
+        updateCyclomediaRecordings();
+      } else {
+        let geojson = { type: 'FeatureCollection', features: [] };
+        map.getSource('cyclomediaRecordings').setData(geojson);
+        $mapConfig.pwdDrawnMapStyle.sources.cyclomediaRecordings.data.features = [];
+      }
+    }
+  });
+
+  map.on('zoomend', () => {
+    if (MapStore.cyclomediaOn) {
+      updateCyclomediaCameraViewcone(MapStore.cyclomediaCameraHFov, MapStore.cyclomediaCameraYaw);
+    }
+  });
+
+  // if a cyclomedia recording circle is clicked, set its coordinates in the MapStore
+  map.on('click', 'cyclomediaRecordings', (e) => {
+    // if (import.meta.env.VITE_DEBUG) console.log('cyclomediaRecordings click, e:', e, 'e.features[0]:', e.features[0]);
+    e.clickOnLayer = true;
+    MapStore.clickedCyclomediaRecordingCoords = [ e.lngLat.lng, e.lngLat.lat ];
+  });
+
+  map.on('mouseenter', 'cyclomediaRecordings', (e) => {
+    if (e.features.length > 0) {
+      map.getCanvas().style.cursor = 'pointer'
+    }
+  });
+
+  map.on('mouseleave', 'cyclomediaRecordings', () => {
+    map.getCanvas().style.cursor = ''
+  });
+
+  map.on('click', 'pwd', (e) => {
+    if (import.meta.env.VITE_DEBUG) console.log('Map.vue map click event, e:', e);
+  })
+
   map.on('click', 'resources', (e) => {
+    if (import.meta.env.VITE_DEBUG) console.log('Map.vue map click event, e:', e, 'e.features:', e.features, 'e.features[0]._featureId:', e.features[0]._featureId);
     MainStore.lastSelectMethod = 'map';
-    const feature = e.features[0];
-    const properties = e.features[0].properties;
-    if (import.meta.env.VITE_DEBUG == 'true') console.log('click, e:', e, 'feature:', feature, 'properties:', properties);
+    // const feature = e.features[0];
+    // const properties = e.features[0].properties;
+    // if (import.meta.env.VITE_DEBUG) console.log('click, e:', e, 'feature:', feature, 'properties:', properties);
     const selectedResourceId = e.features[0].properties._featureId;
+    MapStore.latestSelectedResourceFromMap = selectedResourceId;
     let query = {...route.query};
     if (import.meta.env.VITE_DEBUG) console.log('Map click query:', query);
     if (selectedResourceId != DataStore.selectedResource) {
@@ -131,7 +236,7 @@ onMounted(async () => {
   });
 
   map.on('mouseenter', 'resources', (e) => {
-    // if (import.meta.env.VITE_DEBUG == 'true') console.log('mouseenter, e:', e);
+    if (import.meta.env.VITE_DEBUG) console.log('mouseenter, e:', e);
     if (e.features.length > 0) {
       map.getCanvas().style.cursor = 'pointer'
     }
@@ -145,48 +250,107 @@ onMounted(async () => {
     if (import.meta.env.VITE_DEBUG) console.log('Map.vue map style.load event');
   })
 
+
+});
+
+watch(
+  () => MapStore.searchDistance,
+  async () => {
+    MapStore.fillBufferForAddressOrLocationOrZipcode();
+  }
+)
+
+watch(
+  () => MapStore.geolocation,
+  async newGeolocation => {
+    MapStore.fillBufferForAddressOrLocationOrZipcode();
+    if (import.meta.env.VITE_DEBUG) console.log('Map.vue geolocation watch, newGeolocation:', newGeolocation);
+    if (newGeolocation) {
+      map.setCenter(newGeolocation);
+      map.getSource('geolocationMarker').setData(point(newGeolocation));
+    } else {
+      map.getSource('geolocationMarker').setData({ type: 'FeatureCollection', features: [] });
+    }
+  }
+)
+
+watch(
+  () => MapStore.bufferForAddressOrLocationOrZipcode,
+  async newBuffer => {
+    if (import.meta.env.VITE_DEBUG) console.log('Map.vue bufferForAddressOrLocationOrZipcode watch, newBuffer:', newBuffer);
+    if (newBuffer && map.getSource('buffer')) {
+      map.getSource('buffer').setData(newBuffer);
+    } else if (map.getSource('buffer')) {
+      map.getSource('buffer').setData({ type: 'FeatureCollection', features: [] });
+    }
+  }
+)
+
+watch(
+  () => DataStore.currentData,
+  async newData => {
+  let geojson = featureCollection(newData);
+    // if (import.meta.env.VITE_DEBUG) console.log('geojson:', geojson, 'map.getStyle().sources.resources.data:', map.getStyle().sources.resources.data);
+  if (import.meta.env.VITE_DEBUG) console.log('map.getSource("resources"):', map.getSource('resources'));
+  if (map.getSource('resources')) {
+    map.getSource('resources').setData(geojson);
+  }
 });
 
 watch(
   () => DataStore.selectedResource,
   async (newSelectedResource, oldSelectedResource) => {
-    if (import.meta.env.VITE_DEBUG) console.log('newSelectedResource:', newSelectedResource, 'oldSelectedResource:', oldSelectedResource);
-    if (oldSelectedResource) {
-      map.setPaintProperty(
-          'resources',
-          'circle-radius',
-          ['match',
-          ['get', '_featureId'],
-          oldSelectedResource,
-          7,
-          7,
-          ]
-        )
-      const popup = document.getElementsByClassName('maplibregl-popup');
-      if (popup.length) {
-        popup[0].remove();
-      }
-    }
-    if (newSelectedResource) {
-      if (map.getSource('resources')) {
+    if (import.meta.env.VITE_DEBUG) console.log('Map.vue DataStore.selectedResource watch, map.isStyleLoaded():', map.isStyleLoaded(), 'newSelectedResource:', newSelectedResource, 'oldSelectedResource:', oldSelectedResource);
+    if (map.isStyleLoaded()) {
+      if (oldSelectedResource) {
         map.setPaintProperty(
-          'resources',
-          'circle-radius',
-          ['match',
-          ['get', '_featureId'],
-          newSelectedResource,
-          12,
-          7,
-          ]
-        )
-      };
-      if (DataStore.sources[DataStore.appType].features) {
-        const dataPoint = DataStore.sources[DataStore.appType].features.filter(item => item._featureId == newSelectedResource)[0];
+            'resources',
+            'circle-radius',
+            ['match',
+            ['get', '_featureId'],
+            oldSelectedResource,
+            7,
+            7,
+            ]
+          )
+        const popup = document.getElementsByClassName('maplibregl-popup');
+        if (popup.length) {
+          popup[0].remove();
+        }
+
+        if ($config.showBuildingFootprint) {
+          map.getSource('buildingFootprints').setData({ type: 'FeatureCollection', features: [] });
+        }
+      }
+      if (newSelectedResource) {
+        if(import.meta.env.VITE_DEBUG) console.log('Map.vue DataStore.selectedResource watch, newSelectedResource:', newSelectedResource);
+        if (map.getSource('resources')) {
+          map.setPaintProperty(
+            'resources',
+            'circle-radius',
+            ['match',
+            ['get', '_featureId'],
+            newSelectedResource,
+            12,
+            7,
+            ]
+          )
+        };
+        if (import.meta.env.VITE_DEBUG) console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources[DataStore.appType].data:', DataStore.sources[DataStore.appType].data, 'DataStore.sources[DataStore.appType].data.features:', DataStore.sources[DataStore.appType].data.features);
+        
+        let dataPoint;
+        if (DataStore.sources[DataStore.appType].data.features) {
+          if (import.meta.env.VITE_DEBUG) console.log('DataStore.sources[DataStore.appType].data.features:', DataStore.sources[DataStore.appType].data.features, 'newSelectedResource:', newSelectedResource);
+          dataPoint = DataStore.sources[DataStore.appType].data.features.filter(item => item._featureId == newSelectedResource)[0];
+        } else if (DataStore.sources[DataStore.appType].features) {
+          if (import.meta.env.VITE_DEBUG) console.log('DataStore.sources[DataStore.appType].data.features:', DataStore.sources[DataStore.appType].data.features, 'newSelectedResource:', newSelectedResource);
+          dataPoint = DataStore.sources[DataStore.appType].features.filter(item => item._featureId == newSelectedResource)[0];
+        }
+
         if (import.meta.env.VITE_DEBUG) console.log('dataPoint:', dataPoint);
         if (MainStore.lastSelectMethod == 'row') {
           map.setCenter(dataPoint.geometry.coordinates);
         }
-        // map.setZoom(15);
 
         const popup = document.getElementsByClassName('maplibregl-popup');
         if (popup.length) {
@@ -194,28 +358,17 @@ watch(
         }
         new maplibregl.Popup({ className: 'my-class' })
           .setLngLat(dataPoint.geometry.coordinates)
-          .setHTML(dataPoint.properties.site_name)
+          .setHTML(`<div id="popup-div">${dataPoint.properties[$config.locationInfo.siteNameField]}</div>`)
           .setMaxWidth("300px")
           .addTo(map);
+
+        document.getElementById('popup-div').addEventListener('click', clickedPopup);
+
+        if ($config.showBuildingFootprint) {
+          map.getSource('buildingFootprints').setData(dataPoint.buildingFootprint);
+        }
       }
     }
-  }
-)
-
-// TODO - this is going to need to be tested against all apps
-const database = computed(() => {
-  if (DataStore.sources[DataStore.appType]) {
-    return DataStore.sources[DataStore.appType].rows || DataStore.sources[DataStore.appType] || DataStore.sources[DataStore.appType].data;
-  }
-});
-
-watch(
-  () => database.value,
-  async newData => {
-    if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue watch database, newData:', newData);
-    let geojson = featureCollection(newData);
-    if (import.meta.env.VITE_DEBUG == 'true') console.log('geojson:', geojson, 'map.getStyle().sources.resources.data:', map.getStyle().sources.resources.data);
-    map.getSource('resources').setData(newData);
   }
 )
 
@@ -223,19 +376,19 @@ watch(
 watch(
   () => GeocodeStore.aisData,
   async newAddress => {
-    if (import.meta.env.VITE_DEBUG == 'true') console.log('MapStore aisData watch, newAddress:', newAddress);
+    if (import.meta.env.VITE_DEBUG) console.log('MapStore aisData watch, newAddress:', newAddress);
     if (newAddress.features && newAddress.features[0].geometry.coordinates.length) {
       const newCoords = newAddress.features[0].geometry.coordinates;
-      // if (MainStore.lastSearchMethod !== 'mapClick') {
       map.setCenter(newCoords);
-      map.setZoom(14);
-      // }
+      map.setZoom(12);
       MapStore.currentAddressCoords = newCoords;
   
       const popup = document.getElementsByClassName('maplibregl-popup');
       if (popup.length) {
         popup[0].remove();
       }
+    } else {
+      MapStore.currentAddressCoords = [];
     }
   }
 )
@@ -252,37 +405,250 @@ const pwdCoordinates = computed(() => {
 watch(
   () => pwdCoordinates.value,
   newCoords => {
-  if (import.meta.env.VITE_DEBUG == 'true') console.log('Map pwdCoordinates watch, newCoords:', newCoords, 'MapStore.addressMarker:', MapStore.addressMarker);
+  if (import.meta.env.VITE_DEBUG) console.log('Map pwdCoordinates watch, newCoords:', newCoords, 'MapStore.addressMarker:', MapStore.addressMarker);
   if (newCoords.length) {
     const address = point(newCoords);
     map.getSource('addressMarker').setData(address);
+  } else if (map.getSource('addressMarker')) {
+    map.getSource('addressMarker').setData({ type: 'FeatureCollection', features: [] });
   }
 });
 
-const labelLayers = computed(() => { return MapStore.labelLayers; });
+// const labelLayers = computed(() => { return MapStore.labelLayers; });
+
+// watch(
+//   () => labelLayers,
+//   (newLabelLayers) => {
+//     setLabelLayers(newLabelLayers.value);
+//   },
+//   { deep: true }
+// )
+
+const selectedZipcode = computed(() => {
+  return MainStore.selectedZipcode;
+});
+
+const zipcodeData = computed(() => {
+  let zipcode = featureCollection([]);
+  if (selectedZipcode.value && DataStore.zipcodes.features) {
+    let zipcodesData = DataStore.zipcodes;
+    let theSelectedZipcode = selectedZipcode.value;
+    if (zipcodesData && selectedZipcode) {
+      zipcode = zipcodesData.features.filter(item => item.properties.CODE == theSelectedZipcode)[0];
+    }
+  }
+  return zipcode;
+});
 
 watch(
-  () => labelLayers,
-  (newLabelLayers) => {
-    setLabelLayers(newLabelLayers.value);
-  },
-  { deep: true }
+  () => zipcodeData.value,
+  async newZipcodeData => {
+    map.getSource('zipcode').setData(newZipcodeData);
+    if (import.meta.env.VITE_DEBUG) console.log('watch zipcodeData.value, newZipcodeData:', newZipcodeData);
+  }
 )
 
-const setLabelLayers = (newLabelLayers) => {
-  if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue setLabelLayers, newLabelLayers:', newLabelLayers, 'map.getStyle().layers:', map.getStyle().layers);
-    if (newLabelLayers.length) {
-      newLabelLayers.forEach(layer => {
-        if (!map.getSource(layer.id)) {
-          // if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue setLabelLayers, NOT THERE, layer:', layer, 'layer.id:', layer.id, 'JSON.parse(JSON.stringify(layer.source)):', JSON.parse(JSON.stringify(layer.source)));
-          map.addSource(layer.id, JSON.parse(JSON.stringify(layer.source)));
-        } else {
-          // if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue setLabelLayers, YES THERE, layer:', layer, 'layer.id:', layer.id, 'JSON.parse(JSON.stringify(layer.source)):', JSON.parse(JSON.stringify(layer.source)));
-          map.getSource(layer.id).setData(layer.source.data);
-        }
-      })
+watch(
+  () => MapStore.zipcodeCenter,
+  async newZipcodeCenter => {
+    if (import.meta.env.VITE_DEBUG) console.log('Map.vue zipcodeCenter watch, newZipcodeCenter:', newZipcodeCenter);
+    if (newZipcodeCenter.length) {
+      map.setCenter(newZipcodeCenter);
     }
-    // if (import.meta.env.VITE_DEBUG == 'true') console.log('Map.vue setLabelLayers, map.getStyle:', map.getStyle(), 'map.getStyle().layers:', map.getStyle().layers, 'map.getStyle().sources:', map.getStyle().sources);
+  }
+)
+
+// const setLabelLayers = (newLabelLayers) => {
+//   if (import.meta.env.VITE_DEBUG) console.log('Map.vue setLabelLayers, newLabelLayers:', newLabelLayers, 'map.getStyle().layers:', map.getStyle().layers);
+//     if (newLabelLayers.length) {
+//       newLabelLayers.forEach(layer => {
+//         if (!map.getSource(layer.id)) {
+//           //  if (import.meta.env.VITE_DEBUG) console.log('Map.vue setLabelLayers, NOT THERE, layer:', layer, 'layer.id:', layer.id, 'JSON.parse(JSON.stringify(layer.source)):', JSON.parse(JSON.stringify(layer.source)));
+//           map.addSource(layer.id, JSON.parse(JSON.stringify(layer.source)));
+//         } else {
+//           //  if (import.meta.env.VITE_DEBUG) console.log('Map.vue setLabelLayers, YES THERE, layer:', layer, 'layer.id:', layer.id, 'JSON.parse(JSON.stringify(layer.source)):', JSON.parse(JSON.stringify(layer.source)));
+//           map.getSource(layer.id).setData(layer.source.data);
+//         }
+//       })
+//     }
+//     //  if (import.meta.env.VITE_DEBUG) console.log('Map.vue setLabelLayers, map.getStyle:', map.getStyle(), 'map.getStyle().layers:', map.getStyle().layers, 'map.getStyle().sources:', map.getStyle().sources);
+// }
+
+const imagerySelected = ref('2023');
+
+const toggleImagery = () => {
+  if (import.meta.env.VITE_DEBUG) console.log('toggleImagery, map.getStyle:', map.getStyle(), '$mapConfig.mapLayers:', $mapConfig.mapLayers);
+  if (!MapStore.imageryOn) {
+    MapStore.imageryOn = true;
+    map.addLayer($mapConfig.mapLayers[imagerySelected.value], 'cyclomediaRecordings')
+    map.addLayer($mapConfig.mapLayers.imageryLabels, 'cyclomediaRecordings')
+  } else {
+    if (import.meta.env.VITE_DEBUG) console.log('map.getStyle().layers:', map.getStyle().layers);
+    MapStore.imageryOn = false;
+    map.removeLayer(imagerySelected.value);
+    map.removeLayer('imageryLabels');
+  }
+}
+
+const removeAllCyclomediaMapLayers = () => {
+  let recordingsGeojson = {
+    type: 'FeatureCollection',
+    features: []
+  }
+  map.getSource('cyclomediaRecordings').setData(recordingsGeojson);
+  $mapConfig.pwdDrawnMapStyle.sources.cyclomediaRecordings.data.features = [];
+
+  let cameraGeojson = point([0,0]);
+  map.getSource('cyclomediaCamera').setData(cameraGeojson);
+  $mapConfig.pwdDrawnMapStyle.sources.cyclomediaCamera.data = cameraGeojson;
+  let viewConeGeojson = polygon([[[0,0], [0,0], [0,0], [0,0]]]);
+  map.getSource('cyclomediaViewcone').setData(viewConeGeojson);
+  $mapConfig.pwdDrawnMapStyle.sources.cyclomediaViewcone.data = viewConeGeojson;
+  MapStore.setCyclomediaCameraLngLat(MapStore.cyclomediaCameraLngLat, null);
+}
+
+// toggle cyclomedia on and off
+const toggleCyclomedia = async() => {
+  if (import.meta.env.VITE_DEBUG) console.log('toggleCyclomedia, map.getStyle().sources:', map.getStyle().sources, 'map.getStyle().layers:', map.getStyle().layers);
+  MapStore.cyclomediaOn = !MapStore.cyclomediaOn;
+  if (MapStore.cyclomediaOn) {
+    MapStore.eagleviewOn = false;
+    const zoom = map.getZoom();
+    if (zoom > 16.5) {
+      await updateCyclomediaRecordings();
+      if (MapStore.cyclomediaCameraLngLat) {
+        if (import.meta.env.VITE_DEBUG) console.log('in toggleCyclomedia, calling updateCyclomediaCameraLngLat, MapStore.cyclomediaCameraLngLat:', MapStore.cyclomediaCameraLngLat);
+        updateCyclomediaCameraLngLat(MapStore.cyclomediaCameraLngLat);
+      }
+      if (MapStore.cyclomediaCameraHFov && MapStore.cyclomediaCameraYaw) {
+        if (import.meta.env.VITE_DEBUG) console.log('calling updateCyclomediaCameraViewcone');
+        updateCyclomediaCameraViewcone(MapStore.cyclomediaCameraHFov, MapStore.cyclomediaCameraYaw);
+      }
+    }
+  } else {
+    removeAllCyclomediaMapLayers();
+  }
+}
+
+// an object class called CyclomediaRecordingsClient is used for adding the cyclomedia recordings circles to the map 
+let cyclomediaRecordingsClient = new CyclomediaRecordingsClient(
+  'https://atlasapi.cyclomedia.com/api/recording/wfs',
+  import.meta.env.VITE_CYCLOMEDIA_USERNAME,
+  import.meta.env.VITE_CYCLOMEDIA_PASSWORD,
+  4326,
+);
+
+const updateCyclomediaRecordings = async () => {
+  // if (import.meta.env.VITE_DEBUG) console.log('updateCyclomediaRecordings is running');
+  const bounds = map.getBounds();
+  cyclomediaRecordingsClient.getRecordings(
+    bounds,
+    recordings => {
+      let geojson = {
+        type: 'FeatureCollection',
+        features: []
+      }
+      let features = [];
+      for (let item of recordings) {
+        features.push({
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: [item.lng, item.lat]
+          },
+          properties: {
+            id: item.imageId,
+            type: 'cyclomediaRecording',
+          }
+        })
+      }
+      geojson.features = features;
+      // if (import.meta.env.VITE_DEBUG) console.log("map.getSource('cyclomediaRecordings'):", 'map.getStyle().layers:', map.getStyle().layers);
+      map.getSource('cyclomediaRecordings').setData(geojson);
+      // I don't know why this works - maybe because the mergeDeep is still running
+      $mapConfig.pwdDrawnMapStyle.sources.cyclomediaRecordings.data.features = features;
+    },
+  );
+}
+
+// everything for adding, moving, and orienting the cyclomedia camera icon and viewcone
+const updateCyclomediaCameraLngLat = (lngLat) => {
+  // if (import.meta.env.VITE_DEBUG) console.log('updateCyclomediaCameraLngLat is running, lngLat:', lngLat);
+  if (!MapStore.cyclomediaOn) {
+    return;
+  } else {
+    const theData = point(lngLat);
+    map.getSource('cyclomediaCamera').setData(theData);
+    $mapConfig.pwdDrawnMapStyle.sources.cyclomediaCamera.data = theData;
+  }
+}
+
+const updateCyclomediaCameraAngle = (newOrientation) => {
+  // if (import.meta.env.VITE_DEBUG) console.log('updateCyclomediaCameraAngle is running, newOrientation:', newOrientation);
+  if (!newOrientation) {
+    newOrientation = MapStore.cyclomediaCameraYaw;
+  }
+  map.setLayoutProperty('cyclomediaCamera', 'icon-rotate', newOrientation);
+}
+
+const updateCyclomediaCameraViewcone = (cycloHFov, cycloYaw) => {
+  const halfAngle = cycloHFov / 2.0;
+  let angle1 = cycloYaw - halfAngle;
+  let angle2 = cycloYaw + halfAngle;
+  if (import.meta.env.VITE_DEBUG) console.log('updateCyclomediaCameraViewcone, cycloHFov:', cycloHFov, 'halfAngle:', halfAngle, 'angle1:', angle1, 'cycloYaw:', cycloYaw, 'angle2:', angle2);
+  const watchedZoom = map.getZoom();
+  let distance;
+  if (watchedZoom < 9) {
+    distance = 2000 * (21 - watchedZoom);
+  } else if (watchedZoom < 10) {
+    distance = 1000 * (21 - watchedZoom);
+  } else if (watchedZoom < 11) {
+    distance = 670 * (21 - watchedZoom);
+  } else if (watchedZoom < 12) {
+    distance = 420 * (21 - watchedZoom);
+  } else if (watchedZoom < 13) {
+    distance = 270 * (21 - watchedZoom);
+  } else if (watchedZoom < 14) {
+    distance = 150 * (21 - watchedZoom);
+  } else if (watchedZoom < 15) {
+    distance = 100 * (21 - watchedZoom);
+  } else if (watchedZoom < 16) {
+    distance = 55 * (21 - watchedZoom);
+  } else if (watchedZoom < 17) {
+    distance = 30 * (21 - watchedZoom);
+  } else if (watchedZoom < 18) {
+    distance = 25 * (21 - watchedZoom);
+  } else if (watchedZoom < 20.4) {
+    distance = 15 * (21 - watchedZoom);
+  } else {
+    distance = 10;
+  }
+
+  const cyclomediaCameraLngLat = MapStore.cyclomediaCameraLngLat;
+  let options = { units: 'feet' };
+  if (!cyclomediaCameraLngLat) {
+    if (import.meta.env.VITE_DEBUG) console.log('no cyclomediaCameraLngLat');
+    return;
+  }
+  if (import.meta.env.VITE_DEBUG) console.log('cyclomediaCameraLngLat:', cyclomediaCameraLngLat);
+
+  var destination1 = destination([ cyclomediaCameraLngLat[0], cyclomediaCameraLngLat[1] ], distance, angle1, options);
+  var destination2 = destination([ cyclomediaCameraLngLat[0], cyclomediaCameraLngLat[1] ], distance, angle2, options);
+  let data = {
+    type: 'Feature',
+    geometry: {
+      type: 'Polygon',
+      coordinates: [[
+        [ cyclomediaCameraLngLat[0], cyclomediaCameraLngLat[1] ],
+        [ destination1.geometry.coordinates[0], destination1.geometry.coordinates[1] ],
+        [ destination2.geometry.coordinates[0], destination2.geometry.coordinates[1] ],
+        [ cyclomediaCameraLngLat[0], cyclomediaCameraLngLat[1] ],
+      ]],
+    }
+  }
+
+  map.getSource('cyclomediaViewcone').setData(data);
+  $mapConfig.pwdDrawnMapStyle.sources.cyclomediaViewcone.data = data;
 }
 
 </script>
@@ -292,7 +658,7 @@ const setLabelLayers = (newLabelLayers) => {
     id="map"
     class="map map-class"
   >
-  <div
+    <div
       v-if="MainStore.addressSearchRunning"
       class="map-cover is-align-content-center has-text-centered"
     >
@@ -300,26 +666,45 @@ const setLabelLayers = (newLabelLayers) => {
         icon="fa-solid fa-spinner"
         class="fa-6x center-spinner"
         spin
-        />
+      />
     </div>
 
-    <AddressSearchControl :input-id="'map-search-input'" />
-    <!-- <ImageryToggleControl @toggle-imagery="toggleImagery" />
-    <ImageryDropdownControl
+    <AddressSearchControl
+      v-if="!isMobile"
+      :input-id="'map-search-input'"
+    />
+
+    <GeolocateControl
+      @geolocate="$emit('geolocate')"
+    />
+    <!-- @geolocate="MapStore.geolocate" -->
+
+    <ImageryToggleControl @toggle-imagery="toggleImagery" />
+    <CyclomediaControl @toggle-cyclomedia="toggleCyclomedia" />
+
+    <!-- <ImageryDropdownControl
       v-if="MapStore.imageryOn"
       @set-imagery="setImagery"
     /> -->
-    <!-- <OverlayLegend
-      v-show="!MapStore.imageryOn && ['stormwater'].includes(MainStore.currentTopic)"
-      :items="$config.stormwaterLegendData"
-      :options="{ shape: 'square' }"
-    />
+
     <OverlayLegend
-      v-show="!MapStore.imageryOn && ['deeds', 'zoning'].includes(MainStore.currentTopic)"
-      :items="$config.dorLegendData"
-      :options="{ shape: 'square' }"
-    /> -->
+      v-if="$config.legendControl"
+      :items="$config.legendControl.legend.data"
+      :options="{ shape: 'circle' }"
+    />
+
   </div>
+  <KeepAlive>
+    <CyclomediaPanel
+      v-if="MapStore.cyclomediaOn"
+      @update-camera-yaw="updateCyclomediaCameraAngle"
+      @update-camera-h-fov="updateCyclomediaCameraViewcone"
+      @update-camera-lng-lat="updateCyclomediaCameraLngLat"
+      @toggle-cyclomedia="toggleCyclomedia"
+    />
+  </KeepAlive>
+
+
 </template>
 
 <style>
