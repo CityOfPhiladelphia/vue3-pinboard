@@ -662,7 +662,7 @@ const checkServices = (row) => {
 };
 
 const getDistances = (row) => {
-  if (import.meta.env.VITE_DEBUG) console.log('getDistances, row:', row);
+  // if (import.meta.env.VITE_DEBUG) console.log('getDistances, row:', row);
   if (row.geometry) {
     let comparePoint;
     if (GeocodeStore.aisData.features) {
@@ -744,7 +744,7 @@ const checkKeywords = (row) => {
           results[keyword] = ['true'];
         }
       } else {
-        if (import.meta.env.VITE_DEBUG) console.log('fuse.search(keyword):', fuse.search(keyword), 'description:', description);
+        // if (import.meta.env.VITE_DEBUG) console.log('fuse.search(keyword):', fuse.search(keyword), 'description:', description);
         results[keyword] = fuse.search(keyword);
       }
     }

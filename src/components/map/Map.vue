@@ -126,13 +126,17 @@ onMounted(async () => {
         if (popup.length) {
           popup[0].remove();
         }
-        new maplibregl.Popup({ className: 'my-class' })
-          .setLngLat(dataPoint.geometry.coordinates)
-          .setHTML(`<div id="popup-div">${dataPoint.properties[$config.locationInfo.siteNameField]}</div>`)
-          .setMaxWidth("300px")
-          .addTo(map);
+        const currentDataIncludesCurrentPoint = DataStore.currentData.filter(item => item._featureId == dataPoint._featureId).length>0;
+        if (currentDataIncludesCurrentPoint) {
+          new maplibregl.Popup({ className: dataPoint._featureId })
+            .setLngLat(dataPoint.geometry.coordinates)
+            .setHTML(`<div id="popup-div">${dataPoint.properties[$config.locationInfo.siteNameField]}</div>`)
+            .setMaxWidth("300px")
+            .addTo(map);
+        
+          document.getElementById('popup-div').addEventListener('click', clickedPopup);
+        }
 
-        document.getElementById('popup-div').addEventListener('click', clickedPopup);
         
         if ($config.showBuildingFootprint) {
           map.getSource('buildingFootprints').setData(dataPoint.buildingFootprint);
@@ -236,7 +240,7 @@ onMounted(async () => {
   });
 
   map.on('mouseenter', 'resources', (e) => {
-    if (import.meta.env.VITE_DEBUG) console.log('mouseenter, e:', e);
+    // if (import.meta.env.VITE_DEBUG) console.log('mouseenter, e:', e);
     if (e.features.length > 0) {
       map.getCanvas().style.cursor = 'pointer'
     }
@@ -356,7 +360,7 @@ watch(
         if (popup.length) {
           popup[0].remove();
         }
-        new maplibregl.Popup({ className: 'my-class' })
+        new maplibregl.Popup({ className: dataPoint._featureId })
           .setLngLat(dataPoint.geometry.coordinates)
           .setHTML(`<div id="popup-div">${dataPoint.properties[$config.locationInfo.siteNameField]}</div>`)
           .setMaxWidth("300px")
@@ -458,21 +462,22 @@ watch(
   }
 )
 
-// const setLabelLayers = (newLabelLayers) => {
-//   if (import.meta.env.VITE_DEBUG) console.log('Map.vue setLabelLayers, newLabelLayers:', newLabelLayers, 'map.getStyle().layers:', map.getStyle().layers);
-//     if (newLabelLayers.length) {
-//       newLabelLayers.forEach(layer => {
-//         if (!map.getSource(layer.id)) {
-//           //  if (import.meta.env.VITE_DEBUG) console.log('Map.vue setLabelLayers, NOT THERE, layer:', layer, 'layer.id:', layer.id, 'JSON.parse(JSON.stringify(layer.source)):', JSON.parse(JSON.stringify(layer.source)));
-//           map.addSource(layer.id, JSON.parse(JSON.stringify(layer.source)));
-//         } else {
-//           //  if (import.meta.env.VITE_DEBUG) console.log('Map.vue setLabelLayers, YES THERE, layer:', layer, 'layer.id:', layer.id, 'JSON.parse(JSON.stringify(layer.source)):', JSON.parse(JSON.stringify(layer.source)));
-//           map.getSource(layer.id).setData(layer.source.data);
-//         }
-//       })
-//     }
-//     //  if (import.meta.env.VITE_DEBUG) console.log('Map.vue setLabelLayers, map.getStyle:', map.getStyle(), 'map.getStyle().layers:', map.getStyle().layers, 'map.getStyle().sources:', map.getStyle().sources);
-// }
+watch(
+  () => MainStore.routeChangeCounter,
+  async() => {
+    const popup = document.getElementsByClassName('maplibregl-popup')[0];
+    let popupClass, currentPoint
+    let currentDataIncludesCurrentPoint = true;
+    if (popup) {
+      popupClass = popup.className;
+      currentPoint = popupClass.split(' ')[1];
+      currentDataIncludesCurrentPoint = DataStore.currentData.filter(item => item._featureId == currentPoint).length>0;
+      if (!currentDataIncludesCurrentPoint) {
+        popup.remove();
+      }
+    }
+  }
+)
 
 const imagerySelected = ref('2023');
 

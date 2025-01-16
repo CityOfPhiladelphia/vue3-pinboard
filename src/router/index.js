@@ -130,6 +130,8 @@ const initRouter = (publicPath) => {
     } else {
       MainStore.selectedKeywords = [];
     }
+
+    MainStore.routeChangeCounter++;
   });
 
   return router;
