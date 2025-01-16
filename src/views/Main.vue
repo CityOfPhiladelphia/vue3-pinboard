@@ -197,10 +197,6 @@ const refineOpen = computed(() => {
   return MainStore.refineOpen;
 });
 
-// const holidays = computed(() => {
-//   return DataStore.holidays;
-// });
-
 const holiday = computed(() => {
   return MainStore.holiday;
 });
