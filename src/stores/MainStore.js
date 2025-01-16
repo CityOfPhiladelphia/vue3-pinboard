@@ -32,7 +32,7 @@ export const useMainStore = defineStore('MainStore', {
       subsections: [],
       firstRouteLoaded: false,
       submittedCheckboxValue: null,
-      routeChangeCounter: 0,
+      filterChangeCounter: 0,
     };
   },
 

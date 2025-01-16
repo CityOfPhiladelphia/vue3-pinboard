@@ -463,7 +463,7 @@ watch(
 )
 
 watch(
-  () => MainStore.routeChangeCounter,
+  () => MainStore.filterChangeCounter,
   async() => {
     const popup = document.getElementsByClassName('maplibregl-popup')[0];
     let popupClass, currentPoint

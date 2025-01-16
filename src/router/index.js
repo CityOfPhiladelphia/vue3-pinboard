@@ -131,7 +131,7 @@ const initRouter = (publicPath) => {
       MainStore.selectedKeywords = [];
     }
 
-    MainStore.routeChangeCounter++;
+    MainStore.filterChangeCounter++;
   });
 
   return router;
