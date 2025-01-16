@@ -30,6 +30,14 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.1.7 - 1/16/2025
+
+* fixes automatic holiday banner
+
+### 2.1.6 - 1/16/2025
+
+* fixes removing zipcode from map if you hit back button
+
 ### 2.1.5 - 1/16/2025
 
 * fixes README for new vue3-pinboard repo
