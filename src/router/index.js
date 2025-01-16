@@ -127,6 +127,8 @@ const initRouter = (publicPath) => {
     }
     if (to.query.keyword && to.query.keyword.length) {
       MainStore.selectedKeywords = to.query.keyword.split(',');
+    } else {
+      MainStore.selectedKeywords = [];
     }
   });
 
