@@ -399,7 +399,7 @@ const database = computed(() => {
 });
 
 watch(
-  () => database,
+  () => database.value,
   async nextDatabase => {
     // if (import.meta.env.VITE_DEBUG) console.log('watch database is calling getRefineSearchList, nextDatabase:', nextDatabase);
     getRefineSearchList();

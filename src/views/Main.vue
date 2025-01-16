@@ -64,8 +64,6 @@ const addressInputPlaceholder = ref(null);
 const showForceHolidayBanner = ref(false);
 const showAutomaticHolidayBanner = ref(false);
 
-if (import.meta.env.VITE_DEBUG) console.log('watch test');
-
 if ($config.app.logoLink && $config.app.logoLink == 'none') {
   brandingLink.value = {
     style: 'pointer-events: none',
@@ -199,9 +197,9 @@ const refineOpen = computed(() => {
   return MainStore.refineOpen;
 });
 
-const holidays = computed(() => {
-  return DataStore.holidays;
-});
+// const holidays = computed(() => {
+//   return DataStore.holidays;
+// });
 
 const holiday = computed(() => {
   return MainStore.holiday;
@@ -250,62 +248,58 @@ const closureMessageAllSites = computed(() => {
   return message;
 });
 
-// watch
-watch(
-  () => holidays,
-  async nextHolidays => {
-    if (import.meta.env.VITE_DEBUG) console.log('watch holidays, nextHolidays:', nextHolidays);
-    let currentYear = format(new Date(), 'yyyy');
-    let currentMonth = format(new Date(), 'MM');
-    let currentDay = format(new Date(), 'dd');
-    let dateStart = new Date(currentYear, currentMonth-1, currentDay);
-    // let dateStart = new Date(2023, 0, 2);
-    // if (import.meta.env.VITE_DEBUG) console.log('currentYear:', currentYear, 'currentMonth:', currentMonth, 'currentDay:', currentDay, 'dateStart:', dateStart, 'dateStartUnix:', parseInt(format(dateStart, 'T')));
-    let currentUnixDate = parseInt(format(dateStart, 'T'));
+const getHoliday = () => {
+  if (import.meta.env.VITE_DEBUG) console.log('watch holidays, DataStore.holidays:', DataStore.holidays);
+  let currentYear = format(new Date(), 'yyyy');
+  let currentMonth = format(new Date(), 'MM');
+  let currentDay = format(new Date(), 'dd');
+  let dateStart = new Date(currentYear, currentMonth-1, currentDay);
+  // let dateStart = new Date(2023, 0, 2);
+  // if (import.meta.env.VITE_DEBUG) console.log('currentYear:', currentYear, 'currentMonth:', currentMonth, 'currentDay:', currentDay, 'dateStart:', dateStart, 'dateStartUnix:', parseInt(format(dateStart, 'T')));
+  let currentUnixDate = parseInt(format(dateStart, 'T'));
 
-    let holi = {
-      holiday_label: '',
-      start_date: '',
-      coming_soon: false,
-      current: false,
-      just_passed: false,
-    };
+  let holi = {
+    holiday_label: '',
+    start_date: '',
+    coming_soon: false,
+    current: false,
+    just_passed: false,
+  };
 
-    for (let holiday of nextHolidays.holidays) {
-      // if (import.meta.env.VITE_DEBUG) console.log('holiday.start_date:', holiday.start_date, parseISO(format(holiday.start_date, 'T')));
-      // if (import.meta.env.VITE_DEBUG) console.log('currentUnixDate:', currentUnixDate, 'holiday.start_date:', holiday.start_date, parseInt(format(parseISO(holiday.start_date), 'T')));
-      let oneWeekAhead = parseInt(format(subWeeks(parseISO(holiday.start_date), 1), 'T'));
-      let actualHoliday = parseInt(format(parseISO(holiday.start_date), 'T'));
-      let oneWeekBehind = parseInt(format(addWeeks(parseISO(holiday.start_date), 1), 'T'));
+  for (let holiday of DataStore.holidays) {
+    // if (import.meta.env.VITE_DEBUG) console.log('holiday.start_date:', holiday.start_date, parseISO(format(holiday.start_date, 'T')));
+    // if (import.meta.env.VITE_DEBUG) console.log('currentUnixDate:', currentUnixDate, 'holiday.start_date:', holiday.start_date, parseInt(format(parseISO(holiday.start_date), 'T')));
+    let oneWeekAhead = parseInt(format(subWeeks(parseISO(holiday.start_date), 1), 'T'));
+    let actualHoliday = parseInt(format(parseISO(holiday.start_date), 'T'));
+    let oneWeekBehind = parseInt(format(addWeeks(parseISO(holiday.start_date), 1), 'T'));
 
-      if (currentUnixDate >= oneWeekAhead && currentUnixDate < actualHoliday) {
-        holi.holiday_label = holiday.holiday_label;
-        holi.coming_soon = true;
-        holi.start_date = holiday.start_date;
-      } else if (currentUnixDate == actualHoliday) {
-        holi.holiday_label = holiday.holiday_label;
-        holi.current = true;
-        holi.start_date = holiday.start_date;
-      } else if (currentUnixDate <= oneWeekBehind && currentUnixDate > actualHoliday) {
-        holi.holiday_label = holiday.holiday_label;
-        holi.just_passed = true;
-      }
-      // if (import.meta.env.VITE_DEBUG) console.log('holiday.start_date:', holiday.start_date, format(holiday.start_date, 'T'));
+    if (currentUnixDate >= oneWeekAhead && currentUnixDate < actualHoliday) {
+      holi.holiday_label = holiday.holiday_label;
+      holi.coming_soon = true;
+      holi.start_date = holiday.start_date;
+    } else if (currentUnixDate == actualHoliday) {
+      holi.holiday_label = holiday.holiday_label;
+      holi.current = true;
+      holi.start_date = holiday.start_date;
+    } else if (currentUnixDate <= oneWeekBehind && currentUnixDate > actualHoliday) {
+      holi.holiday_label = holiday.holiday_label;
+      holi.just_passed = true;
     }
-    // if (import.meta.env.VITE_DEBUG) console.log('watch holidays, holi.holiday_label:', holi.holiday_label, 'holi.coming_soon:', holi.coming_soon, 'holi.current:', holi.current);
-    MainStore.holiday = holi;
+    // if (import.meta.env.VITE_DEBUG) console.log('holiday.start_date:', holiday.start_date, format(holiday.start_date, 'T'));
   }
-);
+  // if (import.meta.env.VITE_DEBUG) console.log('watch holidays, holi.holiday_label:', holi.holiday_label, 'holi.coming_soon:', holi.coming_soon, 'holi.current:', holi.current);
+  MainStore.holiday = holi;
+};
 
 watch(
-  () => database,
+  () => database.value,
   async nextDatabase => {
     DataStore.databaseWithoutHiddenItems = nextDatabase;
   }
 );
 
 watch(
-  () => i18nLocale,
+  () => i18nLocale.value,
   async nexti18nLocale => {
     // if (import.meta.env.VITE_DEBUG) console.log('watch i18nLocale, nexti18nLocale:', nexti18nLocale);
     let startQuery = { ...route.query };
@@ -459,6 +453,7 @@ onBeforeMount(() => {
 onMounted(async() => {
   await nextTick();
   setHeights();
+  getHoliday();
 
   $config.searchBar.searchTypes.forEach(item => {
     if (route.query[item]) {
