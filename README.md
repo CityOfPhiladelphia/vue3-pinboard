@@ -13,9 +13,9 @@ It is used to create multiple apps for the City of Philadelphia, including:
 |[Resources for immigrants](https://www.phila.gov/oia/resource-finder/)|[repo](https://github.com/CityOfPhiladelphia/immigrant-resource-finder)|
 |[Resources for recycling and donation](https://www.phila.gov/recycling-donation-finder/)|[repo](https://github.com/CityOfPhiladelphia/recycling-and-donation-finder)|
 
-![Phone_List_Example](https://mapboard-images.s3.amazonaws.com/vue3-pinboard/vue3pinboard_phone_list.JPG)
-![Phone_Map_Example](https://mapboard-images.s3.amazonaws.com/vue3-pinboard/vue3pinboard_phone_map.JPG)
-![Desktop_Example](https://mapboard-images.s3.amazonaws.com/vue3-pinboard/vue3pinboard_desktop.JPG)
+![Phone_List_Example](https://mapboard-images.s3.amazonaws.com/vue3-pinboard/vue3pinboard_phone_list.png)
+![Phone_Map_Example](https://mapboard-images.s3.amazonaws.com/vue3-pinboard/vue3pinboard_phone_map.png)
+![Desktop_Example](https://mapboard-images.s3.amazonaws.com/vue3-pinboard/vue3pinboard_desktop.png)
 
 ## Setup
 `npm install`
