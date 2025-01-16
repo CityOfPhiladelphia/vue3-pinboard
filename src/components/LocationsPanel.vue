@@ -273,6 +273,7 @@ watch(
   async nextSearchDistance => {
     if (import.meta.env.VITE_DEBUG) console.log('watch searchDistance, nextSearchDistance:', nextSearchDistance, 'parseInt(nextSearchDistance):', parseInt(nextSearchDistance));
     MapStore.searchDistance = parseInt(nextSearchDistance);
+    MainStore.filterChangeCounter++;
   }
 );
 

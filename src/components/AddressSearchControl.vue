@@ -121,7 +121,7 @@ const handleSubmit = (val) => {
       if (import.meta.env.VITE_DEBUG) console.log('in handleSubmit, checking checkboxText');
       // let match = checkboxText.value.filter((value) => value.toLowerCase() === val.toLowerCase());
       for (let key of Object.keys(checkboxText.value)) {
-        if (import.meta.env.VITE_DEBUG) console.log('key:', key);
+        // if (import.meta.env.VITE_DEBUG) console.log('key:', key);
         if (key.toLowerCase() == val.toLowerCase()) {
           if (import.meta.env.VITE_DEBUG) console.log('in handleSubmit, checking checkboxText - its there');
           // alert('There is already a checkbox or radio button for that search term');
