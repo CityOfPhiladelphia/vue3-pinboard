@@ -529,26 +529,24 @@ watch(
   async (nextSelected, lastSelected) => {
     if (nextSelected === lastSelected) return;
     if (import.meta.env.VITE_DEBUG) console.log('watch selectedArray is firing, nextSelected:', nextSelected, 'lastSelected:', lastSelected);
-    // MainStore.selectedServices = nextSelected;
-    // if (typeof nextSelected === 'string') {
-    //   nextSelected = [nextSelected];
-    // }
-    // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedArray is firing, nextSelected', nextSelected);
-    // if (!nextSelected.length) {
-    //   return;
-    // }
-    if (!arraysEqual(nextSelected, lastSelected)) {
+
+    // checked MainStore.clearAllClicked condition so that this doesn't re-route again if clearAll is clicked
+    if (!arraysEqual(nextSelected, lastSelected) && !MainStore.clearAllClicked) {
       let startQuery = { ...route.query };
       if (nextSelected.length) {
-        if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedArray is firing, nextSelected', nextSelected);
+        if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedArray will router.push 1, nextSelected', nextSelected, 'startQuery:', startQuery);
         router.push({ query: { ...startQuery, ...{ services: nextSelected.join(',') }}});
       } else {
+        if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedArray will router.push 2, nextSelected', nextSelected, 'startQuery:', startQuery);
         delete startQuery['services'];
         router.push({ query: { ...startQuery }});
       }
     }
     await nextTick();
     refineTopHeight.value = document.querySelector('#refine-top').offsetHeight;
+
+    // sets MainStore.clearAllClicked back to false so that this watch can set the route
+    MainStore.clearAllClicked = false;
   }
 );
 
@@ -793,17 +791,23 @@ const closeBox = (e, box) => {
   // if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, box:', box, 'section:', section, 'boxIndex:', boxIndex);
 };
 
-const clearAll = (e) => {
+const clearAll = async(e) => {
   e.stopPropagation();
-  if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, e:', e);
+
+  // sets clearAllClicked flag to true, so that RefinePanel watch selectedArray doesn't re-route
+  MainStore.clearAllClicked = true;
+
   let startQuery = { ...route.query };
-  if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, startQuery1:', startQuery);
+  if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, e: ', e, 'startQuery1:', startQuery);
+  
   delete startQuery['address'];
   delete startQuery['zipcode'];
   delete startQuery['keyword'];
   delete startQuery['services'];
+  
   if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, startQuery2:', startQuery);
   router.push({ query: { ...startQuery }});
+  
   const payload = {
     lat: null,
     lng: null,

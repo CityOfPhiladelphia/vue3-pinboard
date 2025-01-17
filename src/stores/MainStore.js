@@ -8,6 +8,7 @@ export const useMainStore = defineStore('MainStore', {
       refineList: {},
       printCheckboxes: [],
       shouldShowGreeting: true,
+      clearAllClicked: false,
       // currentSearch: null,
       // alertResponse: null,
       gtag: {

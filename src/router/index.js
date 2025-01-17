@@ -79,6 +79,10 @@ const initRouter = (publicPath) => {
     ]
   })
 
+  router.beforeEach(async (to, from) => {
+    if (import.meta.env.VITE_DEBUG) console.log('router.beforeEach to:', to, 'from:', from);
+  });
+
   router.afterEach(async (to, from) => {
     const DataStore = useDataStore();
     const MainStore = useMainStore();
