@@ -30,6 +30,11 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.1.8 - 1/17/2025
+
+* fixes placement of ExpandCollapse + icon in mobile
+* adds clearAllClicked flag to MainStore, so that RefinePanel.vue watch selectedArray does not change route if it is true
+
 ### 2.1.7 - 1/16/2025
 
 * fixes automatic holiday banner
