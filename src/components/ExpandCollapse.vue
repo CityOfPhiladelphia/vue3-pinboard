@@ -336,7 +336,7 @@ const makeID = (itemTitle) =>{
         </div>
       </div>
       <div
-        class="column is-12-mobile p-0"
+        class="column is-11-mobile p-0"
         :class="allowPrint ? 'is-11-tablet': 'is-12-tablet pl-3'"
       >
         <div
@@ -499,9 +499,10 @@ const makeID = (itemTitle) =>{
   }
 
   .location-icon {
+    padding-left: .5rem;
     padding-top: 1rem;
     padding-bottom: 1rem;
-    text-align: right;
+    // text-align: center;
   }
 
   .section-name {
