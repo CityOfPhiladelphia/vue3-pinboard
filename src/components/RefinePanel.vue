@@ -38,13 +38,9 @@ const props = defineProps({
     type: String,
     default: 'FILTER',
   },
-  // submittedCheckboxValue: {
-  //   type: String,
-  //   default: null,
-  // },
 });
 
-const $emit = defineEmits(['geolocate-control-fire', 'watched-submitted-checkbox-value' ]);
+const $emit = defineEmits(['geolocate-control-fire' ]);
 
 const selected = ref();
 if ($config.refine.type === 'categoryField_value') {
@@ -327,14 +323,6 @@ const refinePanelClass = computed(() => {
   return value;
 });
 
-const infoCircles = computed(() => {
-  let value = {};
-  if ($config.infoCircles) {
-    value = $config.infoCircles;
-  }
-  return value;
-});
-
 const refineType = computed(() => {
   if ($config.refine) {
     return $config.refine.type;
@@ -550,42 +538,6 @@ watch(
   }
 );
 
-// watch(
-//   () => route.query,
-//   async (newQuery, oldQuery) => {
-//     if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch route.query is firing, newQuery:', newQuery, 'oldQuery:', oldQuery);
-//     // if (newQuery.services) {
-//     selectedList.value = {};
-//     if (newQuery.services && refineType.value !== 'categoryField_value') {
-//       const newServices = newQuery.services.split(',');
-//       if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch.query route is firing, newServices:', newServices, 'newQuery.services:', newQuery.services);
-//       for (let service of newServices) {
-//         const serviceType = service.split('_')[0];
-//         let checkboxOrRadio = Object.keys($config.refine.multipleFieldGroups[serviceType])[0];
-//         if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch.query route is firing, service:', service, 'checkboxOrRadio:', checkboxOrRadio);
-//         let category = checkboxOrRadio + '_' + serviceType;
-//         selectedList.value[category] = service;
-//       }
-//     } else if (newQuery.services) {
-//       // this will need to be changed
-//       selectedList.value = newQuery.services;
-//     }
-//     // }
-//   }
-// );
-
-// watch(
-//   () => selectedServices,
-//   async nextSelectedServices => {
-//     // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedServices is firing:', nextSelectedServices);
-//     selected.value = nextSelectedServices;
-//   }
-// );
-
-// onBeforeMount(async () => {
-  
-// });
-
 onMounted(async () => {
   // if (import.meta.env.VITE_DEBUG) console.log('refinePanel.vue mounted, library:', library);
   let divButton = document.querySelector('#refine-top');
@@ -749,7 +701,6 @@ const closeKeywordsBox = (e, box) => {
   } else {
     router.push({ query: { ...route.query, ...{ keyword: [] } }});
   }
-  // searchString.value = '';
   MainStore.selectedKeywords = keywordsArray;
 };
 
@@ -761,7 +712,6 @@ const closeBox = (e, box) => {
     selected.value = null;
     if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, selected.value:', selected.value);
     selectedList.value = [];
-    // $emit('watched-submitted-checkbox-value');
     return;
   }
   let section = box.split('_')[0];
@@ -770,7 +720,6 @@ const closeBox = (e, box) => {
     // if (import.meta.env.VITE_DEBUG) console.log('it\'s there in selectedList');
     let boxIndex = selectedList.value['checkbox_'+section].indexOf(box);
     selectedList.value['checkbox_'+section].splice(boxIndex, 1);
-    // $emit('watched-submitted-checkbox-value');
   } else if (selectedList.value['radio_' + section]) {
     if (import.meta.env.VITE_DEBUG) console.log('1 it\'s there in selectedList WITH radio, box:', box, 'selectedList.value["radio_" + section]:', selectedList.value['radio_' + section]);
     let test = 'radio_' + section;
@@ -779,12 +728,10 @@ const closeBox = (e, box) => {
     selectedList.value = exceptBoth;
     let boxIndex = selected.value.indexOf(box);
     selected.value.splice(boxIndex, 1);
-    // $emit('watched-submitted-checkbox-value');
   } else if (selected.value.includes(section)) {
     // if (import.meta.env.VITE_DEBUG) console.log('its in the array');
     let boxIndex = selected.value.indexOf(section);
     selected.value.splice(boxIndex, 1);
-    // $emit('watched-submitted-checkbox-value');
   } else {
     if (import.meta.env.VITE_DEBUG) console.log('not there in selected list');
   }
@@ -812,34 +759,17 @@ const clearAll = async(e) => {
     lat: null,
     lng: null,
   };
-  // for (let selected of Object.keys(selectedList.value)) {
-  //   // if (import.meta.env.VITE_DEBUG) console.log('clearAll is running, selected:', selected, 'selectedList.value[selected]:', selectedList.value[selected]);
-  //   if (Array.isArray(selectedList.value[selected])) {
-  //     for (let i=selectedList.value[selected].length-1;i>=0;i--) {
-  //       // if (import.meta.env.VITE_DEBUG) console.log('clearAll is running, i:', i);
-  //       closeBox(e, selectedList.value[selected][i]);
-  //     }
-  //   } else {
-  //     closeBox(e, selectedList.value[selected]);
-  //   }
-  // }
 
   MainStore.selectedKeywords = [];
   MainStore.selectedZipcode = null;
   MapStore.zipcodeCenter = [];
   // MainStore.currentSearch = null;
   
-  // for (let keyword of keywordsEntered.value) {
-  //   if (import.meta.env.VITE_DEBUG) console.log('clearAll is running, keyword:', keyword);
-  //   await closeKeywordsBox(e, keyword);
-  // }
-
   if (refineType.value === 'categoryField_value') {
     selected.value = null;
   } else {
     selected.value = [];
   }
-  // $emit('geolocate-control-fire', payload);
 };
 
 const getRefineSearchList = async() => {
@@ -899,7 +829,6 @@ const getRefineSearchList = async() => {
         tooltip: theTooltip,
       });
     }
-
 
     selected = uniqArray.filter(a => a.length > 2);
     selected.filter(Boolean); // remove empties
@@ -1002,18 +931,6 @@ const expandRefine = () => {
   // }
 };
 
-const closeRefinePanel = () => {
-  if (import.meta.env.VITE_DEBUG) console.log('closeRefinePanel is running');
-  scrollToTop();
-  expandRefine();
-  clearAll();
-};
-
-const checkboxChange = (e) => {
-  if (import.meta.env.VITE_DEBUG) console.log('checkboxChange is running, e:', e);
-  // e.stopPropagation();
-};
-  
 </script>
 
 <template>
