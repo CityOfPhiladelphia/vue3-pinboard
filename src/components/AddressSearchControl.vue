@@ -157,7 +157,7 @@ const handleSubmit = (val) => {
   if (query) {
     const searchCategory = Object.keys(query)[0];
     const value = query[searchCategory];
-    MainStore.currentSearch = value;
+    // MainStore.currentSearch = value;
     event(searchCategory + '-search', {
       'event_category': $config.gtag.category,
       'event_label': value,

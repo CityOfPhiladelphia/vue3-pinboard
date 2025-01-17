@@ -477,7 +477,7 @@ onMounted(async() => {
         value = route.query[query];
       }
     }
-    MainStore.currentSearch = value
+    // MainStore.currentSearch = value
     addressInputPlaceholder.value = $config.searchBar.placeholder;
   }
 
@@ -554,7 +554,7 @@ const clearBadAddress = () => {
   delete startQuery['address'];
   router.push({ query: startQuery });
   searchString.value = '';
-  MainStore.currentSearch = null;
+  // MainStore.currentSearch = null;
 };
 
 const clearSearchTriggered = () => {
@@ -569,7 +569,7 @@ const clearSearchTriggered = () => {
   MainStore.selectedKeywords = [];
   MainStore.selectedZipcode = null;
   MapStore.bufferForAddressOrLocationOrZipcode = null;
-  MainStore.currentSearch = null;
+  // MainStore.currentSearch = null;
 };
 
 const checkServices = (row) => {

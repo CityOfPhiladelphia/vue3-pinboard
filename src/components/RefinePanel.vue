@@ -713,7 +713,7 @@ const closeZipcodeBox = (e, box) => {
   router.push({ query: { ...startQuery }});
   MainStore.selectedZipcode = null;
   MapStore.zipcodeCenter = [];
-  MainStore.currentSearch = null;
+  // MainStore.currentSearch = null;
 };
 
 const closeAddressBox = (e, box) => {
@@ -722,7 +722,7 @@ const closeAddressBox = (e, box) => {
   if (import.meta.env.VITE_DEBUG) console.log('closeAddressBox is running, e:', e, 'box:', box, 'startQuery:', startQuery);
   delete startQuery['address'];
   router.push({ query: { ...startQuery }});
-  MainStore.currentSearch = null;
+  // MainStore.currentSearch = null;
 };
 
 const closeKeywordsBox = (e, box) => {
@@ -823,7 +823,7 @@ const clearAll = (e) => {
   MainStore.selectedKeywords = [];
   MainStore.selectedZipcode = null;
   MapStore.zipcodeCenter = [];
-  MainStore.currentSearch = null;
+  // MainStore.currentSearch = null;
   
   // for (let keyword of keywordsEntered.value) {
   //   if (import.meta.env.VITE_DEBUG) console.log('clearAll is running, keyword:', keyword);

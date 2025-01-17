@@ -8,7 +8,7 @@ export const useMainStore = defineStore('MainStore', {
       refineList: {},
       printCheckboxes: [],
       shouldShowGreeting: true,
-      currentSearch: null,
+      // currentSearch: null,
       // alertResponse: null,
       gtag: {
         category: 'unspecified-pinboard-app'
