@@ -499,10 +499,10 @@ const makeID = (itemTitle) =>{
   }
 
   .location-icon {
-    padding-left: .5rem;
     padding-top: 1rem;
     padding-bottom: 1rem;
-    // text-align: center;
+    padding-right: .5rem;
+    text-align: right;
   }
 
   .section-name {
@@ -595,6 +595,12 @@ const makeID = (itemTitle) =>{
     .location-title {
       padding-left: 1rem;
     }
+    .location-icon {
+      padding-left: .5rem;
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+      text-align: left;
+    }
   }
 } 
 
@@ -606,6 +612,12 @@ const makeID = (itemTitle) =>{
   .location-item {
     .location-title {
       padding-left: 1rem;
+    }
+    .location-icon {
+      padding-left: .5rem;
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+      text-align: left;
     }
   }
 } 
