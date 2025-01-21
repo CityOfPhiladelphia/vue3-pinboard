@@ -586,13 +586,15 @@ const checkServices = (row) => {
       return selectedServices.includes(value);
     case 'categoryField_array':
       let servicesSplit = $config.refine.value(row);
-      // if (import.meta.env.VITE_DEBUG) console.log('servicesSplit:', servicesSplit);
       if (typeof servicesSplit === 'string') {
         servicesSplit = servicesSplit.split(',');
       }
+      // if (import.meta.env.VITE_DEBUG) console.log('servicesSplit:', servicesSplit);
       if (servicesSplit) {
         let servicesFiltered = servicesSplit.filter(f => selectedServices.includes(f));
         return servicesFiltered.length == selectedServices.length;
+      } else {
+        return false;
       }
     case 'multipleFields':
       for (let field in $config.refine.multipleFields) {
