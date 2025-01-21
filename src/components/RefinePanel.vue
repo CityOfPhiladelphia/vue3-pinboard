@@ -221,7 +221,7 @@ const refineListTranslated = computed(() => {
       // if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated computed, category:', category, 't(category):', t(category), 'mainArray:', mainArray);
     }
   } else if (refineType.value == 'multipleFieldGroups') {
-    if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed, refineType.value:', refineType.value, 'refineList.value:', refineList.value);
+    if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated computed, refineType.value:', refineType.value, 'refineList.value:', refineList.value);
     if (refineList.value) {
       for (let category of Object.keys(refineList.value)) {
         mainObject[category] = {};
@@ -398,7 +398,9 @@ watch(
   () => selectedServices.value.length,
   async nextSelectedServices => {
     if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedServices is firing, selectedServices.value:', selectedServices.value);
-    if (selectedServices.value.length) {
+    if ($config.refine.type === 'categoryField_value' && selectedServices.value.length) {
+      selected.value = selectedServices.value[0];
+    } else if (selectedServices.value.length) {
       selected.value = selectedServices.value;
     } else {
       if ($config.refine.type === 'categoryField_value') {
@@ -586,7 +588,7 @@ const getCategoryFieldValue = (selected) => {
   if (import.meta.env.VITE_DEBUG) console.log('getCategoryFieldValue is running, selected:', selected);
   let selectedCategory;
   if (selected.length) {
-    let selectedLower = selected[0].toLowerCase().replaceAll(' ', '');
+    let selectedLower = selected.toLowerCase().replaceAll(' ', '');
     let i18nCategories = Object.keys(ConfigStore.config.i18n.data.messages[i18nLocale.value].sections);
     if (import.meta.env.VITE_DEBUG) console.log('18nCategories:', i18nCategories);
     for (let category of i18nCategories) {

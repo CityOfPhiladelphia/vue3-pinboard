@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.1.9 - 1/21/2025
+
+* fixes bug with refine panel radio buttons in categoryField_value apps
+
 ### 2.1.8 - 1/17/2025
 
 * fixes placement of ExpandCollapse + icon in mobile
