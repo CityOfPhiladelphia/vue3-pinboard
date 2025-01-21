@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.1.10 - 1/21/2025
+
+* allows geojson data from arcgis to be displayed, even if there is no geometry
+
 ### 2.1.9 - 1/21/2025
 
 * fixes bug with refine panel radio buttons in categoryField_value apps
