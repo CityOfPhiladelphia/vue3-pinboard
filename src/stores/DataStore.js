@@ -88,7 +88,7 @@ export const useDataStore = defineStore('DataStore', {
           }
     
           if (data.features) {
-            if (import.meta.env.VITE_DEBUG) console.log('data.features.length:', data.features.length);
+            if (import.meta.env.VITE_DEBUG) console.log('first option, data.features.length:', data.features.length);
             // data.features = data.features.filter(item => item.geometry);
             data.features = data.features.filter(item => item.hide_on_finder !== true);
             if ($config.hiddenRefine) {
@@ -126,7 +126,7 @@ export const useDataStore = defineStore('DataStore', {
             delete data.rows;
           } else if (data.length > 0) {
             response.features = [];
-            if (import.meta.env.VITE_DEBUG) console.log('3rd option, data.features:', response.features);
+            if (import.meta.env.VITE_DEBUG) console.log('3rd option, data:', data, 'response.features:', response.features);
             let j = 0;
             for (let i=0; i<data.length; i++) {
               if (data[i].longitude && data[i].latitude) {
@@ -145,7 +145,7 @@ export const useDataStore = defineStore('DataStore', {
                 response.features = response.features.filter(item => getter(item) == true);
               }
             }
-            if (import.meta.env.VITE_DEBUG) console.log('3rd option 2, response.features:', response.features);
+            if (import.meta.env.VITE_DEBUG) console.log('3rd option 2, response:', response, 'response.features:', response.features);
           }
           this.sources[source] = response;
         }

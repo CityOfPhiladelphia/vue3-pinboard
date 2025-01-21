@@ -119,7 +119,12 @@ onMounted(async () => {
     if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 2, DataStore.selectedResource:', DataStore.selectedResource);
     
     if (DataStore.sources[DataStore.appType]) {
-      const dataPoint = DataStore.sources[DataStore.appType].data.features.filter(item => item._featureId == DataStore.selectedResource)[0];
+      let dataPoint;
+      if (DataStore.sources[DataStore.appType].data.features) {
+        dataPoint = DataStore.sources[DataStore.appType].data.features.filter(item => item._featureId == DataStore.selectedResource)[0];
+      } else {
+        dataPoint = DataStore.sources[DataStore.appType].features.filter(item => item._featureId == DataStore.selectedResource)[0];
+      }
       if (import.meta.env.VITE_DEBUG) console.log('dataPoint:', dataPoint);
       if (dataPoint) {
         const popup = document.getElementsByClassName('maplibregl-popup');
