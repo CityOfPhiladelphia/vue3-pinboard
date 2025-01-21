@@ -352,7 +352,7 @@ watch(
         }
 
         if (import.meta.env.VITE_DEBUG) console.log('dataPoint:', dataPoint);
-        if (MainStore.lastSelectMethod == 'row') {
+        if (MainStore.lastSelectMethod == 'row' && dataPoint.geometry && dataPoint.geometry.coordinates) {
           map.setCenter(dataPoint.geometry.coordinates);
         }
 
@@ -360,13 +360,18 @@ watch(
         if (popup.length) {
           popup[0].remove();
         }
-        new maplibregl.Popup({ className: dataPoint._featureId })
-          .setLngLat(dataPoint.geometry.coordinates)
-          .setHTML(`<div id="popup-div">${dataPoint.properties[$config.locationInfo.siteNameField]}</div>`)
-          .setMaxWidth("300px")
-          .addTo(map);
 
-        document.getElementById('popup-div').addEventListener('click', clickedPopup);
+        if (dataPoint.geometry && dataPoint.geometry.coordinates) {
+          new maplibregl.Popup({ className: dataPoint._featureId })
+            .setLngLat(dataPoint.geometry.coordinates)
+            .setHTML(`<div id="popup-div">${dataPoint.properties[$config.locationInfo.siteNameField]}</div>`)
+            .setMaxWidth("300px")
+            .addTo(map);
+
+
+          document.getElementById('popup-div').addEventListener('click', clickedPopup);
+        };
+
 
         if ($config.showBuildingFootprint) {
           map.getSource('buildingFootprints').setData(dataPoint.buildingFootprint);
