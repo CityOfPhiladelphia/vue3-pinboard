@@ -50,7 +50,6 @@ export const useDataStore = defineStore('DataStore', {
       .then((response) => {
         if (import.meta.env.VITE_DEBUG) console.log(JSON.stringify(response.data));
         this.agoToken = response.data;
-        // this.$store.commit('setAgoToken', response.data.token);
       })
       .catch((error) => {
         if (import.meta.env.VITE_DEBUG) console.log(error);
@@ -87,15 +86,7 @@ export const useDataStore = defineStore('DataStore', {
           if (dataConfig.options.success) {
             dataConfig.options.success(data, dependent);
           }
-          // if (import.meta.env.VITE_DEBUG) console.log('data:', data, 'params:', params);
     
-          // for (let [rowKey, rowValue] of Object.entries(value)) {
-          //   if ( rowKey == 'hide_on_finder' && rowValue == true ){
-          //     //if (import.meta.env.VITE_DEBUG) console.log('deleted entry', database[key])
-          //     delete database[key];
-          //   }
-          // }
-
           if (data.features) {
             if (import.meta.env.VITE_DEBUG) console.log('data.features.length:', data.features.length);
             // data.features = data.features.filter(item => item.geometry);
@@ -108,24 +99,23 @@ export const useDataStore = defineStore('DataStore', {
             }
             if (import.meta.env.VITE_DEBUG) console.log('data.features.length:', data.features.length);
             for (let i=0; i<data.features.length; i++) {
-              // if (data.features[i].geometry) {
               data.features[i]._featureId = source + '_' + i;
               data.features[i].properties._featureId = source + '_' + i;
-              // }
             }
           } else if (data.rows) {
+            if (import.meta.env.VITE_DEBUG) console.log('2nd option, data.rows.length:', data.rows.length);
             data.features = [];
             let j = 0;
             for (let i=0; i<data.rows.length; i++) {
-              // data.rows[i]._featureId = source + '_' + i;
               if (data.rows[i].lon && data.rows[i].lat) {
-                // const geo = point([data.rows[i].lon, data.rows[i].lat]);
-                // if (import.meta.env.VITE_DEBUG) console.log('geo:', geo);
                 data.features[j] = point([data.rows[i].lon, data.rows[i].lat], data.rows[i]);
-                data.features[j]._featureId = source + '_' + j;
-                data.features[j].properties._featureId = source + '_' + j;
-                j = j+1;
+              } else {
+                data.features[j] = point([0, 0], data.rows[i]);
+                data.features[j].geometry = null;
               }
+              data.features[j]._featureId = source + '_' + j;
+              data.features[j].properties._featureId = source + '_' + j;
+              j = j+1;
               if ($config.hiddenRefine) {
                 for (let field in $config.hiddenRefine) {
                   let getter = $config.hiddenRefine[field];
@@ -136,19 +126,18 @@ export const useDataStore = defineStore('DataStore', {
             delete data.rows;
           } else if (data.length > 0) {
             response.features = [];
-            // let features = [];
             if (import.meta.env.VITE_DEBUG) console.log('3rd option, data.features:', response.features);
             let j = 0;
             for (let i=0; i<data.length; i++) {
-              // data.rows[i]._featureId = source + '_' + i;
               if (data[i].longitude && data[i].latitude) {
-                // const geo = point([data.rows[i].lon, data.rows[i].lat]);
-                // if (import.meta.env.VITE_DEBUG) console.log('geo:', geo);
                 response.features[j] = point([data[i].longitude, data[i].latitude], data[i]);
-                response.features[j]._featureId = source + '_' + j;
-                response.features[j].properties._featureId = source + '_' + j;
-                j = j+1;
+              } else {
+                response.features[j] = point([0, 0], data[i]);
+                response.features[j].geometry = null;
               }
+              response.features[j]._featureId = source + '_' + j;
+              response.features[j].properties._featureId = source + '_' + j;
+              j = j+1;
             }
             if ($config.hiddenRefine) {
               for (let field in $config.hiddenRefine) {
@@ -180,13 +169,10 @@ export const useDataStore = defineStore('DataStore', {
           this.zipcodes = data;
           if (import.meta.env.VITE_DEBUG) console.log('fillZipcodes complete, data:', data);
           return;
-          // this.loadingRcos = false;
         } else {
-          // this.loadingRcos = false;
            console.warn('fillZipcodes - await resolved but HTTP status was not successful');
         }
       } catch {
-        // this.loadingRcos = false;
          console.error('fillZipcodes - await never resolved, failed to fetch data');
       }
     },
