@@ -30,7 +30,11 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
-### 2.1.13 - 1/21/2025
+### 2.1.14 - 1/22/2025
+
+* opens cyclomedia on city hall if the current data point doesn't have map coordinates
+
+### 2.1.13 - 1/21/202
 
 * fixes for data for ost finder
 
