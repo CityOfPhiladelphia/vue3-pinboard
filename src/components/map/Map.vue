@@ -132,7 +132,7 @@ onMounted(async () => {
           popup[0].remove();
         }
         const currentDataIncludesCurrentPoint = DataStore.currentData.filter(item => item._featureId == dataPoint._featureId).length>0;
-        if (currentDataIncludesCurrentPoint) {
+        if (currentDataIncludesCurrentPoint && dataPoint.geometry && dataPoint.geometry.coordinates) {
           new maplibregl.Popup({ className: dataPoint._featureId })
             .setLngLat(dataPoint.geometry.coordinates)
             .setHTML(`<div id="popup-div">${dataPoint.properties[$config.locationInfo.siteNameField]}</div>`)
@@ -147,7 +147,7 @@ onMounted(async () => {
           map.getSource('buildingFootprints').setData(dataPoint.buildingFootprint);
         }
         
-        if (!route.query.address) {
+        if (!route.query.address && dataPoint.geometry && dataPoint.geometry.coordinates) {
           map.setCenter(dataPoint.geometry.coordinates);
         }
       }

@@ -26,7 +26,7 @@ const selectedResourceCoords = computed(() => {
   if (import.meta.env.VITE_DEBUG) console.log('selectedResourceCoords, dataSource:', dataSource, 'DataStore.selectedResource:', DataStore.selectedResource);
   const dataPoint = dataSource.filter(dataPoint => dataPoint._featureId === DataStore.selectedResource)[0];
   if (import.meta.env.VITE_DEBUG) console.log('selectedResourceCoords, dataPoint:', dataPoint);
-  if (dataPoint) {
+  if (dataPoint && dataPoint.geometry && dataPoint.geometry.coordinates) {
     return dataPoint.geometry.coordinates;
   }
 });
@@ -184,7 +184,8 @@ onMounted( async() => {
     if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue onMounted, cyclomedia initialized');
     cyclomediaInitialized.value = true;
   }
-  if (DataStore.selectedResource) {
+
+  if (DataStore.selectedResource && selectedResourceCoords.value) {
     setNewLocation(selectedResourceCoords.value);
   } else if (GeocodeStore.aisData.features) {
     setNewLocation(GeocodeStore.aisData.features[0].geometry.coordinates);
