@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.1.15 - 1/24/2025
+
+* fixes bug with buffer search now that all points (even without geometry) are accepted
+
 ### 2.1.14 - 1/22/2025
 
 * opens cyclomedia on city hall if the current data point doesn't have map coordinates

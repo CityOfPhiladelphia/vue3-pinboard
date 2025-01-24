@@ -772,8 +772,13 @@ const filterPoints = () => {
   
   // do buffer check without loop first
   if (buffer) {
-    if (import.meta.env.VITE_DEBUG) console.log('Main.vue filterPoints is running, buffer:', buffer);
-    pointsAfterBuffer = pointsWithinPolygon(featureCollection(database.value), buffer).features;
+    if (import.meta.env.VITE_DEBUG) console.log('database.value:', database.value);
+    const dataWithPoints = database.value.filter(item => {
+      return item.geometry && item.geometry.coordinates && item.geometry.coordinates.length > 0
+    });
+    const fc = featureCollection(dataWithPoints);
+    // if (import.meta.env.VITE_DEBUG) console.log('Main.vue filterPoints is running, buffer:', buffer, 'fc:', fc);
+    pointsAfterBuffer = pointsWithinPolygon(fc, buffer).features;
   }
   if (import.meta.env.VITE_DEBUG) console.log('pointsAfterBuffer', pointsAfterBuffer);
 
