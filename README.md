@@ -30,6 +30,14 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.1.17 - 2/3/2025
+
+* makes fuse distance 200
+
+### 2.1.16 - 2/3/2025
+
+* uses fuse.js 7.1.0
+
 ### 2.1.15 - 1/24/2025
 
 * fixes bug with buffer search now that all points (even without geometry) are accepted
