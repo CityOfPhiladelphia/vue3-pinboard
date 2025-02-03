@@ -714,7 +714,7 @@ const checkKeywords = (row) => {
       minMatchCharLength: 3,
       location: 0,
       threshold: threshold,
-      // distance: 100,
+      distance: 200,
       // useExtendedSearch: false,
       // ignoreLocation: false,
       // ignoreFieldNorm: false,
