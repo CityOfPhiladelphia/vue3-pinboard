@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.1.18 - 3/11/2025
+
+* makes airtable endpoint work
+
 ### 2.1.17 - 2/3/2025
 
 * makes fuse distance 200
