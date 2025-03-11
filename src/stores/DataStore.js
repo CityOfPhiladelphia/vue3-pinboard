@@ -75,8 +75,14 @@ export const useDataStore = defineStore('DataStore', {
         if (params && params.where && typeof params.where === 'function') {
           params.where = params.where(dependent.data);
         }
+        console.log('params:', params);
 
-        const response = await axios.get(dataConfig.url, { params });
+        let response;
+        if (dataConfig.bearer) {
+          response = await axios.get(dataConfig.url, params );
+        } else {
+          response = await axios.get(dataConfig.url, { params } );
+        }
         if (import.meta.env.VITE_DEBUG) console.log('fillResources is running, params:', params, 'response:', response);
         
         if (response.status === 200) {
