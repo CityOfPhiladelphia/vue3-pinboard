@@ -24,7 +24,6 @@ export const useMainStore = defineStore('MainStore', {
       selectedServices: [],
       lastSelectMethod: '',
       publicPath: null,
-      isMobileDevice: false,
       isMac: null,
       addressSearchRunning: false,
       searchValue: '',

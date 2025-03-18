@@ -114,7 +114,7 @@ const dropdownRefine = computed(() => {
 });
 
 const isMobile = computed(() => {
-  return MainStore.isMobileDevice || MainStore.windowDimensions.width < 768;
+  return MainStore.windowDimensions.width < 768;
 });
 
 const NumRefineColumns = computed(() => {

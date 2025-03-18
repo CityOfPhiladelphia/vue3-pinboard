@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.2.1 - 3/18/2025
+
+* bug-fix: removes checkboxes in mobile
+
 ### 2.2.0 - 3/18/2025
 
 * breaking change - allows no app subtitle when using i18n for whole app

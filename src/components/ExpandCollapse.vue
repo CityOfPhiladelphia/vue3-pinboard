@@ -45,13 +45,17 @@ const allowPrint = computed(() => {
   return value;
 });
 
+const isMobile = computed(() => {
+  return MainStore.windowDimensions.width < 768;
+});
+
 const locationClass = computed(() => {
   let value;
-  if (locationOpen.value && MainStore.isMobileDevice) {
+  if (locationOpen.value && isMobile.value) {
     value = 'location-content-mobile location-open';
   } else if (locationOpen.value) {
     value = 'location-content location-open';
-  } else if (MainStore.isMobileDevice) {
+  } else if (isMobile.value) {
     value = 'location-content-mobile';
   } else {
     value = 'location-content';
@@ -317,7 +321,7 @@ const makeID = (itemTitle) =>{
       :class="{ 'open': locationOpen }"
     >
       <div
-        v-if="allowPrint && !MainStore.isMobileDevice"
+        v-if="allowPrint && !isMobile"
         class="field column expand-collapse-checkbox is-1 pt-4 pb-0"
       >
         <div class="checkbox-height-fixer">
@@ -336,7 +340,7 @@ const makeID = (itemTitle) =>{
         </div>
       </div>
       <div
-        class="column is-11-mobile p-0"
+        class="column is-12-mobile p-0"
         :class="allowPrint ? 'is-11-tablet': 'is-12-tablet pl-3'"
       >
         <div

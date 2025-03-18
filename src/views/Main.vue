@@ -91,7 +91,7 @@ const brandingImage = computed(() => {
 });
 
 const isMobile = computed(() => {
-  return MainStore.isMobileDevice || MainStore.windowDimensions.width < 768;
+  return MainStore.windowDimensions.width < 768;
 });
 
 const i18nLocale = computed(() => {
@@ -957,11 +957,11 @@ const popupClicked = () => {
       class="holiday-banner columns is-mobile"
     >
       <div
-        class="column holiday-banner-column is-11"
+        class="column holiday-banner-large-column is-10"
         v-html="closureMessageAllSites"
       >
-    </div>
-      <div class="column holiday-banner-column is-1">
+      </div>
+      <div class="column holiday-banner-small-column is-2">
         <button
           style="height: 100% !important;"
           class="button is-primary is-small is-pulled-right holiday-banner-close-button"
@@ -1167,7 +1167,13 @@ const popupClicked = () => {
   background-color: #fff7d0;
 }
 
-.holiday-banner-column {
+.holiday-banner-large-column {
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  padding-right: 0px !important;
+}
+
+.holiday-banner-small-column {
   padding-top: 0px !important;
   padding-bottom: 0px !important;
 }

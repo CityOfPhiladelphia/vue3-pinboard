@@ -15,7 +15,7 @@ import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
 const isMobile = computed(() => {
-  return MainStore.isMobileDevice || MainStore.windowDimensions.width < 768;
+  return MainStore.windowDimensions.width < 768;
 });
   
 const i18nLocale = computed(() => {
