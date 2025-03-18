@@ -30,6 +30,11 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.2.0 - 3/18/2025
+
+* breaking change - allows no app subtitle when using i18n for whole app
+* allows links in alert banner
+
 ### 2.1.18 - 3/11/2025
 
 * makes airtable endpoint work

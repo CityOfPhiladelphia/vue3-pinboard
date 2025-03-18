@@ -838,10 +838,11 @@ const appTitle = computed(() => {
 
 const appSubTitle = computed(() => {
   let value;
+  if (import.meta.env.VITE_DEBUG) console.log('instance.appContext.config.globalProperties.$i18n', instance.appContext.config.globalProperties.$i18n);
   if (!isMobile.value) {
-    if ($config.app.subtitle) {
+    if ($config.app.subtitle && $config.app.subtitle != 'i18n') {
       value = $config.app.subtitle;
-    } else if (i18nEnabled.value) {
+    } else if (i18nEnabled.value && $config.app.subtitle == 'i18n') {
       // if (import.meta.env.VITE_DEBUG) console.log('t("app.subtitle"):', t('app.subtitle'));
       value = t('app.subtitle'); 
     }
@@ -955,9 +956,11 @@ const popupClicked = () => {
       id="holiday-banner"
       class="holiday-banner columns is-mobile"
     >
-      <div class="column holiday-banner-column is-11">
-        {{ closureMessageAllSites }}
-      </div>
+      <div
+        class="column holiday-banner-column is-11"
+        v-html="closureMessageAllSites"
+      >
+    </div>
       <div class="column holiday-banner-column is-1">
         <button
           style="height: 100% !important;"
