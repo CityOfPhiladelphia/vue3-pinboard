@@ -32,27 +32,27 @@ const keys = computed(() => {
         <li
           v-for="key in keys"
           :key="key"
-          :style="&quot;font-size:&quot;+items[key][&quot;font-size&quot;]+&quot;;&quot;"
+          :style="'font-size:'+items[key]['font-size']+';'"
           class="legend-listitem"
         >
           <div
             v-if="!props.options.shape || (props.options.shape && props.options.shape === 'square')"
-            :style="&quot;background-color:&quot;+items[key][&quot;background-color&quot;]+
-              &quot;; border-color:&quot;+items[key][&quot;border-color&quot;]+
-              &quot;; border-style:&quot;+items[key][&quot;border-style&quot;]+
-              &quot;; border-width:&quot;+items[key][&quot;border-weight&quot;]+
-              &quot;; width:&quot;+items[key].width+
-              &quot;; height:&quot;+items[key].height+&quot;;&quot;"
+            :style="'background-color:'+items[key]['background-color']+
+              '; border-color:'+items[key]['border-color']+
+              '; border-style:'+items[key]['border-style']+
+              '; border-width:'+items[key]['border-weight']+
+              '; width:'+items[key].width+
+              '; height:'+items[key].height+';'"
             class="legend-box"
           />
           <div
             v-if="props.options.shape === 'circle'"
-            :style="&quot;background-color:&quot;+items[key][&quot;background-color&quot;]+
-              &quot;; border-color:&quot;+items[key][&quot;border-color&quot;]+
-              &quot;; border-style:&quot;+items[key][&quot;border-style&quot;]+
-              &quot;; border-width:&quot;+items[key][&quot;border-weight&quot;]+
-              &quot;; width:&quot;+items[key].width+
-              &quot;; height:&quot;+items[key].height+&quot;;&quot;"
+            :style="'background-color:'+items[key]['background-color']+
+              '; border-color:'+items[key]['border-color']+
+              '; border-style:'+items[key]['border-style']+
+              '; border-width:'+items[key]['border-weight']+
+              '; width:'+items[key].width+
+              '; height:'+items[key].height+';'"
             class="legend-circle"
           />
           <div class="list-text">
