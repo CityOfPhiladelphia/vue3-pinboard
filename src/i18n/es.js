@@ -85,4 +85,5 @@ export default {
   searchButton: 'Botón de búsqueda',
   servicesOffered: 'Servicios ofrecidos',
   languagesSpoken: 'Idiomas hablados',
+  'Search by address, zipcode, or keyword': 'Buscar por dirección, código postal o palabra clave',
 };

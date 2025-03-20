@@ -85,4 +85,5 @@ export default {
   searchButton: 'Кнопка поиска',
   servicesOffered: 'Предлагаемые услуги',
   languagesSpoken: 'Разговорные языки',
+  'Search by address, zipcode, or keyword': 'Поиск по адресу, почтовому индексу или ключевому слову',
 };

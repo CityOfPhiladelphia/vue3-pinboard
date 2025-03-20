@@ -188,13 +188,13 @@ const holder = computed(() => {
         <label
           :for="inputId"
           class="search-label"
-        >{{ searchPlaceholder }}</label>
+        >{{ $t(searchPlaceholder) }}</label>
         <input
           :id="inputId"
           v-model="MainStore.searchValue"
           class="input address-input"
           type="text"
-          :placeholder="searchPlaceholder"
+          :placeholder="t(searchPlaceholder)"
           @keydown.enter="handleSubmit(MainStore.searchValue)"
         >
       </div>

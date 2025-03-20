@@ -85,4 +85,5 @@ export default {
   searchButton: '“搜索” 按钮',
   servicesOffered: '提供的服务',
   languagesSpoken: '使用的语言',
+  'Search by address, zipcode, or keyword': '按地址、邮政编码或关键字搜索',
 };

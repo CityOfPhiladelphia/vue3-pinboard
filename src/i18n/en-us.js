@@ -85,4 +85,6 @@ export default {
   searchButton: 'Search button',
   servicesOffered: 'Services offered',
   languagesSpoken: 'Languages spoken',
+  'Search by address, zipcode, or keyword': 'Search by address, zipcode, or keyword',
+  
 };

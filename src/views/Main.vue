@@ -675,7 +675,21 @@ const checkKeywords = (row) => {
   if (selectedKeywords.value.length > 0) {
     booleanKeywords = false;
     let description = [];
-    if (Array.isArray(row.properties.tags)) {
+    if ($config.tags && $config.tags.type == 'fieldValues') {
+      for (let tag of $config.tags.tags) {
+        // if (import.meta.env.VITE_DEBUG) console.log('tag:', tag, 'tag.field:', tag.field, 'row.properties[tag.field]:', row.properties[tag.field]);
+        if (tag.type == 'boolean' && row.properties[tag.field] == 'Yes') {
+          description.push(tag.value);
+        } else if (tag.type == 'value' && row.properties[tag.field] !== null && row.properties[tag.field] != ' ') {
+          // if (import.meta.env.VITE_DEBUG) console.log('in else if, row.properties[tag.field]:', row.properties[tag.field]);
+          let value = row.properties[tag.field].toLowerCase();
+          // if (import.meta.env.VITE_DEBUG) console.log('value.split(","):', value.split(','));
+          description = description.concat(value.split(','));
+        } else if (tag.type == 'array' && Array.isArray(row.properties[tag.field])) {
+          description = description.concat(row.properties[tag.field].map(tag => tag.toLowerCase()));
+        }
+      }
+    } else if (Array.isArray(row.properties.tags)) {
       description = row.properties.tags;
     } else if (row.properties.tags) {
       description = row.properties.tags.split(', ');
@@ -685,24 +699,16 @@ const checkKeywords = (row) => {
       } else if ($config.tags.location(row)) {
         description = $config.tags.location(row).split(', ');
       }
-    } else if ($config.tags && $config.tags.type == 'fieldValues') {
-      for (let tag of $config.tags.tags) {
-        // if (import.meta.env.VITE_DEBUG) console.log('tag:', tag, 'tag.field:', tag.field, 'row.attributes[tag.field]:', row.attributes[tag.field]);
-        if (tag.type == 'boolean' && row.properties[tag.field] == 'Yes') {
-          description.push(tag.value);
-        } else if (tag.type == 'value' && row.properties[tag.field] !== null && row.properties[tag.field] != ' ') {
-          // if (import.meta.env.VITE_DEBUG) console.log('in else if, row.properties[tag.field]:', row.properties[tag.field]);
-          let value = row.properties[tag.field].toLowerCase();
-          // if (import.meta.env.VITE_DEBUG) console.log('value.split(","):', value.split(','));
-          description = description.concat(value.split(','));
-        }
-      }
     }
     // if (import.meta.env.VITE_DEBUG) console.log('still going, selectedKeywords.value[0]:', selectedKeywords.value[0], 'row.properties.tags:', row.properties.tags, 'description:', description);
 
     let threshold = 0.2;
     if ($config.searchBar.fuseThreshold) {
       threshold = $config.searchBar.fuseThreshold;
+    };
+    let distance = 100;
+    if ($config.searchBar.fuseDistance) {
+      distance = $config.searchBar.fuseDistance;
     };
 
     const options = {
@@ -714,7 +720,7 @@ const checkKeywords = (row) => {
       minMatchCharLength: 3,
       location: 0,
       threshold: threshold,
-      distance: 200,
+      distance: distance,
       // useExtendedSearch: false,
       // ignoreLocation: false,
       // ignoreFieldNorm: false,

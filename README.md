@@ -30,6 +30,11 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.2.2 - 3/20/2025
+
+* fixes for allowing search of multiple array fields
+* adds translations of 1 possible searchbar placeholder value to i18n
+
 ### 2.2.1 - 3/18/2025
 
 * bug-fix: removes checkboxes in mobile
