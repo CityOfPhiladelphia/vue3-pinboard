@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.2.3 - 3/21/2025
+
+* fixes distance dropdown when lang switches, adds translations of many languages
+
 ### 2.2.2 - 3/20/2025
 
 * fixes for allowing search of multiple array fields
