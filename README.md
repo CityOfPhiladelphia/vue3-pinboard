@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.2.4 - 3/21/2025
+
+* fixes bug with subtitle in print view
+
 ### 2.2.3 - 3/21/2025
 
 * fixes distance dropdown when lang switches, adds translations of many languages

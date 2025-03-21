@@ -156,9 +156,9 @@ const appTitle = computed(() => {
 const appSubTitle = computed(() => {
   let value;
   if (!isMobile.value) {
-    if ($config.app.subtitle) {
+    if ($config.app.subtitle && $config.app.subtitle != 'i18n') {
       value = $config.app.subtitle;
-    } else if (i18nEnabled.value) {
+    } else if (i18nEnabled.value && $config.app.subtitle == 'i18n') {
       // if (import.meta.env.VITE_DEBUG) console.log('t("app.subtitle"):', t('app.subtitle'));
       value = t('app.subtitle'); 
     }

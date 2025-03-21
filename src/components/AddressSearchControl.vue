@@ -196,6 +196,7 @@ const holder = computed(() => {
           type="text"
           :placeholder="t(searchPlaceholder)"
           @keydown.enter="handleSubmit(MainStore.searchValue)"
+          autocomplete="on"
         >
       </div>
       <div class="control">
