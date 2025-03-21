@@ -256,10 +256,10 @@ const loadingSources = computed(() => {
 });
 
 watch(
-  () => i18nLocale,
-  async nexti18nLocale => {
+  () => i18nLocale.value,
+  async () => {
     let value = searchDistance.value.split(' ')[0];
-    if (import.meta.env.VITE_DEBUG) console.log('i18nLocale change, nexti18nLocale:', nexti18nLocale, 'value:', value);
+    // if (import.meta.env.VITE_DEBUG) console.log('i18nLocale change, nexti18nLocale:', nexti18nLocale, 'value:', value);
     if (value == 1) {
       searchDistance.value = value + ' ' + t('mile');
     } else {
