@@ -49,6 +49,17 @@ $dropdown-menu-min-width: 100px;
 a {
   color: #0f4d90;
   font-weight: bold;
+  text-decoration: underline;
+}
+
+.app-title {
+  text-decoration: none !important;
+}
+
+#app-footer {
+  a {
+    text-decoration: none !important;
+  }
 }
 
 .main {
