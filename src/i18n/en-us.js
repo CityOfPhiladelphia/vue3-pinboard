@@ -63,7 +63,7 @@ export default {
   No: 'No',
   Unknown: 'Unknown',
   website: 'Website',
-  selectAll: 'Select All',
+  selectAll: 'Select all',
   print: 'Print',
   sortBy: 'Sort By',
   alphabetically: 'Alphabetically',

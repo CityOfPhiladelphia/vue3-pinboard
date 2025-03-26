@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.2.8
+
+* fixes capitalization of Select all
+
 ### 2.2.7 - 3/26/2025
 
 * fixes capitalization of ZIP code in i18n file
