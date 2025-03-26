@@ -11,6 +11,7 @@ import { event } from 'vue-gtag'
 
 const ConfigStore = useConfigStore();
 const $config = ConfigStore.config;
+const CustomRouterLink = $config.customComps.customRouterLink;
 // if (import.meta.env.VITE_DEBUG) console.log('$config:', $config);
 
 import { format } from 'date-fns';
@@ -963,10 +964,18 @@ const popupClicked = () => {
       class="holiday-banner columns is-mobile"
     >
       <div
+        v-if="!CustomRouterLink"
         class="column holiday-banner-large-column is-10"
         v-html="closureMessageAllSites"
       >
       </div>
+      <div
+        v-if="CustomRouterLink"
+        class="column holiday-banner-large-column is-10"
+      >
+        <CustomRouterLink></CustomRouterLink>
+      </div>
+
       <div class="column holiday-banner-small-column is-2">
         <button
           style="height: 100% !important;"

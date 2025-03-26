@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.2.5 - 3/26/2025
+
+* adds ability to use customRouterView in banner
+
 ### 2.2.4 - 3/21/2025
 
 * fixes bug with subtitle in print view
