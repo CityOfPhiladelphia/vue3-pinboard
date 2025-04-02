@@ -683,11 +683,10 @@ const checkKeywords = (row) => {
           description.push(tag.value);
         } else if (tag.type == 'value' && row.properties[tag.field] !== null && row.properties[tag.field] != ' ') {
           // if (import.meta.env.VITE_DEBUG) console.log('in else if, row.properties[tag.field]:', row.properties[tag.field]);
-          let value = row.properties[tag.field].toLowerCase();
-          // if (import.meta.env.VITE_DEBUG) console.log('value.split(","):', value.split(','));
+          let value = row.properties[tag.field];
           description = description.concat(value.split(','));
         } else if (tag.type == 'array' && Array.isArray(row.properties[tag.field])) {
-          description = description.concat(row.properties[tag.field].map(tag => tag.toLowerCase()));
+          description = description.concat(row.properties[tag.field]);
         }
       }
     } else if (Array.isArray(row.properties.tags)) {
@@ -701,6 +700,17 @@ const checkKeywords = (row) => {
         description = $config.tags.location(row).split(', ');
       }
     }
+
+    const descriptionTranslated = description.map(tag => {
+      if (i18nEnabled.value) {
+        let tagTranslated = t(tag);
+        // if (import.meta.env.VITE_DEBUG) console.log('tag:', tag, 'tagTranslated:', tagTranslated);
+        return tagTranslated;
+      } else {
+        return tag;
+      }
+    });
+    // if (import.meta.env.VITE_DEBUG) console.log('descriptionTranslated:', descriptionTranslated);
     // if (import.meta.env.VITE_DEBUG) console.log('still going, selectedKeywords.value[0]:', selectedKeywords.value[0], 'row.properties.tags:', row.properties.tags, 'description:', description);
 
     let threshold = 0.2;
@@ -723,7 +733,7 @@ const checkKeywords = (row) => {
       threshold: threshold,
       distance: distance,
       // useExtendedSearch: false,
-      // ignoreLocation: false,
+      // ignoreLocation: true,
       // ignoreFieldNorm: false,
 
       // keys: [
@@ -732,7 +742,7 @@ const checkKeywords = (row) => {
       // ]
     };
 
-    const fuse = new Fuse(description, options);
+    const fuse = new Fuse(descriptionTranslated, options);
     let results = {};
     for (let keyword of selectedKeywords.value) {
       // if (import.meta.env.VITE_DEBUG) console.log('in selectedKeywords loop, keyword.toString():', keyword.toString(), 'description:', description);//'description[0].split(","):', description[0].split(','));
