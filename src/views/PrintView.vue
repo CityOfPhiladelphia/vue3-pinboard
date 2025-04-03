@@ -56,7 +56,9 @@ onMounted(async () => {
   if (printCheckboxes.value.length === 0) {
     router.push({ name: 'home' });
   } else {
-    window.print();
+    setTimeout(() => {
+      window.print();
+    }, 500);
   }
 });
 
