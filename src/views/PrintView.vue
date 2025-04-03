@@ -177,6 +177,14 @@ const i18nLanguages = computed(() => {
   return values;
 });
 
+const i18nSelectorHidden = computed(() => {
+  if ($config.i18n && $config.i18n.selectorHidden) {
+    return true;
+  } else {
+    return false;
+  }
+});
+
 </script>
 
 <template>
@@ -195,7 +203,7 @@ const i18nLanguages = computed(() => {
     </template>
     
     <template
-      v-if="i18nEnabled"
+      v-if="i18nEnabled && !i18nSelectorHidden"
       #lang-selector-nav
     >
       <lang-selector

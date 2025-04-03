@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.2.10
+
+* hides i18n selector in print view if it is set to hidden
+
 ### 2.2.9
 
 * adds half-second timeout to auto print command in print view
