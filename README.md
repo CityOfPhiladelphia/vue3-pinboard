@@ -30,6 +30,11 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.2.11
+
+* merges changes from fix/translate-keywords
+* fixes underlining of languages in dropdown
+
 ### 2.2.10
 
 * hides i18n selector in print view if it is set to hidden
