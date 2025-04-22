@@ -62,6 +62,12 @@ a {
   }
 }
 
+#lang-selector {
+  a {
+    text-decoration: none !important;
+  }
+}
+
 .main {
   position: fixed;
   height: 100dvh !important;
