@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.2.12
+
+* adds 6 more languages to the language base
+
 ### 2.2.11
 
 * merges changes from fix/translate-keywords
