@@ -85,6 +85,9 @@ export default {
   searchButton: 'Bouton de recherche',
   servicesOffered: 'Services offerts',
   languagesSpoken: 'Langues parlées',
+  "Search by address": "Recherche par adresse",
+  "Search by address or zipcode": "Recherche par adresse ou code postal",
+  "Search by address or keyword": "Recherche par adresse ou par mot clé",
   'Search by address, zipcode, or keyword': 'Recherche par adresse, code postal ou mot clé',
   languages: {
     languagesSpoken: "Langues parlées par le personnel",

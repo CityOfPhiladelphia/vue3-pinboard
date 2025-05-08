@@ -175,7 +175,7 @@ onMounted( async() => {
       password: CYCLOMEDIA_PASSWORD,
       apiKey: import.meta.env.VITE_CYCLOMEDIA_API_KEY,
       srs: 'EPSG:4326',
-      locale: 'en-us',
+      locale: 'en',
       addressSettings: {
         locale: 'en-us',
         database: 'CMDatabase',

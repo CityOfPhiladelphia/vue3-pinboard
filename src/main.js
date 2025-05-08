@@ -130,8 +130,8 @@ export default function pinboard(config) {
   const i18n = createI18n({
     legacy: false,
     globalInjection: true,
-    locale: 'en-US',
-    fallbackLocale: 'en-US',
+    locale: 'en',
+    fallbackLocale: 'en',
     messages: messages
   })
   app.use(i18n)

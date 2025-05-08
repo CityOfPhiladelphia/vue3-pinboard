@@ -1,5 +1,5 @@
 
-import en from './en-us';
+import en from './en';
 import es from './es';
 import ch from './ch';
 import vi from './vi';
@@ -16,9 +16,9 @@ import sw from './sw';
 export default {
   i18n: {
     data: {
-      locale: 'en-US',
+      locale: 'en',
       messages: {
-        'en-US': en,
+        'en': en,
         'es': es,
         'ch': ch,
         'vi': vi,

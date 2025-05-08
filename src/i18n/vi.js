@@ -85,6 +85,9 @@ export default {
   searchButton: 'Nút tìm kiếm',
   servicesOffered: 'Dịch vụ được cung cấp',
   languagesSpoken: 'Ngôn ngữ được sử dụng',
+  "Search by address": "Tìm kiếm theo địa chỉ",
+  "Search by address or zipcode": "Tìm kiếm theo địa chỉ hoặc mã ZIP",
+  "Search by address or keyword": "Tìm kiếm theo địa chỉ hoặc từ khóa",
   'Search by address, zipcode, or keyword': 'Tìm kiếm theo địa chỉ, mã zip hoặc từ khóa',
   languages: {
     languagesSpoken: "Ngôn ngữ được sử dụng",

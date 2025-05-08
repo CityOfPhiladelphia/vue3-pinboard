@@ -70,7 +70,7 @@ watch(
     delete startQuery['lang'];
     if (import.meta.env.VITE_DEBUG) console.log('watch i18nLocale, startQuery:', startQuery);
 
-    if (newLocale !== 'en-US') {
+    if (newLocale !== 'en') {
       let query = { 'lang': newLocale };
       router.push({ query: { ...startQuery, ...query }});
     } else {

@@ -83,6 +83,9 @@ export default{
   "searchButton": "Kitufe cha tafuta",
   "servicesOffered": "Huduma zinazotolewa",
   "languagesSpoken": "Lugha zinazozungum",
+  "Search by address": "Tafuta kwa anwani",
+  "Search by address or zipcode": "Tafuta kwa anwani au msimbo wa ZIP",
+  "Search by address or keyword": "Tafuta kwa anwani au neno kuu",
   "Search by address, zipcode, or keyword": "Tafuta kwa anwani, msimbo wa ZIP, au neno kuu",
   "languages": {
     "languagesSpoken": "Lugha inayozungumzwa na wafany",

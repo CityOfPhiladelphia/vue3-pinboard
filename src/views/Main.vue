@@ -304,7 +304,7 @@ watch(
     delete startQuery['lang'];
     if (import.meta.env.VITE_DEBUG) console.log('watch i18nLocale, startQuery:', startQuery);
 
-    if (nexti18nLocale !== 'en-US') {
+    if (nexti18nLocale !== 'en') {
       let query = { 'lang': nexti18nLocale };
       router.push({ query: { ...startQuery, ...query }});
     } else {

@@ -85,6 +85,9 @@ export default {
   searchButton: 'Кнопка поиска',
   servicesOffered: 'Предлагаемые услуги',
   languagesSpoken: 'Разговорные языки',
+  "Search by address": "Поиск по адресу",
+  "Search by address or zipcode": "Поиск по адресу или почтовому индексу",
+  "Search by address or keyword": "Поиск по адресу или ключевому слову",
   'Search by address, zipcode, or keyword': 'Поиск по адресу, почтовому индексу или ключевому слову',
   languages: {
     languagesSpoken: "Персонал владеет следующими языками:",

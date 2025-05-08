@@ -83,6 +83,9 @@ export default{
   "searchButton": "Bouton rechèch",
   "servicesOffered": "Sèvis yo ofri",
   "languagesSpoken": "Lang pale",
+  "Search by address": "Rechèch pa adrès",
+  "Search by address or zipcode": "Rechèch pa adrès oswa kòd postal",
+  "Search by address or keyword": "Rechèch pa adrès oswa mo kle",
   "Search by address, zipcode, or keyword": "Rechèch pa adrès, kòd postal, oswa mo kle",
   "languages": {
     "languagesSpoken": "Lang pale pa anplwaye",

@@ -83,6 +83,9 @@ export default{
   "searchButton": "सर्च बटन",
   "servicesOffered": "दी जाने वाली सेवाएँ",
   "languagesSpoken": "बोली जाने वाली भाषाएँ",
+  "Search by address": "पते के आधार पर खोजें",
+  "Search by address or zipcode": "पते या ज़िप कोड के आधार पर खोजें",
+  "Search by address or keyword": "पते या कीवर्ड के आधार पर खोजें",
   "Search by address, zipcode, or keyword": "पता, ज़िप कोड या कीवर्ड के आधार पर खोजें",
   "languages": {
     "languagesSpoken": "स्टाफ़ द्वारा बोली जाने वाली भाषाएँ",

@@ -83,6 +83,9 @@ export default{
   "searchButton": "Botão de pesquisa",
   "servicesOffered": "Serviços oferecidos",
   "languagesSpoken": "Idiomas falados",
+  "Search by address": "Pesquisar por endereço",
+  "Search by address or zipcode": "Pesquise por endereço ou CEP",
+  "Search by address or keyword": "Pesquise por endereço ou palavra-chave",
   "Search by address, zipcode, or keyword": "Pesquise por endereço, CEP ou palavra-chave",
   "languages": {
     "languagesSpoken": "Idiomas falados pela equipe",

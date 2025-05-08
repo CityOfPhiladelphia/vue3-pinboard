@@ -83,6 +83,9 @@ export default{
   "searchButton": "زر البحث",
   "servicesOffered": "الخدمات المقدمة",
   "languagesSpoken": "اللغات التي يتم التحدث بها",
+  "Search by address": "البحث حسب العنوان",
+  "Search by address or zipcode": "ابحث حسب العنوان أو الرمز البريدي",
+  "Search by address or keyword": "البحث حسب العنوان أو الكلمة الرئيسية",
   "Search by address, zipcode, or keyword": "ابحث حسب العنوان أو الرمز البريدي أو الكلمة الرئيسية",
   "languages": {
     "languagesSpoken": "اللغات التي يتحدث بها الموظفون",

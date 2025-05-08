@@ -83,6 +83,9 @@ export default{
   "searchButton": "Butoni i kërkimit",
   "servicesOffered": "Shërbimet e ofruar",
   "languagesSpoken": "Gjuhët e folura",
+  "Search by address": "Kërko sipas adresës",
+  "Search by address or zipcode": "Kërkoni sipas adresës ose kodit postar",
+  "Search by address or keyword": "Kërko sipas adresës ose fjalës kyçe",
   "Search by address, zipcode, or keyword": "Kërkoni sipas adresës, kodit postar ose fjalës kyçe",
   "languages": {
     "languagesSpoken": "Gjuhët e folura nga stafi",
