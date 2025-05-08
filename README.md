@@ -30,7 +30,7 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
-2.2.13
+### 2.2.13
 
 * adds translations for address search bar combos
 
