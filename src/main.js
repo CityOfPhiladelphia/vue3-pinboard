@@ -126,6 +126,7 @@ export default function pinboard(config) {
 
   const i18nProject = config.i18n.data.messages;
   const messages = mergeDeep(i18nFromFiles.i18n.data.messages, i18nProject);
+  config.i18n.data.messages = messages;
   if (import.meta.env.VITE_DEBUG) console.log('i18nFromFiles:', i18nFromFiles, 'messages:', messages);
   const i18n = createI18n({
     legacy: false,
@@ -157,4 +158,4 @@ export default function pinboard(config) {
   app.mount('#app')
 };
 
-export { useDataStore, useMainStore };
+export { useDataStore, useMainStore, useConfigStore };

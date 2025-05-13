@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.2.15
+
+* successfully adds deep-merged i18n messages so that ExpandCollapseContent.vue of a project can use them
+
 ### 2.2.14
 
 * fixes Cyclomedia locale bug
