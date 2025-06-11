@@ -40,7 +40,7 @@ import Radio from "@phila/phila-ui-radio";
 import Checkbox from "@phila/phila-ui-checkbox";
 
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faE, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { faHome } from '@fortawesome/free-solid-svg-icons';
 import { faBook } from '@fortawesome/free-solid-svg-icons';
 import { faWrench } from '@fortawesome/free-solid-svg-icons';
@@ -68,6 +68,7 @@ import { faEnvelope} from '@fortawesome/free-solid-svg-icons';
 import { faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 import { faRectangleList } from '@fortawesome/free-solid-svg-icons';
 import { faLocationCrosshairs } from '@fortawesome/free-solid-svg-icons';
+import { faExclamation } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
   faSearch,
@@ -98,6 +99,7 @@ library.add(
   faCircleInfo,
   faRectangleList,
   faLocationCrosshairs,
+  faExclamation,
 );
 
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';

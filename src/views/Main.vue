@@ -967,6 +967,7 @@ const popupClicked = () => {
     id="main-column"
     class="main-column invisible-scrollbar"
   >
+    <alert-banner v-if="$config.alerts && $config.alerts.header && $config.alerts.header.enabled" />
 
     <div
       v-if="showForceHolidayBanner || showAutomaticHolidayBanner && holiday.coming_soon || showAutomaticHolidayBanner && holiday.current"

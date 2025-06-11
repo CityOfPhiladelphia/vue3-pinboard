@@ -1,12 +1,8 @@
 <script setup>
 
 import { useMainStore } from '../stores/MainStore.js';
-import { useMapStore } from '../stores/MapStore.js';
-import { useGeocodeStore } from '../stores/GeocodeStore.js';
-import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 
-const instance = getCurrentInstance();
 const ConfigStore = useConfigStore();
 const $config = ConfigStore.config;
 const MainStore = useMainStore();
@@ -16,10 +12,6 @@ const { t } = useI18n();
 
 const isMobile = computed(() => {
   return MainStore.windowDimensions.width < 768;
-});
-  
-const i18nLocale = computed(() => {
-  return instance.appContext.config.globalProperties.$i18n.locale;
 });
 
 const i18nEnabled = computed(() => {
@@ -33,7 +25,7 @@ const i18nEnabled = computed(() => {
 const alertContent = computed(() => {
   let value;
   if (i18nEnabled.value) {
-    value = t(app.bannerAlert);
+    value = t('app.bannerAlert');
   } else if ($config.alerts && $config.alerts.header && $config.alerts.header.content) {
     value = $config.alerts.header.content;
   } else {
@@ -49,7 +41,8 @@ const alertContent = computed(() => {
     <div class="alert">
       <font-awesome-icon
         v-if="!isMobile"
-        icon="exclamation"
+        icon="fa-exclamation"
+        class="mr-2"
       />
       <p
         class="inline-paragraph no-margin"
@@ -63,7 +56,6 @@ const alertContent = computed(() => {
 
 .background-div {
   background: #ffffff;
-  padding: 10px;
 }
 
 .alert {
