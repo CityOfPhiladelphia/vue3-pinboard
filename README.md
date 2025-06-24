@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.2.17
+
+* uses 2024 imagery
+
 ### 2.2.16
 
 * adds alert banner back into project
