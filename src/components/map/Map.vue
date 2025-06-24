@@ -489,7 +489,7 @@ watch(
   }
 )
 
-const imagerySelected = ref('2023');
+const imagerySelected = ref('2024');
 
 const toggleImagery = () => {
   if (import.meta.env.VITE_DEBUG) console.log('toggleImagery, map.getStyle:', map.getStyle(), '$mapConfig.mapLayers:', $mapConfig.mapLayers);
