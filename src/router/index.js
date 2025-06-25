@@ -121,7 +121,9 @@ const initRouter = (publicPath) => {
       }
     } else if (!to.query.address && !to.query.zipcode) {
       MainStore.selectedZipcode = null;
-      MapStore.bufferForAddressOrLocationOrZipcode = null;
+      if (!MapStore.geolocation) {
+        MapStore.bufferForAddressOrLocationOrZipcode = null;
+      }
     } else if (!to.query.zipcode) {
       MainStore.selectedZipcode = null;
     }

@@ -666,7 +666,10 @@ const getDistances = (row) => {
     } else if (MapStore.geolocation) {
       comparePoint = MapStore.geolocation;
     }
-    row.distance = distance(comparePoint, row.geometry, { units: 'miles' });
+    // if (import.meta.env.VITE_DEBUG) console.log('getDistances, comparePoint:', comparePoint, 'row.geometry:', row.geometry);
+    if (comparePoint.length) {
+      row.distance = distance(comparePoint, row.geometry, { units: 'miles' });
+    }
   }
 };
 
