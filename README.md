@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.2.19
+
+* fixes bug with opening cyclomedia
+
 ### 2.2.18
 
 * fixes bug with geolocation
