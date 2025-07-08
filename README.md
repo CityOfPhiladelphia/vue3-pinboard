@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.3.1
+
+* changes for filtering in other languages
+
 ### 2.2.19
 
 * fixes bug with opening cyclomedia

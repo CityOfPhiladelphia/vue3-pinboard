@@ -995,7 +995,8 @@ const expandRefine = () => {
             class="box-value column is-narrow"
             @click="(e) => closeKeywordsBox(e, box)"
           >
-            {{ $t(getBoxValue(box)) }}
+            {{ getBoxValue(box) }}
+            <!-- {{ $t(getBoxValue(box)) }} -->
             <font-awesome-icon
               class="fa-x"
               :icon="[timesIconWeight,'times']"

@@ -464,11 +464,6 @@ onMounted(async() => {
     DataStore.selectedResource = selectedResource[0];
   }
   
-  if (route.query.lang) {
-    // if (import.meta.env.VITE_DEBUG) console.log('App.vue mounted language:', route.query.lang);
-    i18nLocale.value = route.query.lang;
-  }
-
   if ($config.searchBar) {
     let routeQuery = Object.keys(route.query);
     // if (import.meta.env.VITE_DEBUG) console.log('App.vue mounted in searchTypes section, route:', route, 'routeQuery:', routeQuery, 'Object.keys(route.query)[0]', Object.keys(route.query)[0]);
@@ -478,15 +473,8 @@ onMounted(async() => {
         value = route.query[query];
       }
     }
-    // MainStore.currentSearch = value
     addressInputPlaceholder.value = $config.searchBar.placeholder;
   }
-
-  // if ($config.appLink) {
-  //   appLink.value = $config.appLink;
-  // } else {
-  //   appLink.value = '.';
-  // }
 
   if (!i18nEnabled.value) {
     buttonText.value = isMapVisible.value ? 'List' : 'Map';
@@ -497,10 +485,6 @@ onMounted(async() => {
   if ($config.alerts && $config.alerts.modal && $config.alerts.modal.enabled) {
     isAlertModalOpen.value = true;
   }
-
-  // if ($config.gtag && $config.gtag.category) {
-  //   store.commit('setGtagCategory', $config.gtag.category);
-  // }
 
   if ($config.app.trustedSite && $config.app.trustedSite === 'hidden') {
     let trusted = document.getElementById('trusted-site');
@@ -680,7 +664,23 @@ const checkKeywords = (row) => {
     booleanKeywords = false;
     let description = [];
     if ($config.tags && $config.tags.type == 'fieldValues') {
-      for (let tag of $config.tags.tags) {
+
+      let tags = $config.tags.tags;
+      tags = tags.filter(tag => {
+        if (tag.i18nDependent) {
+          const tagLang = tag.field.split('_')[0];
+          if (import.meta.env.VITE_DEBUG) console.log('tagLang:', tagLang, 'i18nLocale.value:', i18nLocale.value);
+          if (tagLang === i18nLocale.value) {
+            return true;
+          } else {
+            return false;
+          }
+        } else {
+          return true;
+        }
+      });
+
+      for (let tag of tags) {
         // if (import.meta.env.VITE_DEBUG) console.log('tag:', tag, 'tag.field:', tag.field, 'row.properties[tag.field]:', row.properties[tag.field]);
         if (tag.type == 'boolean' && row.properties[tag.field] == 'Yes') {
           description.push(tag.value);
@@ -689,7 +689,11 @@ const checkKeywords = (row) => {
           let value = row.properties[tag.field];
           description = description.concat(value.split(','));
         } else if (tag.type == 'array' && Array.isArray(row.properties[tag.field])) {
-          description = description.concat(row.properties[tag.field]);
+          if (tag.translate) {
+            description = description.concat(row.properties[tag.field].map(item => t(item)));
+          } else {
+            description = description.concat(row.properties[tag.field]);
+          }
         }
       }
     } else if (Array.isArray(row.properties.tags)) {
@@ -704,16 +708,18 @@ const checkKeywords = (row) => {
       }
     }
 
-    const descriptionTranslated = description.map(tag => {
-      if (i18nEnabled.value) {
-        let tagTranslated = t(tag);
-        // if (import.meta.env.VITE_DEBUG) console.log('tag:', tag, 'tagTranslated:', tagTranslated);
-        return tagTranslated;
-      } else {
-        return tag;
-      }
-    });
-    // if (import.meta.env.VITE_DEBUG) console.log('descriptionTranslated:', descriptionTranslated);
+    if (import.meta.env.VITE_DEBUG) console.log('checkKeywords, description:', description, 'selectedKeywords.value:', selectedKeywords.value);
+
+    // const descriptionTranslated = description.map(tag => {
+    //   if (i18nEnabled.value) {
+    //     let tagTranslated = t(tag);
+    //     if (import.meta.env.VITE_DEBUG) console.log('tag:', tag, 'tagTranslated:', tagTranslated);
+    //     return tagTranslated;
+    //   } else {
+    //     return tag;
+    //   }
+    // });
+    // if (import.meta.env.VITE_DEBUG) console.log('description:', description, 'descriptionTranslated:', descriptionTranslated);
     // if (import.meta.env.VITE_DEBUG) console.log('still going, selectedKeywords.value[0]:', selectedKeywords.value[0], 'row.properties.tags:', row.properties.tags, 'description:', description);
 
     let threshold = 0.2;
@@ -745,7 +751,8 @@ const checkKeywords = (row) => {
       // ]
     };
 
-    const fuse = new Fuse(descriptionTranslated, options);
+    // const fuse = new Fuse(descriptionTranslated, options);
+    const fuse = new Fuse(description, options);
     let results = {};
     for (let keyword of selectedKeywords.value) {
       // if (import.meta.env.VITE_DEBUG) console.log('in selectedKeywords loop, keyword.toString():', keyword.toString(), 'description:', description);//'description[0].split(","):', description[0].split(','));
