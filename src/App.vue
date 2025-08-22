@@ -79,13 +79,6 @@ watch(
   }
 )
 
-watch(
-  () => MainStore.pageTitle,
-  (newPageTitle) => {
-    document.title = newPageTitle;
-  }
-)
-
 const i18nEnabled = computed(() => {
   if ($config.i18n && $config.i18n.enabled) {
     return true;
@@ -103,6 +96,14 @@ const appTitle = computed(() => {
   }
   return value;
 });
+
+watch(
+  () => appTitle.value,
+  (newPageTitle) => {
+    if (import.meta.env.VITE_DEBUG) console.log('watch appTitle:', newPageTitle);
+    document.title = newPageTitle;
+  }
+)
 
 </script>
 
