@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.3.1
+
+* makes app title in browser tab change with changes in language
+
 ### 2.3.0
 
 * changes for filtering in other languages
