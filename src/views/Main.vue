@@ -892,6 +892,11 @@ const footerLinks = computed(() => {
     for (let i of $config.footer) {
       let value = {}
       for (let j of Object.keys(i)) {
+        const valOrGetter = i[j];
+        if (typeof valOrGetter === 'function') {
+          value[j] = valOrGetter();
+          continue;
+        }
         // if (import.meta.env.VITE_DEBUG) console.log('i:', i, 'j:', j);
         if (!i18nEnabled.value || j !== "text") {
           value[j] = i[j];

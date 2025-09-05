@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Main from '../views/Main.vue';
 import PrintView from '../views/PrintView.vue';
+import Tutorial from '../views/Tutorial.vue';
 
 import { useMainStore } from '../stores/MainStore.js';
 import { useMapStore } from '../stores/MapStore.js';
@@ -75,6 +76,11 @@ const initRouter = (publicPath) => {
         beforeEnter: async (to, from) => {
           await initData();
         }
+      },
+      {
+        path: '/tutorial/:file',
+        name: 'tutorial',
+        component: Tutorial,
       }
     ]
   })

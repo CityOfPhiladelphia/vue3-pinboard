@@ -1,4 +1,3 @@
-
 export default{
   "app": {
     "cityOfPhiladelphia": "City of Philadelphia",
