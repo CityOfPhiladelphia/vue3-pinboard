@@ -90,7 +90,11 @@ export const useDataStore = defineStore('DataStore', {
 
           if (import.meta.env.VITE_DEBUG) console.log('dataConfig.options.success:', dataConfig.options.success, 'dependent:', dependent);
           if (dataConfig.options.success) {
-            dataConfig.options.success(data, dependent);
+            if (dataConfig.replaceOnSuccess) {
+              data.rows = dataConfig.options.success(data);
+            } else {
+              dataConfig.options.success(data, dependent);
+            }
           }
     
           if (data.features) {
