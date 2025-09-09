@@ -622,7 +622,7 @@ const locationsPanelClass = computed(() => {
             @print-box-checked="printBoxChecked"
           >
             <print-share-section
-              v-if="item._featureId == DataStore.selectedResource"
+              v-if="item._featureId == DataStore.selectedResource && $config.showPrintInCards"
               :item="item"
             />
 

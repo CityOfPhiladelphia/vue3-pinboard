@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.3.5
+
+* allows hiding the print-share-section in cards
+
 ### 2.3.4
 
 * allows for reconfiguring of the data object for capital projects
