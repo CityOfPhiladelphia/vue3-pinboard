@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.3.3
+
+* fix for all categoryField_array apps
+
 ### 2.3.2
 
 * allows functions in footerLinks

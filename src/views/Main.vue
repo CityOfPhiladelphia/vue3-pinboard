@@ -572,11 +572,12 @@ const checkServices = (row) => {
     case 'categoryField_array':
       let servicesSplit = $config.refine.value(row);
       if (typeof servicesSplit === 'string') {
-        servicesSplit = servicesSplit.split(',');
+        servicesSplit = servicesSplit.split(',').map(s => s.trim());
       }
-      // if (import.meta.env.VITE_DEBUG) console.log('servicesSplit:', servicesSplit);
+      // if (import.meta.env.VITE_DEBUG) console.log('servicesSplit:', servicesSplit, 'selectedServices:', selectedServices);
       if (servicesSplit) {
         let servicesFiltered = servicesSplit.filter(f => selectedServices.includes(f));
+        // if (import.meta.env.VITE_DEBUG) console.log('servicesFiltered:', servicesFiltered);
         return servicesFiltered.length == selectedServices.length;
       } else {
         return false;
