@@ -572,7 +572,7 @@ const checkServices = (row) => {
     case 'categoryField_array':
       let servicesSplit = $config.refine.value(row);
       if (typeof servicesSplit === 'string') {
-        servicesSplit = servicesSplit.split(', ');
+        servicesSplit = servicesSplit.split(',').map(s => s.trim());
       }
       // if (import.meta.env.VITE_DEBUG) console.log('servicesSplit:', servicesSplit, 'selectedServices:', selectedServices);
       if (servicesSplit) {
