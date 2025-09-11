@@ -374,6 +374,14 @@ const getBoxValue = (box) => {
   return (box && typeof box != 'object') ? box.replace("_", ".") : null;
 };
 
+const closeAddressBox = (e, box) => {
+  e.stopPropagation();
+  // if (import.meta.env.VITE_DEBUG) console.log('closeAddressBox is running, e:', e, 'box:', box, 'startQuery:', startQuery);
+  const startQuery = { ...route.query };
+  delete startQuery['address'];
+  router.push({ query: { ...startQuery } });
+};
+
 const arraysEqual = (a, b) => {
   if (a === b) return true;
   if (a == null || b == null) return false;
@@ -441,128 +449,65 @@ const calculateColumns = (ind, indName) => {
 const closeZipcodeBox = (e, box) => {
   e.stopPropagation();
   // if (import.meta.env.VITE_DEBUG) console.log('closeZipcodeBox is running');
-  let startQuery = { ...route.query };
-  // if (import.meta.env.VITE_DEBUG) console.log('closeZipcodeBox is running, box:', box, 'startQuery:', startQuery);
+  const startQuery = { ...route.query };
   delete startQuery['zipcode'];
-  router.push({ query: { ...startQuery }});
+  router.push({ query: { ...startQuery } });
   MainStore.selectedZipcode = null;
   MapStore.zipcodeCenter = [];
-  // MainStore.currentSearch = null;
-};
-
-const closeAddressBox = (e, box) => {
-  e.stopPropagation();
-  let startQuery = { ...route.query };
-  // if (import.meta.env.VITE_DEBUG) console.log('closeAddressBox is running, e:', e, 'box:', box, 'startQuery:', startQuery);
-  delete startQuery['address'];
-  router.push({ query: { ...startQuery }});
-  // MainStore.currentSearch = null;
-};
-
-const closeKeywordsBox = (e, box) => {
-  e.stopPropagation();
-  // if (import.meta.env.VITE_DEBUG) console.log('closeKeywordsBox is running, e:', e);
-  let startQuery = { ...route.query };
-  let keywordsArray;
-  if (startQuery.keyword && typeof startQuery.keyword === 'string' && startQuery.keyword != '') {
-    keywordsArray = startQuery.keyword.split(',');
-  } else if (startQuery.keyword && Array.isArray(startQuery.keyword) && startQuery.keyword.length) {
-    keywordsArray = startQuery.keyword;
-  } else {
-    keywordsArray = [];
-  }
-  // if (import.meta.env.VITE_DEBUG) console.log('closeKeywordsBox is running, keywordsArray:', keywordsArray, 'typeof startQuery.keyword:', typeof startQuery.keyword, 'box:', box, 'startQuery.keyword:', startQuery.keyword);
-  const index = keywordsArray.indexOf(box);
-  if (index > -1) { // only splice array when item is found
-    // if (import.meta.env.VITE_DEBUG) console.log('in closeKeywordsBox in if 1, keywordsArray:', keywordsArray);
-    keywordsArray.splice(index, 1); // 2nd parameter means remove one item only
-    // if (import.meta.env.VITE_DEBUG) console.log('in closeKeywordsBox in if 2, keywordsArray:', keywordsArray);
-  }
-  let newQuery = keywordsArray.toString();
-  // if (import.meta.env.VITE_DEBUG) console.log('in closeKeywordsBox, route.query:', route.query, 'startQuery:', startQuery, 'newQuery:', newQuery);
-  if (newQuery.length) {
-    router.push({ query: { ...route.query, ...{ keyword: newQuery }}});
-  } else {
-    router.push({ query: { ...route.query, ...{ keyword: [] } }});
-  }
-  MainStore.selectedKeywords = keywordsArray;
 };
 
 const closeBox = (e, box) => {
   e.stopPropagation();
-  // if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, box:', box);
-  // if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, box:', box, 'e:', e);
   if (refineType.value === 'categoryField_value') {
     selected.value = null;
-    // if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, selected.value:', selected.value);
     selectedList.value = [];
     return;
   }
-  let section = box.split('_')[0];
-  // if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, section:', section, 'selected.value:', selected.value, 'selected.value[section]:', selected.value[section]);
-  if (selectedList.value['checkbox_'+section]) {
-    // if (import.meta.env.VITE_DEBUG) console.log('it\'s there in selectedList');
-    let boxIndex = selectedList.value['checkbox_'+section].indexOf(box);
-    selectedList.value['checkbox_'+section].splice(boxIndex, 1);
-  } else if (selectedList.value['radio_' + section]) {
-    // if (import.meta.env.VITE_DEBUG) console.log('1 it\'s there in selectedList WITH radio, box:', box, 'selectedList.value["radio_" + section]:', selectedList.value['radio_' + section]);
-    let test = 'radio_' + section;
-    const { [test]: removedProperty, ...exceptBoth } = selectedList.value;
-    // if (import.meta.env.VITE_DEBUG) console.log('2 exceptBoth:', exceptBoth, 'it\'s there in selectedList WITH radio, box:', box, 'selectedList.value["radio_" + section]:', selectedList.value['radio_' + section]);
-    selectedList.value = exceptBoth;
-    let boxIndex = selected.value.indexOf(box);
-    selected.value.splice(boxIndex, 1);
-  } else if (selected.value.includes(section)) {
-    // if (import.meta.env.VITE_DEBUG) console.log('its in the array');
-    let boxIndex = selected.value.indexOf(section);
-    selected.value.splice(boxIndex, 1);
-  } else {
-    // if (import.meta.env.VITE_DEBUG) console.log('not there in selected list');
+
+  const section = box.split('_')[0];
+  if (selectedList.value['checkbox_' + section]) {
+    const boxIndex = selectedList.value['checkbox_' + section].indexOf(box);
+    selectedList.value['checkbox_' + section].splice(boxIndex, 1);
+    return;
   }
-  // if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, box:', box, 'section:', section, 'boxIndex:', boxIndex);
+
+  if (selectedList.value['radio_' + section]) {
+    const test = 'radio_' + section;
+    const { [test]: removedProperty, ...exceptBoth } = selectedList.value; selectedList.value = exceptBoth;
+    const boxIndex = selected.value.indexOf(box);
+    selected.value.splice(boxIndex, 1);
+    return;
+  }
+
+  if (selected.value.includes(section)) {
+    const boxIndex = selected.value.indexOf(section);
+    selected.value.splice(boxIndex, 1);
+    return;
+  }
 };
 
-const clearAll = async(e) => {
+const clearAll = async (e) => {
   e.stopPropagation();
-
   // sets clearAllClicked flag to true, so that RefinePanel watch selectedArray doesn't re-route
   MainStore.clearAllClicked = true;
+  const startQuery = { ...route.query };
 
-  let startQuery = { ...route.query };
-  // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, e: ', e, 'startQuery1:', startQuery);
-
+  // delete query fields
   delete startQuery['address'];
   delete startQuery['zipcode'];
   delete startQuery['keyword'];
   delete startQuery['services'];
+  router.push({ query: { ...startQuery } });
 
-  // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, startQuery2:', startQuery);
-  router.push({ query: { ...startQuery }});
-
-  const payload = {
-    lat: null,
-    lng: null,
-  };
-
+  // set stores to empty values
   MainStore.selectedKeywords = [];
   MainStore.selectedZipcode = null;
   MapStore.zipcodeCenter = [];
-  // MainStore.currentSearch = null;
-
-  if (refineType.value === 'categoryField_value') {
-    selected.value = null;
-  } else {
-    selected.value = [];
-  }
+  selected.value = (refineType.value === 'categoryField_value') ? null : [];
 };
 
 const getRefineSearchList = async() => {
-  let refineData = database.value;
-  // if (import.meta.env.VITE_DEBUG) console.log('getRefineSearchList is running, refineData:', refineData);
-  if (refineData && refineData.records) {
-    refineData = refineData.records;
-  }
-
+  const refineData = (database.value && database.value.records) ? database.value.records : database.value;
   let service = '';
   let uniq = [];
   let uniqPrep;
