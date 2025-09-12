@@ -157,7 +157,7 @@ const refineList = computed(() => {
 });
 
 const refineListTranslated = computed(() => {
-  if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated computed is running, refineList.value:', refineList.value);
+  // if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated computed is running, refineList.value:', refineList.value);
   if (!refineList.value || !Object.keys(refineList.value).length) {
     return {};
   }
@@ -198,7 +198,7 @@ const refineListTranslated = computed(() => {
       // if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated computed, category:', category, 't(category):', t(category), 'mainArray:', mainArray);
     }
   } else if (refineType.value == 'multipleFieldGroups') {
-    if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated computed, refineType.value:', refineType.value, 'refineList.value:', refineList.value);
+    // if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated computed, refineType.value:', refineType.value, 'refineList.value:', refineList.value);
     if (refineList.value) {
       for (let category of Object.keys(refineList.value)) {
         mainObject[category] = {};
@@ -280,7 +280,7 @@ const refinePanelClass = computed(() => {
       value = 'refine-panel refine-retractable-open refine-panel-non-mobile invisible-scrollbar';
     }
   } else if ($config.dropdownRefine) {
-    if (import.meta.env.VITE_DEBUG) console.log('dropdownRefine is used');
+    // if (import.meta.env.VITE_DEBUG) console.log('dropdownRefine is used');
     value = 'refine-panel refine-dropdown-closed refine-panel-non-mobile-closed invisible-scrollbar';
   } else {
     value = 'refine-panel refine-panel-non-mobile invisible-scrollbar';
@@ -322,26 +322,26 @@ const searchDistance = computed(() => {
 });
 
 const selectedArray = computed(() => {
-  if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selected.value:', selected.value, 'selectedList.value:', selectedList.value);
+  // if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selected.value:', selected.value, 'selectedList.value:', selectedList.value);
   let selL = {...selectedList.value};
   // if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selL:', selL, 'selected.value:', selected.value);
   let compiled = [];
   if (Object.keys(selL).length) {
-    if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed, in first if, selL:', selL);
+    // if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed, in first if, selL:', selL);
     for (let value of Object.keys(selL)) {
-      if (import.meta.env.VITE_DEBUG) console.log('in selectedArray computed, value:', value, 'selL[value]:', selL[value]);
+      // if (import.meta.env.VITE_DEBUG) console.log('in selectedArray computed, value:', value, 'selL[value]:', selL[value]);
       if (value.split('_')[0] == 'checkbox') {
-        if (import.meta.env.VITE_DEBUG) console.log('checkbox clicked!');
+        // if (import.meta.env.VITE_DEBUG) console.log('checkbox clicked!');
         if (Array.isArray(selL[value])) {
           for (let sel of selL[value]) {
-            if (import.meta.env.VITE_DEBUG) console.log('in selectedArray computed, loop, sel:', sel, 'value:', value, 'selL[value]:', selL[value]);
+            // if (import.meta.env.VITE_DEBUG) console.log('in selectedArray computed, loop, sel:', sel, 'value:', value, 'selL[value]:', selL[value]);
             compiled.push(sel);
           }
         } else {
           compiled.push(selL[value]);
         }
       } else if (value.split('_')[0] == 'radio') {
-        if (import.meta.env.VITE_DEBUG) console.log('radio button clicked!, selL[value]:', selL[value]);
+        // if (import.meta.env.VITE_DEBUG) console.log('radio button clicked!, selL[value]:', selL[value]);
         if (typeof selL[value] === 'string') {
           compiled.push(selL[value]);
         } else {
@@ -354,7 +354,7 @@ const selectedArray = computed(() => {
       }
     }
   } else if (refineType.value !== 'categoryField_value') {
-    if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed, in first else if, selected.value:', selected.value);
+    // if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed, in first else if, selected.value:', selected.value);
     let sel = selected.value;
     if (sel.length) {
       for (let selected of sel) {
@@ -362,9 +362,9 @@ const selectedArray = computed(() => {
       }
     }
   } else {
-    if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed, in second else, selected.value:', selected.value);
+    // if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed, in second else, selected.value:', selected.value);
     if (selected.value && selected.value.length) {
-      if (import.meta.env.VITE_DEBUG) console.log('selected.value:', selected.value);
+      // if (import.meta.env.VITE_DEBUG) console.log('selected.value:', selected.value);
       compiled.push(selected.value);
     } else {
       compiled = [];
@@ -403,7 +403,7 @@ watch(
 watch(
   () => selectedServices.value.length,
   async nextSelectedServices => {
-    if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedServices is firing, selectedServices.value:', selectedServices.value);
+    // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedServices is firing, selectedServices.value:', selectedServices.value);
     if ($config.refine.type === 'categoryField_value' && selectedServices.value.length) {
       selected.value = selectedServices.value[0];
     } else if (selectedServices.value.length) {
@@ -420,7 +420,7 @@ watch(
         if (key2 === 'radio' || key2 === 'checkbox') {
           for (let key3 of Object.keys(refineList.value[key][key2])) {
             let unique_key = $config.refine.multipleFieldGroups[key][key2][key3].unique_key;
-            if (import.meta.env.VITE_DEBUG) console.log('in watch selectedServices, key:', key, 'key2:', key2, 'key3:', key3, 'unique_key:', unique_key);
+            // if (import.meta.env.VITE_DEBUG) console.log('in watch selectedServices, key:', key, 'key2:', key2, 'key3:', key3, 'unique_key:', unique_key);
 
             let uniq = {};
             let selectedNow = {};
@@ -483,16 +483,16 @@ watch(
   () => selectedArray.value,
   async (nextSelected, lastSelected) => {
     if (nextSelected === lastSelected) return;
-    if (import.meta.env.VITE_DEBUG) console.log('watch selectedArray is firing, nextSelected:', nextSelected, 'lastSelected:', lastSelected);
+    // if (import.meta.env.VITE_DEBUG) console.log('watch selectedArray is firing, nextSelected:', nextSelected, 'lastSelected:', lastSelected);
 
     // checked MainStore.clearAllClicked condition so that this doesn't re-route again if clearAll is clicked
     if (!arraysEqual(nextSelected, lastSelected) && !MainStore.clearAllClicked) {
       let startQuery = { ...route.query };
       if (nextSelected.length) {
-        if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedArray will router.push 1, nextSelected', nextSelected, 'startQuery:', startQuery);
+        // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedArray will router.push 1, nextSelected', nextSelected, 'startQuery:', startQuery);
         router.push({ query: { ...startQuery, ...{ services: nextSelected.join(',') }}});
       } else {
-        if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedArray will router.push 2, nextSelected', nextSelected, 'startQuery:', startQuery);
+        // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedArray will router.push 2, nextSelected', nextSelected, 'startQuery:', startQuery);
         delete startQuery['services'];
         router.push({ query: { ...startQuery }});
       }
@@ -515,7 +515,7 @@ onMounted(async () => {
       expandRefine();
     }
   };
-  if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue mounted is calling getRefineSearchList');
+  // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue mounted is calling getRefineSearchList');
   await getRefineSearchList();
 
   if (route.query.services) {
@@ -530,12 +530,12 @@ onMounted(async () => {
   if (refineType.value === 'multipleFieldGroups') {
     for (let service of selected.value) {
       const serviceType = service.split('_')[0];
-      if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue beforeMount 0, serviceType:', serviceType)//, $config.refine.multipleFieldGroups[serviceType]:', $config.refine.multipleFieldGroups[serviceType]);
+      // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue beforeMount 0, serviceType:', serviceType)//, $config.refine.multipleFieldGroups[serviceType]:', $config.refine.multipleFieldGroups[serviceType]);
       let checkboxOrRadio = Object.keys($config.refine.multipleFieldGroups[serviceType])[0];
       let category = checkboxOrRadio + '_' + serviceType;
-      if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue beforeMount 1 is running, service:', service, 'serviceType:', serviceType, 'checkboxOrRadio:', checkboxOrRadio, 'category:', category, 'selectedList.value:', selectedList.value);
+      // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue beforeMount 1 is running, service:', service, 'serviceType:', serviceType, 'checkboxOrRadio:', checkboxOrRadio, 'category:', category, 'selectedList.value:', selectedList.value);
       if (checkboxOrRadio == 'checkbox') {
-        if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue beforeMount 2 is running, service:', service, 'serviceType:', serviceType, 'checkboxOrRadio:', checkboxOrRadio, 'category:', category, 'selectedList.value:', selectedList.value);
+        // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue beforeMount 2 is running, service:', service, 'serviceType:', serviceType, 'checkboxOrRadio:', checkboxOrRadio, 'category:', category, 'selectedList.value:', selectedList.value);
         if (selectedList.value[category] && !selectedList.value[category].includes(service)) {
           selectedList.value[category].push(service);
         } else {
@@ -587,14 +587,14 @@ const clearAll = async(e) => {
   MainStore.clearAllClicked = true;
 
   let startQuery = { ...route.query };
-  if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, e: ', e, 'startQuery1:', startQuery);
+  // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, e: ', e, 'startQuery1:', startQuery);
 
   delete startQuery['address'];
   delete startQuery['zipcode'];
   delete startQuery['keyword'];
   delete startQuery['services'];
 
-  if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, startQuery2:', startQuery);
+  // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, startQuery2:', startQuery);
   router.push({ query: { ...startQuery }});
 
   const payload = {
@@ -617,7 +617,7 @@ const clearAll = async(e) => {
 const closeAddressBox = (e, box) => {
   e.stopPropagation();
   let startQuery = { ...route.query };
-  if (import.meta.env.VITE_DEBUG) console.log('closeAddressBox is running, e:', e, 'box:', box, 'startQuery:', startQuery);
+  // if (import.meta.env.VITE_DEBUG) console.log('closeAddressBox is running, e:', e, 'box:', box, 'startQuery:', startQuery);
   delete startQuery['address'];
   router.push({ query: { ...startQuery }});
 };
@@ -625,24 +625,24 @@ const closeAddressBox = (e, box) => {
 const closeBox = (e, box) => {
   e.stopPropagation();
   // if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, box:', box);
-  if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, box:', box, 'e:', e);
+  // if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, box:', box, 'e:', e);
   if (refineType.value === 'categoryField_value') {
     selected.value = null;
-    if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, selected.value:', selected.value);
+    // if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, selected.value:', selected.value);
     selectedList.value = [];
     return;
   }
   let section = box.split('_')[0];
-  if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, section:', section, 'selected.value:', selected.value, 'selected.value[section]:', selected.value[section]);
+  // if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, section:', section, 'selected.value:', selected.value, 'selected.value[section]:', selected.value[section]);
   if (selectedList.value['checkbox_'+section]) {
     // if (import.meta.env.VITE_DEBUG) console.log('it\'s there in selectedList');
     let boxIndex = selectedList.value['checkbox_'+section].indexOf(box);
     selectedList.value['checkbox_'+section].splice(boxIndex, 1);
   } else if (selectedList.value['radio_' + section]) {
-    if (import.meta.env.VITE_DEBUG) console.log('1 it\'s there in selectedList WITH radio, box:', box, 'selectedList.value["radio_" + section]:', selectedList.value['radio_' + section]);
+    // if (import.meta.env.VITE_DEBUG) console.log('1 it\'s there in selectedList WITH radio, box:', box, 'selectedList.value["radio_" + section]:', selectedList.value['radio_' + section]);
     let test = 'radio_' + section;
     const { [test]: removedProperty, ...exceptBoth } = selectedList.value;
-    if (import.meta.env.VITE_DEBUG) console.log('2 exceptBoth:', exceptBoth, 'it\'s there in selectedList WITH radio, box:', box, 'selectedList.value["radio_" + section]:', selectedList.value['radio_' + section]);
+    // if (import.meta.env.VITE_DEBUG) console.log('2 exceptBoth:', exceptBoth, 'it\'s there in selectedList WITH radio, box:', box, 'selectedList.value["radio_" + section]:', selectedList.value['radio_' + section]);
     selectedList.value = exceptBoth;
     let boxIndex = selected.value.indexOf(box);
     selected.value.splice(boxIndex, 1);
@@ -651,14 +651,14 @@ const closeBox = (e, box) => {
     let boxIndex = selected.value.indexOf(section);
     selected.value.splice(boxIndex, 1);
   } else {
-    if (import.meta.env.VITE_DEBUG) console.log('not there in selected list');
+    // if (import.meta.env.VITE_DEBUG) console.log('not there in selected list');
   }
   // if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, box:', box, 'section:', section, 'boxIndex:', boxIndex);
 };
 
 const closeKeywordsBox = (e, box) => {
   e.stopPropagation();
-  if (import.meta.env.VITE_DEBUG) console.log('closeKeywordsBox is running, e:', e);
+  // if (import.meta.env.VITE_DEBUG) console.log('closeKeywordsBox is running, e:', e);
   let startQuery = { ...route.query };
   let keywordsArray;
   if (startQuery.keyword && typeof startQuery.keyword === 'string' && startQuery.keyword != '') {
@@ -668,12 +668,12 @@ const closeKeywordsBox = (e, box) => {
   } else {
     keywordsArray = [];
   }
-  if (import.meta.env.VITE_DEBUG) console.log('closeKeywordsBox is running, keywordsArray:', keywordsArray, 'typeof startQuery.keyword:', typeof startQuery.keyword, 'box:', box, 'startQuery.keyword:', startQuery.keyword);
+  // if (import.meta.env.VITE_DEBUG) console.log('closeKeywordsBox is running, keywordsArray:', keywordsArray, 'typeof startQuery.keyword:', typeof startQuery.keyword, 'box:', box, 'startQuery.keyword:', startQuery.keyword);
   const index = keywordsArray.indexOf(box);
   if (index > -1) { // only splice array when item is found
-    if (import.meta.env.VITE_DEBUG) console.log('in closeKeywordsBox in if 1, keywordsArray:', keywordsArray);
+    // if (import.meta.env.VITE_DEBUG) console.log('in closeKeywordsBox in if 1, keywordsArray:', keywordsArray);
     keywordsArray.splice(index, 1); // 2nd parameter means remove one item only
-    if (import.meta.env.VITE_DEBUG) console.log('in closeKeywordsBox in if 2, keywordsArray:', keywordsArray);
+    // if (import.meta.env.VITE_DEBUG) console.log('in closeKeywordsBox in if 2, keywordsArray:', keywordsArray);
   }
   let newQuery = keywordsArray.toString();
   // if (import.meta.env.VITE_DEBUG) console.log('in closeKeywordsBox, route.query:', route.query, 'startQuery:', startQuery, 'newQuery:', newQuery);
@@ -687,9 +687,9 @@ const closeKeywordsBox = (e, box) => {
 
 const closeZipcodeBox = (e, box) => {
   e.stopPropagation();
-  if (import.meta.env.VITE_DEBUG) console.log('closeZipcodeBox is running');
+  // if (import.meta.env.VITE_DEBUG) console.log('closeZipcodeBox is running');
   let startQuery = { ...route.query };
-  if (import.meta.env.VITE_DEBUG) console.log('closeZipcodeBox is running, box:', box, 'startQuery:', startQuery);
+  // if (import.meta.env.VITE_DEBUG) console.log('closeZipcodeBox is running, box:', box, 'startQuery:', startQuery);
   delete startQuery['zipcode'];
   router.push({ query: { ...startQuery }});
   MainStore.selectedZipcode = null;
@@ -697,19 +697,19 @@ const closeZipcodeBox = (e, box) => {
 };
 
 const expandCheckbox = (ind) => {
-  if (import.meta.env.VITE_DEBUG) console.log('expandCheckbox is running');
+  // if (import.meta.env.VITE_DEBUG) console.log('expandCheckbox is running');
   refineList.value[ind].expanded = !refineList.value[ind].expanded;
 };
 
 const expandRefine = () => {
-  if (import.meta.env.VITE_DEBUG) console.log('expandRefine is running');
+  // if (import.meta.env.VITE_DEBUG) console.log('expandRefine is running');
   let tagValue;
   if (MainStore.refineOpen) {
     tagValue = 'retract refine panel';
   } else {
     tagValue = 'expand refine panel';
   }
-  if (import.meta.env.VITE_DEBUG) console.log('expandRefine is running, tagValue:', tagValue);
+  // if (import.meta.env.VITE_DEBUG) console.log('expandRefine is running, tagValue:', tagValue);
   MainStore.refineOpen = !MainStore.refineOpen;
 };
 
@@ -718,17 +718,17 @@ const getBoxValue = (box) => {
   if (box && typeof box != 'object') {
     value = box.replace("_", ".");
   }
-  if (import.meta.env.VITE_DEBUG) console.log('getBoxValue is running, box:', box, 'value:', value);
+  // if (import.meta.env.VITE_DEBUG) console.log('getBoxValue is running, box:', box, 'value:', value);
   return value;
 };
 
 const getCategoryFieldValue = (selected) => {
-  if (import.meta.env.VITE_DEBUG) console.log('getCategoryFieldValue is running, selected:', selected);
+  // if (import.meta.env.VITE_DEBUG) console.log('getCategoryFieldValue is running, selected:', selected);
   let selectedCategory;
   if (selected.length) {
     let selectedLower = selected.toLowerCase().replaceAll(' ', '');
     let i18nCategories = Object.keys(ConfigStore.config.i18n.data.messages[i18nLocale.value].sections);
-    if (import.meta.env.VITE_DEBUG) console.log('18nCategories:', i18nCategories);
+    // if (import.meta.env.VITE_DEBUG) console.log('18nCategories:', i18nCategories);
     for (let category of i18nCategories) {
       let categoryLower = category.toLowerCase().replaceAll(' ', '');
       if (categoryLower === selectedLower || categoryLower === selectedLower + 's') {
@@ -741,7 +741,7 @@ const getCategoryFieldValue = (selected) => {
 
 const getRefineSearchList = async() => {
   let refineData = database.value;
-  if (import.meta.env.VITE_DEBUG) console.log('getRefineSearchList is running, refineData:', refineData);
+  // if (import.meta.env.VITE_DEBUG) console.log('getRefineSearchList is running, refineData:', refineData);
   if (refineData && refineData.records) {
     refineData = refineData.records;
   }
@@ -752,7 +752,7 @@ const getRefineSearchList = async() => {
   let selected;
 
   if (!$config.refine || $config.refine && ['categoryField_array', 'categoryField_value'].includes($config.refine.type)) {
-    if (import.meta.env.VITE_DEBUG) console.log('in getRefineSearchList, refineData:', refineData);
+    // if (import.meta.env.VITE_DEBUG) console.log('in getRefineSearchList, refineData:', refineData);
     if(refineData) {
       refineData.forEach((item) => {
         if ($config.refine) {
@@ -800,7 +800,7 @@ const getRefineSearchList = async() => {
     selected = uniqArray.filter(a => a.length > 2);
     selected.filter(Boolean); // remove empties
     selected.sort();
-    if (import.meta.env.VITE_DEBUG) console.log('uniq:', uniq, 'uniqPrep:', uniqPrep, 'uniqArray:', uniqArray, 'selected:', selected);
+    // if (import.meta.env.VITE_DEBUG) console.log('uniq:', uniq, 'uniqPrep:', uniqPrep, 'uniqArray:', uniqArray, 'selected:', selected);
 
   } else if ($config.refine && $config.refine.type === 'multipleFields') {
     uniq = Object.keys($config.refine.multipleFields);
@@ -810,13 +810,13 @@ const getRefineSearchList = async() => {
     selected.sort();
   }
 
-  if (import.meta.env.VITE_DEBUG) console.log('getRefineSearchList is still running');
+  // if (import.meta.env.VITE_DEBUG) console.log('getRefineSearchList is still running');
   if ($config.refine && $config.refine.type === 'multipleFieldGroups') {
     uniq = {};
     selected = {};
     for (let group of Object.keys($config.refine.multipleFieldGroups)){
 
-      if (import.meta.env.VITE_DEBUG) console.log('group:', group);
+      // if (import.meta.env.VITE_DEBUG) console.log('group:', group);
       uniq[group] = { expanded: false };
       for (let dep of Object.keys($config.refine.multipleFieldGroups[group])){
         // if (import.meta.env.VITE_DEBUG) console.log('middle loop, dep:', dep, 'group:', group);
@@ -839,7 +839,7 @@ const getRefineSearchList = async() => {
       }
     }
 
-    if (import.meta.env.VITE_DEBUG) console.log('RefinePanel end of getRefineSearchList, uniq:', uniq, 'selected:', selected);
+    // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel end of getRefineSearchList, uniq:', uniq, 'selected:', selected);
     if (selected.length) {
       for (let group of Object.keys(uniq)) {
         for (let dep of Object.keys(uniq[group])) {
@@ -861,7 +861,7 @@ const getRefineSearchList = async() => {
         }
       }
     }
-    if (import.meta.env.VITE_DEBUG) console.log('RefinePanel end of getRefineSearchList, selected:', selected);
+    // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel end of getRefineSearchList, selected:', selected);
     selectedList.value = selected;
   }
 
