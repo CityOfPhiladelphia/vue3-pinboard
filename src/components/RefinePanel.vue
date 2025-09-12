@@ -530,19 +530,14 @@ const getRefineSearchList = async () => {
     Object.keys($config.refine.multipleFieldGroups).forEach((group) => {
       uniq[group] = { expanded: false };
       Object.keys($config.refine.multipleFieldGroups[group]).forEach((dep) => {
-        if (dep === 'tooltip') {
-          uniq[group][dep] = $config.refine.multipleFieldGroups[group][dep];
-        }
-        else {
-          uniq[group][dep] = {};
-          Object.keys($config.refine.multipleFieldGroups[group][dep]).forEach((field) => {
-            uniq[group][dep][field] = {
+        uniq[group][dep] = (dep === 'tooltip') ? $config.refine.multipleFieldGroups[group][dep] :
+          Object.fromEntries(Object.keys($config.refine.multipleFieldGroups[group][dep]).map((field) =>
+            [field, new Object({
               unique_key: $config.refine.multipleFieldGroups[group][dep][field].unique_key,
               utooltip: $config.refine.multipleFieldGroups[group][dep][field].tooltip,
               box_label: $config.refine.multipleFieldGroups[group][dep][field].i18n_key ? $config.refine.multipleFieldGroups[group][dep][field].i18n_key : field
-            };
-          })
-        }
+            })]
+          ))
       })
     })
   }
@@ -557,7 +552,6 @@ const getRefineSearchList = async () => {
       })
     })
   }
-
   return MainStore.refineList = uniq;
 };
 
@@ -567,63 +561,41 @@ const scrollToTop = () => {
 
 // REFINE TRANSLATED FUNCTIONS
 const refineListTranslated_categoryField = () => {
-  const mainArray = [];
-  for (let category of refineList.value) {
-    mainArray.push({
-      value: category.data,
-      text: t(category.data),
-    });
-  }
-  return mainArray;
+  return Array.from(refineList.value, (category) => new Object({
+    value: category.data,
+    text: t(category.data),
+  }))
 }
 
 const refineListTranslated_multipleFieldGroups = () => {
-  const mainObject = {};
-  if (refineList.value) {
-    for (let category of Object.keys(refineList.value)) {
-      mainObject[category] = {};
-      for (let dep of Object.keys(refineList.value[category])) {
-        if (dep !== 'tooltip') {
-          mainObject[category][dep] = [];
-          for (let box of Object.keys(refineList.value[category][dep])) {
-            const tooltip = {};
-            if (refineList.value[category][dep][box].tooltip) {
-              tooltip.tip = t(refineList.value[category][dep][box].tooltip.tip);
-              tooltip.multiline = refineList.value[category][dep][box].tooltip.multiline
-            }
-            const keyPairs = {
-              data: refineList.value[category][dep][box].unique_key,
-              textLabel: t(refineList.value[category][dep][box].box_label),
-              tooltip: Object.keys(tooltip).length ? tooltip : null,
-            };
-            mainObject[category][dep].push(keyPairs)
-          }
-        }
-        else {
-          mainObject[category][dep] = t(refineList.value[category][dep].tip);
-        }
-      }
-    }
-  }
-  return mainObject;
+  return !refineList.value ? {} :
+    Object.fromEntries(Object.keys(refineList.value).map((category) =>
+      [category, Object.fromEntries(Object.keys(refineList.value[category]).map((dep) =>
+        [dep, (dep === 'tooltip') ? t(refineList.value[category][dep].tip) :
+          Array.from(Object.keys(refineList.value[category][dep]), (box) => new Object({
+            data: refineList.value[category][dep][box].unique_key,
+            textLabel: t(refineList.value[category][dep][box].box_label),
+            tooltip: refineList.value[category][dep][box].tooltip ? {
+              tip: t(refineList.value[category][dep][box].tooltip.tip),
+              multiline: refineList.value[category][dep][box].tooltip.multiline,
+            } : null,
+          }))]
+      ))]
+    ))
 }
 
 const refineListTranslated_multipleDependentFieldGroups = () => {
   const mainObject = {};
-  for (let category of Object.keys(refineList.value)) {
+  Object.keys(refineList.value).forEach((category) => {
     mainObject[category] = {};
-    for (let dep of Object.keys(refineList.value[category])) {
-      mainObject[category][dep] = [];
-      for (let box of Object.keys(refineList.value[category][dep])) {
-        const keyPairs = {
-          data: refineList.value[category][dep][box].unique_key,
-          textLabel: t(refineList.value[category][dep][box].box_label),
-          tooltip: refineList.value[category][dep][box].tooltip ? t(refineList.value[category][dep][box].tooltip) : null
-        }
-        mainObject[category][dep].push(keyPairs)
-      };
-    }
-  }
+    Object.keys(refineList.value[category]).forEach((dep) => {
+      mainObject[category][dep] = Array.from(Object.keys(refineList.value[category][dep]), (box) => new Object({
+        data: refineList.value[category][dep][box].unique_key,
+        textLabel: t(refineList.value[category][dep][box].box_label),
+        tooltip: refineList.value[category][dep][box].tooltip ? t(refineList.value[category][dep][box].tooltip) : null
+      }))
+    })
+  })
   return mainObject;
 }
 
