@@ -543,14 +543,11 @@ const getRefineSearchList = async () => {
   }
   else if (['categoryField_array', 'categoryField_value'].includes(refineType)) {
     const refineData = (database.value && database.value.records) ? database.value.records : database.value;
-    const uniqPrep = getUniqueServices(refineData).sort();
-    uniqPrep.forEach((value) => {
-      uniq.push({
-        data: value,
-        textLabel: value,
-        tooltip: $config.infoCircles && Object.keys($config.infoCircles).includes(value) ? $config.infoCircles[value] : null,
-      })
-    })
+    return MainStore.refineList = Array.from(getUniqueServices(refineData).sort(), (value) => new Object({
+      data: value,
+      textLabel: value,
+      tooltip: $config.infoCircles && Object.keys($config.infoCircles).includes(value) ? $config.infoCircles[value] : null,
+    }))
   }
   return MainStore.refineList = uniq;
 };
@@ -585,18 +582,15 @@ const refineListTranslated_multipleFieldGroups = () => {
 }
 
 const refineListTranslated_multipleDependentFieldGroups = () => {
-  const mainObject = {};
-  Object.keys(refineList.value).forEach((category) => {
-    mainObject[category] = {};
-    Object.keys(refineList.value[category]).forEach((dep) => {
-      mainObject[category][dep] = Array.from(Object.keys(refineList.value[category][dep]), (box) => new Object({
+  return Object.fromEntries(Object.keys(refineList.value).map((category) =>
+    [category, Object.fromEntries(Object.keys(refineList.value[category]).map((dep) =>
+      [dep, Array.from(Object.keys(refineList.value[category][dep]), (box) => new Object({
         data: refineList.value[category][dep][box].unique_key,
         textLabel: t(refineList.value[category][dep][box].box_label),
         tooltip: refineList.value[category][dep][box].tooltip ? t(refineList.value[category][dep][box].tooltip) : null
-      }))
-    })
-  })
-  return mainObject;
+      }))]
+    ))]
+  ))
 }
 
 const refineListTranslated_default = () => {
@@ -889,10 +883,6 @@ const refineListTranslated_default = () => {
       padding-right: 24px;
       border-right: 1px solid #cfcfcf;
 
-      &:first-of-type {
-        // padding-left: 0px;
-      }
-
       &:last-of-type {
         border-right: none;
       }
@@ -914,17 +904,12 @@ const refineListTranslated_default = () => {
 
     .close-button {
       height: 20px;
-      // position: absolute;
-      // top: 115px;
-      // right: 12px;
       border-style: none;
       background-color: rgb(240, 240, 240);
-      // color: $ben-franklin-blue-dark;
       color: #0f4d90;
       cursor: pointer;
       padding-left: 0px;
       padding-top: 8px;
-      // padding-bottom: 12px;
       padding-right: 0px;
     }
 
@@ -978,17 +963,14 @@ const refineListTranslated_default = () => {
   }
 
   @media screen and (max-width: 767px) {
-    // height: 3rem;
     position: relative;
 
     #refine-panel-component {
       max-width: 100dvw;
-      // padding: 1rem;
       margin: 0px;
     }
 
     .refine-bottom {
-      // width: 100dvw;
       padding: 1rem;
       margin: 0px;
       overflow-y: auto;
@@ -1058,15 +1040,7 @@ const refineListTranslated_default = () => {
       margin-left: 0px;
       margin-right: 0px;
       margin-bottom: 12px;
-      // padding-left: 6px !important;
-      // padding-right: 6px !important;
-      // padding-left: 1rem !important;
-      // padding-right: 1rem !important;
       border-bottom: 1px solid black;
-
-      &:first-of-type {
-        // padding-left: 0px;
-      }
 
       &:last-of-type {
         border-bottom: none;
