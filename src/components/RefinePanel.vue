@@ -81,13 +81,7 @@ const database = computed(() => {
 });
 
 const dropdownRefine = computed(() => {
-  let value;
-  if ($config.dropdownRefine) {
-    value = true;
-  } else {
-    value = false;
-  }
-  return value;
+  return $config.dropdownRefine ? true : false;
 });
 
 const geocode = computed(() => {
@@ -95,11 +89,7 @@ const geocode = computed(() => {
 });
 
 const i18nEnabled = computed(() => {
-  if ($config.i18n && $config.i18n.enabled) {
-    return true;
-  } else {
-    return false;
-  }
+  return $config.i18n && $config.i18n.enabled;
 });
 
 const i18nLocale = computed(() => {
@@ -115,13 +105,7 @@ const keywordsEntered = computed(() => {
 });
 
 const NumRefineColumns = computed(() => {
-  let value;
-  if (isMobile.value) {
-    value = 1;
-  } else {
-    value = 4;
-  }
-  return value;
+  return isMobile.value ? 1 : 4;
 });
 
 const refineList = computed(() => {
@@ -164,36 +148,21 @@ const refinePanelClass = computed(() => {
 });
 
 const refineTitleClass = computed(() => {
-  let value;
-  if (retractable.value) {
-    value = 'retractable-refine-title';
-  }
-  return value;
+  return retractable.value ? 'retractable-refine-title' : null;
 });
 
 const refineType = computed(() => {
-  if ($config.refine) {
-    return $config.refine.type;
-  }
+  return $config.refine ? $config.refine.type : null;
 });
 
 const retractable = computed(() => {
-  let value = false;
-  if ($config.retractableRefine) {
-    value = true;
-  }
-  return value;
+  return ($config.retractableRefine) ? true : false;
 });
 
 const searchDistance = computed(() => {
-  let value = MapStore.searchDistance;
-  let word;
-  if (value == 1) {
-    word = t('mile');
-  } else {
-    word = t('miles');
-  }
-  return value + ' ' + word;
+  const distance = MapStore.searchDistance;
+  const word = distance == 1 ? t('mile') : t('miles');
+  return distance + ' ' + word;
 });
 
 const selectedArray = computed(() => {
@@ -253,18 +222,12 @@ const selectedServices = computed(() => {
 })
 
 const timesIconWeight = computed(() => {
-  let value = 'fas';
-  let regularExists = findIconDefinition({ prefix: 'far', iconName: 'times' });
-  if (regularExists) {
-    value = 'far';
-  }
-  return value;
+  return findIconDefinition({ prefix: 'far', iconName: 'times' }) ? 'far' : 'fas';
 });
 
 const zipcodeEntered = computed(() => {
   return MainStore.selectedZipcode;
 });
-
 
 // WATCHERS
 watch(
