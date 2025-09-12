@@ -463,33 +463,21 @@ const closeBox = (e, box) => {
   }
 };
 
-// TODO: REFACTOR closeKeywordsBox
 const closeKeywordsBox = (e, box) => {
   e.stopPropagation();
   // if (import.meta.env.VITE_DEBUG) console.log('closeKeywordsBox is running, e:', e);
-  let startQuery = { ...route.query };
-  let keywordsArray;
-  if (startQuery.keyword && typeof startQuery.keyword === 'string' && startQuery.keyword != '') {
-    keywordsArray = startQuery.keyword.split(',');
-  } else if (startQuery.keyword && Array.isArray(startQuery.keyword) && startQuery.keyword.length) {
-    keywordsArray = startQuery.keyword;
-  } else {
-    keywordsArray = [];
+  const startQuery = { ...route.query };
+  let keywordsArray = [];
+
+  if (startQuery.keyword.length) {
+    if (typeof startQuery.keyword === 'string') {
+      keywordsArray = startQuery.keyword.split(',');
+    }
+    else if (Array.isArray(startQuery.keyword) && startQuery.keyword.length) {
+      keywordsArray = startQuery.keyword;
+    }
   }
-  // if (import.meta.env.VITE_DEBUG) console.log('closeKeywordsBox is running, keywordsArray:', keywordsArray, 'typeof startQuery.keyword:', typeof startQuery.keyword, 'box:', box, 'startQuery.keyword:', startQuery.keyword);
-  const index = keywordsArray.indexOf(box);
-  if (index > -1) { // only splice array when item is found
-    // if (import.meta.env.VITE_DEBUG) console.log('in closeKeywordsBox in if 1, keywordsArray:', keywordsArray);
-    keywordsArray.splice(index, 1); // 2nd parameter means remove one item only
-    // if (import.meta.env.VITE_DEBUG) console.log('in closeKeywordsBox in if 2, keywordsArray:', keywordsArray);
-  }
-  let newQuery = keywordsArray.toString();
-  // if (import.meta.env.VITE_DEBUG) console.log('in closeKeywordsBox, route.query:', route.query, 'startQuery:', startQuery, 'newQuery:', newQuery);
-  if (newQuery.length) {
-    router.push({ query: { ...route.query, ...{ keyword: newQuery } } });
-  } else {
-    router.push({ query: { ...route.query, ...{ keyword: [] } } });
-  }
+  router.push({ query: { ...route.query, ...{ keyword: keywordsArray } } });
   MainStore.selectedKeywords = keywordsArray;
 };
 
@@ -533,54 +521,44 @@ const getCategoryFieldValue = (selected) => {
 
 const getRefineSearchList = async () => {
   const refineType = $config.refine ? $config.refine.type : 'categoryField_value';
-  let uniq = [];
+  const uniq = refineType === 'multipleFieldGroups' ? {} : [];
 
-  if (['categoryField_array', 'categoryField_value'].includes(refineType)) {
-    const refineData = (database.value && database.value.records) ? database.value.records : database.value;
-    const uniqPrep = getUniqueServices(refineData).sort();
-
-    for (let value of uniqPrep) {
-      uniq.push({
-        data: value,
-        textLabel: value,
-        tooltip: $config.infoCircles && Object.keys($config.infoCircles).includes(value) ? $config.infoCircles[value] : null,
-      });
-    }
+  if (refineType === 'multipleFields') {
+    return MainStore.refineList = Object.keys($config.refine.multipleFields).sort();
   }
-
-  else if (refineType === 'multipleFields') {
-    uniq = Object.keys($config.refine.multipleFields).sort();
-  }
-
   else if (refineType === 'multipleFieldGroups') {
-    uniq = {};
-
-    for (let group of Object.keys($config.refine.multipleFieldGroups)) {
+    Object.keys($config.refine.multipleFieldGroups).forEach((group) => {
       uniq[group] = { expanded: false };
-
-      for (let dep of Object.keys($config.refine.multipleFieldGroups[group])) {
-
-        if (dep !== 'tooltip') {
+      Object.keys($config.refine.multipleFieldGroups[group]).forEach((dep) => {
+        if (dep === 'tooltip') {
+          uniq[group][dep] = $config.refine.multipleFieldGroups[group][dep];
+        }
+        else {
           uniq[group][dep] = {};
-
-          for (let field of Object.keys($config.refine.multipleFieldGroups[group][dep])) {
+          Object.keys($config.refine.multipleFieldGroups[group][dep]).forEach((field) => {
             uniq[group][dep][field] = {
               unique_key: $config.refine.multipleFieldGroups[group][dep][field].unique_key,
               utooltip: $config.refine.multipleFieldGroups[group][dep][field].tooltip,
               box_label: $config.refine.multipleFieldGroups[group][dep][field].i18n_key ? $config.refine.multipleFieldGroups[group][dep][field].i18n_key : field
             };
-          }
+          })
         }
-
-        else {
-          uniq[group][dep] = $config.refine.multipleFieldGroups[group][dep];
-        }
-      }
-    }
+      })
+    })
+  }
+  else if (['categoryField_array', 'categoryField_value'].includes(refineType)) {
+    const refineData = (database.value && database.value.records) ? database.value.records : database.value;
+    const uniqPrep = getUniqueServices(refineData).sort();
+    uniqPrep.forEach((value) => {
+      uniq.push({
+        data: value,
+        textLabel: value,
+        tooltip: $config.infoCircles && Object.keys($config.infoCircles).includes(value) ? $config.infoCircles[value] : null,
+      })
+    })
   }
 
-  MainStore.refineList = uniq;
-  return uniq;
+  return MainStore.refineList = uniq;
 };
 
 const scrollToTop = () => {
