@@ -58,33 +58,18 @@ const refineTopHeight = ref(46);
 
 // COMPUTED VALUES
 const addressEntered = computed(() => {
-  let address;
-  let routeAddress = route.query.address;
-  // if (import.meta.env.VITE_DEBUG) console.log('addressEntered computed, routeAddress:', routeAddress);
   if (geocode.value && geocode.value.data && geocode.value.data.properties && geocode.value.data.properties.street_address) {
-    address = geocode.value.data.properties.street_address;
-  } else if (routeAddress) {
-    address = routeAddress;
+    return geocode.value.data.properties.street_address;
   }
-  return address;
+  return route.query.address ? route.query.address : null;
 });
 
 const angleIconWeight = computed(() => {
-  let value = 'fas';
-  let regularExists = findIconDefinition({ prefix: 'far', iconName: 'angle-down' });
-  // if (import.meta.env.VITE_DEBUG) console.log('refinePanel.vue computed, library:', library, 'regularExists:', regularExists);
-  if (regularExists) {
-    value = 'far';
-  }
-  return value;
+  return findIconDefinition({ prefix: 'far', iconName: 'angle-down' }) ? 'far' : 'fas';
 });
 
 const anyValueEntered = computed(() => {
-  let value = false;
-  if (zipcodeEntered.value != null || addressEntered.value != null || keywordsEntered.value.length != 0) {
-    value = true;
-  }
-  return value;
+  return (zipcodeEntered.value != null || addressEntered.value != null || keywordsEntered.value.length != 0);
 });
 
 const bottomHeight = computed(() => {
@@ -92,20 +77,7 @@ const bottomHeight = computed(() => {
 });
 
 const database = computed(() => {
-  let value = {}
-  if (DataStore.sources[DataStore.appType]) {
-    // if (import.meta.env.VITE_DEBUG) console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]);
-    value = DataStore.sources[DataStore.appType].data.rows || DataStore.sources[DataStore.appType].data.features || DataStore.sources[DataStore.appType].data;
-  }
-  return value;
-});
-
-const dataStatus = computed(() => {
-  let value;
-  if (DataStore.sources[$config.app.type]) {
-    value = DataStore.sources[$config.app.type].status;
-  }
-  return 'success';
+  return DataStore.sources[DataStore.appType] ? (DataStore.sources[DataStore.appType].data.rows || DataStore.sources[DataStore.appType].data.features || DataStore.sources[DataStore.appType].data) : {};
 });
 
 const dropdownRefine = computed(() => {
@@ -161,103 +133,19 @@ const refineListTranslated = computed(() => {
   if (!refineList.value || !Object.keys(refineList.value).length) {
     return {};
   }
-  let mainObject = {};
-  let mainArray = [];
-  if (refineType.value === 'categoryField_value') {
-    for (let category of refineList.value) {
-      mainArray.push({
-        value: category.data,
-        text: t(category.data),
-      });
-      // if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated computed, category:', category, 'mainArray:', mainArray);
+  switch (refineType.value) {
+    case 'categoryField_value': {
+      return refineListTranslated_categoryField();
     }
-    return mainArray;
-  } else if (refineType.value !== 'multipleFieldGroups' && refineType.value !== 'multipleDependentFieldGroups') {
-
-    if (typeof refineList.value[0] === 'string') {
-      for (let refineObject of refineList.value) {
-        // if (import.meta.env.VITE_DEBUG) console.log('refineObject:', refineObject, 'typeof refineObject:', typeof refineObject);
-        mainObject[refineObject] = {textLabel: t(refineObject), value: refineObject};
-      }
-      return mainObject;
-    } else {
-      for (let refineObject of refineList.value) {
-        let translatedObject = {}
-        for (let category of Object.keys(refineObject)) {
-          // if (import.meta.env.VITE_DEBUG) console.log('in refineListTranslated, category:', category);
-          if (category == 'textLabel') {
-            translatedObject[category] = t(refineObject[category]);
-          } else {
-            translatedObject[category] = refineObject[category];
-          }
-        }
-        mainArray.push(translatedObject);
-      }
-      return mainArray;
-      // if (import.meta.env.VITE_DEBUG) console.log('in refineListTranslated, refineObject:', refineObject, 'translatedObject:', translatedObject);
-      // if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated computed, category:', category, 't(category):', t(category), 'mainArray:', mainArray);
+    case 'multipleFieldGroups': {
+      return refineListTranslated_multipleFieldGroups();
     }
-  } else if (refineType.value == 'multipleFieldGroups') {
-    // if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated computed, refineType.value:', refineType.value, 'refineList.value:', refineList.value);
-    if (refineList.value) {
-      for (let category of Object.keys(refineList.value)) {
-        mainObject[category] = {};
-        for (let dep of Object.keys(refineList.value[category])) {
-          // if (import.meta.env.VITE_DEBUG) console.log('dep:', dep);
-          if (dep !== 'tooltip') {
-
-            mainObject[category][dep] = [];
-            for (let box of Object.keys(refineList.value[category][dep])) {
-
-              let data = refineList.value[category][dep][box].unique_key;
-              let textLabel = t(refineList.value[category][dep][box].box_label);
-              let tooltip;
-              if (refineList.value[category][dep][box].tooltip) {
-                tooltip = {};
-                tooltip.tip = t(refineList.value[category][dep][box].tooltip.tip);
-                tooltip.multiline = refineList.value[category][dep][box].tooltip.multiline
-                // if (import.meta.env.VITE_DEBUG) console.log('tooltip:', tooltip, 'refineList.value[category][dep][box].tooltip.tip:', refineList.value[category][dep][box].tooltip.tip);
-              }
-              let keyPairs = {
-                data: data,
-                textLabel: textLabel,
-                tooltip: tooltip,
-              };
-              mainObject[category][dep].push(keyPairs)
-            }
-          } else {
-            mainObject[category][dep] = t(refineList.value[category][dep].tip);
-          }
-        }
-      }
+    case 'multipleDependentFieldGroups': {
+      return refineListTranslated_multipleDependentFieldGroups();
     }
-    return mainObject;
-  } else {
-    // if (import.meta.env.VITE_DEBUG) console.log('in refineListTranslated else');
-    for (let category of Object.keys(refineList.value)) {
-      // if (import.meta.env.VITE_DEBUG) console.log('in refineListTranslated else, first loop');
-      mainObject[category] = {};
-      for (let dep of Object.keys(refineList.value[category])) {
-        // if (import.meta.env.VITE_DEBUG) console.log('in loop, dep', dep);
-        mainObject[category][dep] = [];
-        for (let box of Object.keys(refineList.value[category][dep])) {
-          // if (import.meta.env.VITE_DEBUG) console.log('in inner loop, box:', box, 'dep:', dep);
-          let data = refineList.value[category][dep][box].unique_key;
-          let textLabel = t(refineList.value[category][dep][box].box_label);
-          let tooltip;
-          if (refineList.value[category][dep][box].tooltip) {
-            tooltip = t(refineList.value[category][dep][box].tooltip);
-          }
-          let keyPairs = {
-            data: data,
-            textLabel: textLabel,
-            tooltip: tooltip,
-          };
-          mainObject[category][dep].push(keyPairs)
-        }
-      }
+    default: {
+      return refineListTranslated_default();
     }
-    return mainObject;
   }
 });
 
@@ -266,26 +154,13 @@ const refineOpen = computed (() => {
 });
 
 const refinePanelClass = computed(() => {
-  let value;
   if (isMobile.value) {
-    if (refineOpen.value) {
-      value = 'refine-panel refine-panel-open invisible-scrollbar';
-    } else {
-      value = 'refine-panel refine-panel-closed invisible-scrollbar';
-    }
-  } else if (retractable.value) {
-    if (!refineOpen.value) {
-      value = 'refine-panel refine-retractable-closed refine-panel-non-mobile-closed invisible-scrollbar';
-    } else if (refineOpen.value) {
-      value = 'refine-panel refine-retractable-open refine-panel-non-mobile invisible-scrollbar';
-    }
-  } else if ($config.dropdownRefine) {
-    // if (import.meta.env.VITE_DEBUG) console.log('dropdownRefine is used');
-    value = 'refine-panel refine-dropdown-closed refine-panel-non-mobile-closed invisible-scrollbar';
-  } else {
-    value = 'refine-panel refine-panel-non-mobile invisible-scrollbar';
+    return refineOpen.value ? 'refine-panel refine-panel-open invisible-scrollbar' : 'refine-panel refine-panel-closed invisible-scrollbar';
   }
-  return value;
+  if (retractable.value) {
+    return refineOpen.value ? 'refine-panel refine-retractable-open refine-panel-non-mobile invisible-scrollbar' : 'refine-panel refine-retractable-closed refine-panel-non-mobile-closed invisible-scrollbar';
+  }
+  return $config.dropdownRefine ? 'refine-panel refine-dropdown-closed refine-panel-non-mobile-closed invisible-scrollbar' : 'refine-panel refine-panel-non-mobile invisible-scrollbar';
 });
 
 const refineTitleClass = computed(() => {
@@ -874,6 +749,89 @@ const scrollToTop = () => {
   container.scrollTo(0, 0);
 };
 
+// REFINE TRANSLATED FUNCTIONS
+const refineListTranslated_categoryField = () => {
+  const mainArray = [];
+  for (let category of refineList.value) {
+    mainArray.push({
+      value: category.data,
+      text: t(category.data),
+    });
+  }
+  return mainArray;
+}
+
+const refineListTranslated_multipleFieldGroups = () => {
+  const mainObject = {};
+  if (refineList.value) {
+    for (let category of Object.keys(refineList.value)) {
+      mainObject[category] = {};
+      for (let dep of Object.keys(refineList.value[category])) {
+        if (dep !== 'tooltip') {
+          mainObject[category][dep] = [];
+          for (let box of Object.keys(refineList.value[category][dep])) {
+            const tooltip = {};
+            if (refineList.value[category][dep][box].tooltip) {
+              tooltip.tip = t(refineList.value[category][dep][box].tooltip.tip);
+              tooltip.multiline = refineList.value[category][dep][box].tooltip.multiline
+            }
+            const keyPairs = {
+              data: refineList.value[category][dep][box].unique_key,
+              textLabel: t(refineList.value[category][dep][box].box_label),
+              tooltip: Object.keys(tooltip).length ? tooltip : null,
+            };
+            mainObject[category][dep].push(keyPairs)
+          }
+        }
+        else {
+          mainObject[category][dep] = t(refineList.value[category][dep].tip);
+        }
+      }
+    }
+  }
+  return mainObject;
+}
+
+const refineListTranslated_multipleDependentFieldGroups = () => {
+  const mainObject = {};
+  for (let category of Object.keys(refineList.value)) {
+    mainObject[category] = {};
+    for (let dep of Object.keys(refineList.value[category])) {
+      mainObject[category][dep] = [];
+      for (let box of Object.keys(refineList.value[category][dep])) {
+        const keyPairs = {
+          data: refineList.value[category][dep][box].unique_key,
+          textLabel: t(refineList.value[category][dep][box].box_label),
+          tooltip: refineList.value[category][dep][box].tooltip ? t(refineList.value[category][dep][box].tooltip) : null
+        }
+        mainObject[category][dep].push(keyPairs)
+      };
+    }
+  }
+  return mainObject;
+}
+
+const refineListTranslated_default = () => {
+  if (typeof refineList.value[0] === 'string') {
+    const mainObject = {};
+    for (let refineObject of refineList.value) {
+      mainObject[refineObject] = { textLabel: t(refineObject), value: refineObject };
+    }
+    return mainObject;
+  }
+  else {
+    const mainArray = [];
+    for (let refineObject of refineList.value) {
+      let translatedObject = {}
+      for (let category of Object.keys(refineObject)) {
+        translatedObject[category] = (category == 'textLabel') ? translatedObject[category] = t(refineObject[category]) : translatedObject[category] = refineObject[category];
+      }
+      mainArray.push(translatedObject);
+    }
+    return mainArray;
+  }
+}
+
 </script>
 
 <template>
@@ -1031,7 +989,7 @@ const scrollToTop = () => {
     >
 
       <div
-        v-if="dataStatus === 'success' && ['categoryField_array', 'multipleFields'].includes(refineType)"
+        v-if="['categoryField_array', 'multipleFields'].includes(refineType)"
         v-show="!retractable && !isMobile || refineOpen"
         id="field-div"
         class="refine-holder"
@@ -1049,7 +1007,7 @@ const scrollToTop = () => {
       </div>
 
       <div
-        v-if="dataStatus === 'success' && refineType == 'categoryField_value'"
+        v-if="refineType == 'categoryField_value'"
         v-show="!retractable && !isMobile || refineOpen"
         id="field-div"
         class="refine-holder"
@@ -1067,7 +1025,7 @@ const scrollToTop = () => {
 
       <!-- if using multipleFieldGroups option and NOT dropdownRefine -->
       <div
-        v-if="dataStatus === 'success' && refineType === 'multipleFieldGroups' && !dropdownRefine"
+        v-if="refineType === 'multipleFieldGroups' && !dropdownRefine"
         v-show="!retractable && !isMobile || refineOpen"
         id="multiple-field-groups-div"
         class="columns is-multiline multiple-field-groups"
@@ -1139,7 +1097,7 @@ const scrollToTop = () => {
 
       <!-- if using multipleFieldGroups option and dropdownRefine -->
       <div
-        v-if="dataStatus === 'success' && refineType === 'multipleFieldGroups' && dropdownRefine"
+        v-if="refineType === 'multipleFieldGroups' && dropdownRefine"
         id="multiple-field-groups-dropdown-div"
         class="columns is-multiline multiple-field-groups"
       >
