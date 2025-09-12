@@ -42,7 +42,7 @@ const props = defineProps({
 });
 
 // EMITS
-const $emit = defineEmits(['geolocate-control-fire' ]);
+const $emit = defineEmits(['geolocate-control-fire']);
 
 // REFs
 const selected = ref();
@@ -133,7 +133,7 @@ const refineListTranslated = computed(() => {
   }
 });
 
-const refineOpen = computed (() => {
+const refineOpen = computed(() => {
   return MainStore.refineOpen;
 });
 
@@ -167,7 +167,7 @@ const searchDistance = computed(() => {
 
 const selectedArray = computed(() => {
   // if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selected.value:', selected.value, 'selectedList.value:', selectedList.value);
-  let selL = {...selectedList.value};
+  let selL = { ...selectedList.value };
   // if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selL:', selL, 'selected.value:', selected.value);
   let compiled = [];
   if (Object.keys(selL).length) {
@@ -262,14 +262,14 @@ watch(
 
             let uniq = {};
             let selectedNow = {};
-            for (let group of Object.keys($config.refine.multipleFieldGroups)){
+            for (let group of Object.keys($config.refine.multipleFieldGroups)) {
 
               uniq[group] = { expanded: false };
-              for (let dep of Object.keys($config.refine.multipleFieldGroups[group])){
+              for (let dep of Object.keys($config.refine.multipleFieldGroups[group])) {
                 // if (import.meta.env.VITE_DEBUG) console.log('middle loop, dep:', dep, 'group:', group);
                 if (dep !== 'tooltip') {
                   uniq[group][dep] = {};
-                  for (let field of Object.keys($config.refine.multipleFieldGroups[group][dep])){
+                  for (let field of Object.keys($config.refine.multipleFieldGroups[group][dep])) {
                     uniq[group][dep][field] = {};
                     // if (import.meta.env.VITE_DEBUG) console.log('field:', field, 'selected:', selected, '$config.refine.multipleFieldGroups[group][field].unique_key:', $config.refine.multipleFieldGroups[group][field].unique_key);
                     if ($config.refine.multipleFieldGroups[group][dep][field].i18n_key) {
@@ -293,16 +293,16 @@ watch(
                   for (let field of Object.keys(uniq[group][dep])) {
                     if (dep == 'checkbox' && selected.value.includes(uniq[group][dep][field].unique_key)) {
                       // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel end of getRefineSearchList, dependent, group:', group, 'dep:', dep, 'field:', field, 'uniq[group][dep][field].unique_key', uniq[group][dep][field].unique_key, 'selected.value:', selected.value);
-                      if (!selectedNow['checkbox_'+group]) {
-                        selectedNow['checkbox_'+group] = [];
+                      if (!selectedNow['checkbox_' + group]) {
+                        selectedNow['checkbox_' + group] = [];
                       }
-                      selectedNow['checkbox_'+group].push(uniq[group][dep][field].unique_key);
+                      selectedNow['checkbox_' + group].push(uniq[group][dep][field].unique_key);
                     } else if (dep == 'radio' && selected.value.includes(uniq[group][dep][field].unique_key)) {
                       // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel end of getRefineSearchList, independent, selected:', selected, 'group:', group, 'dep:', dep, 'field:', field, 'uniq[group][dep][field].unique_key', uniq[group][dep][field].unique_key, 'selected.value:', selected.value);
-                      if (!selectedNow['radio_'+group]) {
-                        selectedNow['radio_'+group] = undefined;
+                      if (!selectedNow['radio_' + group]) {
+                        selectedNow['radio_' + group] = undefined;
                       }
-                      selectedNow['radio_'+group] = uniq[group][dep][field].unique_key;
+                      selectedNow['radio_' + group] = uniq[group][dep][field].unique_key;
                     }
                   }
                 }
@@ -327,12 +327,11 @@ watch(
     if (!arraysEqual(nextSelected, lastSelected) && !MainStore.clearAllClicked) {
       let startQuery = { ...route.query };
       if (nextSelected.length) {
-        // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedArray will router.push 1, nextSelected', nextSelected, 'startQuery:', startQuery);
-        router.push({ query: { ...startQuery, ...{ services: nextSelected.join(',') }}});
-      } else {
-        // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedArray will router.push 2, nextSelected', nextSelected, 'startQuery:', startQuery);
+        router.push({ query: { ...startQuery, ...{ services: nextSelected.join(',') } } });
+      }
+      else {
         delete startQuery['services'];
-        router.push({ query: { ...startQuery }});
+        router.push({ query: { ...startQuery } });
       }
     }
     await nextTick();
@@ -343,13 +342,14 @@ watch(
   }
 );
 
+// ON MOUNTED
 onMounted(async () => {
   // if (import.meta.env.VITE_DEBUG) console.log('refinePanel.vue mounted, library:', library);
   let divButton = document.querySelector('#refine-top');
   divButton.addEventListener('keypress', activate.bind(this));
   function activate(e) {
     // if (import.meta.env.VITE_DEBUG) console.log('activate, e:', e, 'e.path[0]:', e.path[0]);
-    if (e.type === 'keypress' && [ 13, 32 ].includes(e.keyCode) && e.srcElement.id == 'refine-top') {
+    if (e.type === 'keypress' && [13, 32].includes(e.keyCode) && e.srcElement.id == 'refine-top') {
       expandRefine();
     }
   };
@@ -357,30 +357,24 @@ onMounted(async () => {
   await getRefineSearchList();
 
   if (route.query.services) {
-    // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue beforeMount is running, selectedList.value:', selectedList.value, 'route.query:', route.query);//, 'route.query.services.split(','):', route.query.services.split(','));
-    if (refineType.value !== 'categoryField_value') {
-      selected.value = route.query.services.split(',');
-    } else {
-      selected.value = route.query.services;
-    }
+    selected.value = (refineType.value !== 'categoryField_value') ? route.query.services.split(',') : route.query.services;
   }
 
   if (refineType.value === 'multipleFieldGroups') {
     for (let service of selected.value) {
       const serviceType = service.split('_')[0];
-      // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue beforeMount 0, serviceType:', serviceType)//, $config.refine.multipleFieldGroups[serviceType]:', $config.refine.multipleFieldGroups[serviceType]);
-      let checkboxOrRadio = Object.keys($config.refine.multipleFieldGroups[serviceType])[0];
-      let category = checkboxOrRadio + '_' + serviceType;
-      // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue beforeMount 1 is running, service:', service, 'serviceType:', serviceType, 'checkboxOrRadio:', checkboxOrRadio, 'category:', category, 'selectedList.value:', selectedList.value);
+      const checkboxOrRadio = Object.keys($config.refine.multipleFieldGroups[serviceType])[0];
+      const category = checkboxOrRadio + '_' + serviceType;
       if (checkboxOrRadio == 'checkbox') {
-        // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue beforeMount 2 is running, service:', service, 'serviceType:', serviceType, 'checkboxOrRadio:', checkboxOrRadio, 'category:', category, 'selectedList.value:', selectedList.value);
         if (selectedList.value[category] && !selectedList.value[category].includes(service)) {
           selectedList.value[category].push(service);
-        } else {
+        }
+        else {
           selectedList.value[category] = [];
           selectedList.value[category].push(service);
         }
-      } else {
+      }
+      else { // radio
         selectedList.value[category] = service;
       }
     }
@@ -402,98 +396,74 @@ const arraysEqual = (a, b) => {
 
 const calculateColumns = (ind, indName) => {
   // if (import.meta.env.VITE_DEBUG) console.log('calculateColumns is running, indName:', indName, 'ind:', ind, '$config.refine.columns', $config.refine.columns, '$config.refine.multipleFieldGroups', $config.refine.multipleFieldGroups);
-  let value;
   if (isMobile.value) {
-    value = 1;
-  } else if ($config.refine.columns) {
-    if ($config.refine.multipleFieldGroups[indName].columns) {
-      // if (import.meta.env.VITE_DEBUG) console.log('calculateColumns is running, $config.refine.multipleFieldGroups[indName].columns:', $config.refine.multipleFieldGroups[indName].columns);
-      value = $config.refine.multipleFieldGroups[indName].columns;
-    } else {
-      value = 1;
-    }
-  } else {
-    value = Object.keys(ind).length;
+    return 1;
   }
-  return value;
+  if ($config.refine.columns) {
+    return ($config.refine.multipleFieldGroups[indName].columns) ? $config.refine.multipleFieldGroups[indName].columns : 1;
+  }
+  return Object.keys(ind).length;
 };
 
-const clearAll = async(e) => {
+const clearAll = async (e) => {
   e.stopPropagation();
-
   // sets clearAllClicked flag to true, so that RefinePanel watch selectedArray doesn't re-route
   MainStore.clearAllClicked = true;
+  const startQuery = { ...route.query };
 
-  let startQuery = { ...route.query };
-  // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, e: ', e, 'startQuery1:', startQuery);
-
+  // delete query fields
   delete startQuery['address'];
   delete startQuery['zipcode'];
   delete startQuery['keyword'];
   delete startQuery['services'];
+  router.push({ query: { ...startQuery } });
 
-  // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, startQuery2:', startQuery);
-  router.push({ query: { ...startQuery }});
-
-  const payload = {
-    lat: null,
-    lng: null,
-  };
-
+  // set stores to empty values
   MainStore.selectedKeywords = [];
   MainStore.selectedZipcode = null;
   MapStore.zipcodeCenter = [];
-  // MainStore.currentSearch = null;
-
-  if (refineType.value === 'categoryField_value') {
-    selected.value = null;
-  } else {
-    selected.value = [];
-  }
+  selected.value = (refineType.value === 'categoryField_value') ? null : [];
 };
 
 const closeAddressBox = (e, box) => {
   e.stopPropagation();
-  let startQuery = { ...route.query };
   // if (import.meta.env.VITE_DEBUG) console.log('closeAddressBox is running, e:', e, 'box:', box, 'startQuery:', startQuery);
+  const startQuery = { ...route.query };
   delete startQuery['address'];
-  router.push({ query: { ...startQuery }});
+  router.push({ query: { ...startQuery } });
 };
 
 const closeBox = (e, box) => {
   e.stopPropagation();
-  // if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, box:', box);
-  // if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, box:', box, 'e:', e);
   if (refineType.value === 'categoryField_value') {
     selected.value = null;
-    // if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, selected.value:', selected.value);
     selectedList.value = [];
     return;
   }
-  let section = box.split('_')[0];
-  // if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, section:', section, 'selected.value:', selected.value, 'selected.value[section]:', selected.value[section]);
-  if (selectedList.value['checkbox_'+section]) {
-    // if (import.meta.env.VITE_DEBUG) console.log('it\'s there in selectedList');
-    let boxIndex = selectedList.value['checkbox_'+section].indexOf(box);
-    selectedList.value['checkbox_'+section].splice(boxIndex, 1);
-  } else if (selectedList.value['radio_' + section]) {
-    // if (import.meta.env.VITE_DEBUG) console.log('1 it\'s there in selectedList WITH radio, box:', box, 'selectedList.value["radio_" + section]:', selectedList.value['radio_' + section]);
-    let test = 'radio_' + section;
-    const { [test]: removedProperty, ...exceptBoth } = selectedList.value;
-    // if (import.meta.env.VITE_DEBUG) console.log('2 exceptBoth:', exceptBoth, 'it\'s there in selectedList WITH radio, box:', box, 'selectedList.value["radio_" + section]:', selectedList.value['radio_' + section]);
-    selectedList.value = exceptBoth;
-    let boxIndex = selected.value.indexOf(box);
-    selected.value.splice(boxIndex, 1);
-  } else if (selected.value.includes(section)) {
-    // if (import.meta.env.VITE_DEBUG) console.log('its in the array');
-    let boxIndex = selected.value.indexOf(section);
-    selected.value.splice(boxIndex, 1);
-  } else {
-    // if (import.meta.env.VITE_DEBUG) console.log('not there in selected list');
+
+  const section = box.split('_')[0];
+  if (selectedList.value['checkbox_' + section]) {
+    const boxIndex = selectedList.value['checkbox_' + section].indexOf(box);
+    selectedList.value['checkbox_' + section].splice(boxIndex, 1);
+    return;
   }
-  // if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, box:', box, 'section:', section, 'boxIndex:', boxIndex);
+
+  if (selectedList.value['radio_' + section]) {
+    const test = 'radio_' + section;
+    const { [test]: removedProperty, ...exceptBoth } = selectedList.value; selectedList.value = exceptBoth;
+    const boxIndex = selected.value.indexOf(box);
+    selected.value.splice(boxIndex, 1);
+    return;
+  }
+
+  if (selected.value.includes(section)) {
+    const boxIndex = selected.value.indexOf(section);
+    selected.value.splice(boxIndex, 1);
+    return;
+  }
 };
 
+// TODO: REFACTOR closeKeywordsBox
 const closeKeywordsBox = (e, box) => {
   e.stopPropagation();
   // if (import.meta.env.VITE_DEBUG) console.log('closeKeywordsBox is running, e:', e);
@@ -516,9 +486,9 @@ const closeKeywordsBox = (e, box) => {
   let newQuery = keywordsArray.toString();
   // if (import.meta.env.VITE_DEBUG) console.log('in closeKeywordsBox, route.query:', route.query, 'startQuery:', startQuery, 'newQuery:', newQuery);
   if (newQuery.length) {
-    router.push({ query: { ...route.query, ...{ keyword: newQuery }}});
+    router.push({ query: { ...route.query, ...{ keyword: newQuery } } });
   } else {
-    router.push({ query: { ...route.query, ...{ keyword: [] } }});
+    router.push({ query: { ...route.query, ...{ keyword: [] } } });
   }
   MainStore.selectedKeywords = keywordsArray;
 };
@@ -526,10 +496,9 @@ const closeKeywordsBox = (e, box) => {
 const closeZipcodeBox = (e, box) => {
   e.stopPropagation();
   // if (import.meta.env.VITE_DEBUG) console.log('closeZipcodeBox is running');
-  let startQuery = { ...route.query };
-  // if (import.meta.env.VITE_DEBUG) console.log('closeZipcodeBox is running, box:', box, 'startQuery:', startQuery);
+  const startQuery = { ...route.query };
   delete startQuery['zipcode'];
-  router.push({ query: { ...startQuery }});
+  router.push({ query: { ...startQuery } });
   MainStore.selectedZipcode = null;
   MapStore.zipcodeCenter = [];
 };
@@ -540,167 +509,74 @@ const expandCheckbox = (ind) => {
 };
 
 const expandRefine = () => {
-  // if (import.meta.env.VITE_DEBUG) console.log('expandRefine is running');
-  let tagValue;
-  if (MainStore.refineOpen) {
-    tagValue = 'retract refine panel';
-  } else {
-    tagValue = 'expand refine panel';
-  }
-  // if (import.meta.env.VITE_DEBUG) console.log('expandRefine is running, tagValue:', tagValue);
   MainStore.refineOpen = !MainStore.refineOpen;
 };
 
 const getBoxValue = (box) => {
-  let value;
-  if (box && typeof box != 'object') {
-    value = box.replace("_", ".");
-  }
-  // if (import.meta.env.VITE_DEBUG) console.log('getBoxValue is running, box:', box, 'value:', value);
-  return value;
+  return (box && typeof box != 'object') ? box.replace("_", ".") : null;
 };
 
 const getCategoryFieldValue = (selected) => {
   // if (import.meta.env.VITE_DEBUG) console.log('getCategoryFieldValue is running, selected:', selected);
-  let selectedCategory;
   if (selected.length) {
-    let selectedLower = selected.toLowerCase().replaceAll(' ', '');
-    let i18nCategories = Object.keys(ConfigStore.config.i18n.data.messages[i18nLocale.value].sections);
-    // if (import.meta.env.VITE_DEBUG) console.log('18nCategories:', i18nCategories);
+    const selectedLower = selected.toLowerCase().replaceAll(' ', '');
+    const i18nCategories = Object.keys(ConfigStore.config.i18n.data.messages[i18nLocale.value].sections);
     for (let category of i18nCategories) {
-      let categoryLower = category.toLowerCase().replaceAll(' ', '');
+      const categoryLower = category.toLowerCase().replaceAll(' ', '');
       if (categoryLower === selectedLower || categoryLower === selectedLower + 's') {
-        selectedCategory = category;
+        return category;
       }
     }
   }
-  return selectedCategory;
+  return null;
 };
 
-const getRefineSearchList = async() => {
-  let refineData = database.value;
-  // if (import.meta.env.VITE_DEBUG) console.log('getRefineSearchList is running, refineData:', refineData);
-  if (refineData && refineData.records) {
-    refineData = refineData.records;
-  }
-
-  let service = '';
+const getRefineSearchList = async () => {
+  const refineType = $config.refine ? $config.refine.type : 'categoryField_value';
   let uniq = [];
-  let uniqPrep;
-  let selected;
 
-  if (!$config.refine || $config.refine && ['categoryField_array', 'categoryField_value'].includes($config.refine.type)) {
-    // if (import.meta.env.VITE_DEBUG) console.log('in getRefineSearchList, refineData:', refineData);
-    if(refineData) {
-      refineData.forEach((item) => {
-        if ($config.refine) {
-          let value = $config.refine.value(item);
-          service += `${value},`;
-        } else if (item.services_offered) {
-          service += `${item.services_offered},`;
-        }
-      });
-    }
-
-    // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue, service:', service);
-    let serviceArray = service.split(/(,|;)/);
-    serviceArray = serviceArray.map(s => s.trim());
-    // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue, serviceArray:', serviceArray);
-
-    const uniqArray = [ ...new Set(serviceArray) ];
-    // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue, uniqArray:', uniqArray);
-
-    // clean up any dangling , or ;
-    uniqPrep = uniqArray.filter(a => a.length > 1);
-    uniqPrep.filter(Boolean); // remove empties
-    let undef = uniqPrep.indexOf('undefined');
-    if (undef > -1) {
-      uniqPrep.splice(undef, 1);
-    }
-    let nullVal = uniqPrep.indexOf('null');
-    if (nullVal > -1) {
-      uniqPrep.splice(nullVal, 1);
-    }
-    uniqPrep.sort();
+  if (['categoryField_array', 'categoryField_value'].includes(refineType)) {
+    const refineData = (database.value && database.value.records) ? database.value.records : database.value;
+    const uniqPrep = getUniqueServices(refineData).sort();
 
     for (let value of uniqPrep) {
-      let theTooltip;
-      if ($config.infoCircles && Object.keys($config.infoCircles).includes(value)) {
-        theTooltip = $config.infoCircles[value];
-      }
       uniq.push({
         data: value,
         textLabel: value,
-        tooltip: theTooltip,
+        tooltip: $config.infoCircles && Object.keys($config.infoCircles).includes(value) ? $config.infoCircles[value] : null,
       });
     }
-
-    selected = uniqArray.filter(a => a.length > 2);
-    selected.filter(Boolean); // remove empties
-    selected.sort();
-    // if (import.meta.env.VITE_DEBUG) console.log('uniq:', uniq, 'uniqPrep:', uniqPrep, 'uniqArray:', uniqArray, 'selected:', selected);
-
-  } else if ($config.refine && $config.refine.type === 'multipleFields') {
-    uniq = Object.keys($config.refine.multipleFields);
-    uniq.sort();
-
-    selected = Object.keys($config.refine.multipleFields);
-    selected.sort();
   }
 
-  // if (import.meta.env.VITE_DEBUG) console.log('getRefineSearchList is still running');
-  if ($config.refine && $config.refine.type === 'multipleFieldGroups') {
-    uniq = {};
-    selected = {};
-    for (let group of Object.keys($config.refine.multipleFieldGroups)){
+  else if (refineType === 'multipleFields') {
+    uniq = Object.keys($config.refine.multipleFields).sort();
+  }
 
-      // if (import.meta.env.VITE_DEBUG) console.log('group:', group);
+  else if (refineType === 'multipleFieldGroups') {
+    uniq = {};
+
+    for (let group of Object.keys($config.refine.multipleFieldGroups)) {
       uniq[group] = { expanded: false };
-      for (let dep of Object.keys($config.refine.multipleFieldGroups[group])){
-        // if (import.meta.env.VITE_DEBUG) console.log('middle loop, dep:', dep, 'group:', group);
+
+      for (let dep of Object.keys($config.refine.multipleFieldGroups[group])) {
+
         if (dep !== 'tooltip') {
           uniq[group][dep] = {};
-          for (let field of Object.keys($config.refine.multipleFieldGroups[group][dep])){
-            uniq[group][dep][field] = {};
-            // if (import.meta.env.VITE_DEBUG) console.log('field:', field, 'selected:', selected, '$config.refine.multipleFieldGroups[group][field].unique_key:', $config.refine.multipleFieldGroups[group][field].unique_key);
-            if ($config.refine.multipleFieldGroups[group][dep][field].i18n_key) {
-              uniq[group][dep][field].box_label = $config.refine.multipleFieldGroups[group][dep][field].i18n_key;
-            } else {
-              uniq[group][dep][field].box_label = field;
-            }
-            uniq[group][dep][field].unique_key = $config.refine.multipleFieldGroups[group][dep][field].unique_key;
-            uniq[group][dep][field].tooltip = $config.refine.multipleFieldGroups[group][dep][field].tooltip;
+
+          for (let field of Object.keys($config.refine.multipleFieldGroups[group][dep])) {
+            uniq[group][dep][field] = {
+              unique_key: $config.refine.multipleFieldGroups[group][dep][field].unique_key,
+              utooltip: $config.refine.multipleFieldGroups[group][dep][field].tooltip,
+              box_label: $config.refine.multipleFieldGroups[group][dep][field].i18n_key ? $config.refine.multipleFieldGroups[group][dep][field].i18n_key : field
+            };
           }
-        } else {
+        }
+
+        else {
           uniq[group][dep] = $config.refine.multipleFieldGroups[group][dep];
         }
       }
     }
-
-    // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel end of getRefineSearchList, uniq:', uniq, 'selected:', selected);
-    if (selected.length) {
-      for (let group of Object.keys(uniq)) {
-        for (let dep of Object.keys(uniq[group])) {
-          for (let field of Object.keys(uniq[group][dep])) {
-            if (dep == 'checkbox' && selected.value.includes(uniq[group][dep][field].unique_key)) {
-              // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel end of getRefineSearchList, dependent, group:', group, 'dep:', dep, 'field:', field, 'uniq[group][dep][field].unique_key', uniq[group][dep][field].unique_key, 'selected.value:', selected.value);
-              if (!selected[group]) {
-                selected[group] = [];
-              }
-              selected[group].push(uniq[group][dep][field].unique_key);
-            } else if (dep == 'radio' && selected.value.includes(uniq[group][dep][field].unique_key)) {
-              // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel end of getRefineSearchList, independent, selected:', selected, 'group:', group, 'dep:', dep, 'field:', field, 'uniq[group][dep][field].unique_key', uniq[group][dep][field].unique_key, 'selected.value:', selected.value);
-              if (!selected['radio_'+group]) {
-                selected['radio_'+group] = undefined;
-              }
-              selected['radio_'+group] = uniq[group][dep][field].unique_key;
-            }
-          }
-        }
-      }
-    }
-    // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel end of getRefineSearchList, selected:', selected);
-    selectedList.value = selected;
   }
 
   MainStore.refineList = uniq;
@@ -708,8 +584,7 @@ const getRefineSearchList = async() => {
 };
 
 const scrollToTop = () => {
-  const container = document.querySelector('.refine-panel');
-  container.scrollTo(0, 0);
+  document.querySelector('.refine-panel').scrollTo(0, 0);
 };
 
 // REFINE TRANSLATED FUNCTIONS
@@ -798,257 +673,130 @@ const refineListTranslated_default = () => {
 </script>
 
 <template>
-  <div
-    id="refine-panel-component"
-    :class="refinePanelClass"
-  >
+  <div id="refine-panel-component" :class="refinePanelClass">
 
-    <div
-      id="refine-top"
-      :class="refineTitleClass + ' refine-title is-flex is-flex-direction-row'"
-      tabindex="0"
-      role="button"
-      @click="expandRefine"
-    >
+    <div id="refine-top" :class="refineTitleClass + ' refine-title is-flex is-flex-direction-row'" tabindex="0"
+      role="button" @click="expandRefine">
       <div class="refine-top-left is-flex is-flex-direction-row">
 
-        <div
-          class="slider-icon"
-        >
+        <div class="slider-icon">
           <font-awesome-icon icon="sliders-h" />
         </div>
 
-        <h2
-          v-if="!i18nEnabled"
-          class="refine-label-text"
-        >
+        <h2 v-if="!i18nEnabled" class="refine-label-text">
           {{ refineTitle }}
         </h2>
 
-        <h2
-          v-if="i18nEnabled"
-          class="refine-label-text"
-        >
+        <h2 v-if="i18nEnabled" class="refine-label-text">
           {{ $t('refinePanel.refine') }}
         </h2>
 
-        <button
-          v-if="!i18nEnabled && (selectedArray.length || anyValueEntered)"
-          class="clear-all"
-          @click.prevent="clearAll"
-        >
+        <button v-if="!i18nEnabled && (selectedArray.length || anyValueEntered)" class="clear-all"
+          @click.prevent="clearAll">
           Clear all
         </button>
 
-        <button
-          v-if="i18nEnabled && (selectedArray.length || anyValueEntered)"
-          class="clear-all"
-          @click.prevent="clearAll"
-          v-html="$t('refinePanel.clearAll')"
-        />
+        <button v-if="i18nEnabled && (selectedArray.length || anyValueEntered)" class="clear-all"
+          @click.prevent="clearAll" v-html="$t('refinePanel.clearAll')" />
 
         <!-- v-if="!isMobile" -->
-        <div
-          id="selected-boxes"
-          class="selected-boxes columns is-mobile"
-        >
-          <button
-            v-for="box in keywordsEntered"
-            class="box-value column is-narrow"
-            @click="(e) => closeKeywordsBox(e, box)"
-          >
+        <div id="selected-boxes" class="selected-boxes columns is-mobile">
+          <button v-for="box in keywordsEntered" class="box-value column is-narrow"
+            @click="(e) => closeKeywordsBox(e, box)">
             {{ getBoxValue(box) }}
             <!-- {{ $t(getBoxValue(box)) }} -->
-            <font-awesome-icon
-              class="fa-x"
-              :icon="[timesIconWeight,'times']"
-            />
+            <font-awesome-icon class="fa-x" :icon="[timesIconWeight, 'times']" />
           </button>
 
-          <button
-            v-if="zipcodeEntered"
-            class="box-value column is-narrow"
-            @click="(e) => closeZipcodeBox(e, zipcodeEntered)"
-          >
+          <button v-if="zipcodeEntered" class="box-value column is-narrow"
+            @click="(e) => closeZipcodeBox(e, zipcodeEntered)">
             {{ $t(getBoxValue(zipcodeEntered)) + ' - ' + searchDistance }}
-            <font-awesome-icon
-              class="fa-x"
-              :icon="[timesIconWeight,'times']"
-            />
+            <font-awesome-icon class="fa-x" :icon="[timesIconWeight, 'times']" />
           </button>
 
-          <button
-            v-if="addressEntered"
-            class="box-value column is-narrow"
-            @click="(e) => closeAddressBox(e, addressEntered)"
-          >
+          <button v-if="addressEntered" class="box-value column is-narrow"
+            @click="(e) => closeAddressBox(e, addressEntered)">
             <!-- {{ $t(getBoxValue(addressEntered)) + ' - ' + searchDistance }} -->
             {{ $t(getBoxValue(addressEntered)) }}
-            <font-awesome-icon
-              class="fa-x"
-              :icon="[timesIconWeight,'times']"
-            />
+            <font-awesome-icon class="fa-x" :icon="[timesIconWeight, 'times']" />
           </button>
 
-          <button
-            v-if="refineType !== 'categoryField_value'"
-            v-for="box in selectedArray"
-            class="box-value column is-narrow"
-            @click="(e) => closeBox(e, box)"
-          >
+          <button v-if="refineType !== 'categoryField_value'" v-for="box in selectedArray"
+            class="box-value column is-narrow" @click="(e) => closeBox(e, box)">
             {{ $t(getBoxValue(box)) }}
-            <font-awesome-icon
-              class="fa-x"
-              :icon="[timesIconWeight,'times']"
-            />
+            <font-awesome-icon class="fa-x" :icon="[timesIconWeight, 'times']" />
           </button>
 
-          <button
-            v-if="refineType == 'categoryField_value' && selected != null && i18nEnabled"
-            class="box-value column is-narrow"
-            @click="(e) => closeBox(e, selected)"
-          >
+          <button v-if="refineType == 'categoryField_value' && selected != null && i18nEnabled"
+            class="box-value column is-narrow" @click="(e) => closeBox(e, selected)">
             {{ $t('sections.' + getCategoryFieldValue(selected) + '.header') }}
-            <font-awesome-icon
-              class="fa-x"
-              :icon="[timesIconWeight,'times']"
-            />
+            <font-awesome-icon class="fa-x" :icon="[timesIconWeight, 'times']" />
           </button>
 
-          <button
-            v-if="refineType == 'categoryField_value' && selected != null && !i18nEnabled"
-            class="box-value column is-narrow"
-            @click="(e) => closeBox(e, selected)"
-          >
+          <button v-if="refineType == 'categoryField_value' && selected != null && !i18nEnabled"
+            class="box-value column is-narrow" @click="(e) => closeBox(e, selected)">
             {{ selected }}
-            <font-awesome-icon
-              class="fa-x"
-              :icon="[timesIconWeight,'times']"
-            />
+            <font-awesome-icon class="fa-x" :icon="[timesIconWeight, 'times']" />
           </button>
         </div>
       </div>
-      <div
-        class="open-close-icon is-flex is-pulled-right"
-      >
-        <font-awesome-icon
-          v-if="refineOpen && retractable  || refineOpen && isMobile"
-          :icon="[angleIconWeight, 'angle-up']"
-        />
+      <div class="open-close-icon is-flex is-pulled-right">
+        <font-awesome-icon v-if="refineOpen && retractable || refineOpen && isMobile"
+          :icon="[angleIconWeight, 'angle-up']" />
 
-        <font-awesome-icon
-          v-if="!refineOpen && retractable  || !refineOpen && isMobile"
-          :icon="[angleIconWeight, 'angle-down']"
-        />
+        <font-awesome-icon v-if="!refineOpen && retractable || !refineOpen && isMobile"
+          :icon="[angleIconWeight, 'angle-down']" />
       </div>
 
     </div>
 
-    <div
-      id="refine-bottom"
-      class="refine-bottom invisible-scrollbar"
-      v-show="!retractable && !isMobile || refineOpen"
-      :style="isMobile ? { 'height': bottomHeight + 'px' } : null"
-    >
+    <div id="refine-bottom" class="refine-bottom invisible-scrollbar" v-show="!retractable && !isMobile || refineOpen"
+      :style="isMobile ? { 'height': bottomHeight + 'px' } : null">
 
-      <div
-        v-if="['categoryField_array', 'multipleFields'].includes(refineType)"
-        v-show="!retractable && !isMobile || refineOpen"
-        id="field-div"
-        class="refine-holder"
-      >
-        <tooltip-checkbox
-          :options="refineListTranslated"
-          :numOfColumns="NumRefineColumns"
-          :small="!isMobile"
-          v-model="selected"
-          :value="selected"
-          value-key="data"
-          text-key="textLabel"
-        >
+      <div v-if="['categoryField_array', 'multipleFields'].includes(refineType)"
+        v-show="!retractable && !isMobile || refineOpen" id="field-div" class="refine-holder">
+        <tooltip-checkbox :options="refineListTranslated" :numOfColumns="NumRefineColumns" :small="!isMobile"
+          v-model="selected" :value="selected" value-key="data" text-key="textLabel">
         </tooltip-checkbox>
       </div>
 
-      <div
-        v-if="refineType == 'categoryField_value'"
-        v-show="!retractable && !isMobile || refineOpen"
-        id="field-div"
-        class="refine-holder"
-      >
-        <radio
-          v-model="selected"
-          :options="refineListTranslated"
-          text-key="text"
-          value-key="value"
-          :numOfColumns="NumRefineColumns"
-          :small="!isMobile"
-        >
+      <div v-if="refineType == 'categoryField_value'" v-show="!retractable && !isMobile || refineOpen" id="field-div"
+        class="refine-holder">
+        <radio v-model="selected" :options="refineListTranslated" text-key="text" value-key="value"
+          :numOfColumns="NumRefineColumns" :small="!isMobile">
         </radio>
       </div>
 
       <!-- if using multipleFieldGroups option and NOT dropdownRefine -->
-      <div
-        v-if="refineType === 'multipleFieldGroups' && !dropdownRefine"
-        v-show="!retractable && !isMobile || refineOpen"
-        id="multiple-field-groups-div"
-        class="columns is-multiline multiple-field-groups"
-      >
-        <div
-          v-for="(ind) in Object.keys(refineListTranslated)"
-          :id="'refine-list-'+ind"
-          :key="ind"
-          class="column is-narrow service-group-holder-x"
-        >
-          <div
-            id="columns-div-for-checkboxes"
-            class="columns"
-          >
-            <radio
-              :id="'radio_'+ind"
-              v-model="selectedList['radio_'+ind]"
-              v-if="refineListTranslated[ind]['radio']"
-              :options="refineListTranslated[ind]['radio']"
-              text-key="textLabel"
-              value-key="data"
-              :small="!isMobile"
-              :num-of-columns="calculateColumns(refineList[ind]['radio'], ind)"
-            >
+      <div v-if="refineType === 'multipleFieldGroups' && !dropdownRefine"
+        v-show="!retractable && !isMobile || refineOpen" id="multiple-field-groups-div"
+        class="columns is-multiline multiple-field-groups">
+        <div v-for="(ind) in Object.keys(refineListTranslated)" :id="'refine-list-' + ind" :key="ind"
+          class="column is-narrow service-group-holder-x">
+          <div id="columns-div-for-checkboxes" class="columns">
+            <radio :id="'radio_' + ind" v-model="selectedList['radio_' + ind]" v-if="refineListTranslated[ind]['radio']"
+              :options="refineListTranslated[ind]['radio']" text-key="textLabel" value-key="data" :small="!isMobile"
+              :num-of-columns="calculateColumns(refineList[ind]['radio'], ind)">
               <template v-slot:label>
-                <div :class="isMobile ? 'large-label': 'small-label'">
+                <div :class="isMobile ? 'large-label' : 'small-label'">
                   {{ $t(ind + '.category') }}
                 </div>
               </template>
             </radio>
 
-            <tooltip-checkbox
-              v-if="refineListTranslated[ind]['checkbox']"
-              :options="refineListTranslated[ind]['checkbox']"
-              :small="!isMobile"
-              v-model="selectedList['checkbox_'+ind]"
-              :value="selectedList['checkbox_'+ind]"
-              text-key="textLabel"
-              value-key="data"
-              shrinkToFit="true"
-              :num-of-columns="calculateColumns(refineList[ind]['checkbox'], ind)"
-            >
+            <tooltip-checkbox v-if="refineListTranslated[ind]['checkbox']"
+              :options="refineListTranslated[ind]['checkbox']" :small="!isMobile"
+              v-model="selectedList['checkbox_' + ind]" :value="selectedList['checkbox_' + ind]" text-key="textLabel"
+              value-key="data" shrinkToFit="true" :num-of-columns="calculateColumns(refineList[ind]['checkbox'], ind)">
               <template v-slot:label>
-                <div :class="isMobile ? 'large-label': 'small-label'">
+                <div :class="isMobile ? 'large-label' : 'small-label'">
                   {{ $t(ind + '.category') }}
-                  <icon-tool-tip
-                    v-if="!isMobile && refineListTranslated[ind]['tooltip']"
-                    :tip="refineListTranslated[ind]['tooltip']"
-                    :circle-type="'hover'"
+                  <icon-tool-tip v-if="!isMobile && refineListTranslated[ind]['tooltip']"
+                    :tip="refineListTranslated[ind]['tooltip']" :circle-type="'hover'"
                     :position="refineList[ind]['tooltip']['position']"
-                    :multiline="refineList[ind]['tooltip']['multiline']"
-                  />
-                  <div
-                    v-if="isMobile && refineListTranslated[ind]['tooltip']"
-                    class="mobile-tooltip"
-                  >
-                    <font-awesome-icon
-                      icon="info-circle"
-                      class="fa-infoCircle"
-                    />
+                    :multiline="refineList[ind]['tooltip']['multiline']" />
+                  <div v-if="isMobile && refineListTranslated[ind]['tooltip']" class="mobile-tooltip">
+                    <font-awesome-icon icon="info-circle" class="fa-infoCircle" />
                     {{ $t(refineListTranslated[ind]['tooltip']) }}
                   </div>
                 </div>
@@ -1059,58 +807,27 @@ const refineListTranslated_default = () => {
       </div>
 
       <!-- if using multipleFieldGroups option and dropdownRefine -->
-      <div
-        v-if="refineType === 'multipleFieldGroups' && dropdownRefine"
-        id="multiple-field-groups-dropdown-div"
-        class="columns is-multiline multiple-field-groups"
-      >
-        <div
-          v-for="(ind) in Object.keys(refineListTranslated)"
-          :id="'refine-list-'+ind"
-          :key="ind"
-          class="column"
-        >
+      <div v-if="refineType === 'multipleFieldGroups' && dropdownRefine" id="multiple-field-groups-dropdown-div"
+        class="columns is-multiline multiple-field-groups">
+        <div v-for="(ind) in Object.keys(refineListTranslated)" :id="'refine-list-' + ind" :key="ind" class="column">
 
-          <div
-            id="columns-div-for-checkboxes"
-            class="columns"
-          >
-            <div
-              class="column dropdown-checkbox-div"
-              :style="{ 'width': 100/Object.keys(refineListTranslated).length+'%' }"
-            >
-              <div
-                class="dropdown-checkbox-header"
-                @click="expandCheckbox(ind)"
-              >
+          <div id="columns-div-for-checkboxes" class="columns">
+            <div class="column dropdown-checkbox-div"
+              :style="{ 'width': 100 / Object.keys(refineListTranslated).length + '%' }">
+              <div class="dropdown-checkbox-header" @click="expandCheckbox(ind)">
                 {{ $t(ind + '.category') }}
               </div>
-              <div
-                v-if="refineList[ind].expanded"
-                class="refine-dropdown"
-              >
-                <radio
-                  :id="'radio_'+ind"
-                  v-model="selectedList['radio_'+ind]"
-                  v-if="refineListTranslated[ind]['radio']"
-                  :options="refineListTranslated[ind]['radio']"
-                  text-key="textLabel"
-                  value-key="data"
-                  :small="!isMobile"
-                  :num-of-columns="calculateColumns(refineList[ind]['radio'], ind)"
-                >
+              <div v-if="refineList[ind].expanded" class="refine-dropdown">
+                <radio :id="'radio_' + ind" v-model="selectedList['radio_' + ind]"
+                  v-if="refineListTranslated[ind]['radio']" :options="refineListTranslated[ind]['radio']"
+                  text-key="textLabel" value-key="data" :small="!isMobile"
+                  :num-of-columns="calculateColumns(refineList[ind]['radio'], ind)">
                 </radio>
 
-                <tooltip-checkbox
-                  v-if="refineListTranslated[ind]['checkbox']"
-                  :options="refineListTranslated[ind]['checkbox']"
-                  :small="!isMobile"
-                  v-model="selectedList['checkbox_'+ind]"
-                  text-key="textLabel"
-                  value-key="data"
-                  shrinkToFit="true"
-                  :num-of-columns="calculateColumns(refineList[ind]['checkbox'], ind)"
-                >
+                <tooltip-checkbox v-if="refineListTranslated[ind]['checkbox']"
+                  :options="refineListTranslated[ind]['checkbox']" :small="!isMobile"
+                  v-model="selectedList['checkbox_' + ind]" text-key="textLabel" value-key="data" shrinkToFit="true"
+                  :num-of-columns="calculateColumns(refineList[ind]['checkbox'], ind)">
                 </tooltip-checkbox>
               </div>
             </div>
@@ -1118,36 +835,18 @@ const refineListTranslated_default = () => {
         </div>
       </div>
 
-      <div
-        v-if="isMobile && refineOpen"
-        class="columns is-mobile mobile-clear-all"
-      >
-        <div
-          class="column is-narrow add-margin-left small-side-padding"
-          v-if="!i18nEnabled"
-        >
-          <button
-            class="button apply-filters-button medium-side-padding"
-            @click="expandRefine(); scrollToTop();"
-          >
+      <div v-if="isMobile && refineOpen" class="columns is-mobile mobile-clear-all">
+        <div class="column is-narrow add-margin-left small-side-padding" v-if="!i18nEnabled">
+          <button class="button apply-filters-button medium-side-padding" @click="expandRefine(); scrollToTop();">
             <div class="apply-filters-text">
               Apply filters
             </div>
           </button>
         </div>
 
-        <div
-          class="column is-narrow add-margin-left small-side-padding"
-          v-if="i18nEnabled"
-        >
-          <div
-            class="button apply-filters-button medium-side-padding"
-            @click="expandRefine(); scrollToTop();"
-          >
-            <div
-              v-html="$t('refinePanel.applyFilters')"
-              class="apply-filters-text"
-            />
+        <div class="column is-narrow add-margin-left small-side-padding" v-if="i18nEnabled">
+          <div class="button apply-filters-button medium-side-padding" @click="expandRefine(); scrollToTop();">
+            <div v-html="$t('refinePanel.applyFilters')" class="apply-filters-text" />
           </div>
         </div>
 
@@ -1166,7 +865,8 @@ const refineListTranslated_default = () => {
 
 #columns-div-for-checkboxes {
 
-  .input-checkbox, .input-radio {
+  .input-checkbox,
+  .input-radio {
     padding-bottom: 8px;
   }
 
@@ -1222,7 +922,7 @@ const refineListTranslated_default = () => {
 .refine-panel {
   overflow-y: hidden;
 
-  .legend-title{
+  .legend-title {
     margin-bottom: 0;
     font-weight: bold;
     font-size: 1.2rem;
@@ -1238,10 +938,12 @@ const refineListTranslated_default = () => {
       padding-left: 24px;
       padding-right: 24px;
       border-right: 1px solid #cfcfcf;
-      &:first-of-type{
+
+      &:first-of-type {
         // padding-left: 0px;
       }
-      &:last-of-type{
+
+      &:last-of-type {
         border-right: none;
       }
     }
@@ -1378,7 +1080,8 @@ const refineListTranslated_default = () => {
 
     #columns-div-for-checkboxes {
 
-      .input-checkbox, .input-radio {
+      .input-checkbox,
+      .input-radio {
         padding-bottom: 24px;
         padding-top: 24px;
       }
@@ -1394,7 +1097,7 @@ const refineListTranslated_default = () => {
       padding-right: 0px;
     }
 
-    .refine-title{
+    .refine-title {
       cursor: pointer;
     }
 
@@ -1410,10 +1113,12 @@ const refineListTranslated_default = () => {
       // padding-left: 1rem !important;
       // padding-right: 1rem !important;
       border-bottom: 1px solid black;
-      &:first-of-type{
+
+      &:first-of-type {
         // padding-left: 0px;
       }
-      &:last-of-type{
+
+      &:last-of-type {
         border-bottom: none;
       }
     }
@@ -1538,11 +1243,15 @@ const refineListTranslated_default = () => {
   padding-top: 0px !important;
 }
 
-.input-wrap.input-checkbox .is-checkradio+label:hover::before, .input-wrap.input-radio .is-checkradio+label:hover::before {
+.input-wrap.input-checkbox .is-checkradio+label:hover::before,
+.input-wrap.input-radio .is-checkradio+label:hover::before {
   border-width: 2px !important;
 }
 
-.is-checkradio[type=checkbox]:focus:not([disabled])+label::before, .is-checkradio[type=checkbox]:focus:not([disabled])+label:before, .is-checkradio[type=radio]:focus:not([disabled])+label::before, .is-checkradio[type=radio]:focus:not([disabled])+label:before {
+.is-checkradio[type=checkbox]:focus:not([disabled])+label::before,
+.is-checkradio[type=checkbox]:focus:not([disabled])+label:before,
+.is-checkradio[type=radio]:focus:not([disabled])+label::before,
+.is-checkradio[type=radio]:focus:not([disabled])+label:before {
   border-width: 2px !important;
   border-color: #2176d2 !important;
 }
@@ -1552,5 +1261,4 @@ const refineListTranslated_default = () => {
   padding-right: 6px;
   font-size: 24px;
 }
-
 </style>
