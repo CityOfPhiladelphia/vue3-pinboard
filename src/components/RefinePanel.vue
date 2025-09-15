@@ -520,13 +520,14 @@ const getCategoryFieldValue = (selected) => {
 };
 
 const getRefineSearchList = async () => {
-  const refineType = $config.refine ? $config.refine.type : 'categoryField_value';
-  const uniq = refineType === 'multipleFieldGroups' ? {} : [];
+  const refineType = $config.refine ? $config.refine.type : null;
 
   if (refineType === 'multipleFields') {
     return MainStore.refineList = Object.keys($config.refine.multipleFields).sort();
   }
-  else if (refineType === 'multipleFieldGroups') {
+
+  if (refineType === 'multipleFieldGroups') {
+    const uniq = {};
     Object.keys($config.refine.multipleFieldGroups).forEach((group) => {
       uniq[group] = { expanded: false };
       Object.keys($config.refine.multipleFieldGroups[group]).forEach((dep) => {
@@ -540,16 +541,15 @@ const getRefineSearchList = async () => {
           ))
       })
     })
+    return MainStore.refineList = uniq;
   }
-  else if (['categoryField_array', 'categoryField_value'].includes(refineType)) {
-    const refineData = (database.value && database.value.records) ? database.value.records : database.value;
-    return MainStore.refineList = Array.from(getUniqueServices(refineData).sort(), (value) => new Object({
-      data: value,
-      textLabel: value,
-      tooltip: $config.infoCircles && Object.keys($config.infoCircles).includes(value) ? $config.infoCircles[value] : null,
-    }))
-  }
-  return MainStore.refineList = uniq;
+
+  const refineData = (database.value && database.value.records) ? database.value.records : database.value;
+  return MainStore.refineList = Array.from(getUniqueServices(refineData).sort(), (value) => new Object({
+    data: value,
+    textLabel: value,
+    tooltip: $config.infoCircles && Object.keys($config.infoCircles).includes(value) ? $config.infoCircles[value] : null,
+  }))
 };
 
 const scrollToTop = () => {
@@ -594,24 +594,18 @@ const refineListTranslated_multipleDependentFieldGroups = () => {
 }
 
 const refineListTranslated_default = () => {
-  if (typeof refineList.value[0] === 'string') {
-    const mainObject = {};
-    for (let refineObject of refineList.value) {
-      mainObject[refineObject] = { textLabel: t(refineObject), value: refineObject };
-    }
-    return mainObject;
-  }
-  else {
-    const mainArray = [];
-    for (let refineObject of refineList.value) {
-      let translatedObject = {}
-      for (let category of Object.keys(refineObject)) {
-        translatedObject[category] = (category == 'textLabel') ? translatedObject[category] = t(refineObject[category]) : translatedObject[category] = refineObject[category];
-      }
-      mainArray.push(translatedObject);
-    }
-    return mainArray;
-  }
+  return (typeof refineList.value[0] === 'string') ?
+    new Object.fromEntries((refineObject) =>
+      [refineObject, new Object({
+        textLabel: t(refineObject),
+        value: refineObject
+      })]
+    ) :
+    Array.from(refineList.value, (refineObject) =>
+      new Object.fromEntries(Object.keys(refineObject).map((category) =>
+        [category, (category == 'textLabel') ? translatedObject[category] = t(refineObject[category]) : translatedObject[category] = refineObject[category]]
+      ))
+    )
 }
 
 </script>
