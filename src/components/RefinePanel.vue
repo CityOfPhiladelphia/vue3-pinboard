@@ -74,7 +74,6 @@ const NumRefineColumns = computed(() => { return isMobile.value ? 1 : 4 });
 const refineList = computed(() => { return MainStore.refineList });
 
 const refineListTranslated = computed(() => {
-  // if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated computed is running, refineList.value:', refineList.value);
   if (!refineList.value || !Object.keys(refineList.value).length) return {};
   switch (refineType.value) {
     case 'categoryField_value': { return refineListTranslated_categoryField() };
@@ -115,9 +114,7 @@ const selectedArray = computed(() => {
       else if (valSplit === 'radio' || (valSplit === 'checkbox' && !Array.isArray(selL[value]))) {
         compiled.push(selL[value]);
       }
-      else {
-        selL[value].forEach((sel) => { compiled.push(sel) });
-      }
+      else { selL[value].forEach((sel) => { compiled.push(sel) }) }
     })
   }
   else if (selected.value && selected.value.length) {
@@ -142,75 +139,15 @@ watch(
   () => selectedServices.value.length,
   async nextSelectedServices => {
     // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedServices is firing, selectedServices.value:', selectedServices.value);
-    if ($config.refine.type === 'categoryField_value' && selectedServices.value.length) {
-      selected.value = selectedServices.value[0];
-    } else if (selectedServices.value.length) {
-      selected.value = selectedServices.value;
-    } else {
-      if ($config.refine.type === 'categoryField_value') {
-        selected.value = null;
-      } else {
-        selected.value = [];
-      }
-    }
+    selected.value = selectedServices.value.length ?
+      $config.refine.type === 'categoryField_value' ? selectedServices.value[0] : selectedServices.value :
+      $config.refine.type === 'categoryField_value' ? null : [];
+
     for (let key of Object.keys(refineList.value)) {
       for (let key2 of Object.keys(refineList.value[key])) {
         if (key2 === 'radio' || key2 === 'checkbox') {
-          for (let key3 of Object.keys(refineList.value[key][key2])) {
-            let unique_key = $config.refine.multipleFieldGroups[key][key2][key3].unique_key;
-            // if (import.meta.env.VITE_DEBUG) console.log('in watch selectedServices, key:', key, 'key2:', key2, 'key3:', key3, 'unique_key:', unique_key);
-
-            let uniq = {};
-            let selectedNow = {};
-            for (let group of Object.keys($config.refine.multipleFieldGroups)) {
-
-              uniq[group] = { expanded: false };
-              for (let dep of Object.keys($config.refine.multipleFieldGroups[group])) {
-                // if (import.meta.env.VITE_DEBUG) console.log('middle loop, dep:', dep, 'group:', group);
-                if (dep !== 'tooltip') {
-                  uniq[group][dep] = {};
-                  for (let field of Object.keys($config.refine.multipleFieldGroups[group][dep])) {
-                    uniq[group][dep][field] = {};
-                    // if (import.meta.env.VITE_DEBUG) console.log('field:', field, 'selected:', selected, '$config.refine.multipleFieldGroups[group][field].unique_key:', $config.refine.multipleFieldGroups[group][field].unique_key);
-                    if ($config.refine.multipleFieldGroups[group][dep][field].i18n_key) {
-                      uniq[group][dep][field].box_label = $config.refine.multipleFieldGroups[group][dep][field].i18n_key;
-                    } else {
-                      uniq[group][dep][field].box_label = field;
-                    }
-                    uniq[group][dep][field].unique_key = $config.refine.multipleFieldGroups[group][dep][field].unique_key;
-                    uniq[group][dep][field].tooltip = $config.refine.multipleFieldGroups[group][dep][field].tooltip;
-                  }
-                } else {
-                  uniq[group][dep] = $config.refine.multipleFieldGroups[group][dep];
-                }
-              }
-            }
-
-            if (selected.value.length) {
-              for (let group of Object.keys(uniq)) {
-                // if (import.meta.env.VITE_DEBUG) console.log('group:', group);
-                for (let dep of Object.keys(uniq[group])) {
-                  for (let field of Object.keys(uniq[group][dep])) {
-                    if (dep == 'checkbox' && selected.value.includes(uniq[group][dep][field].unique_key)) {
-                      // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel end of getRefineSearchList, dependent, group:', group, 'dep:', dep, 'field:', field, 'uniq[group][dep][field].unique_key', uniq[group][dep][field].unique_key, 'selected.value:', selected.value);
-                      if (!selectedNow['checkbox_' + group]) {
-                        selectedNow['checkbox_' + group] = [];
-                      }
-                      selectedNow['checkbox_' + group].push(uniq[group][dep][field].unique_key);
-                    } else if (dep == 'radio' && selected.value.includes(uniq[group][dep][field].unique_key)) {
-                      // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel end of getRefineSearchList, independent, selected:', selected, 'group:', group, 'dep:', dep, 'field:', field, 'uniq[group][dep][field].unique_key', uniq[group][dep][field].unique_key, 'selected.value:', selected.value);
-                      if (!selectedNow['radio_' + group]) {
-                        selectedNow['radio_' + group] = undefined;
-                      }
-                      selectedNow['radio_' + group] = uniq[group][dep][field].unique_key;
-                    }
-                  }
-                }
-              }
-            }
-
-            selectedList.value = selectedNow;
-          }
+          const uniq = getUniqueFieldsObject();
+          selectedList.value = selected.value.length ? getSelectedNowObject(uniq) : {};
         }
       }
     }
@@ -247,7 +184,6 @@ onMounted(async () => {
   const divButton = document.querySelector('#refine-top');
   divButton.addEventListener('keypress', activate.bind(this));
   function activate(e) {
-    // if (import.meta.env.VITE_DEBUG) console.log('activate, e:', e, 'e.path[0]:', e.path[0]);
     if (e.type === 'keypress' && [13, 32].includes(e.keyCode) && e.srcElement.id == 'refine-top') expandRefine();
   };
   await getRefineSearchList();
@@ -400,20 +336,7 @@ const getRefineSearchList = async () => {
   const refineType = $config.refine ? $config.refine.type : null;
   if (refineType === 'multipleFields') return MainStore.refineList = Object.keys($config.refine.multipleFields).sort();
   if (refineType === 'multipleFieldGroups') {
-    const uniq = {};
-    Object.keys($config.refine.multipleFieldGroups).forEach((group) => {
-      uniq[group] = { expanded: false };
-      Object.keys($config.refine.multipleFieldGroups[group]).forEach((dep) => {
-        uniq[group][dep] = (dep === 'tooltip') ? $config.refine.multipleFieldGroups[group][dep] :
-          Object.fromEntries(Object.keys($config.refine.multipleFieldGroups[group][dep]).map((field) =>
-            [field, new Object({
-              unique_key: $config.refine.multipleFieldGroups[group][dep][field].unique_key,
-              utooltip: $config.refine.multipleFieldGroups[group][dep][field].tooltip,
-              box_label: $config.refine.multipleFieldGroups[group][dep][field].i18n_key ? $config.refine.multipleFieldGroups[group][dep][field].i18n_key : field
-            })]
-          ))
-      })
-    })
+    const uniq = getUniqueFieldsObject();
     return MainStore.refineList = uniq;
   }
   const refineData = (database.value && database.value.records) ? database.value.records : database.value;
@@ -423,6 +346,46 @@ const getRefineSearchList = async () => {
     tooltip: $config.infoCircles && Object.keys($config.infoCircles).includes(value) ? $config.infoCircles[value] : null,
   }))
 };
+
+const getSelectedNowObject = (uniqueObject) => {
+  const selectedNow = {};
+  Object.keys(uniqueObject).forEach((group) => {
+    Object.keys(uniqueObject[group]).forEach((dep) => {
+      Object.keys(uniqueObject[group][dep]).forEach((field) => {
+        if (selected.value.includes(uniqueObject[group][dep][field].unique_key)) {
+          if (dep == 'checkbox') {
+            if (!selectedNow['checkbox_' + group]) {
+              selectedNow['checkbox_' + group] = [];
+            }
+            selectedNow['checkbox_' + group].push(uniqueObject[group][dep][field].unique_key);
+          }
+          else if (dep == 'radio') {
+            selectedNow['radio_' + group] = uniqueObject[group][dep][field].unique_key;
+          }
+        }
+      })
+    })
+  })
+  return selectedNow;
+}
+
+const getUniqueFieldsObject = () => {
+  const uniq = {};
+  Object.keys($config.refine.multipleFieldGroups).forEach((group) => {
+    uniq[group] = { expanded: false };
+    Object.keys($config.refine.multipleFieldGroups[group]).forEach((dep) => {
+      uniq[group][dep] = (dep === 'tooltip') ? $config.refine.multipleFieldGroups[group][dep] :
+        Object.fromEntries(Object.keys($config.refine.multipleFieldGroups[group][dep]).map((field) =>
+          [field, new Object({
+            unique_key: $config.refine.multipleFieldGroups[group][dep][field].unique_key,
+            utooltip: $config.refine.multipleFieldGroups[group][dep][field].tooltip,
+            box_label: $config.refine.multipleFieldGroups[group][dep][field].i18n_key ? $config.refine.multipleFieldGroups[group][dep][field].i18n_key : field
+          })]
+        ))
+    })
+  })
+  return uniq;
+}
 
 const scrollToTop = () => {
   document.querySelector('.refine-panel').scrollTo(0, 0);
@@ -514,7 +477,6 @@ const refineListTranslated_default = () => {
           <button v-for="box in keywordsEntered" class="box-value column is-narrow"
             @click="(e) => closeKeywordsBox(e, box)">
             {{ getBoxValue(box) }}
-            <!-- {{ $t(getBoxValue(box)) }} -->
             <font-awesome-icon class="fa-x" :icon="[timesIconWeight, 'times']" />
           </button>
 
@@ -526,7 +488,6 @@ const refineListTranslated_default = () => {
 
           <button v-if="addressEntered" class="box-value column is-narrow"
             @click="(e) => closeAddressBox(e, addressEntered)">
-            <!-- {{ $t(getBoxValue(addressEntered)) + ' - ' + searchDistance }} -->
             {{ $t(getBoxValue(addressEntered)) }}
             <font-awesome-icon class="fa-x" :icon="[timesIconWeight, 'times']" />
           </button>
@@ -974,7 +935,6 @@ const refineListTranslated_default = () => {
 .dropdown-checkbox-div {
   padding: 0px !important;
   position: absolute;
-  // z-index: 1001;
   border-style: solid;
   border-width: 1px;
 }
