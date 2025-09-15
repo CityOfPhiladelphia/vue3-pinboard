@@ -84,7 +84,6 @@ const refineListTranslated = computed(() => {
 });
 
 const refineOpen = computed(() => { return MainStore.refineOpen });
-
 const refinePanelClass = computed(() => {
   if (isMobile.value) { return refineOpen.value ? 'refine-panel refine-panel-open invisible-scrollbar' : 'refine-panel refine-panel-closed invisible-scrollbar' };
   if (retractable.value) { return refineOpen.value ? 'refine-panel refine-retractable-open refine-panel-non-mobile invisible-scrollbar' : 'refine-panel refine-retractable-closed refine-panel-non-mobile-closed invisible-scrollbar' };
@@ -94,7 +93,6 @@ const refinePanelClass = computed(() => {
 const refineTitleClass = computed(() => { return retractable.value ? 'retractable-refine-title' : null });
 const refineType = computed(() => { return $config.refine ? $config.refine.type : null });
 const retractable = computed(() => { return ($config.retractableRefine) ? true : false });
-
 const searchDistance = computed(() => {
   const distance = MapStore.searchDistance;
   const word = distance == 1 ? t('mile') : t('miles');
@@ -172,9 +170,7 @@ watch(
     }
     await nextTick();
     refineTopHeight.value = document.querySelector('#refine-top').offsetHeight;
-
-    // sets MainStore.clearAllClicked back to false so that this watch can set the route
-    MainStore.clearAllClicked = false;
+    MainStore.clearAllClicked = false; // sets MainStore.clearAllClicked back to false so that this watch can set the route
   }
 );
 
@@ -335,10 +331,7 @@ const getCategoryFieldValue = (selected) => {
 const getRefineSearchList = async () => {
   const refineType = $config.refine ? $config.refine.type : null;
   if (refineType === 'multipleFields') return MainStore.refineList = Object.keys($config.refine.multipleFields).sort();
-  if (refineType === 'multipleFieldGroups') {
-    const uniq = getUniqueFieldsObject();
-    return MainStore.refineList = uniq;
-  }
+  if (refineType === 'multipleFieldGroups') { return MainStore.refineList = getUniqueFieldsObject() };
   const refineData = (database.value && database.value.records) ? database.value.records : database.value;
   return MainStore.refineList = Array.from(getUniqueServices(refineData).sort(), (value) => new Object({
     data: value,
@@ -387,9 +380,7 @@ const getUniqueFieldsObject = () => {
   return uniq;
 }
 
-const scrollToTop = () => {
-  document.querySelector('.refine-panel').scrollTo(0, 0);
-};
+const scrollToTop = () => { document.querySelector('.refine-panel').scrollTo(0, 0) };
 
 // REFINE TRANSLATED FUNCTIONS
 const refineListTranslated_categoryField = () => {
