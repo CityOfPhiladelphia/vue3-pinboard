@@ -64,100 +64,41 @@ const addressEntered = computed(() => {
   return route.query.address ? route.query.address : null;
 });
 
-const angleIconWeight = computed(() => {
-  return findIconDefinition({ prefix: 'far', iconName: 'angle-down' }) ? 'far' : 'fas';
-});
-
-const anyValueEntered = computed(() => {
-  return (zipcodeEntered.value != null || addressEntered.value != null || keywordsEntered.value.length != 0);
-});
-
-const bottomHeight = computed(() => {
-  return viewerHeight.value - (appHeaderHeight.value + refineTopHeight.value);
-});
-
-const database = computed(() => {
-  return DataStore.sources[DataStore.appType] ? (DataStore.sources[DataStore.appType].data.rows || DataStore.sources[DataStore.appType].data.features || DataStore.sources[DataStore.appType].data) : {};
-});
-
-const dropdownRefine = computed(() => {
-  return $config.dropdownRefine ? true : false;
-});
-
-const geocode = computed(() => {
-  return GeocodeStore.aisData;
-});
-
-const i18nEnabled = computed(() => {
-  return $config.i18n && $config.i18n.enabled;
-});
-
-const i18nLocale = computed(() => {
-  return instance.appContext.config.globalProperties.$i18n.locale;
-});
-
-const isMobile = computed(() => {
-  return MainStore.windowDimensions.width < 768;
-});
-
-const keywordsEntered = computed(() => {
-  return MainStore.selectedKeywords;
-});
-
-const NumRefineColumns = computed(() => {
-  return isMobile.value ? 1 : 4;
-});
-
-const refineList = computed(() => {
-  return MainStore.refineList;
-});
+const angleIconWeight = computed(() => { return findIconDefinition({ prefix: 'far', iconName: 'angle-down' }) ? 'far' : 'fas' });
+const anyValueEntered = computed(() => { return (zipcodeEntered.value != null || addressEntered.value != null || keywordsEntered.value.length != 0) });
+const bottomHeight = computed(() => { return viewerHeight.value - (appHeaderHeight.value + refineTopHeight.value) });
+const database = computed(() => { return DataStore.sources[DataStore.appType] ? (DataStore.sources[DataStore.appType].data.rows || DataStore.sources[DataStore.appType].data.features || DataStore.sources[DataStore.appType].data) : {} });
+const dropdownRefine = computed(() => { return $config.dropdownRefine ? true : false });
+const geocode = computed(() => { return GeocodeStore.aisData });
+const i18nEnabled = computed(() => { return $config.i18n && $config.i18n.enabled });
+const i18nLocale = computed(() => { return instance.appContext.config.globalProperties.$i18n.locale });
+const isMobile = computed(() => { return MainStore.windowDimensions.width < 768 });
+const keywordsEntered = computed(() => { return MainStore.selectedKeywords });
+const NumRefineColumns = computed(() => { return isMobile.value ? 1 : 4 });
+const refineList = computed(() => { return MainStore.refineList });
 
 const refineListTranslated = computed(() => {
   // if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated computed is running, refineList.value:', refineList.value);
-  if (!refineList.value || !Object.keys(refineList.value).length) {
-    return {};
-  }
+  if (!refineList.value || !Object.keys(refineList.value).length) return {};
   switch (refineType.value) {
-    case 'categoryField_value': {
-      return refineListTranslated_categoryField();
-    }
-    case 'multipleFieldGroups': {
-      return refineListTranslated_multipleFieldGroups();
-    }
-    case 'multipleDependentFieldGroups': {
-      return refineListTranslated_multipleDependentFieldGroups();
-    }
-    default: {
-      return refineListTranslated_default();
-    }
+    case 'categoryField_value': { return refineListTranslated_categoryField() };
+    case 'multipleFieldGroups': { return refineListTranslated_multipleFieldGroups() };
+    case 'multipleDependentFieldGroups': { return refineListTranslated_multipleDependentFieldGroups() };
+    default: { return refineListTranslated_default() };
   }
 });
 
-const refineOpen = computed(() => {
-  return MainStore.refineOpen;
-});
+const refineOpen = computed(() => { return MainStore.refineOpen });
 
 const refinePanelClass = computed(() => {
-  if (isMobile.value) {
-    return refineOpen.value ? 'refine-panel refine-panel-open invisible-scrollbar' : 'refine-panel refine-panel-closed invisible-scrollbar';
-  }
-  if (retractable.value) {
-    return refineOpen.value ? 'refine-panel refine-retractable-open refine-panel-non-mobile invisible-scrollbar' : 'refine-panel refine-retractable-closed refine-panel-non-mobile-closed invisible-scrollbar';
-  }
+  if (isMobile.value) { return refineOpen.value ? 'refine-panel refine-panel-open invisible-scrollbar' : 'refine-panel refine-panel-closed invisible-scrollbar' };
+  if (retractable.value) { return refineOpen.value ? 'refine-panel refine-retractable-open refine-panel-non-mobile invisible-scrollbar' : 'refine-panel refine-retractable-closed refine-panel-non-mobile-closed invisible-scrollbar' };
   return $config.dropdownRefine ? 'refine-panel refine-dropdown-closed refine-panel-non-mobile-closed invisible-scrollbar' : 'refine-panel refine-panel-non-mobile invisible-scrollbar';
 });
 
-const refineTitleClass = computed(() => {
-  return retractable.value ? 'retractable-refine-title' : null;
-});
-
-const refineType = computed(() => {
-  return $config.refine ? $config.refine.type : null;
-});
-
-const retractable = computed(() => {
-  return ($config.retractableRefine) ? true : false;
-});
+const refineTitleClass = computed(() => { return retractable.value ? 'retractable-refine-title' : null });
+const refineType = computed(() => { return $config.refine ? $config.refine.type : null });
+const retractable = computed(() => { return ($config.retractableRefine) ? true : false });
 
 const searchDistance = computed(() => {
   const distance = MapStore.searchDistance;
@@ -168,59 +109,30 @@ const searchDistance = computed(() => {
 const selectedArray = computed(() => {
   // if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selected.value:', selected.value, 'selectedList.value:', selectedList.value);
   const selL = { ...selectedList.value };
-  let compiled = [];
+  const compiled = [];
   if (Object.keys(selL).length) {
-    for (let value of Object.keys(selL)) {
-      if (value.split('_')[0] == 'checkbox') {
-        if (Array.isArray(selL[value])) {
-          for (let sel of selL[value]) {
-            compiled.push(sel);
-          }
-        } else {
-          compiled.push(selL[value]);
-        }
-      } else if (value.split('_')[0] == 'radio') {
-        if (typeof selL[value] === 'string') {
-          compiled.push(selL[value]);
-        } else {
-          compiled.push(selL[value][0]);
-        }
-      } else {
-        for (let sel of selL[value]) {
-          compiled.push(sel);
-        }
+    Object.keys(selL).forEach((value) => {
+      const valSplit = value.split('_')[0];
+      if (valSplit === 'radio' && !(typeof selL[value] === 'string')) {
+        compiled.push(selL[value][0]);
       }
-    }
-  } else if (refineType.value !== 'categoryField_value') {
-    // if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed, in first else if, selected.value:', selected.value);
-    let sel = selected.value;
-    if (sel.length) {
-      for (let selected of sel) {
-        compiled.push(selected);
+      else if (valSplit === 'radio' || (valSplit === 'checkbox' && !Array.isArray(selL[value]))) {
+        compiled.push(selL[value]);
       }
-    }
-  } else {
-    // if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed, in second else, selected.value:', selected.value);
-    if (selected.value && selected.value.length) {
-      compiled.push(selected.value);
-    } else {
-      compiled = [];
-    }
+      else {
+        selL[value].forEach((sel) => { compiled.push(sel) });
+      }
+    })
+  }
+  else if (selected.value && selected.value.length) {
+    refineType.value === 'categoryField_value' ? compiled.push(selected.value) : selected.value.forEach((selected) => { compiled.push(selected) });
   }
   return compiled;
 });
 
-const selectedServices = computed(() => {
-  return MainStore.selectedServices;
-})
-
-const timesIconWeight = computed(() => {
-  return findIconDefinition({ prefix: 'far', iconName: 'times' }) ? 'far' : 'fas';
-});
-
-const zipcodeEntered = computed(() => {
-  return MainStore.selectedZipcode;
-});
+const selectedServices = computed(() => { return MainStore.selectedServices })
+const timesIconWeight = computed(() => { return findIconDefinition({ prefix: 'far', iconName: 'times' }) ? 'far' : 'fas' });
+const zipcodeEntered = computed(() => { return MainStore.selectedZipcode });
 
 // WATCHERS
 watch(
@@ -501,7 +413,6 @@ const getCategoryFieldValue = (selected) => {
 
 const getRefineSearchList = async () => {
   const refineType = $config.refine ? $config.refine.type : null;
-
   if (refineType === 'multipleFields') return MainStore.refineList = Object.keys($config.refine.multipleFields).sort();
   if (refineType === 'multipleFieldGroups') {
     const uniq = {};
@@ -520,7 +431,6 @@ const getRefineSearchList = async () => {
     })
     return MainStore.refineList = uniq;
   }
-
   const refineData = (database.value && database.value.records) ? database.value.records : database.value;
   return MainStore.refineList = Array.from(getUniqueServices(refineData).sort(), (value) => new Object({
     data: value,
