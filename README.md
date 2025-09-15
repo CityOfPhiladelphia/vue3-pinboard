@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.3.6
+
+* passes useRoute and useRouter into pinboard object
+
 ### 2.3.5
 
 * allows hiding the print-share-section in cards
