@@ -17,17 +17,12 @@ import { useGeocodeStore } from '../stores/GeocodeStore.js';
 import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 
-// INITIALIZE COMPONENT
-const instance = getCurrentInstance();
-const { t } = useI18n();
-
 // STORES
 const MapStore = useMapStore();
 const MainStore = useMainStore();
 const GeocodeStore = useGeocodeStore();
 const DataStore = useDataStore();
 const ConfigStore = useConfigStore();
-const $config = ConfigStore.config;
 
 // ROUTER
 const route = useRoute();
@@ -46,15 +41,16 @@ const $emit = defineEmits(['geolocate-control-fire']);
 
 // REFs
 const selected = ref();
-if ($config.refine.type === 'categoryField_value') {
-  selected.value = null;
-} else {
-  selected.value = [];
-}
 const selectedList = ref({});
 const viewerHeight = ref(window.innerHeight);
 const appHeaderHeight = ref(document.querySelector('#app-header').offsetHeight);
 const refineTopHeight = ref(46);
+
+// INITIALIZE
+const $config = ConfigStore.config;
+const instance = getCurrentInstance();
+const { t } = useI18n();
+selected.value = ($config.refine.type === 'categoryField_value') ? null : [];
 
 // COMPUTED VALUES
 const addressEntered = computed(() => {
@@ -138,7 +134,6 @@ const zipcodeEntered = computed(() => { return MainStore.selectedZipcode });
 watch(
   () => database.value,
   async nextDatabase => {
-    // if (import.meta.env.VITE_DEBUG) console.log('watch database is calling getRefineSearchList, nextDatabase:', nextDatabase);
     getRefineSearchList();
   }
 );
@@ -387,21 +382,11 @@ const closeZipcodeBox = (e, box) => {
   MapStore.zipcodeCenter = [];
 };
 
-const expandCheckbox = (ind) => {
-  // if (import.meta.env.VITE_DEBUG) console.log('expandCheckbox is running');
-  refineList.value[ind].expanded = !refineList.value[ind].expanded;
-};
-
-const expandRefine = () => {
-  MainStore.refineOpen = !MainStore.refineOpen;
-};
-
-const getBoxValue = (box) => {
-  return (box && typeof box != 'object') ? box.replace("_", ".") : null;
-};
+const expandCheckbox = (ind) => { refineList.value[ind].expanded = !refineList.value[ind].expanded };
+const expandRefine = () => { MainStore.refineOpen = !MainStore.refineOpen };
+const getBoxValue = (box) => { return (box && typeof box != 'object') ? box.replace("_", ".") : null };
 
 const getCategoryFieldValue = (selected) => {
-  // if (import.meta.env.VITE_DEBUG) console.log('getCategoryFieldValue is running, selected:', selected);
   if (!selected.length) return null;
   const selectedLower = selected.toLowerCase().replaceAll(' ', '');
   const i18nCategories = Object.keys(ConfigStore.config.i18n.data.messages[i18nLocale.value].sections);
