@@ -167,25 +167,19 @@ const searchDistance = computed(() => {
 
 const selectedArray = computed(() => {
   // if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selected.value:', selected.value, 'selectedList.value:', selectedList.value);
-  let selL = { ...selectedList.value };
-  // if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selL:', selL, 'selected.value:', selected.value);
+  const selL = { ...selectedList.value };
   let compiled = [];
   if (Object.keys(selL).length) {
-    // if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed, in first if, selL:', selL);
     for (let value of Object.keys(selL)) {
-      // if (import.meta.env.VITE_DEBUG) console.log('in selectedArray computed, value:', value, 'selL[value]:', selL[value]);
       if (value.split('_')[0] == 'checkbox') {
-        // if (import.meta.env.VITE_DEBUG) console.log('checkbox clicked!');
         if (Array.isArray(selL[value])) {
           for (let sel of selL[value]) {
-            // if (import.meta.env.VITE_DEBUG) console.log('in selectedArray computed, loop, sel:', sel, 'value:', value, 'selL[value]:', selL[value]);
             compiled.push(sel);
           }
         } else {
           compiled.push(selL[value]);
         }
       } else if (value.split('_')[0] == 'radio') {
-        // if (import.meta.env.VITE_DEBUG) console.log('radio button clicked!, selL[value]:', selL[value]);
         if (typeof selL[value] === 'string') {
           compiled.push(selL[value]);
         } else {
@@ -208,7 +202,6 @@ const selectedArray = computed(() => {
   } else {
     // if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed, in second else, selected.value:', selected.value);
     if (selected.value && selected.value.length) {
-      // if (import.meta.env.VITE_DEBUG) console.log('selected.value:', selected.value);
       compiled.push(selected.value);
     } else {
       compiled = [];
@@ -322,10 +315,9 @@ watch(
   async (nextSelected, lastSelected) => {
     if (nextSelected === lastSelected) return;
     // if (import.meta.env.VITE_DEBUG) console.log('watch selectedArray is firing, nextSelected:', nextSelected, 'lastSelected:', lastSelected);
-
     // checked MainStore.clearAllClicked condition so that this doesn't re-route again if clearAll is clicked
     if (!arraysEqual(nextSelected, lastSelected) && !MainStore.clearAllClicked) {
-      let startQuery = { ...route.query };
+      const startQuery = { ...route.query };
       if (nextSelected.length) {
         router.push({ query: { ...startQuery, ...{ services: nextSelected.join(',') } } });
       }
@@ -345,39 +337,31 @@ watch(
 // ON MOUNTED
 onMounted(async () => {
   // if (import.meta.env.VITE_DEBUG) console.log('refinePanel.vue mounted, library:', library);
-  let divButton = document.querySelector('#refine-top');
+  const divButton = document.querySelector('#refine-top');
   divButton.addEventListener('keypress', activate.bind(this));
   function activate(e) {
     // if (import.meta.env.VITE_DEBUG) console.log('activate, e:', e, 'e.path[0]:', e.path[0]);
-    if (e.type === 'keypress' && [13, 32].includes(e.keyCode) && e.srcElement.id == 'refine-top') {
-      expandRefine();
-    }
+    if (e.type === 'keypress' && [13, 32].includes(e.keyCode) && e.srcElement.id == 'refine-top') expandRefine();
   };
-  // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel.vue mounted is calling getRefineSearchList');
   await getRefineSearchList();
 
-  if (route.query.services) {
-    selected.value = (refineType.value !== 'categoryField_value') ? route.query.services.split(',') : route.query.services;
-  }
+  if (route.query.services) selected.value = (refineType.value !== 'categoryField_value') ? route.query.services.split(',') : route.query.services;
 
   if (refineType.value === 'multipleFieldGroups') {
-    for (let service of selected.value) {
+    selected.value.forEach((service) => {
       const serviceType = service.split('_')[0];
       const checkboxOrRadio = Object.keys($config.refine.multipleFieldGroups[serviceType])[0];
       const category = checkboxOrRadio + '_' + serviceType;
       if (checkboxOrRadio == 'checkbox') {
-        if (selectedList.value[category] && !selectedList.value[category].includes(service)) {
-          selectedList.value[category].push(service);
-        }
-        else {
+        if (!selectedList.value[category] || selectedList.value[category].includes(service)) {
           selectedList.value[category] = [];
-          selectedList.value[category].push(service);
         }
+        selectedList.value[category].push(service);
       }
       else { // radio
         selectedList.value[category] = service;
       }
-    }
+    })
   }
 });
 
@@ -506,26 +490,19 @@ const getBoxValue = (box) => {
 
 const getCategoryFieldValue = (selected) => {
   // if (import.meta.env.VITE_DEBUG) console.log('getCategoryFieldValue is running, selected:', selected);
-  if (selected.length) {
-    const selectedLower = selected.toLowerCase().replaceAll(' ', '');
-    const i18nCategories = Object.keys(ConfigStore.config.i18n.data.messages[i18nLocale.value].sections);
-    for (let category of i18nCategories) {
-      const categoryLower = category.toLowerCase().replaceAll(' ', '');
-      if (categoryLower === selectedLower || categoryLower === selectedLower + 's') {
-        return category;
-      }
-    }
+  if (!selected.length) return null;
+  const selectedLower = selected.toLowerCase().replaceAll(' ', '');
+  const i18nCategories = Object.keys(ConfigStore.config.i18n.data.messages[i18nLocale.value].sections);
+  for (let category of i18nCategories) {
+    const categoryLower = category.toLowerCase().replaceAll(' ', '');
+    if (categoryLower === selectedLower || categoryLower === selectedLower + 's') return category;
   }
-  return null;
 };
 
 const getRefineSearchList = async () => {
   const refineType = $config.refine ? $config.refine.type : null;
 
-  if (refineType === 'multipleFields') {
-    return MainStore.refineList = Object.keys($config.refine.multipleFields).sort();
-  }
-
+  if (refineType === 'multipleFields') return MainStore.refineList = Object.keys($config.refine.multipleFields).sort();
   if (refineType === 'multipleFieldGroups') {
     const uniq = {};
     Object.keys($config.refine.multipleFieldGroups).forEach((group) => {
