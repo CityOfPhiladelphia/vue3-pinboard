@@ -122,7 +122,6 @@ const selectedArray = computed(() => {
   return compiled;
 });
 
-const selectedServices = computed(() => { return MainStore.selectedServices })
 const timesIconWeight = computed(() => { return findIconDefinition({ prefix: 'far', iconName: 'times' }) ? 'far' : 'fas' });
 const zipcodeEntered = computed(() => { return MainStore.selectedZipcode });
 
@@ -328,6 +327,42 @@ const getRefineSearchList = async () => {
   }))
 };
 
+// const getRefineSearchList = async () => {
+
+//   if (!$config.refine || $config.refine && ['categoryField_array', 'categoryField_value'].includes($config.refine.type)) {
+//     return MainStore.refineList = Array.from(getUniqueServices(refineData).sort(), (value) => new Object({
+//       data: value,
+//       textLabel: value,
+//       tooltip: $config.infoCircles && Object.keys($config.infoCircles).includes(value) ? $config.infoCircles[value] : null,
+//     }));
+//   }
+
+//   else if ($config.refine && $config.refine.type === 'multipleFields') {
+//     return MainStore.refineList = Object.keys($config.refine.multipleFields).sort();
+//   }
+
+//   if ($config.refine && $config.refine.type === 'multipleFieldGroups') {
+//     const uniq = {};
+//     Object.keys($config.refine.multipleFieldGroups).forEach((group) => {
+//       uniq[group] = { expanded: false };
+//       Object.keys($config.refine.multipleFieldGroups[group]).forEach((dep) => {
+//         uniq[group][dep] = (dep === 'tooltip') ? $config.refine.multipleFieldGroups[group][dep] :
+//           Object.fromEntries(Object.keys($config.refine.multipleFieldGroups[group][dep]).map((field) =>
+//             [field, new Object({
+//               unique_key: $config.refine.multipleFieldGroups[group][dep][field].unique_key,
+//               tooltip: $config.refine.multipleFieldGroups[group][dep][field].tooltip,
+//               box_label: $config.refine.multipleFieldGroups[group][dep][field].i18n_key ? $config.refine.multipleFieldGroups[group][dep][field].i18n_key : field,
+//             })]
+//           ))
+//       })
+//     })
+//     return MainStore.refineList = getUniqueFieldsObject();
+//   }
+
+//   return MainStore.refineList = [];
+// };
+
+
 const getUniqueFieldsObject = () => {
   // if (import.meta.env.VITE_DEBUG) console.log('getUniqueFieldsObject is running');
   const uniq = {};
@@ -338,8 +373,8 @@ const getUniqueFieldsObject = () => {
         Object.fromEntries(Object.keys($config.refine.multipleFieldGroups[group][dep]).map((field) =>
           [field, new Object({
             unique_key: $config.refine.multipleFieldGroups[group][dep][field].unique_key,
-            utooltip: $config.refine.multipleFieldGroups[group][dep][field].tooltip,
-            box_label: $config.refine.multipleFieldGroups[group][dep][field].i18n_key ? $config.refine.multipleFieldGroups[group][dep][field].i18n_key : field
+            tooltip: $config.refine.multipleFieldGroups[group][dep][field].tooltip,
+            box_label: $config.refine.multipleFieldGroups[group][dep][field].i18n_key ? $config.refine.multipleFieldGroups[group][dep][field].i18n_key : field,
           })]
         ))
     })
