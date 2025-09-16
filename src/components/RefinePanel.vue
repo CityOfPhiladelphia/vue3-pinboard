@@ -322,7 +322,7 @@ const expandCheckbox = (ind) => { refineList.value[ind].expanded = !refineList.v
 const expandRefine = () => { MainStore.refineOpen = !MainStore.refineOpen };
 const getBoxValue = (box) => { return (box && typeof box != 'object') ? box.replace("_", ".") : null };
 
-const getCategoryFieldValue = () => {
+const getCategoryFieldValue = (selected) => {
   // if (import.meta.env.VITE_DEBUG) console.log('getCategoryFieldValue is running, selected:', selected);
   if (!selected.length) { return null };
   const selectedLower = selected.toLowerCase().replaceAll(' ', '');
@@ -330,6 +330,7 @@ const getCategoryFieldValue = () => {
     const categoryLower = category.toLowerCase().replaceAll(' ', '');
     if (categoryLower === selectedLower || categoryLower === selectedLower + 's') { return category };
   }
+  return null;
 };
 
 const getRefineSearchList = async () => {
@@ -415,7 +416,7 @@ const scrollToTop = () => { document.querySelector('.refine-panel').scrollTo(0, 
 
 // REFINE TRANSLATED FUNCTIONS
 const refineListTranslated_categoryField_value = () => {
-  // if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated_categoryField is running');
+  if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated_categoryField_value is running. refineList.value: ', refineList.value);
   return Array.from(refineList.value, (category) => new Object({
     value: category.data,
     text: t(category.data),
@@ -526,7 +527,7 @@ const refineListTranslated_default = () => {
 
           <button v-if="refineType == 'categoryField_value' && selected != null && i18nEnabled"
             class="box-value column is-narrow" @click="(e) => closeBox(e, selected)">
-            {{ $t('sections.' + getCategoryFieldValue() + '.header') }}
+            {{ $t('sections.' + getCategoryFieldValue(selected) + '.header') }}
             <font-awesome-icon class="fa-x" :icon="[timesIconWeight, 'times']" />
           </button>
 
