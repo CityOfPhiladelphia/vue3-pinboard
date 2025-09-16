@@ -74,7 +74,7 @@ const NumRefineColumns = computed(() => { return isMobile.value ? 1 : 4 });
 const refineList = computed(() => { return MainStore.refineList });
 
 const refineListTranslated = computed(() => {
-  if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated computed is running, refineList.value:', refineList.value);
+  // if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated computed is running, refineList.value:', refineList.value);
   if (!refineList.value || !Object.keys(refineList.value).length) { return {} };
   switch (refineType.value) {
     case 'categoryField_value': { return refineListTranslated_categoryField_value() };
@@ -132,25 +132,6 @@ watch(
   async nextDatabase => {
     // if (import.meta.env.VITE_DEBUG) console.log('watch database is calling getRefineSearchList, nextDatabase:', nextDatabase);
     getRefineSearchList();
-  }
-);
-
-watch(
-  () => selectedServices.value.length,
-  async nextSelectedServices => {
-    // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedServices is firing, selectedServices.value:', selectedServices.value);
-    selected.value = selectedServices.value.length ?
-      $config.refine.type === 'categoryField_value' ? selectedServices.value[0] : selectedServices.value :
-      $config.refine.type === 'categoryField_value' ? null : [];
-
-    for (let key of Object.keys(refineList.value)) {
-      for (let key2 of Object.keys(refineList.value[key])) {
-        if (key2 === 'radio' || key2 === 'checkbox') {
-          const uniq = getUniqueFieldsObject();
-          selectedList.value = selected.value.length ? getSelectedNowObject(uniq) : {};
-        }
-      }
-    }
   }
 );
 
@@ -220,7 +201,7 @@ const arraysEqual = (a, b) => {
 }
 
 const calculateColumns = (ind, indName) => {
-  if (import.meta.env.VITE_DEBUG) console.log('calculateColumns is running, indName:', indName, 'ind:', ind, '$config.refine.columns', $config.refine.columns, '$config.refine.multipleFieldGroups', $config.refine.multipleFieldGroups);
+  // if (import.meta.env.VITE_DEBUG) console.log('calculateColumns is running, indName:', indName, 'ind:', ind, '$config.refine.columns', $config.refine.columns, '$config.refine.multipleFieldGroups', $config.refine.multipleFieldGroups);
   if (isMobile.value) {
     return 1;
   }
@@ -277,7 +258,8 @@ const closeBox = (e, box) => {
 
   if (selectedList.value['radio_' + section]) {
     const test = 'radio_' + section;
-    const { [test]: removedProperty, ...exceptBoth } = selectedList.value; selectedList.value = exceptBoth;
+    const { [test]: removedProperty, ...exceptBoth } = selectedList.value;
+    selectedList.value = exceptBoth;
     const boxIndex = selected.value.indexOf(box);
     selected.value.splice(boxIndex, 1);
     return;
@@ -346,29 +328,6 @@ const getRefineSearchList = async () => {
   }))
 };
 
-const getSelectedNowObject = (uniqueObject) => {
-  // if (import.meta.env.VITE_DEBUG) console.log('getSelectedNowObject is running');
-  const selectedNow = {};
-  Object.keys(uniqueObject).forEach((group) => {
-    Object.keys(uniqueObject[group]).forEach((dep) => {
-      Object.keys(uniqueObject[group][dep]).forEach((field) => {
-        if (selected.value.includes(uniqueObject[group][dep][field].unique_key)) {
-          if (dep == 'checkbox') {
-            if (!selectedNow['checkbox_' + group]) {
-              selectedNow['checkbox_' + group] = [];
-            }
-            selectedNow['checkbox_' + group].push(uniqueObject[group][dep][field].unique_key);
-          }
-          else if (dep == 'radio') {
-            selectedNow['radio_' + group] = uniqueObject[group][dep][field].unique_key;
-          }
-        }
-      })
-    })
-  })
-  return selectedNow;
-}
-
 const getUniqueFieldsObject = () => {
   // if (import.meta.env.VITE_DEBUG) console.log('getUniqueFieldsObject is running');
   const uniq = {};
@@ -416,7 +375,7 @@ const scrollToTop = () => { document.querySelector('.refine-panel').scrollTo(0, 
 
 // REFINE TRANSLATED FUNCTIONS
 const refineListTranslated_categoryField_value = () => {
-  if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated_categoryField_value is running. refineList.value: ', refineList.value);
+  // if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated_categoryField_value is running. refineList.value: ', refineList.value);
   return Array.from(refineList.value, (category) => new Object({
     value: category.data,
     text: t(category.data),
@@ -455,7 +414,7 @@ const refineListTranslated_multipleDependentFieldGroups = () => {
 }
 
 const refineListTranslated_default = () => {
-  if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated_default is running, refineList.value: ', refineList.value);
+  // if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated_default is running, refineList.value: ', refineList.value);
   return (typeof refineList.value[0] === 'string') ?
     Object.fromEntries((refineObject) =>
       [refineObject, new Object({
