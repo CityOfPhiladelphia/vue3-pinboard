@@ -17,7 +17,7 @@ import { useGeocodeStore } from '../stores/GeocodeStore.js';
 import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 
-// STORES
+// INITIALIZE STORES
 const MapStore = useMapStore();
 const MainStore = useMainStore();
 const GeocodeStore = useGeocodeStore();
@@ -387,6 +387,20 @@ const getUniqueFieldsObject = () => {
   return uniq;
 }
 
+const getUniqueServices = (data) => {
+  if (!data) return [];
+  let service = '';
+  data.forEach((item) => {
+    if ($config.refine) {
+      service += `${$config.refine.value(item)},`;
+    }
+    else if (item.services_offered) {
+      service += `${item.services_offered},`;
+    }
+  });
+  return [...new Set(service.split(/(,|;)/).map(s => s.trim()))].filter(a => a.length > 1).filter(Boolean);
+}
+
 const scrollToTop = () => { document.querySelector('.refine-panel').scrollTo(0, 0) };
 
 // REFINE TRANSLATED FUNCTIONS
@@ -432,14 +446,14 @@ const refineListTranslated_multipleDependentFieldGroups = () => {
 const refineListTranslated_default = () => {
   if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated_default is running');
   return (typeof refineList.value[0] === 'string') ?
-    new Object.fromEntries((refineObject) =>
+    Object.fromEntries((refineObject) =>
       [refineObject, new Object({
         textLabel: t(refineObject),
         value: refineObject
       })]
     ) :
     Array.from(refineList.value, (refineObject) =>
-      new Object.fromEntries(Object.keys(refineObject).map((category) =>
+      Object.fromEntries(Object.keys(refineObject).map((category) =>
         [category, (category == 'textLabel') ? t(refineObject[category]) : refineObject[category]]
       ))
     )
