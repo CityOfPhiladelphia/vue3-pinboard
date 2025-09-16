@@ -155,7 +155,7 @@ watch(
 watch(
   () => selectedArray.value,
   async (nextSelected, lastSelected) => {
-    if (nextSelected === lastSelected) return;
+    if (nextSelected === lastSelected) { return };
     // if (import.meta.env.VITE_DEBUG) console.log('watch selectedArray is firing, nextSelected:', nextSelected, 'lastSelected:', lastSelected);
     // checked MainStore.clearAllClicked condition so that this doesn't re-route again if clearAll is clicked
     if (!arraysEqual(nextSelected, lastSelected) && !MainStore.clearAllClicked) {
@@ -319,18 +319,17 @@ const expandRefine = () => { MainStore.refineOpen = !MainStore.refineOpen };
 const getBoxValue = (box) => { return (box && typeof box != 'object') ? box.replace("_", ".") : null };
 
 const getCategoryFieldValue = (selected) => {
-  if (!selected.length) return null;
+  if (!selected.length) { return null };
   const selectedLower = selected.toLowerCase().replaceAll(' ', '');
-  const i18nCategories = Object.keys(ConfigStore.config.i18n.data.messages[i18nLocale.value].sections);
-  for (let category of i18nCategories) {
+  for (let category of Object.keys(ConfigStore.config.i18n.data.messages[i18nLocale.value].sections)) {
     const categoryLower = category.toLowerCase().replaceAll(' ', '');
-    if (categoryLower === selectedLower || categoryLower === selectedLower + 's') return category;
+    if (categoryLower === selectedLower || categoryLower === selectedLower + 's') { return category };
   }
 };
 
 const getRefineSearchList = async () => {
   const refineType = $config.refine ? $config.refine.type : null;
-  if (refineType === 'multipleFields') return MainStore.refineList = Object.keys($config.refine.multipleFields).sort();
+  if (refineType === 'multipleFields') { return MainStore.refineList = Object.keys($config.refine.multipleFields).sort() };
   if (refineType === 'multipleFieldGroups') { return MainStore.refineList = getUniqueFieldsObject() };
   const refineData = (database.value && database.value.records) ? database.value.records : database.value;
   return MainStore.refineList = Array.from(getUniqueServices(refineData).sort(), (value) => new Object({
@@ -429,7 +428,7 @@ const refineListTranslated_default = () => {
     ) :
     Array.from(refineList.value, (refineObject) =>
       new Object.fromEntries(Object.keys(refineObject).map((category) =>
-        [category, (category == 'textLabel') ? translatedObject[category] = t(refineObject[category]) : translatedObject[category] = refineObject[category]]
+        [category, (category == 'textLabel') ? t(refineObject[category]) : refineObject[category]]
       ))
     )
 }
