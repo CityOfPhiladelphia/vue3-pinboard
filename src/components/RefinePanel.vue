@@ -74,6 +74,7 @@ const NumRefineColumns = computed(() => { return isMobile.value ? 1 : 4 });
 const refineList = computed(() => { return MainStore.refineList });
 
 const refineListTranslated = computed(() => {
+  if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated computed is running, refineList.value:', refineList.value);
   if (!refineList.value || !Object.keys(refineList.value).length) return {};
   switch (refineType.value) {
     case 'categoryField_value': { return refineListTranslated_categoryField() };
@@ -100,7 +101,7 @@ const searchDistance = computed(() => {
 });
 
 const selectedArray = computed(() => {
-  // if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selected.value:', selected.value, 'selectedList.value:', selectedList.value);
+  if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selected.value:', selected.value, 'selectedList.value:', selectedList.value);
   const selL = { ...selectedList.value };
   const compiled = [];
   if (Object.keys(selL).length) {
@@ -129,6 +130,7 @@ const zipcodeEntered = computed(() => { return MainStore.selectedZipcode });
 watch(
   () => database.value,
   async nextDatabase => {
+    if (import.meta.env.VITE_DEBUG) console.log('watch database is calling getRefineSearchList, nextDatabase:', nextDatabase);
     getRefineSearchList();
   }
 );
@@ -136,7 +138,7 @@ watch(
 watch(
   () => selectedServices.value.length,
   async nextSelectedServices => {
-    // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedServices is firing, selectedServices.value:', selectedServices.value);
+    if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedServices is firing, selectedServices.value:', selectedServices.value);
     selected.value = selectedServices.value.length ?
       $config.refine.type === 'categoryField_value' ? selectedServices.value[0] : selectedServices.value :
       $config.refine.type === 'categoryField_value' ? null : [];
@@ -155,8 +157,8 @@ watch(
 watch(
   () => selectedArray.value,
   async (nextSelected, lastSelected) => {
+    if (import.meta.env.VITE_DEBUG) console.log('watch selectedArray is firing, nextSelected:', nextSelected, 'lastSelected:', lastSelected);
     if (nextSelected === lastSelected) { return };
-    // if (import.meta.env.VITE_DEBUG) console.log('watch selectedArray is firing, nextSelected:', nextSelected, 'lastSelected:', lastSelected);
     // checked MainStore.clearAllClicked condition so that this doesn't re-route again if clearAll is clicked
     if (!arraysEqual(nextSelected, lastSelected) && !MainStore.clearAllClicked) {
       const startQuery = { ...route.query };
@@ -176,7 +178,6 @@ watch(
 
 // ON MOUNTED
 onMounted(async () => {
-  // if (import.meta.env.VITE_DEBUG) console.log('refinePanel.vue mounted, library:', library);
   const divButton = document.querySelector('#refine-top');
   divButton.addEventListener('keypress', activate.bind(this));
   function activate(e) {
@@ -206,6 +207,7 @@ onMounted(async () => {
 
 // UTILITY FUNCTIONS
 const arraysEqual = (a, b) => {
+  if (import.meta.env.VITE_DEBUG) console.log('arraysEqual is running, arr1: ', a, 'arr2:', b);
   if (a === b) return true;
   if (a == null || b == null) return false;
   if (a.length !== b.length) return false;
@@ -218,7 +220,7 @@ const arraysEqual = (a, b) => {
 }
 
 const calculateColumns = (ind, indName) => {
-  // if (import.meta.env.VITE_DEBUG) console.log('calculateColumns is running, indName:', indName, 'ind:', ind, '$config.refine.columns', $config.refine.columns, '$config.refine.multipleFieldGroups', $config.refine.multipleFieldGroups);
+  if (import.meta.env.VITE_DEBUG) console.log('calculateColumns is running, indName:', indName, 'ind:', ind, '$config.refine.columns', $config.refine.columns, '$config.refine.multipleFieldGroups', $config.refine.multipleFieldGroups);
   if (isMobile.value) {
     return 1;
   }
@@ -233,6 +235,7 @@ const clearAll = async (e) => {
   // sets clearAllClicked flag to true, so that RefinePanel watch selectedArray doesn't re-route
   MainStore.clearAllClicked = true;
   const startQuery = { ...route.query };
+  if (import.meta.env.VITE_DEBUG) console.log('RefinePanel clearAll is running, e: ', e, 'startQuery1:', startQuery);
 
   // delete query fields
   delete startQuery['address'];
@@ -250,14 +253,15 @@ const clearAll = async (e) => {
 
 const closeAddressBox = (e, box) => {
   e.stopPropagation();
-  // if (import.meta.env.VITE_DEBUG) console.log('closeAddressBox is running, e:', e, 'box:', box, 'startQuery:', startQuery);
   const startQuery = { ...route.query };
+  if (import.meta.env.VITE_DEBUG) console.log('closeAddressBox is running, e:', e, 'box:', box, 'startQuery:', startQuery);
   delete startQuery['address'];
   router.push({ query: { ...startQuery } });
 };
 
 const closeBox = (e, box) => {
   e.stopPropagation();
+  if (import.meta.env.VITE_DEBUG) console.log('closeBox is running, box:', box, 'e:', e);
   if (refineType.value === 'categoryField_value') {
     selected.value = null;
     selectedList.value = [];
@@ -288,7 +292,7 @@ const closeBox = (e, box) => {
 
 const closeKeywordsBox = (e, box) => {
   e.stopPropagation();
-  // if (import.meta.env.VITE_DEBUG) console.log('closeKeywordsBox is running, e:', e);
+  if (import.meta.env.VITE_DEBUG) console.log('closeKeywordsBox is running, e:', e);
   const startQuery = { ...route.query };
   let keywordsArray = [];
 
@@ -306,7 +310,7 @@ const closeKeywordsBox = (e, box) => {
 
 const closeZipcodeBox = (e, box) => {
   e.stopPropagation();
-  // if (import.meta.env.VITE_DEBUG) console.log('closeZipcodeBox is running');
+  if (import.meta.env.VITE_DEBUG) console.log('closeZipcodeBox is running, e:', e);
   const startQuery = { ...route.query };
   delete startQuery['zipcode'];
   router.push({ query: { ...startQuery } });
@@ -318,7 +322,8 @@ const expandCheckbox = (ind) => { refineList.value[ind].expanded = !refineList.v
 const expandRefine = () => { MainStore.refineOpen = !MainStore.refineOpen };
 const getBoxValue = (box) => { return (box && typeof box != 'object') ? box.replace("_", ".") : null };
 
-const getCategoryFieldValue = (selected) => {
+const getCategoryFieldValue = () => {
+  if (import.meta.env.VITE_DEBUG) console.log('getCategoryFieldValue is running, selected:', selected);
   if (!selected.length) { return null };
   const selectedLower = selected.toLowerCase().replaceAll(' ', '');
   for (let category of Object.keys(ConfigStore.config.i18n.data.messages[i18nLocale.value].sections)) {
@@ -328,6 +333,7 @@ const getCategoryFieldValue = (selected) => {
 };
 
 const getRefineSearchList = async () => {
+  if (import.meta.env.VITE_DEBUG) console.log('getRefineSearchList is running');
   const refineType = $config.refine ? $config.refine.type : null;
   if (refineType === 'multipleFields') { return MainStore.refineList = Object.keys($config.refine.multipleFields).sort() };
   if (refineType === 'multipleFieldGroups') { return MainStore.refineList = getUniqueFieldsObject() };
@@ -340,6 +346,7 @@ const getRefineSearchList = async () => {
 };
 
 const getSelectedNowObject = (uniqueObject) => {
+  if (import.meta.env.VITE_DEBUG) console.log('getSelectedNowObject is running');
   const selectedNow = {};
   Object.keys(uniqueObject).forEach((group) => {
     Object.keys(uniqueObject[group]).forEach((dep) => {
@@ -362,6 +369,7 @@ const getSelectedNowObject = (uniqueObject) => {
 }
 
 const getUniqueFieldsObject = () => {
+  if (import.meta.env.VITE_DEBUG) console.log('getUniqueFieldsObject is running');
   const uniq = {};
   Object.keys($config.refine.multipleFieldGroups).forEach((group) => {
     uniq[group] = { expanded: false };
@@ -383,6 +391,7 @@ const scrollToTop = () => { document.querySelector('.refine-panel').scrollTo(0, 
 
 // REFINE TRANSLATED FUNCTIONS
 const refineListTranslated_categoryField = () => {
+  if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated_categoryField is running');
   return Array.from(refineList.value, (category) => new Object({
     value: category.data,
     text: t(category.data),
@@ -390,6 +399,7 @@ const refineListTranslated_categoryField = () => {
 }
 
 const refineListTranslated_multipleFieldGroups = () => {
+  if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated_multipleFieldGroups is running');
   return !refineList.value ? {} :
     Object.fromEntries(Object.keys(refineList.value).map((category) =>
       [category, Object.fromEntries(Object.keys(refineList.value[category]).map((dep) =>
@@ -407,6 +417,7 @@ const refineListTranslated_multipleFieldGroups = () => {
 }
 
 const refineListTranslated_multipleDependentFieldGroups = () => {
+  if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated_multipleDependentFieldGroups is running');
   return Object.fromEntries(Object.keys(refineList.value).map((category) =>
     [category, Object.fromEntries(Object.keys(refineList.value[category]).map((dep) =>
       [dep, Array.from(Object.keys(refineList.value[category][dep]), (box) => new Object({
@@ -419,6 +430,7 @@ const refineListTranslated_multipleDependentFieldGroups = () => {
 }
 
 const refineListTranslated_default = () => {
+  if (import.meta.env.VITE_DEBUG) console.log('refineListTranslated_default is running');
   return (typeof refineList.value[0] === 'string') ?
     new Object.fromEntries((refineObject) =>
       [refineObject, new Object({
@@ -490,7 +502,7 @@ const refineListTranslated_default = () => {
 
           <button v-if="refineType == 'categoryField_value' && selected != null && i18nEnabled"
             class="box-value column is-narrow" @click="(e) => closeBox(e, selected)">
-            {{ $t('sections.' + getCategoryFieldValue(selected) + '.header') }}
+            {{ $t('sections.' + getCategoryFieldValue() + '.header') }}
             <font-awesome-icon class="fa-x" :icon="[timesIconWeight, 'times']" />
           </button>
 
