@@ -5,6 +5,8 @@ import { useDataStore } from './stores/DataStore.js';
 import { useMainStore } from './stores/MainStore.js';
 import VueGtag from "vue-gtag";
 
+import { useRouter, useRoute } from 'vue-router'
+
 if (import.meta.env.VITE_DEBUG) console.log('test, import.meta.env.VITE_DEBUG:', import.meta.env.VITE_DEBUG);
 
 import { createI18n } from 'vue-i18n'
@@ -160,4 +162,4 @@ export default function pinboard(config) {
   app.mount('#app')
 };
 
-export { useDataStore, useMainStore, useConfigStore };
+export { useDataStore, useMainStore, useConfigStore, useRouter, useRoute };
