@@ -195,7 +195,7 @@ export default {
     "Krio": "Krio",
     "Patois": "Patois",
     "Pular": "Pular",
-    "Farsi and Malayalam": "Farsi and Malayalam",
+    "Farsi and Malayalam": "Farsi and Malayalam"
   },
   "Yes": "Yes",
   "No": "No",
@@ -227,5 +227,5 @@ export default {
   "Search by address": "Search by address",
   "Search by address or zipcode": "Search by address or ZIP code",
   "Search by address or keyword": "Search by address or keyword",
-  "Search by address, zipcode, or keyword": "Search by address, ZIP code, or keyword",
+  "Search by address, zipcode, or keyword": "Search by address, ZIP code, or keyword"
 }
