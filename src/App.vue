@@ -112,7 +112,7 @@ watch(
     href="#main"
     class="skip-to-main-content-link"
   >Skip to main content</a>
-  
+
   <div
     v-if="!MainStore.firstRouteLoaded"
     id="spinner-holder"
@@ -128,7 +128,7 @@ watch(
         spin
       />
       <div class="mt-6">
-        Loading {{ appTitle.toLowerCase() }}
+        Loading {{ appTitle.toUpperCase() }}
       </div>
     </div>
   </div>

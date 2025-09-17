@@ -201,9 +201,7 @@ const arraysEqual = (a, b) => {
 
 const calculateColumns = (ind, indName) => {
   // if (import.meta.env.VITE_DEBUG) console.log('calculateColumns is running, indName:', indName, 'ind:', ind, '$config.refine.columns', $config.refine.columns, '$config.refine.multipleFieldGroups', $config.refine.multipleFieldGroups);
-  if (isMobile.value) {
-    return 1;
-  }
+  if (isMobile.value) { return 1 };
   if ($config.refine.columns) {
     return ($config.refine.multipleFieldGroups[indName].columns) ? $config.refine.multipleFieldGroups[indName].columns : 1;
   }
@@ -276,12 +274,11 @@ const closeKeywordsBox = (e, box) => {
   // if (import.meta.env.VITE_DEBUG) console.log('closeKeywordsBox is running, e:', e);
   const startQuery = { ...route.query };
   let keywordsArray = [];
-
   if (startQuery.keyword.length) {
     if (typeof startQuery.keyword === 'string') {
       keywordsArray = startQuery.keyword.split(',');
     }
-    else if (Array.isArray(startQuery.keyword) && startQuery.keyword.length) {
+    else if (Array.isArray(startQuery.keyword)) {
       keywordsArray = startQuery.keyword;
     }
   }
@@ -327,42 +324,6 @@ const getRefineSearchList = async () => {
   }))
 };
 
-// const getRefineSearchList = async () => {
-
-//   if (!$config.refine || $config.refine && ['categoryField_array', 'categoryField_value'].includes($config.refine.type)) {
-//     return MainStore.refineList = Array.from(getUniqueServices(refineData).sort(), (value) => new Object({
-//       data: value,
-//       textLabel: value,
-//       tooltip: $config.infoCircles && Object.keys($config.infoCircles).includes(value) ? $config.infoCircles[value] : null,
-//     }));
-//   }
-
-//   else if ($config.refine && $config.refine.type === 'multipleFields') {
-//     return MainStore.refineList = Object.keys($config.refine.multipleFields).sort();
-//   }
-
-//   if ($config.refine && $config.refine.type === 'multipleFieldGroups') {
-//     const uniq = {};
-//     Object.keys($config.refine.multipleFieldGroups).forEach((group) => {
-//       uniq[group] = { expanded: false };
-//       Object.keys($config.refine.multipleFieldGroups[group]).forEach((dep) => {
-//         uniq[group][dep] = (dep === 'tooltip') ? $config.refine.multipleFieldGroups[group][dep] :
-//           Object.fromEntries(Object.keys($config.refine.multipleFieldGroups[group][dep]).map((field) =>
-//             [field, new Object({
-//               unique_key: $config.refine.multipleFieldGroups[group][dep][field].unique_key,
-//               tooltip: $config.refine.multipleFieldGroups[group][dep][field].tooltip,
-//               box_label: $config.refine.multipleFieldGroups[group][dep][field].i18n_key ? $config.refine.multipleFieldGroups[group][dep][field].i18n_key : field,
-//             })]
-//           ))
-//       })
-//     })
-//     return MainStore.refineList = getUniqueFieldsObject();
-//   }
-
-//   return MainStore.refineList = [];
-// };
-
-
 const getUniqueFieldsObject = () => {
   // if (import.meta.env.VITE_DEBUG) console.log('getUniqueFieldsObject is running');
   const uniq = {};
@@ -394,15 +355,11 @@ const getUniqueServices = (data) => {
       service += `${item.services_offered},`;
     }
   });
-  const uniq = [...new Set(service.split(/(,|;)/).map(s => s.trim()))].filter(a => a.length > 1).filter(Boolean);
+  const uniq = [...new Set(service.split(/(,|;)/).map(s => s.trim()))].filter(a => a.length > 1).filter(Boolean); // Boolean filter removes all falsey values
   const undef = uniq.indexOf('undefined');
-  if (undef > -1) {
-    uniq.splice(undef, 1);
-  }
   const nullVal = uniq.indexOf('null');
-  if (nullVal > -1) {
-    uniq.splice(nullVal, 1);
-  }
+  if (undef > -1) { uniq.splice(undef, 1) }; // remove the string 'undefined'
+  if (nullVal > -1) { uniq.splice(nullVal, 1) }; // remove the string 'null'
   return uniq
 }
 
@@ -424,7 +381,7 @@ const refineListTranslated_multipleFieldGroups = () => {
       [category, Object.fromEntries(Object.keys(refineList.value[category]).map((dep) =>
         [dep, (dep === 'tooltip') ? t(refineList.value[category][dep].tip) :
           Array.from(Object.keys(refineList.value[category][dep]), (box) => new Object({
-            data: refineList.value[category][dep][box].unique_key,
+            data: t(refineList.value[category][dep][box].unique_key),
             textLabel: t(refineList.value[category][dep][box].box_label),
             tooltip: refineList.value[category][dep][box].tooltip ? {
               tip: t(refineList.value[category][dep][box].tooltip.tip),
