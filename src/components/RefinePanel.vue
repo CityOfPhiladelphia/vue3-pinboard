@@ -324,6 +324,29 @@ const getRefineSearchList = async () => {
   }))
 };
 
+const getSelectedNowObject = (uniqueObject) => {
+  // if (import.meta.env.VITE_DEBUG) console.log('getSelectedNowObject is running');
+  const selectedNow = {};
+  Object.keys(uniqueObject).forEach((group) => {
+    Object.keys(uniqueObject[group]).forEach((dep) => {
+      Object.keys(uniqueObject[group][dep]).forEach((field) => {
+        if (selected.value.includes(uniqueObject[group][dep][field].unique_key)) {
+          if (dep == 'checkbox') {
+            if (!selectedNow['checkbox_' + group]) {
+              selectedNow['checkbox_' + group] = [];
+            }
+            selectedNow['checkbox_' + group].push(uniqueObject[group][dep][field].unique_key);
+          }
+          else if (dep == 'radio') {
+            selectedNow['radio_' + group] = uniqueObject[group][dep][field].unique_key;
+          }
+        }
+      })
+    })
+  })
+  return selectedNow;
+}
+
 const getUniqueFieldsObject = () => {
   // if (import.meta.env.VITE_DEBUG) console.log('getUniqueFieldsObject is running');
   const uniq = {};

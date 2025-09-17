@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.3.
+
+* refactor of the RefinePanel vue component
+
 ### 2.3.6
 
 * passes useRoute and useRouter into pinboard object
