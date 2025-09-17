@@ -112,7 +112,7 @@ watch(
     href="#main"
     class="skip-to-main-content-link"
   >Skip to main content</a>
-  
+
   <div
     v-if="!MainStore.firstRouteLoaded"
     id="spinner-holder"

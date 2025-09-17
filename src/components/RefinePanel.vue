@@ -138,19 +138,12 @@ watch(
 watch(
   () => selectedServices.value.length,
   async nextSelectedServices => {
-    // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedServices is firing, selectedServices.value:', selectedServices.value);
+    if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedServices is firing, selectedServices.value:', selectedServices.value);
     selected.value = selectedServices.value.length ?
       $config.refine.type === 'categoryField_value' ? selectedServices.value[0] : selectedServices.value :
       $config.refine.type === 'categoryField_value' ? null : [];
-
-    for (let key of Object.keys(refineList.value)) {
-      for (let key2 of Object.keys(refineList.value[key])) {
-        if (key2 === 'radio' || key2 === 'checkbox') {
-          const uniq = getUniqueFieldsObject();
-          selectedList.value = selected.value.length ? getSelectedNowObject(uniq) : {};
-        }
-      }
-    }
+    const uniq = getUniqueFieldsObject();
+    selectedList.value = selected.value.length ? getSelectedNowObject(uniq) : {};
   }
 );
 
@@ -221,9 +214,7 @@ const arraysEqual = (a, b) => {
 
 const calculateColumns = (ind, indName) => {
   // if (import.meta.env.VITE_DEBUG) console.log('calculateColumns is running, indName:', indName, 'ind:', ind, '$config.refine.columns', $config.refine.columns, '$config.refine.multipleFieldGroups', $config.refine.multipleFieldGroups);
-  if (isMobile.value) {
-    return 1;
-  }
+  if (isMobile.value) { return 1 };
   if ($config.refine.columns) {
     return ($config.refine.multipleFieldGroups[indName].columns) ? $config.refine.multipleFieldGroups[indName].columns : 1;
   }
@@ -296,12 +287,11 @@ const closeKeywordsBox = (e, box) => {
   // if (import.meta.env.VITE_DEBUG) console.log('closeKeywordsBox is running, e:', e);
   const startQuery = { ...route.query };
   let keywordsArray = [];
-
   if (startQuery.keyword.length) {
     if (typeof startQuery.keyword === 'string') {
       keywordsArray = startQuery.keyword.split(',');
     }
-    else if (Array.isArray(startQuery.keyword) && startQuery.keyword.length) {
+    else if (Array.isArray(startQuery.keyword)) {
       keywordsArray = startQuery.keyword;
     }
   }
@@ -368,7 +358,7 @@ const getSelectedNowObject = (uniqueObject) => {
     })
   })
   return selectedNow;
-};
+}
 
 const getUniqueFieldsObject = () => {
   // if (import.meta.env.VITE_DEBUG) console.log('getUniqueFieldsObject is running');
@@ -401,15 +391,11 @@ const getUniqueServices = (data) => {
       service += `${item.services_offered},`;
     }
   });
-  const uniq = [...new Set(service.split(/(,|;)/).map(s => s.trim()))].filter(a => a.length > 1).filter(Boolean);
+  const uniq = [...new Set(service.split(/(,|;)/).map(s => s.trim()))].filter(a => a.length > 1).filter(Boolean); // Boolean filter removes all falsey values
   const undef = uniq.indexOf('undefined');
-  if (undef > -1) {
-    uniq.splice(undef, 1);
-  }
   const nullVal = uniq.indexOf('null');
-  if (nullVal > -1) {
-    uniq.splice(nullVal, 1);
-  }
+  if (undef > -1) { uniq.splice(undef, 1) }; // remove the string 'undefined'
+  if (nullVal > -1) { uniq.splice(nullVal, 1) }; // remove the string 'null'
   return uniq
 }
 
