@@ -490,7 +490,7 @@ const refineListTranslated_default = () => {
         <div id="selected-boxes" class="selected-boxes columns is-mobile">
           <button v-for="box in keywordsEntered" class="box-value column is-narrow"
             @click="(e) => closeKeywordsBox(e, box)">
-            {{ getBoxValue(box) }}
+            {{ $(getBoxValue(box)) }}
             <font-awesome-icon class="fa-x" :icon="[timesIconWeight, 'times']" />
           </button>
 
