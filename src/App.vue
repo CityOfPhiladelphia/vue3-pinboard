@@ -128,7 +128,7 @@ watch(
         spin
       />
       <div class="mt-6">
-        Loading {{ appTitle.toUpperCase() }}
+        Loading {{ appTitle.toLowerCase() }}
       </div>
     </div>
   </div>

@@ -122,6 +122,7 @@ const selectedArray = computed(() => {
   return compiled;
 });
 
+const selectedServices = computed(() => { return MainStore.selectedServices });
 const timesIconWeight = computed(() => { return findIconDefinition({ prefix: 'far', iconName: 'times' }) ? 'far' : 'fas' });
 const zipcodeEntered = computed(() => { return MainStore.selectedZipcode });
 
@@ -131,6 +132,18 @@ watch(
   async nextDatabase => {
     // if (import.meta.env.VITE_DEBUG) console.log('watch database is calling getRefineSearchList, nextDatabase:', nextDatabase);
     getRefineSearchList();
+  }
+);
+
+watch(
+  () => selectedServices.value.length,
+  async nextSelectedServices => {
+    if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedServices is firing, selectedServices.value:', selectedServices.value);
+    selected.value = selectedServices.value.length ?
+      $config.refine.type === 'categoryField_value' ? selectedServices.value[0] : selectedServices.value :
+      $config.refine.type === 'categoryField_value' ? null : [];
+    const uniq = getUniqueFieldsObject();
+    selectedList.value = selected.value.length ? getSelectedNowObject(uniq) : {};
   }
 );
 
@@ -404,7 +417,7 @@ const refineListTranslated_multipleFieldGroups = () => {
       [category, Object.fromEntries(Object.keys(refineList.value[category]).map((dep) =>
         [dep, (dep === 'tooltip') ? t(refineList.value[category][dep].tip) :
           Array.from(Object.keys(refineList.value[category][dep]), (box) => new Object({
-            data: t(refineList.value[category][dep][box].unique_key),
+            data: refineList.value[category][dep][box].unique_key,
             textLabel: t(refineList.value[category][dep][box].box_label),
             tooltip: refineList.value[category][dep][box].tooltip ? {
               tip: t(refineList.value[category][dep][box].tooltip.tip),
