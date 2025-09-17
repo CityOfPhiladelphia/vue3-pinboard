@@ -30,7 +30,11 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
-### 2.3.
+### 2.4.1
+
+* changed the way the translation files store languages
+
+### 2.3.7
 
 * refactor of the RefinePanel vue component
 
