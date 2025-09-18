@@ -78,7 +78,7 @@ export const useMapStore = defineStore("MapStore", {
         let theSelectedZipcode = useMainStore().selectedZipcode;
         let zipcode;
         if (zipcodesData) {
-          zipcode = zipcodesData.features.filter(item => item.properties.CODE == theSelectedZipcode)[0];
+          zipcode = zipcodesData.features.filter(item => item.properties.code == theSelectedZipcode)[0];
         }
         this.bufferForAddressOrLocationOrZipcode= buffer(zipcode, this.searchDistance, {units: 'miles'});
       }

@@ -161,7 +161,7 @@ onMounted(async () => {
     if (DataStore.zipcodes && MainStore.selectedZipcode) {
 
       if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 5, DataStore.zipcodes:', DataStore.zipcodes, 'MainStore.selectedZipcode:', MainStore.selectedZipcode);
-      const zipcodeData = DataStore.zipcodes.features.filter(item => item.properties.CODE == MainStore.selectedZipcode)[0];
+      const zipcodeData = DataStore.zipcodes.features.filter(item => item.properties.code == MainStore.selectedZipcode)[0];
       map.getSource('zipcode').setData(zipcodeData);
       const center = centerOfMass(zipcodeData);
       map.setCenter(center.geometry.coordinates);
@@ -448,7 +448,7 @@ const zipcodeData = computed(() => {
     let zipcodesData = DataStore.zipcodes;
     let theSelectedZipcode = selectedZipcode.value;
     if (zipcodesData && selectedZipcode) {
-      zipcode = zipcodesData.features.filter(item => item.properties.CODE == theSelectedZipcode)[0];
+      zipcode = zipcodesData.features.filter(item => item.properties.code == theSelectedZipcode)[0];
     }
   }
   return zipcode;

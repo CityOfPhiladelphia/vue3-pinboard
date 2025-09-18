@@ -116,7 +116,7 @@ const initRouter = (publicPath) => {
       let zipcodesData = DataStore.zipcodes;
       let zipcode;
       if (zipcodesData) {
-        zipcode = zipcodesData.features.filter(item => item.properties.CODE == to.query.zipcode)[0];
+        zipcode = zipcodesData.features.filter(item => item.properties.code == to.query.zipcode)[0];
       }
       if (import.meta.env.VITE_DEBUG) console.log('router.afterEach has zipcode and is calling MapStore.fillBufferForAddressOrLocationOrZipcode');
       if (zipcode) {

@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.5.0
+
+* fix for the zipcodes service changing from uppercase to lowercase
+
 ### 2.4.2
 
 * sets document.title on app load, so that it has the same title as the app header
