@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.4.2
+
+* sets document.title on app load, so that it has the same title as the app header
+
 ### 2.4.1
 
 * fixed translation for selected boxes
