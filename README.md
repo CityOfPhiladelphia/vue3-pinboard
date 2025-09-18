@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.4.1
+
+* fixed translation for selected boxes
+
 ### 2.4.0
 
 * changed the way the translation files store languages
