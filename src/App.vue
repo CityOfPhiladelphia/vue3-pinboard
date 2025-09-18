@@ -11,6 +11,7 @@ import { RouterView } from 'vue-router'
 
 import isMac from './util/is-mac'; // this can probably be removed from App.vue, and only run in main.js
 import { useI18n } from 'vue-i18n';
+import Main from './views/Main.vue';
 const { t } = useI18n();
 
 // STORES
@@ -102,6 +103,7 @@ watch(
   (newPageTitle) => {
     if (import.meta.env.VITE_DEBUG) console.log('watch appTitle:', newPageTitle);
     document.title = newPageTitle;
+    MainStore.appTitle = newPageTitle;
   }
 )
 
