@@ -11,6 +11,7 @@ import { RouterView } from 'vue-router'
 
 import isMac from './util/is-mac'; // this can probably be removed from App.vue, and only run in main.js
 import { useI18n } from 'vue-i18n';
+import Main from './views/Main.vue';
 const { t } = useI18n();
 
 // STORES
@@ -35,11 +36,20 @@ const locale = computed(() => instance.appContext.config.globalProperties.$i18n.
 onBeforeMount(async () => {
   MainStore.isMac = isMac();
   await router.isReady()
-  if (import.meta.env.VITE_DEBUG) console.log('App onBeforeMount, route.params:', route.params, 'route.query:', route.query);
-
+  
   if (route.query.lang) {
     instance.appContext.config.globalProperties.$i18n.locale = route.query.lang;
   }
+  
+  let newPageTitle;
+  if ($config.app.title) {
+    newPageTitle = $config.app.title;
+  } else if (i18nEnabled.value) {
+    newPageTitle = t('app.title');
+  }
+  if (import.meta.env.VITE_DEBUG) console.log('App onBeforeMount, newPageTitle:', newPageTitle, 'route.params:', route.params, 'route.query:', route.query);
+  MainStore.appTitle = newPageTitle;
+  document.title = newPageTitle;
 
   window.addEventListener('resize', handleWindowResize);
   handleWindowResize();
@@ -96,14 +106,6 @@ const appTitle = computed(() => {
   }
   return value;
 });
-
-watch(
-  () => appTitle.value,
-  (newPageTitle) => {
-    if (import.meta.env.VITE_DEBUG) console.log('watch appTitle:', newPageTitle);
-    document.title = newPageTitle;
-  }
-)
 
 </script>
 

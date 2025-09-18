@@ -246,7 +246,7 @@ const closureMessageAllSites = computed(() => {
 });
 
 const getHoliday = () => {
-  if (import.meta.env.VITE_DEBUG) console.log('watch holidays, DataStore.holidays:', DataStore.holidays);
+  if (import.meta.env.VITE_DEBUG) console.log('getHoliday, DataStore.holidays:', DataStore.holidays);
   let currentYear = format(new Date(), 'yyyy');
   let currentMonth = format(new Date(), 'MM');
   let currentDay = format(new Date(), 'dd');
@@ -854,14 +854,7 @@ const closeModal = () => {
 };
 
 const appTitle = computed(() => {
-  let value;
-  if ($config.app.title) {
-    value = $config.app.title;
-  } else if (i18nEnabled.value) {
-    // if (import.meta.env.VITE_DEBUG) console.log('t("app.title"):', t('app.title'));
-    value = t('app.title');
-  }
-  return value;
+  return MainStore.appTitle;
 });
 
 const appSubTitle = computed(() => {
