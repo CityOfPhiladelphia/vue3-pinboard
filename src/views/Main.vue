@@ -246,7 +246,7 @@ const closureMessageAllSites = computed(() => {
 });
 
 const getHoliday = () => {
-  if (import.meta.env.VITE_DEBUG) console.log('watch holidays, DataStore.holidays:', DataStore.holidays);
+  if (import.meta.env.VITE_DEBUG) console.log('getHoliday, DataStore.holidays:', DataStore.holidays);
   let currentYear = format(new Date(), 'yyyy');
   let currentMonth = format(new Date(), 'MM');
   let currentDay = format(new Date(), 'dd');
@@ -863,6 +863,15 @@ const appTitle = computed(() => {
   }
   return value;
 });
+
+watch(
+  () => appTitle.value,
+  (newPageTitle) => {
+    if (import.meta.env.VITE_DEBUG) console.log('watch appTitle:', newPageTitle);
+    // document.title = newPageTitle;
+    MainStore.appTitle = newPageTitle;
+  }
+)
 
 const appSubTitle = computed(() => {
   let value;

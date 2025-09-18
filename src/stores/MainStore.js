@@ -33,6 +33,7 @@ export const useMainStore = defineStore('MainStore', {
       firstRouteLoaded: false,
       submittedCheckboxValue: null,
       filterChangeCounter: 0,
+      appTitle: '',
     };
   },
 
