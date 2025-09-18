@@ -854,7 +854,13 @@ const closeModal = () => {
 };
 
 const appTitle = computed(() => {
-  return MainStore.appTitle;
+  let value;
+  if ($config.app.title) {
+    value = $config.app.title;
+  } else if (i18nEnabled.value) {
+    value = t('app.title');
+  }
+  return value;
 });
 
 const appSubTitle = computed(() => {

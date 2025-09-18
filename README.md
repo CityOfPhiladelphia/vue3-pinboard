@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.5.1
+
+* fixes bug where title loads in a language and can't be changed
+
 ### 2.5.0
 
 * fix for the zipcodes service changing from uppercase to lowercase
