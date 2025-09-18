@@ -36,11 +36,20 @@ const locale = computed(() => instance.appContext.config.globalProperties.$i18n.
 onBeforeMount(async () => {
   MainStore.isMac = isMac();
   await router.isReady()
-  if (import.meta.env.VITE_DEBUG) console.log('App onBeforeMount, route.params:', route.params, 'route.query:', route.query);
-
+  
   if (route.query.lang) {
     instance.appContext.config.globalProperties.$i18n.locale = route.query.lang;
   }
+  
+  let newPageTitle;
+  if ($config.app.title) {
+    newPageTitle = $config.app.title;
+  } else if (i18nEnabled.value) {
+    newPageTitle = t('app.title');
+  }
+  if (import.meta.env.VITE_DEBUG) console.log('App onBeforeMount, newPageTitle:', newPageTitle, 'route.params:', route.params, 'route.query:', route.query);
+  MainStore.appTitle = newPageTitle;
+  document.title = newPageTitle;
 
   window.addEventListener('resize', handleWindowResize);
   handleWindowResize();
@@ -97,15 +106,6 @@ const appTitle = computed(() => {
   }
   return value;
 });
-
-watch(
-  () => appTitle.value,
-  (newPageTitle) => {
-    if (import.meta.env.VITE_DEBUG) console.log('watch appTitle:', newPageTitle);
-    document.title = newPageTitle;
-    MainStore.appTitle = newPageTitle;
-  }
-)
 
 </script>
 

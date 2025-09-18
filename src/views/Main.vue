@@ -854,24 +854,8 @@ const closeModal = () => {
 };
 
 const appTitle = computed(() => {
-  let value;
-  if ($config.app.title) {
-    value = $config.app.title;
-  } else if (i18nEnabled.value) {
-    // if (import.meta.env.VITE_DEBUG) console.log('t("app.title"):', t('app.title'));
-    value = t('app.title');
-  }
-  return value;
+  return MainStore.appTitle;
 });
-
-watch(
-  () => appTitle.value,
-  (newPageTitle) => {
-    if (import.meta.env.VITE_DEBUG) console.log('watch appTitle:', newPageTitle);
-    // document.title = newPageTitle;
-    MainStore.appTitle = newPageTitle;
-  }
-)
 
 const appSubTitle = computed(() => {
   let value;
