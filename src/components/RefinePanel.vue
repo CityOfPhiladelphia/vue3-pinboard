@@ -571,8 +571,13 @@ const refineListTranslated_default = () => {
 
             <tooltip-checkbox v-if="refineListTranslated[ind]['checkbox']"
               :options="refineListTranslated[ind]['checkbox']" :small="!isMobile"
-              v-model="selectedList['checkbox_' + ind]" :value="selectedList['checkbox_' + ind]" text-key="textLabel"
-              value-key="data" shrinkToFit="true" :num-of-columns="calculateColumns(refineList[ind]['checkbox'], ind)">
+              :toggleable="$config.refine.multipleFieldGroups[ind].toggleable"
+              :num-of-columns="calculateColumns(refineList[ind]['checkbox'], ind)"
+              :value="selectedList['checkbox_' + ind]"
+              v-model="selectedList['checkbox_' + ind]"
+              text-key="textLabel"
+              value-key="data"
+              shrinkToFit="true">
               <template v-slot:label>
                 <div :class="isMobile ? 'large-label' : 'small-label'">
                   {{ $t(ind + '.category') }}
@@ -610,9 +615,15 @@ const refineListTranslated_default = () => {
                 </radio>
 
                 <tooltip-checkbox v-if="refineListTranslated[ind]['checkbox']"
-                  :options="refineListTranslated[ind]['checkbox']" :small="!isMobile"
-                  v-model="selectedList['checkbox_' + ind]" text-key="textLabel" value-key="data" shrinkToFit="true"
-                  :num-of-columns="calculateColumns(refineList[ind]['checkbox'], ind)">
+                  :options="refineListTranslated[ind]['checkbox']"
+                  :small="!isMobile"
+                  :toggleable="$config.refine.multipleFieldGroups[ind].toggleable"
+                  :num-of-columns="calculateColumns(refineList[ind]['checkbox'], ind)"
+                  v-model="selectedList['checkbox_' + ind]"
+                  text-key="textLabel"
+                  value-key="data"
+                  shrinkToFit="true"
+                  >
                 </tooltip-checkbox>
               </div>
             </div>

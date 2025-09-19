@@ -79,9 +79,18 @@ const props = defineProps({
    * Use small checkboxes
    */
   small: {
-    type: Boolean ,
+    type: Boolean,
     default: false,
   },
+
+  /**
+   * Last checkbox will toggle the group of checkboxes active or inactive
+   */
+    toggleable: {
+    type: Boolean,
+    default: false,
+  },
+
   /**
    * Random id is generated if none provided
    */
@@ -129,6 +138,11 @@ const checkRadioClasses = computed(() => {
   }
   return classes.value;
 });
+
+const availableOptions = computed(() => {
+  console.log("OPTIONS: ", props)
+  return props.toggleable ? props.options.splice(0, props.options.length - 1) : props.options;
+})
 
 watch(
   () => props.value,
@@ -210,7 +224,7 @@ const onChange = (e) => {
         :style="`columns: ${numOfColumns} auto`"
       >
         <div
-          v-for="(option, key) in options"
+          v-for="(option, key) in availableOptions"
           :key="`k-${key}`"
           class="control"
         >
