@@ -140,7 +140,6 @@ const checkRadioClasses = computed(() => {
 });
 
 const availableOptions = computed(() => {
-  console.log("OPTIONS: ", props)
   return props.toggleable ? props.options.splice(0, props.options.length - 1) : props.options;
 })
 
@@ -162,8 +161,7 @@ watch(
 )
 
 const optionValue = (option, key) => {
-  let options = props.options;
-  if (Array.isArray(options)) {
+  if (Array.isArray(props.options)) {
     if (typeof option === 'string') {
       return option;
     }
@@ -226,9 +224,15 @@ const onChange = (e) => {
         <div
           v-for="(option, key) in availableOptions"
           :key="`k-${key}`"
-          class="control"
         >
-          <input
+        <input v-if="localValue.includes('status_archive')"
+            :id="`cb-${key}-${id}`"
+            :name="`cb-${key}-${id}`"
+            type="checkbox"
+            class="is-checkradio"
+            disabled
+          >
+          <input v-else
             :id="`cb-${key}-${id}`"
             v-model="localValue"
             :name="`cb-${key}-${id}`"
@@ -263,6 +267,47 @@ const onChange = (e) => {
             :multiline="option.tooltip.multiline"
           />
         </div>
+        <!-- If group is toggleable, render final checkbox as toggle for the group -->
+        <div
+          v-if="props.toggleable"
+          :key="`k-${props.options.length}`"
+          class="control"
+        >
+          <input
+            :id="`toggle-${props.options.length}-${props.options.at(-1).id}`"
+            v-model="localValue"
+            :name="`toggle-${props.options.length}-${props.options.at(-1).id}`"
+            type="checkbox"
+            :aria-checked="value.includes(optionValue(props.options.at(-1), props.options.length))"
+            class="is-checkradio"
+            role="checkbox"
+            v-bind="options.at(-1).attrs || {}"
+            :value="optionValue(props.options.at(-1), props.options.length)"
+            @change="onChange()"
+          >
+          <label
+            :for="`toggle-${props.options.length}-${props.options.at(-1).id}`"
+          >
+            {{ !textKey ? props.options.at(-1) : props.options.at(-1)[textKey] }}
+            <slot name="tooltip" />
+            <div
+              v-if="isMobile && props.options.at(-1).tooltip"
+              class="mobile-tooltip"
+            >
+              <font-awesome-icon
+                icon="info-circle"
+                class="fa-infoCircle"
+              />
+              {{ props.options.at(-1).tooltip.tip }}
+            </div>
+          </label>
+          <icon-tool-tip
+            v-if="!isMobile && props.options.at(-1).tooltip"
+            :tip="props.options.at(-1).tooltip.tip"
+            :circle-type="'hover'"
+            :multiline="props.options.at(-1).tooltip.multiline"
+          />
+        </div>
       </div>
     </fieldset>
   </div>
@@ -273,6 +318,11 @@ const onChange = (e) => {
 .mobile-tooltip {
   font-size: .85rem;
   line-height: 1rem;
+}
+
+.inactive {
+  cursor: not-allowed;
+  opacity: .5;
 }
 
 </style>

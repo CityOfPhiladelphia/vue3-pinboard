@@ -40,11 +40,11 @@ const props = defineProps({
 const $emit = defineEmits(['geolocate-control-fire']);
 
 // REFs
+const appHeaderHeight = ref(document.querySelector('#app-header').offsetHeight);
+const refineTopHeight = ref(46);
 const selected = ref();
 const selectedList = ref({});
 const viewerHeight = ref(window.innerHeight);
-const appHeaderHeight = ref(document.querySelector('#app-header').offsetHeight);
-const refineTopHeight = ref(46);
 
 // INITIALIZE
 const $config = ConfigStore.config;
@@ -124,6 +124,19 @@ const selectedArray = computed(() => {
 
 const selectedServices = computed(() => { return MainStore.selectedServices });
 const timesIconWeight = computed(() => { return findIconDefinition({ prefix: 'far', iconName: 'times' }) ? 'far' : 'fas' });
+
+const toggleKeys = computed(() => {
+  const toggles = [];
+  if (!Object.keys($config.refine).includes('multipleFieldGroups') && !Object.keys($config.refine).includes('multipleDependentFieldGroups')) return [];
+  const entries = Object.keys($config.refine).includes('multipleFieldGroups') ? Object.entries($config.refine.multipleFieldGroups) : Object.entries($config.refine.multipleDependentFieldGroups);
+  entries.forEach((entry) => {
+    if (Object.keys(entry[1]).includes('toggleable')) {
+      toggles.push(entry[1].toggleKey)
+    }
+  })
+  return toggles;
+})
+
 const zipcodeEntered = computed(() => { return MainStore.selectedZipcode });
 
 // WATCHERS
@@ -508,7 +521,7 @@ const refineListTranslated_default = () => {
 
           <button v-if="refineType !== 'categoryField_value'" v-for="box in selectedArray"
             class="box-value column is-narrow" @click="(e) => closeBox(e, box)">
-            {{ $t(getBoxValue(box)) }}
+            "{{ $t(getBoxValue(box)) }}"
             <font-awesome-icon class="fa-x" :icon="[timesIconWeight, 'times']" />
           </button>
 
