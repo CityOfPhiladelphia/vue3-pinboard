@@ -104,20 +104,6 @@ const selectedArray = computed(() => {
   // if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selected.value:', selected.value, 'selectedList.value:', selectedList.value);
   const selL = { ...selectedList.value };
   const compiled = [];
-
-  // console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", selL)
-  // Object.keys(selL).forEach((key) => {
-  //   toggleKeys.value.forEach((toggleKey) => {
-  //     if(selL[key].includes(toggleKey)) {
-  //       console.log("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ", selL)
-  //       console.log("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ", Object.values(selL[key]))
-  //       console.log("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ", Object.values(selL[key]).filter((value) => { value === toggleKey }))
-  //       toggledServices.value[toggleKey] = Object.values(selL[key]).filter((value) => { value === toggleKey });
-  //       selL[key] = [toggleKey];
-  //     }
-  //   })
-  // })
-
   if (Object.keys(selL).length) {
     Object.keys(selL).forEach((value) => {
       const valSplit = value.split('_')[0];
@@ -138,7 +124,6 @@ const selectedArray = computed(() => {
 
 const selectedServices = computed(() => { return MainStore.selectedServices });
 const timesIconWeight = computed(() => { return findIconDefinition({ prefix: 'far', iconName: 'times' }) ? 'far' : 'fas' });
-const toggledServices = computed(() => { return MainStore.toggledServices });
 
 const toggleKeys = computed(() => {
   const toggles = [];
