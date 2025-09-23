@@ -464,7 +464,7 @@ const locationsPanelClass = computed(() => {
       v-if="!shouldShowGreeting && !loadingSources && dataStatus === 'success'"
       class="summary-and-location-container"
     >
-      
+
       <div class="summary-container">
         <div
           v-if="!isMobile && geocodeStatus !== 'error' > 0"
@@ -610,7 +610,7 @@ const locationsPanelClass = computed(() => {
         v-if="geocodeStatus !== 'error'"
         class="location-container"
       >
-      
+
         <div
           v-for="item in currentData"
           :key="item._featureId"
@@ -781,7 +781,7 @@ const locationsPanelClass = computed(() => {
                   </div>
                 </div>
 
-                
+
               </div>
 
               <div
