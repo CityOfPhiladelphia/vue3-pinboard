@@ -104,6 +104,20 @@ const selectedArray = computed(() => {
   // if (import.meta.env.VITE_DEBUG) console.log('selectedArray computed is running, selected.value:', selected.value, 'selectedList.value:', selectedList.value);
   const selL = { ...selectedList.value };
   const compiled = [];
+
+  // console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", selL)
+  // Object.keys(selL).forEach((key) => {
+  //   toggleKeys.value.forEach((toggleKey) => {
+  //     if(selL[key].includes(toggleKey)) {
+  //       console.log("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ", selL)
+  //       console.log("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ", Object.values(selL[key]))
+  //       console.log("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ", Object.values(selL[key]).filter((value) => { value === toggleKey }))
+  //       toggledServices.value[toggleKey] = Object.values(selL[key]).filter((value) => { value === toggleKey });
+  //       selL[key] = [toggleKey];
+  //     }
+  //   })
+  // })
+
   if (Object.keys(selL).length) {
     Object.keys(selL).forEach((value) => {
       const valSplit = value.split('_')[0];
@@ -124,15 +138,14 @@ const selectedArray = computed(() => {
 
 const selectedServices = computed(() => { return MainStore.selectedServices });
 const timesIconWeight = computed(() => { return findIconDefinition({ prefix: 'far', iconName: 'times' }) ? 'far' : 'fas' });
+const toggledServices = computed(() => { return MainStore.toggledServices });
 
 const toggleKeys = computed(() => {
   const toggles = [];
-  if (!Object.keys($config.refine).includes('multipleFieldGroups') && !Object.keys($config.refine).includes('multipleDependentFieldGroups')) return [];
+  if (!Object.keys($config.refine).includes('multipleFieldGroups') && !Object.keys($config.refine).includes('multipleDependentFieldGroups')) return toggles;
   const entries = Object.keys($config.refine).includes('multipleFieldGroups') ? Object.entries($config.refine.multipleFieldGroups) : Object.entries($config.refine.multipleDependentFieldGroups);
   entries.forEach((entry) => {
-    if (Object.keys(entry[1]).includes('toggleable')) {
-      toggles.push(entry[1].toggleKey)
-    }
+    if (Object.keys(entry[1]).includes('toggleable') && entry[1].toggleable) { toggles.push(entry[1].toggleKey) }
   })
   return toggles;
 })
@@ -324,7 +337,10 @@ const closeZipcodeBox = (e, box) => {
 
 const expandCheckbox = (ind) => { refineList.value[ind].expanded = !refineList.value[ind].expanded };
 const expandRefine = () => { MainStore.refineOpen = !MainStore.refineOpen };
-const getBoxValue = (box) => { return (box && typeof box != 'object') ? box.replace("_", ".") : null };
+const getBoxValue = (box) => {
+  const keys = toggleKeys.value;
+  return (box && typeof box != 'object') ? box.replace("_", ".") : null
+};
 
 const getCategoryFieldValue = (selected) => {
   // if (import.meta.env.VITE_DEBUG) console.log('getCategoryFieldValue is running, selected:', selected);
@@ -521,7 +537,7 @@ const refineListTranslated_default = () => {
 
           <button v-if="refineType !== 'categoryField_value'" v-for="box in selectedArray"
             class="box-value column is-narrow" @click="(e) => closeBox(e, box)">
-            "{{ $t(getBoxValue(box)) }}"
+            {{ $t(getBoxValue(box)) }}
             <font-awesome-icon class="fa-x" :icon="[timesIconWeight, 'times']" />
           </button>
 
@@ -584,13 +600,11 @@ const refineListTranslated_default = () => {
 
             <tooltip-checkbox v-if="refineListTranslated[ind]['checkbox']"
               :options="refineListTranslated[ind]['checkbox']" :small="!isMobile"
-              :toggleable="$config.refine.multipleFieldGroups[ind].toggleable"
+              :toggleKey="$config.refine.multipleFieldGroups[ind].toggleKey ? $config.refine.multipleFieldGroups[ind].toggleKey : ''"
               :num-of-columns="calculateColumns(refineList[ind]['checkbox'], ind)"
-              :value="selectedList['checkbox_' + ind]"
-              v-model="selectedList['checkbox_' + ind]"
-              text-key="textLabel"
-              value-key="data"
-              shrinkToFit="true">
+              :value="selectedList['checkbox_' + ind]" v-model="selectedList['checkbox_' + ind]" text-key="textLabel"
+              value-key="data" shrinkToFit="true"
+              >
               <template v-slot:label>
                 <div :class="isMobile ? 'large-label' : 'small-label'">
                   {{ $t(ind + '.category') }}
@@ -628,15 +642,10 @@ const refineListTranslated_default = () => {
                 </radio>
 
                 <tooltip-checkbox v-if="refineListTranslated[ind]['checkbox']"
-                  :options="refineListTranslated[ind]['checkbox']"
-                  :small="!isMobile"
-                  :toggleable="$config.refine.multipleFieldGroups[ind].toggleable"
+                  :options="refineListTranslated[ind]['checkbox']" :small="!isMobile"
+                  :toggleKey="$config.refine.multipleFieldGroups[ind].toggleKey ? $config.refine.multipleFieldGroups[ind].toggleKey : ''""
                   :num-of-columns="calculateColumns(refineList[ind]['checkbox'], ind)"
-                  v-model="selectedList['checkbox_' + ind]"
-                  text-key="textLabel"
-                  value-key="data"
-                  shrinkToFit="true"
-                  >
+                  v-model="selectedList['checkbox_' + ind]" text-key="textLabel" value-key="data" shrinkToFit="true">
                 </tooltip-checkbox>
               </div>
             </div>

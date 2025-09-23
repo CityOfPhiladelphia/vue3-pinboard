@@ -19,7 +19,7 @@ const props = defineProps({
    * @values Array of Strings, Array of Objects, Object
    */
   options: {
-    type: [ Object, Array ],
+    type: [Object, Array],
     default: () => {
       return {
         'option-1': 'Option 1',
@@ -45,8 +45,8 @@ const props = defineProps({
   },
 
   value: {
-    type: [ Array ],
-    default () {
+    type: [Array],
+    default() {
       return [];
     },
   },
@@ -71,7 +71,7 @@ const props = defineProps({
    * Splits a group of checkboxes into columns 1 or more columns
    */
   numOfColumns: {
-    type: [ String, Number ],
+    type: [String, Number],
     default: 1,
   },
 
@@ -86,15 +86,15 @@ const props = defineProps({
   /**
    * Last checkbox will toggle the group of checkboxes active or inactive
    */
-    toggleable: {
-    type: Boolean,
+  toggleKey: {
+    type: String,
     default: false,
   },
 
   /**
    * Random id is generated if none provided
    */
-    id: {
+  id: {
     type: String,
     default: () => `ta_${Math.random().toString(12).substring(2, 8)}`,
   },
@@ -102,8 +102,8 @@ const props = defineProps({
    * Error message
    */
   errors: {
-    type: [ Array, String ],
-    default () {
+    type: [Array, String],
+    default() {
       return '';
     },
   },
@@ -140,7 +140,7 @@ const checkRadioClasses = computed(() => {
 });
 
 const availableOptions = computed(() => {
-  return props.toggleable ? props.options.splice(0, props.options.length - 1) : props.options;
+  return props.toggleKey ? props.options.splice(0, props.options.length - 1) : props.options;
 })
 
 watch(
@@ -179,13 +179,19 @@ const onChange = (e) => {
   $emit("update:modelValue", localValue.value);
 };
 
+const onToggle = (e) => {
+  if (import.meta.env.VITE_DEBUG) console.log('Checkbox onToggle e:', e);
+  const toggleOn = Object.values(localValue.value).includes(props.toggleKey);
+  if (toggleOn) { MainStore.toggledValues[props.toggleKey] = localValue.value.splice(0).filter((value) => value !== props.toggleKey) };
+  const emitObj = toggleOn ? [props.toggleKey] : MainStore.toggledValues[props.toggleKey];
+  $emit("change", e);
+  $emit("update:modelValue", emitObj)
+};
+
 </script>
 
 <template>
-  <div
-    class="input-wrap input-checkbox"
-    :class="checkRadioClasses"
-  >
+  <div class="input-wrap input-checkbox" :class="checkRadioClasses">
     <fieldset>
       <legend>
         <template v-if="label">
@@ -202,111 +208,50 @@ const onChange = (e) => {
           <span>{{ error }}</span>
         </div>
       </template>
-      <div
-        v-if="desc"
-        class="is-field-info"
-      >
+      <div v-if="desc" class="is-field-info">
         {{ desc }}
       </div>
       <template v-else>
-        <div
-          v-if="$slots['desc']"
-          class="is-field-info"
-        >
+        <div v-if="$slots['desc']" class="is-field-info">
           <!-- @slot Alternative description -->
           <slot name="desc" />
         </div>
       </template>
-      <div
-        :id="`cb-group-${id}`"
-        :style="`columns: ${numOfColumns} auto`"
-      >
-        <div
-          v-for="(option, key) in availableOptions"
-          :key="`k-${key}`"
-        >
-        <input v-if="localValue.includes('status_archive')"
-            :id="`cb-${key}-${id}`"
-            :name="`cb-${key}-${id}`"
-            type="checkbox"
-            class="is-checkradio"
-            disabled
-          >
-          <input v-else
-            :id="`cb-${key}-${id}`"
-            v-model="localValue"
-            :name="`cb-${key}-${id}`"
-            type="checkbox"
-            :aria-checked="value.includes(optionValue(option, key))"
-            class="is-checkradio"
-            role="checkbox"
-            v-bind="option.attrs || {}"
-            :value="optionValue(option, key)"
-            @change="onChange()"
-          >
-          <label
-            :for="`cb-${key}-${id}`"
-          >
+      <div :id="`cb-group-${id}`" :style="`columns: ${numOfColumns} auto`">
+        <div v-for="(option, key) in availableOptions" :key="`k-${key}`">
+          <input v-if="localValue.includes(props.toggleKey)" :id="`cb-${key}-${id}`" :name="`cb-${key}-${id}`"
+            type="checkbox" class="is-checkradio" disabled>
+          <input v-else :id="`cb-${key}-${id}`" v-model="localValue" :name="`cb-${key}-${id}`" type="checkbox"
+            :aria-checked="value.includes(optionValue(option, key))" class="is-checkradio" role="checkbox"
+            v-bind="option.attrs || {}" :value="optionValue(option, key)" @change="onChange()">
+          <label :for="`cb-${key}-${id}`">
             {{ !textKey ? option : option[textKey] }}
             <slot name="tooltip" />
-            <div
-              v-if="isMobile && option.tooltip"
-              class="mobile-tooltip"
-            >
-              <font-awesome-icon
-                icon="info-circle"
-                class="fa-infoCircle"
-              />
+            <div v-if="isMobile && option.tooltip" class="mobile-tooltip">
+              <font-awesome-icon icon="info-circle" class="fa-infoCircle" />
               {{ option.tooltip.tip }}
             </div>
           </label>
-          <icon-tool-tip
-            v-if="!isMobile && option.tooltip"
-            :tip="option.tooltip.tip"
-            :circle-type="'hover'"
-            :multiline="option.tooltip.multiline"
-          />
+          <icon-tool-tip v-if="!isMobile && option.tooltip" :tip="option.tooltip.tip" :circle-type="'hover'"
+            :multiline="option.tooltip.multiline" />
         </div>
         <!-- If group is toggleable, render final checkbox as toggle for the group -->
-        <div
-          v-if="props.toggleable"
-          :key="`k-${props.options.length}`"
-          class="control"
-        >
-          <input
-            :id="`toggle-${props.options.length}-${props.options.at(-1).id}`"
-            v-model="localValue"
-            :name="`toggle-${props.options.length}-${props.options.at(-1).id}`"
-            type="checkbox"
+        <div v-if="props.toggleKey" :key="`k-${props.options.length}`" class="control">
+          <input :id="`toggle-${props.options.length}-${id}`" v-model="localValue"
+            :name="`toggle-${props.options.length}-${id}`" type="checkbox"
             :aria-checked="value.includes(optionValue(props.options.at(-1), props.options.length))"
-            class="is-checkradio"
-            role="checkbox"
-            v-bind="options.at(-1).attrs || {}"
-            :value="optionValue(props.options.at(-1), props.options.length)"
-            @change="onChange()"
-          >
-          <label
-            :for="`toggle-${props.options.length}-${props.options.at(-1).id}`"
-          >
+            class="is-checkradio" role="checkbox" v-bind="props.options.at(-1).attrs || {}"
+            :value="optionValue(props.options.at(-1), props.options.length)" @change="onToggle()">
+          <label :for="`toggle-${props.options.length}-${id}`">
             {{ !textKey ? props.options.at(-1) : props.options.at(-1)[textKey] }}
             <slot name="tooltip" />
-            <div
-              v-if="isMobile && props.options.at(-1).tooltip"
-              class="mobile-tooltip"
-            >
-              <font-awesome-icon
-                icon="info-circle"
-                class="fa-infoCircle"
-              />
+            <div v-if="isMobile && props.options.at(-1).tooltip" class="mobile-tooltip">
+              <font-awesome-icon icon="info-circle" class="fa-infoCircle" />
               {{ props.options.at(-1).tooltip.tip }}
             </div>
           </label>
-          <icon-tool-tip
-            v-if="!isMobile && props.options.at(-1).tooltip"
-            :tip="props.options.at(-1).tooltip.tip"
-            :circle-type="'hover'"
-            :multiline="props.options.at(-1).tooltip.multiline"
-          />
+          <icon-tool-tip v-if="!isMobile && props.options.at(-1).tooltip" :tip="props.options.at(-1).tooltip.tip"
+            :circle-type="'hover'" :multiline="props.options.at(-1).tooltip.multiline" />
         </div>
       </div>
     </fieldset>
@@ -314,7 +259,6 @@ const onChange = (e) => {
 </template>
 
 <style>
-
 .mobile-tooltip {
   font-size: .85rem;
   line-height: 1rem;
@@ -324,5 +268,4 @@ const onChange = (e) => {
   cursor: not-allowed;
   opacity: .5;
 }
-
 </style>
