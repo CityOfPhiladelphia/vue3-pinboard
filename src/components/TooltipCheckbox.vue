@@ -84,7 +84,7 @@ const props = defineProps({
   },
 
   /**
-   * Last checkbox will toggle the group of checkboxes active or inactive
+   * must match the unique_key of the checkbox that function as the toggle the group
    */
   toggleKey: {
     type: String,
@@ -110,6 +110,7 @@ const props = defineProps({
 });
 
 const localValue = ref(props.value);
+const toggledValues = ref([]);
 const $emit = defineEmits(["update:modelValue", "change"]);
 
 // computed
@@ -139,9 +140,9 @@ const checkRadioClasses = computed(() => {
   return classes.value;
 });
 
-const availableOptions = computed(() => {
-  return props.toggleKey ? props.options.splice(0, props.options.length - 1) : props.options;
-})
+// split the options into checkboxes and a toggle
+const checkboxes = computed(() => { return props.toggleKey ? props.options.filter((option) => option.data !== props.toggleKey) : props.options });
+const toggle = computed(() => { return props.toggleKey ? props.options.filter((option) => option.data === props.toggleKey)[0] : {} })
 
 watch(
   () => props.value,
@@ -179,11 +180,14 @@ const onChange = (e) => {
   $emit("update:modelValue", localValue.value);
 };
 
+// check if the key of the toggle is in the selected group
+// if so, then save all the other selected items in the toggledValues ref and emit only the toggle key
+// if toggle key is not present, then emit the values saved in the toggledValues
 const onToggle = (e) => {
   if (import.meta.env.VITE_DEBUG) console.log('Checkbox onToggle e:', e);
   const toggleOn = Object.values(localValue.value).includes(props.toggleKey);
-  if (toggleOn) { MainStore.toggledValues[props.toggleKey] = localValue.value.splice(0).filter((value) => value !== props.toggleKey) };
-  const emitObj = toggleOn ? [props.toggleKey] : MainStore.toggledValues[props.toggleKey];
+  if (toggleOn) { toggledValues.value = localValue.value.splice(0).filter((value) => value !== props.toggleKey) };
+  const emitObj = toggleOn ? [props.toggleKey] : toggledValues.value;
   $emit("change", e);
   $emit("update:modelValue", emitObj)
 };
@@ -218,7 +222,7 @@ const onToggle = (e) => {
         </div>
       </template>
       <div :id="`cb-group-${id}`" :style="`columns: ${numOfColumns} auto`">
-        <div v-for="(option, key) in availableOptions" :key="`k-${key}`">
+        <div v-for="(option, key) in checkboxes" :key="`k-${key}`">
           <input v-if="localValue.includes(props.toggleKey)" :id="`cb-${key}-${id}`" :name="`cb-${key}-${id}`"
             type="checkbox" class="is-checkradio" disabled>
           <input v-else :id="`cb-${key}-${id}`" v-model="localValue" :name="`cb-${key}-${id}`" type="checkbox"
@@ -239,19 +243,19 @@ const onToggle = (e) => {
         <div v-if="props.toggleKey" :key="`k-${props.options.length}`" class="control">
           <input :id="`toggle-${props.options.length}-${id}`" v-model="localValue"
             :name="`toggle-${props.options.length}-${id}`" type="checkbox"
-            :aria-checked="value.includes(optionValue(props.options.at(-1), props.options.length))"
-            class="is-checkradio" role="checkbox" v-bind="props.options.at(-1).attrs || {}"
-            :value="optionValue(props.options.at(-1), props.options.length)" @change="onToggle()">
+            :aria-checked="value.includes(optionValue(toggle, props.options.length))"
+            class="is-checkradio" role="checkbox" v-bind="toggle.attrs || {}"
+            :value="optionValue(toggle, props.options.length)" @change="onToggle()">
           <label :for="`toggle-${props.options.length}-${id}`">
-            {{ !textKey ? props.options.at(-1) : props.options.at(-1)[textKey] }}
+            {{ !textKey ? toggle : toggle[textKey] }}
             <slot name="tooltip" />
-            <div v-if="isMobile && props.options.at(-1).tooltip" class="mobile-tooltip">
+            <div v-if="isMobile && toggle.tooltip" class="mobile-tooltip">
               <font-awesome-icon icon="info-circle" class="fa-infoCircle" />
-              {{ props.options.at(-1).tooltip.tip }}
+              {{ toggle.tooltip.tip }}
             </div>
           </label>
-          <icon-tool-tip v-if="!isMobile && props.options.at(-1).tooltip" :tip="props.options.at(-1).tooltip.tip"
-            :circle-type="'hover'" :multiline="props.options.at(-1).tooltip.multiline" />
+          <icon-tool-tip v-if="!isMobile && toggle.tooltip" :tip="toggle.tooltip.tip"
+            :circle-type="'hover'" :multiline="toggle.tooltip.multiline" />
         </div>
       </div>
     </fieldset>
@@ -259,13 +263,10 @@ const onToggle = (e) => {
 </template>
 
 <style>
+
 .mobile-tooltip {
   font-size: .85rem;
   line-height: 1rem;
 }
 
-.inactive {
-  cursor: not-allowed;
-  opacity: .5;
-}
 </style>

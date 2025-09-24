@@ -7,7 +7,7 @@ import { useGeocodeStore } from '../stores/GeocodeStore.js';
 import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
-import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
+import { ref, computed, getCurrentInstance, onMounted, watch, onBeforeMount } from 'vue';
 import { event } from 'vue-gtag'
 
 const MainStore = useMainStore();
@@ -118,8 +118,11 @@ const allowPrint = computed(() => {
 const database = computed(() => {
   let value = {}
   if (DataStore.sources[DataStore.appType]) {
-    // if (import.meta.env.VITE_DEBUG) console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]);
+    if (import.meta.env.VITE_DEBUG) console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]);
     value = DataStore.sources[DataStore.appType].data.rows || DataStore.sources[DataStore.appType].data.features || DataStore.sources[DataStore.appType].features;
+  }
+  if ($config.groupData.grouping) {
+    value = $config.groupData.groupBy(value)
   }
   return value;
 });
@@ -184,8 +187,8 @@ const isMobile = computed(() => {
 });
 
 const currentData = computed(() => {
-  let locations = [...DataStore.currentData];
-
+  const data = $config.groupData.grouping ? $config.groupData.groupBy(DataStore.currentData) : DataStore.currentData;
+  let locations = [...data];
   let valOrGetter = locationInfo.value.siteName;
   const valOrGetterType = typeof valOrGetter;
   let val;

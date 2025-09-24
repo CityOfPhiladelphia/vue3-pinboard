@@ -32,7 +32,7 @@ const props = defineProps({
     default: false,
   }
 });
-  
+
 const printCheckboxes = computed(() => {
   return MainStore.printCheckboxes;
 })
@@ -278,6 +278,7 @@ const isElementInViewport = (el) => {
 const expandLocation = () => {
   MainStore.lastSelectMethod = 'row';
   const selectedResourceId = props.item._featureId;
+  console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",selectedResourceId)
   let query = {...route.query};
   if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse expandLocation query:', query);
   if (!locationOpen.value) {
@@ -606,7 +607,7 @@ const makeID = (itemTitle) =>{
       text-align: left;
     }
   }
-} 
+}
 
 @media (min-width: 500px) and (max-width: 767px) {
   .print-button {
@@ -624,7 +625,7 @@ const makeID = (itemTitle) =>{
       text-align: left;
     }
   }
-} 
+}
 
 @media (min-width: 768px) and (max-width: 1049px) {
   .print-view-button {
@@ -648,6 +649,6 @@ const makeID = (itemTitle) =>{
       padding-left: 0rem;
     }
   }
-} 
+}
 
 </style>

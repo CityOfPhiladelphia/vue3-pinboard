@@ -22,7 +22,6 @@ export const useMainStore = defineStore('MainStore', {
       },
       selectedKeywords: [],
       selectedServices: [],
-      toggledValues: {},
       lastSelectMethod: '',
       publicPath: null,
       isMac: null,
