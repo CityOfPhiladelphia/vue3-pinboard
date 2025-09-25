@@ -128,7 +128,7 @@ const appTitle = computed(() => {
         spin
       />
       <div class="mt-6">
-        Loading {{ appTitle.toLowerCase() }}
+        Loading {{ appTitle.toUpperCase() }}
       </div>
     </div>
   </div>

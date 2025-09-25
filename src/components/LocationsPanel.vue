@@ -523,7 +523,7 @@ const locationsPanelClass = computed(() => {
 
             <expand-collapse-content
               v-if="$config.customComps && Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource"
-              :item="item" :is-map-visible="isMapVisible" :is-mobile="isMobile" />
+              :item="item" :is-mobile="isMobile" />
 
             <div
               v-if="!Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource"

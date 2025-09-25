@@ -186,7 +186,9 @@ const onChange = (e) => {
 const onToggle = (e) => {
   if (import.meta.env.VITE_DEBUG) console.log('Checkbox onToggle e:', e);
   const toggleOn = Object.values(localValue.value).includes(props.toggleKey);
-  if (toggleOn) { toggledValues.value = localValue.value.splice(0).filter((value) => value !== props.toggleKey) };
+  if (toggleOn) {
+    toggledValues.value = localValue.value.splice(0).filter((value) => value !== props.toggleKey)
+  };
   const emitObj = toggleOn ? [props.toggleKey] : toggledValues.value;
   $emit("change", e);
   $emit("update:modelValue", emitObj)
