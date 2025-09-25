@@ -124,6 +124,17 @@ const selectedArray = computed(() => {
 
 const selectedServices = computed(() => { return MainStore.selectedServices });
 const timesIconWeight = computed(() => { return findIconDefinition({ prefix: 'far', iconName: 'times' }) ? 'far' : 'fas' });
+
+const toggleKeys = computed(() => {
+  const toggles = [];
+  if (!Object.keys($config.refine).includes('multipleFieldGroups') && !Object.keys($config.refine).includes('multipleDependentFieldGroups')) return toggles;
+  const entries = Object.keys($config.refine).includes('multipleFieldGroups') ? Object.entries($config.refine.multipleFieldGroups) : Object.entries($config.refine.multipleDependentFieldGroups);
+  entries.forEach((entry) => {
+    if (Object.keys(entry[1]).includes('toggleable') && entry[1].toggleable) { toggles.push(entry[1].toggleKey) }
+  })
+  return toggles;
+})
+
 const zipcodeEntered = computed(() => { return MainStore.selectedZipcode });
 
 // WATCHERS
@@ -311,7 +322,10 @@ const closeZipcodeBox = (e, box) => {
 
 const expandCheckbox = (ind) => { refineList.value[ind].expanded = !refineList.value[ind].expanded };
 const expandRefine = () => { MainStore.refineOpen = !MainStore.refineOpen };
-const getBoxValue = (box) => { return (box && typeof box != 'object') ? box.replace("_", ".") : null };
+const getBoxValue = (box) => {
+  const keys = toggleKeys.value;
+  return (box && typeof box != 'object') ? box.replace("_", ".") : null
+};
 
 const getCategoryFieldValue = (selected) => {
   // if (import.meta.env.VITE_DEBUG) console.log('getCategoryFieldValue is running, selected:', selected);

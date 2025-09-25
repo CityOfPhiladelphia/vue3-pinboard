@@ -1,4 +1,3 @@
-
 <script setup>
 
 import { useMainStore } from '../stores/MainStore.js';
@@ -7,7 +6,7 @@ import { useGeocodeStore } from '../stores/GeocodeStore.js';
 import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
-import { ref, computed, getCurrentInstance, onMounted, watch, onBeforeMount } from 'vue';
+import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
 import { event } from 'vue-gtag'
 
 const MainStore = useMainStore();
@@ -31,7 +30,7 @@ const instance = getCurrentInstance();
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
-const $emit = defineEmits([ 'clear-bad-address' ]);
+const $emit = defineEmits(['clear-bad-address']);
 
 const props = defineProps({
   isMapVisible: {
@@ -118,11 +117,8 @@ const allowPrint = computed(() => {
 const database = computed(() => {
   let value = {}
   if (DataStore.sources[DataStore.appType]) {
-    if (import.meta.env.VITE_DEBUG) console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]);
+    // if (import.meta.env.VITE_DEBUG) console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]);
     value = DataStore.sources[DataStore.appType].data.rows || DataStore.sources[DataStore.appType].data.features || DataStore.sources[DataStore.appType].features;
-  }
-  if ($config.groupData.grouping) {
-    value = $config.groupData.groupBy(value)
   }
   return value;
 });
@@ -187,8 +183,7 @@ const isMobile = computed(() => {
 });
 
 const currentData = computed(() => {
-  const data = $config.groupData.grouping ? $config.groupData.groupBy(DataStore.currentData) : DataStore.currentData;
-  let locations = [...data];
+  let locations = $config.refine.customRefine ? [...$config.refine.customRefine([...DataStore.currentData], MainStore.selectedServices)] : [...DataStore.currentData];
   let valOrGetter = locationInfo.value.siteName;
   const valOrGetterType = typeof valOrGetter;
   let val;
@@ -198,7 +193,7 @@ const currentData = computed(() => {
     if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue currentData computed, sortBy.value:', sortBy.value);
     val = 'distance';
     // if (import.meta.env.VITE_DEBUG) console.log('it includes address');
-    locations.sort(function(a, b) {
+    locations.sort(function (a, b) {
       // if (import.meta.env.VITE_DEBUG) console.log('a:', a, 'b:', b, 'val:', val);
       if (a[val] < b[val]) {
         return -1;
@@ -212,7 +207,7 @@ const currentData = computed(() => {
     if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue currentData computed, sortBy.value:', sortBy.value);
     if (valOrGetterType === 'function') {
       const getter = valOrGetter;
-      locations.sort(function(a, b) {
+      locations.sort(function (a, b) {
         let valueA = getter(a);
         let valueB = getter(b);
         let value;
@@ -223,7 +218,7 @@ const currentData = computed(() => {
       });
     } else {
       val = valOrGetter;
-      locations.sort(function(a, b) {
+      locations.sort(function (a, b) {
         // if (import.meta.env.VITE_DEBUG) console.log('a:', a, 'b:', b, 'val:', val);
         if (a[val] != null && b[val] != null) {
           return a[val].localeCompare(b[val]);
@@ -436,236 +431,118 @@ const locationsPanelClass = computed(() => {
 <template>
   <div id="locations-panel-content" :class="locationsPanelClass + ' locations'">
 
-    <div
-      v-if="shouldShowGreeting"
-      class="topics-container cell medium-cell-block-y"
-    >
-      <custom-greeting
-        v-if="shouldShowGreeting && hasCustomGreeting"
-        @view-list="clickedViewList"
-        @view-map="clickedViewMap"
-        :database="database"
-        :isMobile="isMobile"
-      />
+    <div v-if="shouldShowGreeting" class="topics-container cell medium-cell-block-y">
+      <custom-greeting v-if="shouldShowGreeting && hasCustomGreeting" @view-list="clickedViewList"
+        @view-map="clickedViewMap" :database="database" :isMobile="isMobile" />
     </div>
 
-    <div
-      v-if="!shouldShowGreeting && loadingSources"
-      class="columns is-vcentered is-align-content-center has-text-centered loading-data"
-    >
+    <div v-if="!shouldShowGreeting && loadingSources"
+      class="columns is-vcentered is-align-content-center has-text-centered loading-data">
       <!-- Loading Data -->
       <div class="column">
-        <font-awesome-icon
-          icon="fa-solid fa-spinner"
-          class="fa-6x center-spinner"
-          spin
-        />
+        <font-awesome-icon icon="fa-solid fa-spinner" class="fa-6x center-spinner" spin />
       </div>
     </div>
 
-    <div
-      v-if="!shouldShowGreeting && !loadingSources && dataStatus === 'success'"
-      class="summary-and-location-container"
-    >
+    <div v-if="!shouldShowGreeting && !loadingSources && dataStatus === 'success'"
+      class="summary-and-location-container">
 
       <div class="summary-container">
-        <div
-          v-if="!isMobile && geocodeStatus !== 'error' > 0"
-          class="columns is-desktop cut-right mb-0"
-        >
-          <div
-            v-if="allowPrint"
-            class="column is-6-desktop is-12-tablet mr-0 mb-0 pb-0 columns loc-panel-widget"
-          >
+        <div v-if="!isMobile && geocodeStatus !== 'error' > 0" class="columns is-desktop cut-right mb-0">
+          <div v-if="allowPrint" class="column is-6-desktop is-12-tablet mr-0 mb-0 pb-0 columns loc-panel-widget">
             <div class="field column is-6 pt-5">
-              <input
-                class="is-checkradio location-checkbox"
-                id="locationsPanelCheckbox"
-                type="checkbox"
-                name="locationsPanelCheckbox"
-                @click="clickedSelectAll"
-              >
+              <input class="is-checkradio location-checkbox" id="locationsPanelCheckbox" type="checkbox"
+                name="locationsPanelCheckbox" @click="clickedSelectAll">
               <label for="locationsPanelCheckbox">
-                <span
-                  v-if="!i18nEnabled"
-                >
+                <span v-if="!i18nEnabled">
                   Select All
                 </span>
-                <span
-                  v-if="i18nEnabled"
-                  v-html="$t('selectAll')"
-                />
+                <span v-if="i18nEnabled" v-html="$t('selectAll')" />
               </label>
             </div>
             <div class="column is-6 pt-3">
-              <button
-                @click="clickedPrint"
-                class="button app-button"
-                :class="!printCheckboxes.length ? 'disabled' : '' "
-              >
-                <p
-                  v-if="!i18nEnabled"
-                >
+              <button @click="clickedPrint" class="button app-button"
+                :class="!printCheckboxes.length ? 'disabled' : ''">
+                <p v-if="!i18nEnabled">
                   Print
                 </p>
-                <p
-                  v-if="i18nEnabled"
-                  v-html="$t('print')"
-                />
-            </button>
+                <p v-if="i18nEnabled" v-html="$t('print')" />
+              </button>
             </div>
           </div>
 
-          <div
-            v-if="anySearch"
-            class="column is-6-desktop is-12-tablet mr-0 mb-0 pb-0 pr-0 columns loc-panel-widget"
-          >
-            <div
-              class="column is-6-tablet is-7-desktop p-0"
-            >
-              <dropdown
-                id="sortby-dropdown"
-                v-model="sortBy"
-                :options="sortByOptions"
-                :placeholder="$t('sortBy')"
-                :disabled="sortDisabled"
-              />
+          <div v-if="anySearch" class="column is-6-desktop is-12-tablet mr-0 mb-0 pb-0 pr-0 columns loc-panel-widget">
+            <div class="column is-6-tablet is-7-desktop p-0">
+              <dropdown id="sortby-dropdown" v-model="sortBy" :options="sortByOptions" :placeholder="$t('sortBy')"
+                :disabled="sortDisabled" />
             </div>
-            <div
-              class="column is-6-tablet is-5-desktop p-0"
-            >
-              <dropdown
-                id="distance-dropdown"
-                v-model="searchDistance"
-                :options="searchDistanceOptions"
-                :placeholder="$t('distance')"
-                :disabled="sortDisabled"
-              />
+            <div class="column is-6-tablet is-5-desktop p-0">
+              <dropdown id="distance-dropdown" v-model="searchDistance" :options="searchDistanceOptions"
+                :placeholder="$t('distance')" :disabled="sortDisabled" />
             </div>
           </div>
         </div>
 
-        <div
-          v-if="isMobile && geocodeStatus !== 'error'"
-          class="columns is-mobile mb-0"
-        >
-          <div
-            class="mb-1 p-0 mobile-dropdown-container column is-6"
-          >
-            <dropdown
-              id="sortby-dropdown"
-              v-model="sortBy"
-              :options="sortByOptions"
-              placeholder="Sort By"
-              :disabled="sortDisabled"
-            />
+        <div v-if="isMobile && geocodeStatus !== 'error'" class="columns is-mobile mb-0">
+          <div class="mb-1 p-0 mobile-dropdown-container column is-6">
+            <dropdown id="sortby-dropdown" v-model="sortBy" :options="sortByOptions" placeholder="Sort By"
+              :disabled="sortDisabled" />
           </div>
-          <div
-            class="mb-1 p-0 mobile-dropdown-container column is-6"
-          >
-            <dropdown
-              id="distance-dropdown"
-              v-model="searchDistance"
-              :options="searchDistanceOptions"
-              placeholder="Distance"
-              :disabled="sortDisabled"
-            />
+          <div class="mb-1 p-0 mobile-dropdown-container column is-6">
+            <dropdown id="distance-dropdown" v-model="searchDistance" :options="searchDistanceOptions"
+              placeholder="Distance" :disabled="sortDisabled" />
           </div>
         </div>
 
-        <div
-          v-if="geocodeStatus !== 'error'"
-          class="mt-2 mb-2"
-        >
+        <div v-if="geocodeStatus !== 'error'" class="mt-2 mb-2">
           {{ summarySentenceStart }}
         </div>
       </div>
 
-      <div
-        v-if="geocodeStatus === 'error'"
-        class="h3 no-results"
-      >
+      <div v-if="geocodeStatus === 'error'" class="h3 no-results">
         <p class="pb-4">The address that was searched is not a valid Philadelphia address.</p>
-        <button
-          class="button app-button is-vcentered"
-          @click="clearBadAddress"
-        >
+        <button class="button app-button is-vcentered" @click="clearBadAddress">
           Clear Address
         </button>
       </div>
-      <div
-        v-if="geocodeStatus !== 'error' && currentData.length === 0"
-        class="h3 no-results"
-      >
-        <p
-          v-if="!i18nEnabled"
-        >
+      <div v-if="geocodeStatus !== 'error' && currentData.length === 0" class="h3 no-results">
+        <p v-if="!i18nEnabled">
           We're sorry, there are no results for that search.
           Adjust the filters you've selected and try again.
         </p>
-        <p
-          v-if="i18nEnabled"
-          v-html="$t('app.noResults')"
-        />
+        <p v-if="i18nEnabled" v-html="$t('app.noResults')" />
       </div>
 
-      <div
-        v-if="geocodeStatus !== 'error'"
-        class="location-container"
-      >
+      <div v-if="geocodeStatus !== 'error'" class="location-container">
 
-        <div
-          v-for="item in currentData"
-          :key="item._featureId"
-        >
-          <expand-collapse
-            :item="item"
-            :is-map-visible="isMapVisible"
-            :checked="selectAllCheckbox"
-            @print-box-checked="printBoxChecked"
-          >
-            <print-share-section
-              v-if="item._featureId == DataStore.selectedResource && $config.showPrintInCards"
-              :item="item"
-            />
+        <div v-for="item in currentData" :key="item._featureId">
+          <expand-collapse :item="item" :is-map-visible="isMapVisible" :checked="selectAllCheckbox"
+            @print-box-checked="printBoxChecked">
+            <print-share-section v-if="item._featureId == DataStore.selectedResource && $config.showPrintInCards"
+              :item="item" />
 
             <expand-collapse-content
               v-if="$config.customComps && Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource"
-              :item="item"
-              :is-map-visible="isMapVisible"
-              :is-mobile="isMobile"
-            />
+              :item="item" :is-map-visible="isMapVisible" :is-mobile="isMobile" />
 
             <div
               v-if="!Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource"
-              class="main-ec-content"
-            >
+              class="main-ec-content">
               <div class="columns top-section">
                 <div class="column is-6">
-                  <div
-                    v-if="item.properties.street_address"
-                    class="columns is-mobile"
-                  >
+                  <div v-if="item.properties.street_address" class="columns is-mobile">
                     <div class="column is-1">
                       <font-awesome-icon icon="map-marker-alt" />
                     </div>
-                    <div
-                      class="column is-11"
-                      v-html="parseAddress(item.properties.street_address)"
-                    >
+                    <div class="column is-11" v-html="parseAddress(item.properties.street_address)">
                     </div>
                   </div>
                 </div>
 
                 <div class="column is-6">
 
-                  <div
-                    v-if="item.properties.phone_number"
-                    class="columns is-mobile"
-                  >
-                    <div
-                      class="column is-1"
-                    >
+                  <div v-if="item.properties.phone_number" class="columns is-mobile">
+                    <div class="column is-1">
                       <font-awesome-icon icon="phone" />
                     </div>
                     <div class="column is-11">
@@ -673,13 +550,8 @@ const locationsPanelClass = computed(() => {
                     </div>
                   </div>
 
-                  <div
-                    v-if="item.properties.email"
-                    class="columns is-mobile"
-                  >
-                    <div
-                      class="column is-1"
-                    >
+                  <div v-if="item.properties.email" class="columns is-mobile">
+                    <div class="column is-1">
                       <font-awesome-icon icon="envelope" />
                     </div>
                     <div class="column is-11">
@@ -687,59 +559,35 @@ const locationsPanelClass = computed(() => {
                     </div>
                   </div>
 
-                  <div
-                    v-if="item.properties.website"
-                    class="columns is-mobile website-div"
-                  >
-                    <div
-                      class="column is-1"
-                    >
+                  <div v-if="item.properties.website" class="columns is-mobile website-div">
+                    <div class="column is-1">
                       <font-awesome-icon icon="globe" />
                     </div>
                     <div class="column is-11">
-                      <a
-                        target="_blank"
-                        :href="makeValidUrl(item.properties.website)"
-                      >
+                      <a target="_blank" :href="makeValidUrl(item.properties.website)">
                         {{ item.properties.website }}
                         <font-awesome-icon icon="external-link-alt" />
                       </a>
                     </div>
                   </div>
 
-                  <div
-                    v-if="item.properties.facebook_name"
-                    class="columns is-mobile"
-                  >
-                    <div
-                      class="column is-1"
-                    >
+                  <div v-if="item.properties.facebook_name" class="columns is-mobile">
+                    <div class="column is-1">
                       <font-awesome-icon :icon="['fab', 'facebook']" />
                     </div>
                     <div class="column is-11">
-                      <a
-                        target="_blank"
-                        :href="item.properties.facebook_name"
-                      >
+                      <a target="_blank" :href="item.properties.facebook_name">
                         Facebook
                       </a>
                     </div>
                   </div>
 
-                  <div
-                    v-if="item.properties.twitter"
-                    class="columns is-mobile"
-                  >
-                    <div
-                      class="column is-1"
-                    >
+                  <div v-if="item.properties.twitter" class="columns is-mobile">
+                    <div class="column is-1">
                       <font-awesome-icon :icon="['fab', 'twitter']" />
                     </div>
                     <div class="column is-11">
-                      <a
-                        target="_blank"
-                        :href="item.properties.twitter"
-                      >
+                      <a target="_blank" :href="item.properties.twitter">
                         Twitter
                       </a>
                     </div>
@@ -748,9 +596,7 @@ const locationsPanelClass = computed(() => {
 
               </div>
 
-              <div
-                v-if="item.properties.services_offered"
-              >
+              <div v-if="item.properties.services_offered">
                 <h3 v-if="!i18nEnabled">
                   Services offered
                 </h3>
@@ -758,28 +604,15 @@ const locationsPanelClass = computed(() => {
                   {{ $t('servicesOffered') }}
                 </h3>
 
-                <div
-                  v-if="!i18nEnabled"
-                  class="columns is-multiline is-gapless"
-                >
-                  <div
-                    v-for="i in parseServiceList(item.properties.services_offered)"
-                    :key="i"
-                    class="column is-half"
-                  >
+                <div v-if="!i18nEnabled" class="columns is-multiline is-gapless">
+                  <div v-for="i in parseServiceList(item.properties.services_offered)" :key="i" class="column is-half">
                     {{ i }}
                   </div>
                 </div>
 
-                <div
-                  v-if="i18nEnabled"
-                  class="columns is-multiline is-gapless"
-                >
-                  <div
-                    v-for="service in parseServiceList(item.properties.services_offered)"
-                    :key="service"
-                    class="column is-half"
-                  >
+                <div v-if="i18nEnabled" class="columns is-multiline is-gapless">
+                  <div v-for="service in parseServiceList(item.properties.services_offered)" :key="service"
+                    class="column is-half">
                     {{ $t(service) }}
                   </div>
                 </div>
@@ -787,9 +620,7 @@ const locationsPanelClass = computed(() => {
 
               </div>
 
-              <div
-                v-if="item.properties.tags && item.properties.tags.length"
-              >
+              <div v-if="item.properties.tags && item.properties.tags.length">
                 <h3 v-if="!i18nEnabled">
                   {{ tagsPhrase }}
                 </h3>
@@ -813,7 +644,6 @@ const locationsPanelClass = computed(() => {
 </template>
 
 <style lang="scss">
-
 .loading-data {
   height: 100%;
 }
@@ -845,8 +675,8 @@ const locationsPanelClass = computed(() => {
 .summary-container {
   padding-left: 1rem;
   padding-top: 1rem;
-  z-index:9;
-  background:#fff
+  z-index: 9;
+  background: #fff
 }
 
 .location-container {
@@ -913,18 +743,22 @@ const locationsPanelClass = computed(() => {
   padding-top: 1rem;
 }
 
-.button.disabled, fieldset.disabled .button {
+.button.disabled,
+fieldset.disabled .button {
   background-color: #cfcfcf !important;
   border-color: #cfcfcf !important;
 }
 
-.button.disabled, fieldset.disabled .button {
+.button.disabled,
+fieldset.disabled .button {
   background-color: #cfcfcf !important;
   border-color: #cfcfcf !important;
   cursor: not-allowed;
 }
 
-.button.disabled:focus:not(:active), .button.disabled.is-medium:focus:not(:active), .button.disabled.is-default:focus:not(:active) {
+.button.disabled:focus:not(:active),
+.button.disabled.is-medium:focus:not(:active),
+.button.disabled.is-default:focus:not(:active) {
   box-shadow: 0 0 0 0em #25cef7 !important;
 }
 
@@ -935,5 +769,4 @@ const locationsPanelClass = computed(() => {
 #location-container {
   scroll-margin-top: 200px;
 }
-
 </style>
