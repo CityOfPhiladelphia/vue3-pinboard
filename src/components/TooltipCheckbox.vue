@@ -84,7 +84,7 @@ const props = defineProps({
   },
 
   /**
-   * must match the unique_key of the checkbox that function as the toggle the group
+   * Must match the unique_key of the checkbox that acts as the toggle for the group
    */
   toggleKey: {
     type: String,

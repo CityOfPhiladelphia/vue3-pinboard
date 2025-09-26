@@ -835,6 +835,7 @@ const filterPoints = () => {
   }
 
   // if (import.meta.env.VITE_DEBUG) console.log('filteredRows:', filteredRows);
+  // if Finder app passes a custom refine function, Pinboard will use that to modify the current data. Otherwise use the data as is.
   DataStore.currentData = $config.refine.customRefine ? $config.refine.customRefine(filteredRows, MainStore.selectedServices) : filteredRows;
 };
 

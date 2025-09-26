@@ -183,8 +183,9 @@ const isMobile = computed(() => {
 });
 
 const currentData = computed(() => {
-  let locations = $config.refine.customRefine ? [...$config.refine.customRefine([...DataStore.currentData], MainStore.selectedServices)] : [...DataStore.currentData];
-  let valOrGetter = locationInfo.value.siteName;
+  // if Finder app passes a custom refine function, Pinboard will use that to modify the current data. Otherwise use the data as is.
+  const locations = $config.refine.customRefine ? [...$config.refine.customRefine([...DataStore.currentData], MainStore.selectedServices)] : [...DataStore.currentData];
+  const valOrGetter = locationInfo.value.siteName;
   const valOrGetterType = typeof valOrGetter;
   let val;
 
