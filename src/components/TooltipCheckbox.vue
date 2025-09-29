@@ -242,13 +242,12 @@ const onToggle = (e) => {
             :multiline="option.tooltip.multiline" />
         </div>
         <!-- If group is toggleable, render final checkbox as toggle for the group -->
-        <div v-if="props.toggleKey" :key="`k-${props.options.length}`" class="control">
-          <input :id="`toggle-${props.options.length}-${id}`" v-model="localValue"
-            :name="`toggle-${props.options.length}-${id}`" type="checkbox"
-            :aria-checked="value.includes(optionValue(toggle, props.options.length))"
-            class="is-checkradio" role="checkbox" v-bind="toggle.attrs || {}"
-            :value="optionValue(toggle, props.options.length)" @change="onToggle()">
+        <div v-if="props.toggleKey" :key="`k-${props.options.length}`" class="checkbox-toggle">
           <label :for="`toggle-${props.options.length}-${id}`">
+            <input :id="`toggle-${props.options.length}-${id}`" v-model="localValue"
+              :name="`toggle-${props.options.length}-${id}`" type="checkbox"
+              :aria-checked="value.includes(optionValue(toggle, props.options.length))" class="toggle" role="checkbox"
+              v-bind="toggle.attrs || {}" :value="optionValue(toggle, props.options.length)" @change="onToggle()">
             {{ !textKey ? toggle : toggle[textKey] }}
             <slot name="tooltip" />
             <div v-if="isMobile && toggle.tooltip" class="mobile-tooltip">
@@ -256,8 +255,8 @@ const onToggle = (e) => {
               {{ toggle.tooltip.tip }}
             </div>
           </label>
-          <icon-tool-tip v-if="!isMobile && toggle.tooltip" :tip="toggle.tooltip.tip"
-            :circle-type="'hover'" :multiline="toggle.tooltip.multiline" />
+          <icon-tool-tip v-if="!isMobile && toggle.tooltip" :tip="toggle.tooltip.tip" :circle-type="'hover'"
+            :multiline="toggle.tooltip.multiline" />
         </div>
       </div>
     </fieldset>
@@ -265,10 +264,56 @@ const onToggle = (e) => {
 </template>
 
 <style>
+.checkbox-toggle input[type=checkbox] {
+  cursor: pointer;
+}
+
+.toggle {
+  top: 0.1875rem;
+  left: -0.0625rem;
+  appearance: none;
+  background-color: #cfcfcf;
+  border-radius: 1rem;
+  border-style: none;
+  position: relative;
+  width: 1.8rem;
+  height: 1.125rem;
+}
+
+.toggle::before {
+  bottom: -0.375rem;
+  left: -0.375rem;
+  position: absolute;
+  right: -0.375rem;
+  top: -0.375rem;
+}
+
+.toggle::after {
+  transition: all 100ms ease-out;
+}
+
+.toggle::after {
+  background-color: #ffffff;
+  border-radius: 50%;
+  content: "";
+  height: .9rem;
+  width: .9rem;
+  position: absolute;
+  top: 1.1px;
+  left: 2px;
+}
+
+.toggle:checked {
+  background-color: #2176d2;
+}
+
+.toggle:checked::after {
+  background-color: #ffffff;
+  left: 13px;
+}
 
 .mobile-tooltip {
   font-size: .85rem;
   line-height: 1rem;
 }
-
 </style>
