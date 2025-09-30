@@ -133,6 +133,10 @@ const isMobile = computed(() => {
   return MainStore.windowDimensions.width < 768;
 });
 
+const toggleMobile = computed(() => {
+  return 'toggle-mobile';
+})
+
 const checkRadioClasses = computed(() => {
   if (props.small) {
     return `${classes.value} small-checkradio`;
@@ -243,7 +247,7 @@ const onToggle = (e) => {
         </div>
         <!-- If group is toggleable, render final checkbox as toggle for the group -->
         <div v-if="props.toggleKey" :key="`k-${props.options.length}`" class="checkbox-toggle">
-          <label :for="`toggle-${props.options.length}-${id}`">
+          <label :for="`toggle-${props.options.length}-${id}`" :class="isMobile ? 'toggle-text-mobile' : 'toggle-text'">
             <input :id="`toggle-${props.options.length}-${id}`" v-model="localValue"
               :name="`toggle-${props.options.length}-${id}`" type="checkbox"
               :aria-checked="value.includes(optionValue(toggle, props.options.length))" class="toggle" role="checkbox"
@@ -280,6 +284,16 @@ const onToggle = (e) => {
   height: 1.125rem;
 }
 
+.toggle-text-mobile {
+  font-size: 1.063rem !important;
+  margin-top: .25rem;
+  margin-left: -2rem;
+}
+
+.toggle-text {
+  font-size: .875rem !important;
+}
+
 .toggle::before {
   bottom: -0.375rem;
   left: -0.375rem;
@@ -299,8 +313,8 @@ const onToggle = (e) => {
   height: .9rem;
   width: .9rem;
   position: absolute;
-  top: 1.1px;
-  left: 2px;
+  top: 0.069rem;
+  left: 0.125rem;
 }
 
 .toggle:checked {
@@ -309,7 +323,7 @@ const onToggle = (e) => {
 
 .toggle:checked::after {
   background-color: #ffffff;
-  left: 13px;
+  left: 0.813rem;
 }
 
 .mobile-tooltip {
