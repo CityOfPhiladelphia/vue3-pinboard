@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.5.2
+
+* allows adding a toggle to a group of checkboxes in multiple field groups apps
+
 ### 2.5.1
 
 * fixes bug where title loads in a language and can't be changed
