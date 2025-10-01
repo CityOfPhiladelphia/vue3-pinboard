@@ -6,7 +6,7 @@ import { useGeocodeStore } from '../stores/GeocodeStore.js';
 import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
-import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
+import { ref, computed, getCurrentInstance, onMounted, onBeforeMount, watch } from 'vue';
 import { event } from 'vue-gtag'
 
 const MainStore = useMainStore();
@@ -44,6 +44,7 @@ const searchDistance = ref(null);
 const sortBy = ref('Alphabetically');
 const printCheckboxes = ref([]);
 const selectAllCheckbox = ref(false);
+const numUnfilteredResults = ref(0)
 
 onMounted(async () => {
   if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue mounted, $config:', $config, 'i18nLocale.value:', i18nLocale.value, 'route.query:', route.query);
@@ -68,9 +69,18 @@ onMounted(async () => {
   MapStore.searchDistance = value;
 
   printCheckboxes.value = MainStore.printCheckboxes;
+
+  // get toggleKey counts if toggleKeys is not empty
+  toggleKeys.value.forEach((key) => {
+    numTotalResults.value[key] = $config.refine[$config.refine.type][key.split('_')[0]].toggleCount(database.value);
+  })
 });
 
 // COMPUTED
+const toggleKeys = computed(() => {
+  return Array.from(Object.keys($config.refine[$config.refine.type]), (key) => $config.refine[$config.refine.type][key]?.toggleKey).filter(Boolean);
+})
+
 const tagsPhrase = computed(() => {
   let value;
   if ($config.locationInfo.tagsPhrase) {
@@ -123,13 +133,14 @@ const database = computed(() => {
   return value;
 });
 
-const databaseLength = computed(() => {
-  return database.value.length
+const numTotalResults = computed(() => {
+  return {
+    default: 0
+  }
 });
 
 const summarySentenceStart = computed(() => {
-  let sentence = t('showing') + ' ' + currentData.value.length + ' ' + t('outOf') + ' ' + databaseLength.value + ' ' + t('results');
-  return sentence;
+  return t('showing') + ' ' + currentData.value.length + ' ' + t('outOf') + ' ' + numUnfilteredResults.value + ' ' + t('results');
 });
 
 const i18nLocale = computed(() => {
@@ -182,9 +193,77 @@ const isMobile = computed(() => {
   return MainStore.windowDimensions.width < 768;
 });
 
+const numCompareCycles = computed(() => {
+  return Math.ceil(database.value.length / 32);
+})
+
 const currentData = computed(() => {
-  // if Finder app passes a custom refine function, Pinboard will use that to modify the current data. Otherwise use the data as is.
-  const locations = $config.refine.customRefine ? [...$config.refine.customRefine([...DataStore.currentData], MainStore.selectedServices)] : [...DataStore.currentData];
+
+  // get the max number of results for current toggle settings if parent app has toggleable refine groups
+
+
+  if (toggleKeys.value.length) {
+    console.log("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY", numTotalResults.value);
+    let activeToggleCount = 0;
+    const compareBuffer = new ArrayBuffer(4);
+    let compareView = new DataView(compareBuffer);
+    compareView.setUint32(0, 4294967295); // 32-bit buffer of all 1s
+
+    for (let i = 0; i < numCompareCycles.value; i++) {
+      toggleKeys.value.forEach((key) => {
+        const toggleView = MainStore.selectedServices.includes(key) ? numTotalResults.value[key].toggleOn : numTotalResults.value[key].toggleOff;
+        console.log("VIEW: ",toggleView)
+
+      })
+
+    }
+
+
+
+    // if (MainStore.selectedServices.includes(key)) {
+    //   // IF KEY NOT YET IN RESULTS OBJECT, GET COUNT BITFIELD
+
+    //   const viewToggleOff = new DataView(numTotalResults.value[key].toggleOff);
+    //   const viewToggleOn = new DataView(numTotalResults.value[key].toggleOn);
+
+    //   console.log("viewToggleOff: ", viewToggleOff)
+    //   console.log(" viewToggleOn: ", viewToggleOn)
+
+    //   const numOffsets = Math.ceil(database.value.length / 8);
+    //   const countBits = (x) => !x ? 0 : (x & 1) + countBits(x >>= 1);
+
+    //   let numSitesToggleOff = 0;
+    //   let numSitesToggleOn = 0;
+
+    //   for (let i = 0; i < numOffsets; i++) {
+    //     numSitesToggleOff += countBits(viewToggleOff.getUint8(i));
+    //     numSitesToggleOn += countBits(viewToggleOn.getUint8(i));
+    //     console.log("TOGGLE OFF TOTAL: ", numSitesToggleOff)
+    //     console.log(" TOGGLE ON TOTAL: ", numSitesToggleOn)
+    //   }
+
+    //   numTotalResults.value[key] = numSitesToggleOn; // REPLACE WITH COUNT FUNCTION RESULT
+
+    //   toggleActive = true;
+    // }
+  }
+
+  let locations = [...DataStore.currentData];
+
+  // Apply custom refine for each toggle passed to pinboard from parent App
+  toggleKeys.value.forEach((key) => {
+    locations = $config.refine[$config.refine.type][key.split('_')[0]].toggleRefine(locations, MainStore.selectedServices);
+  })
+
+  numTotalResults.value.default = (!numTotalResults.value.default && !0) ? locations.length : numTotalResults.value.default;
+
+  // set the default number of results to lergest seen so far
+  // numTotalResults.value.default = locations.length ? numTotalResults.value.default = locations.length : numTotalResults.value.default;
+
+  numUnfilteredResults.value = MainStore.selectedServices.some((service) => toggleKeys.value.includes(service)) ? numTotalResults.value['status_archive'] : numTotalResults.value.default;
+  console.log("AFTER: ", numUnfilteredResults.value)
+
+
   const valOrGetter = locationInfo.value.siteName;
   const valOrGetterType = typeof valOrGetter;
   let val;
