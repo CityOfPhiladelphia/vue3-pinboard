@@ -99,7 +99,7 @@ const setNewLocation = async (coords) => {
     )
     let viewer = response[0];
     if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue setNewLocation, viewer:', viewer, 'response:', response);
-    // viewer.toggleNavbarExpanded(navBarExpanded.value);
+    viewer.toggleNavbarExpanded(navBarExpanded.value);
     viewer.toggleButtonEnabled('panorama.elevation', false);
     viewer.toggleButtonEnabled('panorama.reportBlurring', false);
 
@@ -241,7 +241,7 @@ const popoutClicked = () => {
   border-radius: 2px;
 }
 
-@media 
+@media
 only screen and (max-width: 768px),
 (min-device-width: 768px) and (max-device-width: 1024px)  {
   .cyclomedia-panel {

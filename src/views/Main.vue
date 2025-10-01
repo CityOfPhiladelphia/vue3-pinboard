@@ -206,7 +206,7 @@ const futureHolidayClosure = computed(() => {
   let holiday = MainStore.holiday;
   if (holiday.coming_soon) {
     return true;
-  } 
+  }
   return false;
 });
 
@@ -214,7 +214,7 @@ const currentHolidayClosure = computed(() => {
   let holiday = MainStore.holiday;
   if (holiday.current) {
     return true;
-  } 
+  }
   return false;
 });
 
@@ -222,7 +222,7 @@ const justPassedHolidayClosure = computed(() => {
   let holiday = MainStore.holiday;
   if (holiday.just_passed) {
     return true;
-  } 
+  }
   return false;
 });
 
@@ -463,7 +463,7 @@ onMounted(async() => {
     let selectedResource = [ route.query.resource ];
     DataStore.selectedResource = selectedResource[0];
   }
-  
+
   if ($config.searchBar) {
     let routeQuery = Object.keys(route.query);
     // if (import.meta.env.VITE_DEBUG) console.log('App.vue mounted in searchTypes section, route:', route, 'routeQuery:', routeQuery, 'Object.keys(route.query)[0]', Object.keys(route.query)[0]);
@@ -797,7 +797,7 @@ const filterPoints = () => {
   const buffer = MapStore.bufferForAddressOrLocationOrZipcode;
   // if (import.meta.env.VITE_DEBUG) console.log('buffer', buffer);
   let pointsAfterBuffer = database.value;
-  
+
   // do buffer check without loop first
   if (buffer) {
     if (import.meta.env.VITE_DEBUG) console.log('database.value:', database.value);
@@ -835,7 +835,8 @@ const filterPoints = () => {
   }
 
   // if (import.meta.env.VITE_DEBUG) console.log('filteredRows:', filteredRows);
-  DataStore.currentData = filteredRows;
+  // if Finder app passes a custom refine function, Pinboard will use that to modify the current data. Otherwise use the data as is.
+  DataStore.currentData = $config.refine.customRefine ? $config.refine.customRefine(filteredRows, MainStore.selectedServices) : filteredRows;
 };
 
 // todo move to Map.vue
@@ -871,7 +872,7 @@ const appSubTitle = computed(() => {
       value = $config.app.subtitle;
     } else if (i18nEnabled.value && $config.app.subtitle == 'i18n') {
       // if (import.meta.env.VITE_DEBUG) console.log('t("app.subtitle"):', t('app.subtitle'));
-      value = t('app.subtitle'); 
+      value = t('app.subtitle');
     }
   }
   return value;
@@ -933,7 +934,7 @@ const popupClicked = () => {
   <template #mobile-nav>
     <mobile-nav :links="footerLinks" />
   </template>
-  
+
   <template
     v-if="i18nEnabled"
     #lang-selector-nav
@@ -977,7 +978,7 @@ const popupClicked = () => {
       </template>
     </modal>
   </div>
-    
+
   <div
     id="main-column"
     class="main-column invisible-scrollbar"

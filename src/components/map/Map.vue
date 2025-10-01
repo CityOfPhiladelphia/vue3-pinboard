@@ -72,7 +72,7 @@ const clickedPopup = () => {
 
 onMounted(async () => {
   if (import.meta.env.VITE_DEBUG) console.log('Map.vue onMounted');
-  
+
   // create the maplibre map
   let currentTopicMapStyle = 'pwdDrawnMapStyle';
   let zoom = route.params.address ? 17 : 12;
@@ -93,7 +93,7 @@ onMounted(async () => {
 
   map.on('load', async() => {
     // map.resize();
-    
+
     let canvas = document.querySelector(".maplibregl-canvas");
     canvas.setAttribute('tabindex', -1);
 
@@ -117,7 +117,7 @@ onMounted(async () => {
       )
     };
     if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 2, DataStore.selectedResource:', DataStore.selectedResource);
-    
+
     if (DataStore.sources[DataStore.appType]) {
       let dataPoint;
       if (DataStore.sources[DataStore.appType].data.features) {
@@ -138,21 +138,21 @@ onMounted(async () => {
             .setHTML(`<div id="popup-div">${dataPoint.properties[$config.locationInfo.siteNameField]}</div>`)
             .setMaxWidth("300px")
             .addTo(map);
-        
+
           document.getElementById('popup-div').addEventListener('click', clickedPopup);
         }
 
-        
+
         if ($config.showBuildingFootprint) {
           map.getSource('buildingFootprints').setData(dataPoint.buildingFootprint);
         }
-        
+
         if (!route.query.address && dataPoint.geometry && dataPoint.geometry.coordinates) {
           map.setCenter(dataPoint.geometry.coordinates);
         }
       }
     }
-    
+
     if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 3, MapStore.bufferForAddressOrLocationOrZipcode:', MapStore.bufferForAddressOrLocationOrZipcode);
     if (MapStore.bufferForAddressOrLocationOrZipcode !== null) {
       map.getSource('buffer').setData(MapStore.bufferForAddressOrLocationOrZipcode);
@@ -346,7 +346,7 @@ watch(
           )
         };
         if (import.meta.env.VITE_DEBUG) console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources[DataStore.appType].data:', DataStore.sources[DataStore.appType].data, 'DataStore.sources[DataStore.appType].data.features:', DataStore.sources[DataStore.appType].data.features);
-        
+
         let dataPoint;
         if (DataStore.sources[DataStore.appType].data.features) {
           if (import.meta.env.VITE_DEBUG) console.log('DataStore.sources[DataStore.appType].data.features:', DataStore.sources[DataStore.appType].data.features, 'newSelectedResource:', newSelectedResource);
@@ -396,7 +396,7 @@ watch(
       map.setCenter(newCoords);
       map.setZoom(12);
       MapStore.currentAddressCoords = newCoords;
-  
+
       const popup = document.getElementsByClassName('maplibregl-popup');
       if (popup.length) {
         popup[0].remove();
@@ -545,7 +545,7 @@ const toggleCyclomedia = async() => {
   }
 }
 
-// an object class called CyclomediaRecordingsClient is used for adding the cyclomedia recordings circles to the map 
+// an object class called CyclomediaRecordingsClient is used for adding the cyclomedia recordings circles to the map
 let cyclomediaRecordingsClient = new CyclomediaRecordingsClient(
   'https://atlasapi.cyclomedia.com/api/recording/wfs',
   import.meta.env.VITE_CYCLOMEDIA_USERNAME,

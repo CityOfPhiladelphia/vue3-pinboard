@@ -40,11 +40,11 @@ const props = defineProps({
 const $emit = defineEmits(['geolocate-control-fire']);
 
 // REFs
+const appHeaderHeight = ref(document.querySelector('#app-header').offsetHeight);
+const refineTopHeight = ref(46);
 const selected = ref();
 const selectedList = ref({});
 const viewerHeight = ref(window.innerHeight);
-const appHeaderHeight = ref(document.querySelector('#app-header').offsetHeight);
-const refineTopHeight = ref(46);
 
 // INITIALIZE
 const $config = ConfigStore.config;
@@ -124,6 +124,17 @@ const selectedArray = computed(() => {
 
 const selectedServices = computed(() => { return MainStore.selectedServices });
 const timesIconWeight = computed(() => { return findIconDefinition({ prefix: 'far', iconName: 'times' }) ? 'far' : 'fas' });
+
+const toggleKeys = computed(() => {
+  const toggles = [];
+  if (!Object.keys($config.refine).includes('multipleFieldGroups') && !Object.keys($config.refine).includes('multipleDependentFieldGroups')) return toggles;
+  const entries = Object.keys($config.refine).includes('multipleFieldGroups') ? Object.entries($config.refine.multipleFieldGroups) : Object.entries($config.refine.multipleDependentFieldGroups);
+  entries.forEach((entry) => {
+    if (Object.keys(entry[1]).includes('toggleable') && entry[1].toggleable) { toggles.push(entry[1].toggleKey) }
+  })
+  return toggles;
+})
+
 const zipcodeEntered = computed(() => { return MainStore.selectedZipcode });
 
 // WATCHERS
@@ -311,7 +322,10 @@ const closeZipcodeBox = (e, box) => {
 
 const expandCheckbox = (ind) => { refineList.value[ind].expanded = !refineList.value[ind].expanded };
 const expandRefine = () => { MainStore.refineOpen = !MainStore.refineOpen };
-const getBoxValue = (box) => { return (box && typeof box != 'object') ? box.replace("_", ".") : null };
+const getBoxValue = (box) => {
+  const keys = toggleKeys.value;
+  return (box && typeof box != 'object') ? box.replace("_", ".") : null
+};
 
 const getCategoryFieldValue = (selected) => {
   // if (import.meta.env.VITE_DEBUG) console.log('getCategoryFieldValue is running, selected:', selected);
@@ -571,8 +585,11 @@ const refineListTranslated_default = () => {
 
             <tooltip-checkbox v-if="refineListTranslated[ind]['checkbox']"
               :options="refineListTranslated[ind]['checkbox']" :small="!isMobile"
-              v-model="selectedList['checkbox_' + ind]" :value="selectedList['checkbox_' + ind]" text-key="textLabel"
-              value-key="data" shrinkToFit="true" :num-of-columns="calculateColumns(refineList[ind]['checkbox'], ind)">
+              :toggleKey="$config.refine.multipleFieldGroups[ind].toggleKey ? $config.refine.multipleFieldGroups[ind].toggleKey : ''"
+              :num-of-columns="calculateColumns(refineList[ind]['checkbox'], ind)"
+              :value="selectedList['checkbox_' + ind]" v-model="selectedList['checkbox_' + ind]" text-key="textLabel"
+              value-key="data" shrinkToFit="true"
+              >
               <template v-slot:label>
                 <div :class="isMobile ? 'large-label' : 'small-label'">
                   {{ $t(ind + '.category') }}
@@ -611,8 +628,9 @@ const refineListTranslated_default = () => {
 
                 <tooltip-checkbox v-if="refineListTranslated[ind]['checkbox']"
                   :options="refineListTranslated[ind]['checkbox']" :small="!isMobile"
-                  v-model="selectedList['checkbox_' + ind]" text-key="textLabel" value-key="data" shrinkToFit="true"
-                  :num-of-columns="calculateColumns(refineList[ind]['checkbox'], ind)">
+                  :toggleKey="$config.refine.multipleFieldGroups[ind].toggleKey ? $config.refine.multipleFieldGroups[ind].toggleKey : ''""
+                  :num-of-columns="calculateColumns(refineList[ind]['checkbox'], ind)"
+                  v-model="selectedList['checkbox_' + ind]" text-key="textLabel" value-key="data" shrinkToFit="true">
                 </tooltip-checkbox>
               </div>
             </div>

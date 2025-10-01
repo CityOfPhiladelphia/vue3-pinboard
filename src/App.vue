@@ -35,11 +35,11 @@ const locale = computed(() => instance.appContext.config.globalProperties.$i18n.
 onBeforeMount(async () => {
   MainStore.isMac = isMac();
   await router.isReady()
-  
+
   if (route.query.lang) {
     instance.appContext.config.globalProperties.$i18n.locale = route.query.lang;
   }
-  
+
   let pageTitle;
   if ($config.app.title) {
     pageTitle = $config.app.title;
