@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.6.0
+
+* breaking change - projects now need to reference pinboard's index.css instead of style.css
+
 ### 2.5.2
 
 * allows adding a toggle to a group of checkboxes in multiple field groups apps
