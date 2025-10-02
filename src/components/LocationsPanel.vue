@@ -44,7 +44,8 @@ const searchDistance = ref(null);
 const sortBy = ref('Alphabetically');
 const printCheckboxes = ref([]);
 const selectAllCheckbox = ref(false);
-const numUnfilteredResults = ref(0)
+const numUnfilteredResults = ref(0);
+const numUnfilteredToggleResults = ref(0);
 
 onMounted(async () => {
   if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue mounted, $config:', $config, 'i18nLocale.value:', i18nLocale.value, 'route.query:', route.query);
@@ -193,76 +194,25 @@ const isMobile = computed(() => {
   return MainStore.windowDimensions.width < 768;
 });
 
-const numCompareCycles = computed(() => {
-  return Math.ceil(database.value.length / 32);
+const bufferLength = computed(() => {
+  return Math.ceil(database.value.length / 8);
 })
 
 const currentData = computed(() => {
-
   // get the max number of results for current toggle settings if parent app has toggleable refine groups
-
-
-  if (toggleKeys.value.length) {
-    console.log("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY", numTotalResults.value);
-    let activeToggleCount = 0;
-    const compareBuffer = new ArrayBuffer(4);
-    let compareView = new DataView(compareBuffer);
-    compareView.setUint32(0, 4294967295); // 32-bit buffer of all 1s
-
-    for (let i = 0; i < numCompareCycles.value; i++) {
-      toggleKeys.value.forEach((key) => {
-        const toggleView = MainStore.selectedServices.includes(key) ? numTotalResults.value[key].toggleOn : numTotalResults.value[key].toggleOff;
-        console.log("VIEW: ",toggleView)
-
-      })
-
-    }
-
-
-
-    // if (MainStore.selectedServices.includes(key)) {
-    //   // IF KEY NOT YET IN RESULTS OBJECT, GET COUNT BITFIELD
-
-    //   const viewToggleOff = new DataView(numTotalResults.value[key].toggleOff);
-    //   const viewToggleOn = new DataView(numTotalResults.value[key].toggleOn);
-
-    //   console.log("viewToggleOff: ", viewToggleOff)
-    //   console.log(" viewToggleOn: ", viewToggleOn)
-
-    //   const numOffsets = Math.ceil(database.value.length / 8);
-    //   const countBits = (x) => !x ? 0 : (x & 1) + countBits(x >>= 1);
-
-    //   let numSitesToggleOff = 0;
-    //   let numSitesToggleOn = 0;
-
-    //   for (let i = 0; i < numOffsets; i++) {
-    //     numSitesToggleOff += countBits(viewToggleOff.getUint8(i));
-    //     numSitesToggleOn += countBits(viewToggleOn.getUint8(i));
-    //     console.log("TOGGLE OFF TOTAL: ", numSitesToggleOff)
-    //     console.log(" TOGGLE ON TOTAL: ", numSitesToggleOn)
-    //   }
-
-    //   numTotalResults.value[key] = numSitesToggleOn; // REPLACE WITH COUNT FUNCTION RESULT
-
-    //   toggleActive = true;
-    // }
-  }
-
-  let locations = [...DataStore.currentData];
+  if (toggleKeys.value.length) { numUnfilteredToggleResults.value = getTotalResultsWithToggles() };
 
   // Apply custom refine for each toggle passed to pinboard from parent App
+  let locations = [...DataStore.currentData];
+
+  // if there are no toggle keys, toggleKeys.value is an empty array and no additional refining will occur
   toggleKeys.value.forEach((key) => {
     locations = $config.refine[$config.refine.type][key.split('_')[0]].toggleRefine(locations, MainStore.selectedServices);
   })
 
-  numTotalResults.value.default = (!numTotalResults.value.default && !0) ? locations.length : numTotalResults.value.default;
-
-  // set the default number of results to lergest seen so far
-  // numTotalResults.value.default = locations.length ? numTotalResults.value.default = locations.length : numTotalResults.value.default;
-
-  numUnfilteredResults.value = MainStore.selectedServices.some((service) => toggleKeys.value.includes(service)) ? numTotalResults.value['status_archive'] : numTotalResults.value.default;
-  console.log("AFTER: ", numUnfilteredResults.value)
-
+  // set the default value for number of total results if it is not yet set, then if some toggle is active use the total results for the toggle status instead of the default
+  numTotalResults.value.default = (!numTotalResults.value.default && !MainStore.selectedServices.some((service) => toggleKeys.value.includes(service))) ? locations.length : numTotalResults.value.default;
+  numUnfilteredResults.value = MainStore.selectedServices.some((service) => toggleKeys.value.includes(service)) ? numUnfilteredToggleResults.value : numTotalResults.value.default;
 
   const valOrGetter = locationInfo.value.siteName;
   const valOrGetterType = typeof valOrGetter;
@@ -412,6 +362,38 @@ watch(
 );
 
 // METHODS
+const countBits_32bit = (n) => {
+  // 32-bit implementation of Hamming Weight algorithm for counting bits
+  n -= (n >> 1) & 0x55555555;
+  n = (n & 0x33333333) + ((n >> 2) & 0x33333333);
+  n = (n + (n >> 4)) & 0x0f0f0f0f;
+  return (n * 0x01010101) >> 24;
+}
+
+const getTotalResultsWithToggles = () => {
+  // gets the total of unfiltered results based on toggle statuses
+  // takes in a sequence of bits from parent App representing if a result is valid for a toggle
+  // does a bitwise AND for each toggle against a result accumulator
+  // resulting 1s in the accumulator represents all the results where the status of all toggles is true
+  // counts the 1s and returns that value
+  const compareBuffer = new ArrayBuffer(bufferLength.value);
+  let compareView = new DataView(compareBuffer);
+  for (let i = 0; i < bufferLength.value; i++) { compareView.setUint8(i, 255) }; // set all compareBuffer bits to 1
+
+  // bitwise AND each toggle current status buffer with compare buffer
+  toggleKeys.value.forEach((key) => {
+    const toggleView = MainStore.selectedServices.includes(key) ? new DataView(numTotalResults.value[`${key}`]['toggleOn']) : new DataView(numTotalResults.value[`${key}`]['toggleOff']);
+    for (let i = 0; i < bufferLength.value; i++) {
+      compareView.setUint8(i, compareView.getUint8(i) & toggleView.getUint8(i));
+    }
+  })
+
+  // count the number of set bits to get the max total results based on toggle statuses
+  let activeToggleCount = 0;
+  for (let i = 0; i < Math.ceil(database.value.length / 32); i++) { activeToggleCount += countBits_32bit(compareView.getUint32(i)) };
+  return activeToggleCount;
+}
+
 const clearBadAddress = () => {
   $emit('clear-bad-address');
 };
