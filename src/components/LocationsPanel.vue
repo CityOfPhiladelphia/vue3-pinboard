@@ -72,9 +72,13 @@ onMounted(async () => {
   printCheckboxes.value = MainStore.printCheckboxes;
 
   // get toggleKey counts if toggleKeys is not empty
+  console.log("XXXXXXXXXXXXXXXXXXXXXXXXXX")
+  console.log(database.value)
   toggleKeys.value.forEach((key) => {
     numTotalResults.value[key] = $config.refine[$config.refine.type][key.split('_')[0]].toggleCount(database.value);
   })
+  numTotalResults.value.default = toggleKeys.value.length ? applyToggleRefineFunctions(database.value, []).length : database.value.length;
+  console.log(numTotalResults.value.default)
 });
 
 // COMPUTED
@@ -202,16 +206,10 @@ const currentData = computed(() => {
   // get the max number of results for current toggle settings if parent app has toggleable refine groups
   if (toggleKeys.value.length) { numUnfilteredToggleResults.value = getTotalResultsWithToggles() };
 
-  // Apply custom refine for each toggle passed to pinboard from parent App
-  let locations = [...DataStore.currentData];
+  // if parent app passed toggle keys to Pinboard, apply each custom refine function parent App
+  const locations = toggleKeys.value.length ? applyToggleRefineFunctions([...DataStore.currentData], MainStore.selectedServices) : [...DataStore.currentData];
 
-  // if there are no toggle keys, toggleKeys.value is an empty array and no additional refining will occur
-  toggleKeys.value.forEach((key) => {
-    locations = $config.refine[$config.refine.type][key.split('_')[0]].toggleRefine(locations, MainStore.selectedServices);
-  })
-
-  // set the default value for number of total results if it is not yet set, then if some toggle is active use the total results for the toggle status instead of the default
-  numTotalResults.value.default = (!numTotalResults.value.default && !MainStore.selectedServices.some((service) => toggleKeys.value.includes(service))) ? locations.length : numTotalResults.value.default;
+  // if some toggle is active use the total results for the toggle status instead of the default
   numUnfilteredResults.value = MainStore.selectedServices.some((service) => toggleKeys.value.includes(service)) ? numUnfilteredToggleResults.value : numTotalResults.value.default;
 
   const valOrGetter = locationInfo.value.siteName;
@@ -392,6 +390,13 @@ const getTotalResultsWithToggles = () => {
   let activeToggleCount = 0;
   for (let i = 0; i < Math.ceil(database.value.length / 32); i++) { activeToggleCount += countBits_32bit(compareView.getUint32(i)) };
   return activeToggleCount;
+}
+
+const applyToggleRefineFunctions = (locations, services) => {
+  toggleKeys.value.forEach((key) => {
+    locations = $config.refine[$config.refine.type][key.split('_')[0]].toggleRefine(locations, services);
+  })
+  return locations;
 }
 
 const clearBadAddress = () => {
