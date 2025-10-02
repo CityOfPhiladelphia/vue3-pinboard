@@ -21,7 +21,7 @@ const ConfigStore = useConfigStore();
 const $config = ConfigStore.config;
 const CustomGreeting = $config.customComps.customGreeting;
 const ExpandCollapseContent = $config.customComps.expandCollapseContent;
-if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapseContent:', ExpandCollapseContent);
+// if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapseContent:', ExpandCollapseContent);
 
 const route = useRoute();
 const router = useRouter();
@@ -48,7 +48,7 @@ const numUnfilteredResults = ref(0);
 const numUnfilteredToggleResults = ref(0);
 
 onMounted(async () => {
-  if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue mounted, $config:', $config, 'i18nLocale.value:', i18nLocale.value, 'route.query:', route.query);
+  // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue mounted, $config:', $config, 'i18nLocale.value:', i18nLocale.value, 'route.query:', route.query);
   const routeQueryKeys = Object.keys(route.query);
   let routeChanged = false;
   if (routeQueryKeys.length == 1 && !routeQueryKeys.includes('lang') || routeQueryKeys.length > 1) {
@@ -72,13 +72,10 @@ onMounted(async () => {
   printCheckboxes.value = MainStore.printCheckboxes;
 
   // get toggleKey counts if toggleKeys is not empty
-  console.log("XXXXXXXXXXXXXXXXXXXXXXXXXX")
-  console.log(database.value)
   toggleKeys.value.forEach((key) => {
     numTotalResults.value[key] = $config.refine[$config.refine.type][key.split('_')[0]].toggleCount(database.value);
   })
   numTotalResults.value.default = toggleKeys.value.length ? applyToggleRefineFunctions(database.value, []).length : database.value.length;
-  console.log(numTotalResults.value.default)
 });
 
 // COMPUTED
@@ -218,7 +215,7 @@ const currentData = computed(() => {
 
   // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue, currentData, sortBy.value:', sortBy.value, 'locations:', locations, 'valOrGetter:', valOrGetter, 'valOrGetterType:', valOrGetterType);
   if (sortBy.value == 'Distance') {
-    if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue currentData computed, sortBy.value:', sortBy.value);
+    // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue currentData computed, sortBy.value:', sortBy.value);
     val = 'distance';
     // if (import.meta.env.VITE_DEBUG) console.log('it includes address');
     locations.sort(function (a, b) {
@@ -232,7 +229,7 @@ const currentData = computed(() => {
       return 0;
     });
   } else {
-    if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue currentData computed, sortBy.value:', sortBy.value);
+    // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue currentData computed, sortBy.value:', sortBy.value);
     if (valOrGetterType === 'function') {
       const getter = valOrGetter;
       locations.sort(function (a, b) {
@@ -297,7 +294,7 @@ watch(
 watch(
   () => searchDistance.value,
   async nextSearchDistance => {
-    if (import.meta.env.VITE_DEBUG) console.log('watch searchDistance, nextSearchDistance:', nextSearchDistance, 'parseInt(nextSearchDistance):', parseInt(nextSearchDistance));
+    // if (import.meta.env.VITE_DEBUG) console.log('watch searchDistance, nextSearchDistance:', nextSearchDistance, 'parseInt(nextSearchDistance):', parseInt(nextSearchDistance));
     MapStore.searchDistance = parseInt(nextSearchDistance);
     MainStore.filterChangeCounter++;
   }
@@ -306,7 +303,7 @@ watch(
 watch(
   () => selectAllCheckbox.value,
   async nextSelectAllCheckbox => {
-    if (import.meta.env.VITE_DEBUG) console.log('watch selectAllCheckbox, nextSelectAllCheckbox:', nextSelectAllCheckbox);
+    // if (import.meta.env.VITE_DEBUG) console.log('watch selectAllCheckbox, nextSelectAllCheckbox:', nextSelectAllCheckbox);
     if (nextSelectAllCheckbox == false) {
       printCheckboxes.value = [];
       let inputs = document.querySelectorAll('.location-checkbox');
@@ -329,7 +326,7 @@ watch(
 watch(
   () => route.query,
   async nextRoute => {
-    if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel watch route, nextRoute:', nextRoute);
+    // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel watch route, nextRoute:', nextRoute);
     const routeQueryKeys = Object.keys(route.query);
     if (routeQueryKeys.length == 1 && !routeQueryKeys.includes('lang') || routeQueryKeys.length > 1) {
       MainStore.shouldShowGreeting = false;
@@ -405,7 +402,7 @@ const clearBadAddress = () => {
 
 const clickedPrint = () => {
   // MainStore.selectedZipcode = null;
-  if (import.meta.env.VITE_DEBUG) console.log('clickedPrint is running');
+  // if (import.meta.env.VITE_DEBUG) console.log('clickedPrint is running');
   if (!printCheckboxes.value.length) {
     this.$warning(noLocations.value, {
       duration: 3000,
@@ -418,7 +415,7 @@ const clickedPrint = () => {
 };
 
 const printBoxChecked = (id) => {
-  if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel printBoxChecked, id:', id);
+  // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel printBoxChecked, id:', id);
   if (printCheckboxes.value.includes(id)) {
     printCheckboxes.value.splice(printCheckboxes.value.indexOf(id), 1);
     MainStore.printCheckboxes = printCheckboxes.value;
@@ -429,12 +426,12 @@ const printBoxChecked = (id) => {
 };
 
 const clickedSelectAll = () => {
-  if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel clickedSelectAll is running');
+  // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel clickedSelectAll is running');
   if (selectAllCheckbox.value) {
-    if (import.meta.env.VITE_DEBUG) console.log('clickedSelect all if');
+    // if (import.meta.env.VITE_DEBUG) console.log('clickedSelect all if');
     selectAllCheckbox.value = false;
   } else {
-    if (import.meta.env.VITE_DEBUG) console.log('clickedSelect all else');
+    // if (import.meta.env.VITE_DEBUG) console.log('clickedSelect all else');
     selectAllCheckbox.value = true;
   }
 };
