@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.6.1
+
+* fixes results count for using toggleable data
+
 ### 2.6.0
 
 * breaking change - projects now need to reference pinboard's index.css instead of style.css
