@@ -6,7 +6,7 @@ import { useGeocodeStore } from '../stores/GeocodeStore.js';
 import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
-import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
+import { ref, computed, getCurrentInstance, onMounted, onBeforeMount, watch } from 'vue';
 import { event } from 'vue-gtag'
 
 const MainStore = useMainStore();
@@ -21,7 +21,7 @@ const ConfigStore = useConfigStore();
 const $config = ConfigStore.config;
 const CustomGreeting = $config.customComps.customGreeting;
 const ExpandCollapseContent = $config.customComps.expandCollapseContent;
-if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapseContent:', ExpandCollapseContent);
+// if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapseContent:', ExpandCollapseContent);
 
 const route = useRoute();
 const router = useRouter();
@@ -44,9 +44,11 @@ const searchDistance = ref(null);
 const sortBy = ref('Alphabetically');
 const printCheckboxes = ref([]);
 const selectAllCheckbox = ref(false);
+const numUnfilteredResults = ref(0);
+const numUnfilteredToggleResults = ref(0);
 
 onMounted(async () => {
-  if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue mounted, $config:', $config, 'i18nLocale.value:', i18nLocale.value, 'route.query:', route.query);
+  // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue mounted, $config:', $config, 'i18nLocale.value:', i18nLocale.value, 'route.query:', route.query);
   const routeQueryKeys = Object.keys(route.query);
   let routeChanged = false;
   if (routeQueryKeys.length == 1 && !routeQueryKeys.includes('lang') || routeQueryKeys.length > 1) {
@@ -68,9 +70,19 @@ onMounted(async () => {
   MapStore.searchDistance = value;
 
   printCheckboxes.value = MainStore.printCheckboxes;
+
+  // get toggleKey counts if toggleKeys is not empty
+  toggleKeys.value.forEach((key) => {
+    numTotalResults.value[key] = $config.refine[$config.refine.type][key.split('_')[0]].toggleCount(database.value);
+  })
+  numTotalResults.value.default = toggleKeys.value.length ? applyToggleRefineFunctions(database.value, []).length : database.value.length;
 });
 
 // COMPUTED
+const toggleKeys = computed(() => {
+  return Array.from(Object.keys($config.refine[$config.refine.type]), (key) => $config.refine[$config.refine.type][key]?.toggleKey).filter(Boolean);
+})
+
 const tagsPhrase = computed(() => {
   let value;
   if ($config.locationInfo.tagsPhrase) {
@@ -123,13 +135,14 @@ const database = computed(() => {
   return value;
 });
 
-const databaseLength = computed(() => {
-  return database.value.length
+const numTotalResults = computed(() => {
+  return {
+    default: 0
+  }
 });
 
 const summarySentenceStart = computed(() => {
-  let sentence = t('showing') + ' ' + currentData.value.length + ' ' + t('outOf') + ' ' + databaseLength.value + ' ' + t('results');
-  return sentence;
+  return t('showing') + ' ' + currentData.value.length + ' ' + t('outOf') + ' ' + numUnfilteredResults.value + ' ' + t('results');
 });
 
 const i18nLocale = computed(() => {
@@ -182,16 +195,27 @@ const isMobile = computed(() => {
   return MainStore.windowDimensions.width < 768;
 });
 
+const bufferLength = computed(() => {
+  return Math.ceil(database.value.length / 8);
+})
+
 const currentData = computed(() => {
-  // if Finder app passes a custom refine function, Pinboard will use that to modify the current data. Otherwise use the data as is.
-  const locations = $config.refine.customRefine ? [...$config.refine.customRefine([...DataStore.currentData], MainStore.selectedServices)] : [...DataStore.currentData];
+  // get the max number of results for current toggle settings if parent app has toggleable refine groups
+  if (toggleKeys.value.length) { numUnfilteredToggleResults.value = getTotalResultsWithToggles() };
+
+  // if parent app passed toggle keys to Pinboard, apply each custom refine function parent App
+  const locations = toggleKeys.value.length ? applyToggleRefineFunctions([...DataStore.currentData], MainStore.selectedServices) : [...DataStore.currentData];
+
+  // if some toggle is active use the total results for the toggle status instead of the default
+  numUnfilteredResults.value = MainStore.selectedServices.some((service) => toggleKeys.value.includes(service)) ? numUnfilteredToggleResults.value : numTotalResults.value.default;
+
   const valOrGetter = locationInfo.value.siteName;
   const valOrGetterType = typeof valOrGetter;
   let val;
 
   // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue, currentData, sortBy.value:', sortBy.value, 'locations:', locations, 'valOrGetter:', valOrGetter, 'valOrGetterType:', valOrGetterType);
   if (sortBy.value == 'Distance') {
-    if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue currentData computed, sortBy.value:', sortBy.value);
+    // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue currentData computed, sortBy.value:', sortBy.value);
     val = 'distance';
     // if (import.meta.env.VITE_DEBUG) console.log('it includes address');
     locations.sort(function (a, b) {
@@ -205,7 +229,7 @@ const currentData = computed(() => {
       return 0;
     });
   } else {
-    if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue currentData computed, sortBy.value:', sortBy.value);
+    // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue currentData computed, sortBy.value:', sortBy.value);
     if (valOrGetterType === 'function') {
       const getter = valOrGetter;
       locations.sort(function (a, b) {
@@ -270,7 +294,7 @@ watch(
 watch(
   () => searchDistance.value,
   async nextSearchDistance => {
-    if (import.meta.env.VITE_DEBUG) console.log('watch searchDistance, nextSearchDistance:', nextSearchDistance, 'parseInt(nextSearchDistance):', parseInt(nextSearchDistance));
+    // if (import.meta.env.VITE_DEBUG) console.log('watch searchDistance, nextSearchDistance:', nextSearchDistance, 'parseInt(nextSearchDistance):', parseInt(nextSearchDistance));
     MapStore.searchDistance = parseInt(nextSearchDistance);
     MainStore.filterChangeCounter++;
   }
@@ -279,7 +303,7 @@ watch(
 watch(
   () => selectAllCheckbox.value,
   async nextSelectAllCheckbox => {
-    if (import.meta.env.VITE_DEBUG) console.log('watch selectAllCheckbox, nextSelectAllCheckbox:', nextSelectAllCheckbox);
+    // if (import.meta.env.VITE_DEBUG) console.log('watch selectAllCheckbox, nextSelectAllCheckbox:', nextSelectAllCheckbox);
     if (nextSelectAllCheckbox == false) {
       printCheckboxes.value = [];
       let inputs = document.querySelectorAll('.location-checkbox');
@@ -302,7 +326,7 @@ watch(
 watch(
   () => route.query,
   async nextRoute => {
-    if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel watch route, nextRoute:', nextRoute);
+    // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel watch route, nextRoute:', nextRoute);
     const routeQueryKeys = Object.keys(route.query);
     if (routeQueryKeys.length == 1 && !routeQueryKeys.includes('lang') || routeQueryKeys.length > 1) {
       MainStore.shouldShowGreeting = false;
@@ -333,13 +357,52 @@ watch(
 );
 
 // METHODS
+const countBits_32bit = (n) => {
+  // 32-bit implementation of Hamming Weight algorithm for counting bits
+  n -= (n >> 1) & 0x55555555;
+  n = (n & 0x33333333) + ((n >> 2) & 0x33333333);
+  n = (n + (n >> 4)) & 0x0f0f0f0f;
+  return (n * 0x01010101) >> 24;
+}
+
+const getTotalResultsWithToggles = () => {
+  // gets the total of unfiltered results based on toggle statuses
+  // takes in a sequence of bits from parent App representing if a result is valid for a toggle
+  // does a bitwise AND for each toggle against a result accumulator
+  // resulting 1s in the accumulator represents all the results where the status of all toggles is true
+  // counts the 1s and returns that value
+  const compareBuffer = new ArrayBuffer(bufferLength.value);
+  let compareView = new DataView(compareBuffer);
+  for (let i = 0; i < bufferLength.value; i++) { compareView.setUint8(i, 255) }; // set all compareBuffer bits to 1
+
+  // bitwise AND each toggle current status buffer with compare buffer
+  toggleKeys.value.forEach((key) => {
+    const toggleView = MainStore.selectedServices.includes(key) ? new DataView(numTotalResults.value[`${key}`]['toggleOn']) : new DataView(numTotalResults.value[`${key}`]['toggleOff']);
+    for (let i = 0; i < bufferLength.value; i++) {
+      compareView.setUint8(i, compareView.getUint8(i) & toggleView.getUint8(i));
+    }
+  })
+
+  // count the number of set bits to get the max total results based on toggle statuses
+  let activeToggleCount = 0;
+  for (let i = 0; i < Math.ceil(database.value.length / 32); i++) { activeToggleCount += countBits_32bit(compareView.getUint32(i)) };
+  return activeToggleCount;
+}
+
+const applyToggleRefineFunctions = (locations, services) => {
+  toggleKeys.value.forEach((key) => {
+    locations = $config.refine[$config.refine.type][key.split('_')[0]].toggleRefine(locations, services);
+  })
+  return locations;
+}
+
 const clearBadAddress = () => {
   $emit('clear-bad-address');
 };
 
 const clickedPrint = () => {
   // MainStore.selectedZipcode = null;
-  if (import.meta.env.VITE_DEBUG) console.log('clickedPrint is running');
+  // if (import.meta.env.VITE_DEBUG) console.log('clickedPrint is running');
   if (!printCheckboxes.value.length) {
     this.$warning(noLocations.value, {
       duration: 3000,
@@ -352,7 +415,7 @@ const clickedPrint = () => {
 };
 
 const printBoxChecked = (id) => {
-  if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel printBoxChecked, id:', id);
+  // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel printBoxChecked, id:', id);
   if (printCheckboxes.value.includes(id)) {
     printCheckboxes.value.splice(printCheckboxes.value.indexOf(id), 1);
     MainStore.printCheckboxes = printCheckboxes.value;
@@ -363,12 +426,12 @@ const printBoxChecked = (id) => {
 };
 
 const clickedSelectAll = () => {
-  if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel clickedSelectAll is running');
+  // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel clickedSelectAll is running');
   if (selectAllCheckbox.value) {
-    if (import.meta.env.VITE_DEBUG) console.log('clickedSelect all if');
+    // if (import.meta.env.VITE_DEBUG) console.log('clickedSelect all if');
     selectAllCheckbox.value = false;
   } else {
-    if (import.meta.env.VITE_DEBUG) console.log('clickedSelect all else');
+    // if (import.meta.env.VITE_DEBUG) console.log('clickedSelect all else');
     selectAllCheckbox.value = true;
   }
 };

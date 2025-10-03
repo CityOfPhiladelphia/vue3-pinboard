@@ -32,20 +32,20 @@ export const useDataStore = defineStore('DataStore', {
         'f': 'json',
         'username': import.meta.env.VITE_AGO_USERNAME,
         'password': import.meta.env.VITE_AGO_PASSWORD,
-        'referer': 'https://www.mydomain.com' 
+        'referer': 'https://www.mydomain.com'
       });
-    
+
       let config = {
         method: 'post',
         maxBodyLength: Infinity,
         url: 'https://www.arcgis.com/sharing/rest/generateToken',
-        headers: { 
-          'Content-Type': 'application/x-www-form-urlencoded', 
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
           // 'Authorization': 'Basic Og=='
         },
         data : data
       };
-    
+
       await axios.request(config)
       .then((response) => {
         if (import.meta.env.VITE_DEBUG) console.log(JSON.stringify(response.data));
@@ -59,13 +59,13 @@ export const useDataStore = defineStore('DataStore', {
       const $config = useConfigStore().config;
 
       for (let source in $config.dataSources) {
-        
+
         const dataConfig = $config.dataSources[source];
         const params = dataConfig.options.params;
         if ($config.agoTokenNeeded) {
           params.token = this.agoToken.token;
         };
-        
+
         let dependent;
         if (dataConfig.dependent) {
           dependent = this.sources[dataConfig.dependent];
@@ -84,7 +84,7 @@ export const useDataStore = defineStore('DataStore', {
           response = await axios.get(dataConfig.url, { params } );
         }
         if (import.meta.env.VITE_DEBUG) console.log('fillResources is running, params:', params, 'response:', response);
-        
+
         if (response.status === 200) {
           let data = await response.data;
 
@@ -96,7 +96,7 @@ export const useDataStore = defineStore('DataStore', {
               dataConfig.options.success(data, dependent);
             }
           }
-    
+
           if (data.features) {
             if (import.meta.env.VITE_DEBUG) console.log('first option, data.features.length:', data.features.length);
             // data.features = data.features.filter(item => item.geometry);

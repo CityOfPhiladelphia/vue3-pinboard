@@ -106,6 +106,7 @@ const selectedArray = computed(() => {
   const compiled = [];
   if (Object.keys(selL).length) {
     Object.keys(selL).forEach((value) => {
+
       const valSplit = value.split('_')[0];
       if (valSplit === 'radio' && !(typeof selL[value] === 'string')) {
         compiled.push(selL[value][0]);
@@ -124,17 +125,6 @@ const selectedArray = computed(() => {
 
 const selectedServices = computed(() => { return MainStore.selectedServices });
 const timesIconWeight = computed(() => { return findIconDefinition({ prefix: 'far', iconName: 'times' }) ? 'far' : 'fas' });
-
-const toggleKeys = computed(() => {
-  const toggles = [];
-  if (!Object.keys($config.refine).includes('multipleFieldGroups') && !Object.keys($config.refine).includes('multipleDependentFieldGroups')) return toggles;
-  const entries = Object.keys($config.refine).includes('multipleFieldGroups') ? Object.entries($config.refine.multipleFieldGroups) : Object.entries($config.refine.multipleDependentFieldGroups);
-  entries.forEach((entry) => {
-    if (Object.keys(entry[1]).includes('toggleable') && entry[1].toggleable) { toggles.push(entry[1].toggleKey) }
-  })
-  return toggles;
-})
-
 const zipcodeEntered = computed(() => { return MainStore.selectedZipcode });
 
 // WATCHERS
@@ -149,7 +139,7 @@ watch(
 watch(
   () => selectedServices.value.length,
   async nextSelectedServices => {
-    if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedServices is firing, selectedServices.value:', selectedServices.value);
+    // if (import.meta.env.VITE_DEBUG) console.log('RefinePanel watch selectedServices is firing, selectedServices.value:', selectedServices.value);
     selected.value = selectedServices.value.length ?
       $config.refine.type === 'categoryField_value' ? selectedServices.value[0] : selectedServices.value :
       $config.refine.type === 'categoryField_value' ? null : [];
@@ -322,10 +312,7 @@ const closeZipcodeBox = (e, box) => {
 
 const expandCheckbox = (ind) => { refineList.value[ind].expanded = !refineList.value[ind].expanded };
 const expandRefine = () => { MainStore.refineOpen = !MainStore.refineOpen };
-const getBoxValue = (box) => {
-  const keys = toggleKeys.value;
-  return (box && typeof box != 'object') ? box.replace("_", ".") : null
-};
+const getBoxValue = (box) => { return (box && typeof box != 'object') ? box.replace("_", ".") : null };
 
 const getCategoryFieldValue = (selected) => {
   // if (import.meta.env.VITE_DEBUG) console.log('getCategoryFieldValue is running, selected:', selected);
@@ -628,7 +615,7 @@ const refineListTranslated_default = () => {
 
                 <tooltip-checkbox v-if="refineListTranslated[ind]['checkbox']"
                   :options="refineListTranslated[ind]['checkbox']" :small="!isMobile"
-                  :toggleKey="$config.refine.multipleFieldGroups[ind].toggleKey ? $config.refine.multipleFieldGroups[ind].toggleKey : ''""
+                  :toggleKey="$config.refine.multipleFieldGroups[ind].toggleKey ? $config.refine.multipleFieldGroups[ind].toggleKey : ''"
                   :num-of-columns="calculateColumns(refineList[ind]['checkbox'], ind)"
                   v-model="selectedList['checkbox_' + ind]" text-key="textLabel" value-key="data" shrinkToFit="true">
                 </tooltip-checkbox>
