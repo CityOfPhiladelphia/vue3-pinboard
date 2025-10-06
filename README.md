@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.6.2
+
+* fixes attempt to translation content that did not need translation
+
 ### 2.6.1
 
 * fixes results count for using toggleable data
