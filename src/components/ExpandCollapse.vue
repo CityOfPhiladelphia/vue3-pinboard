@@ -30,9 +30,13 @@ const props = defineProps({
   checked: {
     type: Boolean,
     default: false,
+  },
+  toggleKeys: {
+    type: Array,
+    default: () => []
   }
 });
-  
+
 const printCheckboxes = computed(() => {
   return MainStore.printCheckboxes;
 })
@@ -95,6 +99,10 @@ const i18nEnabled = computed(() => {
 //   return $config.subsections || {};
 // });
 
+const toggleTag = computed(() => {
+
+})
+
 const section = computed(() => {
   let section;
   if (props.item.properties && $config.fieldsUsed) {
@@ -128,6 +136,16 @@ const sectionColor = computed(() => {
   return sectionColor;
 });
 
+const toggleTagTitles = computed(() => {
+  console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+  return Array.from((activeToggles.value), (toggle) => $config.toggleTags[toggle].tagText)
+});
+
+const toggleTagColors = computed(() => {
+  console.log("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY")
+  return Array.from((activeToggles.value), (toggle) => $config.toggleTags[toggle].color)
+});
+
 const selectedResource = computed(() => {
   return DataStore.selectedResource;
 });
@@ -136,7 +154,8 @@ const latestSelectedResourceFromMap = computed(() => {
   return MapStore.latestSelectedResourceFromMap;
 });
 
-const locationOpen = ref(selectedResource.value == props.item._featureId ? true : false)
+const locationOpen = ref(selectedResource.value == props.item._featureId ? true : false);
+const activeToggles = ref([]);
 
 watch(
   () => selectedResource.value,
@@ -156,7 +175,7 @@ watch(
 
 watch(
   () => props.isMapVisible,
-  async(nextIsMapVisible) => {
+  async (nextIsMapVisible) => {
     // if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse watch isMapVisible');
     if (!nextIsMapVisible) {
       await nextTick();
@@ -177,39 +196,41 @@ watch(
 )
 
 onMounted(() => {
-    if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse mounted');//, siteName);
-    if (selectedResource.value == props.item._featureId) {
-      openLocation();
-    }
+  if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse mounted');//, siteName);
+  if (selectedResource.value == props.item._featureId) {
+    openLocation();
+  }
 
-    let values = []
-    if (printCheckboxes.value.length) {
-      for (let checkbox of printCheckboxes.value) {
-        if (checkbox == props.item._featureId) {
-          values.push(true);
-        }
+  let values = []
+  if (printCheckboxes.value.length) {
+    for (let checkbox of printCheckboxes.value) {
+      if (checkbox == props.item._featureId) {
+        values.push(true);
       }
     }
-    if (values.includes(true)) {
-      // if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse mounted, values includes true, printCheckboxes:', printCheckboxes, 'props.item._featureId:', props.item._featureId, 'printCheckboxes.includes(props.item_featureId):', printCheckboxes.includes(props.item_featureId));
-      document.getElementById('checkbox'+props.item._featureId).checked = true;
-    }
+  }
+  if (values.includes(true)) {
+    // if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse mounted, values includes true, printCheckboxes:', printCheckboxes, 'props.item._featureId:', props.item._featureId, 'printCheckboxes.includes(props.item_featureId):', printCheckboxes.includes(props.item_featureId));
+    document.getElementById('checkbox' + props.item._featureId).checked = true;
+  }
 
-    // window.addEventListener('keydown', (e) => {
-    //   if (import.meta.env.VITE_DEBUG) console.log('keydown is running, e', e);
-    //   if (e.keyCode === 32 && e.target === document.body) {
-    //     e.preventDefault();
-    //   }
-    // });
+  activeToggles.value = getActiveToggles();
 
-    // let divButton = document.querySelector('#refine-top');
-    // divButton.addEventListener('keypress', activate.bind(this));
-    // function activate(e) {
-    //   if (import.meta.env.VITE_DEBUG) console.log('activate, e:', e, 'e.path[0]:', e.path[0]);
-    //   if (e.type === 'keypress' && [ 13, 32 ].includes(e.keyCode) && e.srcElement.id == 'refine-top') {
-    //     expandRefine();
-    //   }
-    // };
+  // window.addEventListener('keydown', (e) => {
+  //   if (import.meta.env.VITE_DEBUG) console.log('keydown is running, e', e);
+  //   if (e.keyCode === 32 && e.target === document.body) {
+  //     e.preventDefault();
+  //   }
+  // });
+
+  // let divButton = document.querySelector('#refine-top');
+  // divButton.addEventListener('keypress', activate.bind(this));
+  // function activate(e) {
+  //   if (import.meta.env.VITE_DEBUG) console.log('activate, e:', e, 'e.path[0]:', e.path[0]);
+  //   if (e.type === 'keypress' && [ 13, 32 ].includes(e.keyCode) && e.srcElement.id == 'refine-top') {
+  //     expandRefine();
+  //   }
+  // };
 });
 
 const siteName = computed(() => {
@@ -220,9 +241,6 @@ const siteName = computed(() => {
   let valOrGetter = $config.locationInfo.siteName;
   const valOrGetterType = typeof valOrGetter;
   let val;
-
-  let currentQuery = route.query;
-  let currentQueryKeys = Object.keys(currentQuery);
 
   if (valOrGetterType === 'function') {
     const getter = valOrGetter;
@@ -278,7 +296,7 @@ const isElementInViewport = (el) => {
 const expandLocation = () => {
   MainStore.lastSelectMethod = 'row';
   const selectedResourceId = props.item._featureId;
-  let query = {...route.query};
+  let query = { ...route.query };
   if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse expandLocation query:', query);
   if (!locationOpen.value) {
     query['resource'] = selectedResourceId;
@@ -301,7 +319,7 @@ const openLocation = () => {
   }
 };
 
-const makeID = (itemTitle) =>{
+const makeID = (itemTitle) => {
   // if (import.meta.env.VITE_DEBUG) console.log('itemTitle:', itemTitle);
   let value;
   if (itemTitle) {
@@ -312,83 +330,54 @@ const makeID = (itemTitle) =>{
   return value;
 };
 
+const getActiveToggles = () => {
+
+  const tagNames = [...new Set(props.toggleKeys).intersection(new Set(Object.values(route.query)[0].split(',')))];
+  const tagTitles = Array.from((tagNames), (toggle) => $config.toggleTags[toggle].tagText);
+  const tagColors = Array.from((tagNames), (toggle) => $config.toggleTags[toggle].color);
+
+  //MAKE OBJECTS FROM THESE ENTRIES
+
+
+  return toggleTags;
+};
+
 </script>
 
 <template>
   <div class="whole-item">
-    <div
-      class="location-item columns is-mobile pr-2"
-      :class="{ 'open': locationOpen }"
-    >
-      <div
-        v-if="allowPrint && !isMobile"
-        class="field column expand-collapse-checkbox is-1 pt-4 pb-0"
-      >
+    <div class="location-item columns is-mobile pr-2" :class="{ 'open': locationOpen }">
+      <div v-if="allowPrint && !isMobile" class="field column expand-collapse-checkbox is-1 pt-4 pb-0">
         <div class="checkbox-height-fixer">
-          <input
-            class="is-checkradio location-checkbox"
-            :id="'checkbox'+item._featureId"
-            type="checkbox"
-            :name="'checkbox'+item._featureId"
-            @click="clickCheckBox"
-          >
-          <label
-            :for="'checkbox'+item._featureId"
-            class="checkbox-label"
-          >
+          <input class="is-checkradio location-checkbox" :id="'checkbox' + item._featureId" type="checkbox"
+            :name="'checkbox' + item._featureId" @click="clickCheckBox">
+          <label :for="'checkbox' + item._featureId" class="checkbox-label">
           </label>
         </div>
       </div>
-      <div
-        class="column is-12-mobile p-0"
-        :class="allowPrint ? 'is-11-tablet': 'is-12-tablet pl-3'"
-      >
-        <div
-          class="columns location-row is-mobile"
-          :class="allowPrint ? 'pl-0': 'pl-2'"
-          tabindex="0"
-          @click="expandLocation"
-          @keypress.space.prevent
-          @keyup.space="expandLocation"
-          @keyup.enter="expandLocation"
-        >
-          <div
-            class="location-title column"
-            :class="{ 'is-8': locationOpen && $config.printView, 'is-11': !locationOpen }"
-          >
-            <span
-              class="h5 location-name"
-              :class="item._featureId"
-              :aria-expanded="locationOpen"
-            >
+      <div class="column is-12-mobile p-0" :class="allowPrint ? 'is-11-tablet' : 'is-12-tablet pl-3'">
+        <div class="columns location-row is-mobile" :class="allowPrint ? 'pl-0' : 'pl-2'" tabindex="0"
+          @click="expandLocation" @keypress.space.prevent @keyup.space="expandLocation" @keyup.enter="expandLocation">
+          <div class="location-title column"
+            :class="{ 'is-8': locationOpen && $config.printView, 'is-11': !locationOpen }">
+            <span class="h5 location-name" :class="item._featureId" :aria-expanded="locationOpen">
               {{ siteName }}
-              <div
-                v-if="section && !i18nEnabled"
-                class="section-name"
-                :style="{ 'background-color': sectionColor }"
-                >
+              <div v-for="i in activeToggles.values.length" class="section-name"
+                :style="{ 'background-color': toggleTagColors[i] }"
+                v-html="'<b>' + $t('categoryType.' + toggleTagTitles[i]) + '</b>'">
+              </div>
+              <div v-if="section && !i18nEnabled" class="section-name" :style="{ 'background-color': sectionColor }">
                 {{ sectionTitle }}
               </div>
-              <div
-                v-if="section && i18nEnabled"
-                class="section-name"
-                :style="{ 'background-color': sectionColor }"
-                v-html="'<b>'+$t('categoryType.' + sectionTitle)+'</b>'"
-              >
+              <div v-if="section && i18nEnabled" class="section-name" :style="{ 'background-color': sectionColor }"
+                v-html="'<b>' + $t('categoryType.' + sectionTitle) + '</b>'">
               </div>
             </span>
           </div>
 
           <div class="location-icon column is-1">
-            <font-awesome-icon
-              v-if="!locationOpen"
-              class="plus-icon"
-              :icon="['fas', 'plus']"
-            />
-            <font-awesome-icon
-              v-if="locationOpen"
-              :icon="['fas', 'minus']"
-            />
+            <font-awesome-icon v-if="!locationOpen" class="plus-icon" :icon="['fas', 'plus']" />
+            <font-awesome-icon v-if="locationOpen" :icon="['fas', 'minus']" />
           </div>
         </div>
       </div>
@@ -402,7 +391,6 @@ const makeID = (itemTitle) =>{
 </template>
 
 <style lang="scss">
-
 .expand-collapse-checkbox {
   margin-bottom: 0px !important;
 }
@@ -417,16 +405,21 @@ const makeID = (itemTitle) =>{
 // }
 
 // .is-checkradio[type=checkbox].location-checkbox:not([disabled])+label::before, .is-checkradio[type=checkbox].location-checkbox:not([disabled])+label:before, .is-checkradio[type=radio]:not([disabled])+label::before, .is-checkradio[type=radio]:not([disabled])+label:before {
-.is-checkradio[type=checkbox].location-checkbox:not([disabled])+label::before, .is-checkradio[type=checkbox].location-checkbox:not([disabled])+label:before {
+.is-checkradio[type=checkbox].location-checkbox:not([disabled])+label::before,
+.is-checkradio[type=checkbox].location-checkbox:not([disabled])+label:before {
   background-color: white;
 }
 
-.is-checkradio[type=checkbox].location-checkbox:not([disabled]):checked+label::before, .is-checkradio[type=checkbox].location-checkbox:not([disabled]):checked+label:before, .is-checkradio[type=radio]:not([disabled]):checked+label::before, .is-checkradio[type=radio]:not([disabled]):checked+label:before {
+.is-checkradio[type=checkbox].location-checkbox:not([disabled]):checked+label::before,
+.is-checkradio[type=checkbox].location-checkbox:not([disabled]):checked+label:before,
+.is-checkradio[type=radio]:not([disabled]):checked+label::before,
+.is-checkradio[type=radio]:not([disabled]):checked+label:before {
   background-color: #2176d2 !important;
 }
 
 // .is-checkradio[type=checkbox].location-checkbox:hover:not([disabled])+label::before, .is-checkradio[type=checkbox].location-checkbox:hover:not([disabled])+label:before, .is-checkradio[type=radio]:hover:not([disabled])+label::before, .is-checkradio[type=radio]:hover:not([disabled])+label:before {
-.is-checkradio[type=checkbox].location-checkbox:hover:not([disabled])+label::before, .is-checkradio[type=checkbox].location-checkbox:hover:not([disabled])+label:before {
+.is-checkradio[type=checkbox].location-checkbox:hover:not([disabled])+label::before,
+.is-checkradio[type=checkbox].location-checkbox:hover:not([disabled])+label:before {
   border-width: 2px !important;
   border-color: #2176d2 !important;
   background-color: white;
@@ -439,7 +432,8 @@ const makeID = (itemTitle) =>{
 }
 
 // .is-checkradio[type=checkbox]:checked+label::after, .is-checkradio[type=checkbox]:checked+label:after, .is-checkradio[type=radio]:checked+label::after, .is-checkradio[type=radio]:checked+label:after {
-.is-checkradio[type=checkbox]:checked+label::after, .is-checkradio[type=checkbox]:checked+label:after {
+.is-checkradio[type=checkbox]:checked+label::after,
+.is-checkradio[type=checkbox]:checked+label:after {
   border-width: 2px !important;
   border-color: white !important;
   background-color: #2176d2 !important;
@@ -466,7 +460,7 @@ const makeID = (itemTitle) =>{
   padding-top: 12px;
   margin-bottom: 0px !important;
 
-  &:hover .location-row{
+  &:hover .location-row {
     background: #2176d2;
     color: white;
 
@@ -475,7 +469,7 @@ const makeID = (itemTitle) =>{
     }
   }
 
-  &:hover .expand-collapse-checkbox{
+  &:hover .expand-collapse-checkbox {
     background: #2176d2;
     color: white;
 
@@ -492,7 +486,7 @@ const makeID = (itemTitle) =>{
     margin-left: 0px !important;
     margin-right: 0px !important;
 
-    &:hover{
+    &:hover {
       background: #2176d2;
       color: white;
 
@@ -524,14 +518,14 @@ const makeID = (itemTitle) =>{
     height: 24px;
   }
 
-  &.open{
+  &.open {
     .location-row {
-      color:white;
+      color: white;
       background-color: #0f4d90;
     }
 
     .expand-collapse-checkbox {
-      color:white;
+      color: white;
       background-color: #0f4d90;
     }
 
@@ -540,11 +534,11 @@ const makeID = (itemTitle) =>{
     }
   }
 
-  .location-content{
+  .location-content {
     overflow: hidden;
-    height:0;
+    height: 0;
 
-    &.location-open{
+    &.location-open {
       padding-top: 1rem;
       padding-bottom: 1rem;
       padding-right: 0px;
@@ -554,11 +548,11 @@ const makeID = (itemTitle) =>{
     }
   }
 
-  .location-content-mobile{
+  .location-content-mobile {
     overflow: hidden;
-    height:0;
+    height: 0;
 
-    &.location-open{
+    &.location-open {
       padding-top: 1rem;
       padding-bottom: 1rem;
       padding-right: 0px;
@@ -599,6 +593,7 @@ const makeID = (itemTitle) =>{
     .location-title {
       padding-left: 1rem;
     }
+
     .location-icon {
       padding-left: .5rem;
       padding-top: 1rem;
@@ -606,7 +601,7 @@ const makeID = (itemTitle) =>{
       text-align: left;
     }
   }
-} 
+}
 
 @media (min-width: 500px) and (max-width: 767px) {
   .print-button {
@@ -617,6 +612,7 @@ const makeID = (itemTitle) =>{
     .location-title {
       padding-left: 1rem;
     }
+
     .location-icon {
       padding-left: .5rem;
       padding-top: 1rem;
@@ -624,7 +620,7 @@ const makeID = (itemTitle) =>{
       text-align: left;
     }
   }
-} 
+}
 
 @media (min-width: 768px) and (max-width: 1049px) {
   .print-view-button {
@@ -648,6 +644,5 @@ const makeID = (itemTitle) =>{
       padding-left: 0rem;
     }
   }
-} 
-
+}
 </style>

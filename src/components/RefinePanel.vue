@@ -312,7 +312,10 @@ const closeZipcodeBox = (e, box) => {
 
 const expandCheckbox = (ind) => { refineList.value[ind].expanded = !refineList.value[ind].expanded };
 const expandRefine = () => { MainStore.refineOpen = !MainStore.refineOpen };
-const getBoxValue = (box) => { return (box && typeof box != 'object') ? box.replace("_", ".") : null };
+const getBoxValue = (box) => {
+  box = $config?.altBoxText?.[box] ? $config?.altBoxText?.[box] : box;
+  return (box && typeof box != 'object') ? box.replace("_", ".") : null
+};
 
 const getCategoryFieldValue = (selected) => {
   // if (import.meta.env.VITE_DEBUG) console.log('getCategoryFieldValue is running, selected:', selected);
