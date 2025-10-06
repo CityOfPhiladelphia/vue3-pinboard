@@ -32,7 +32,7 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ### 2.6.2
 
-* fixes attempt to translation content that did not need translation
+* fixes attempt to translate content that did not need translation
 
 ### 2.6.1
 
