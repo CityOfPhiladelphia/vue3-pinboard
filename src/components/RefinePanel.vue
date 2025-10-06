@@ -417,14 +417,17 @@ const refineListTranslated_multipleFieldGroups = () => {
     Object.fromEntries(Object.keys(refineList.value).map((category) =>
       [category, Object.fromEntries(Object.keys(refineList.value[category]).map((dep) =>
         [dep, (dep === 'tooltip') ? t(refineList.value[category][dep].tip) :
-          Array.from(Object.keys(refineList.value[category][dep]), (box) => new Object({
-            data: refineList.value[category][dep][box].unique_key,
-            textLabel: t(refineList.value[category][dep][box].box_label),
-            tooltip: refineList.value[category][dep][box].tooltip ? {
-              tip: t(refineList.value[category][dep][box].tooltip.tip),
-              multiline: refineList.value[category][dep][box].tooltip.multiline,
-            } : null,
-          }))]
+          Array.from(Object.keys(refineList.value[category][dep]), (box) => {
+            if (refineList.value[category][dep][box].box_label.includes('.'))
+              return new Object({
+                data: refineList.value[category][dep][box].unique_key,
+                textLabel: t(refineList.value[category][dep][box].box_label),
+                tooltip: refineList.value[category][dep][box].tooltip ? {
+                  tip: t(refineList.value[category][dep][box].tooltip.tip),
+                  multiline: refineList.value[category][dep][box].tooltip.multiline,
+                } : null
+              })
+          })]
       ))]
     ))
 }
@@ -575,8 +578,7 @@ const refineListTranslated_default = () => {
               :toggleKey="$config.refine.multipleFieldGroups[ind].toggleKey ? $config.refine.multipleFieldGroups[ind].toggleKey : ''"
               :num-of-columns="calculateColumns(refineList[ind]['checkbox'], ind)"
               :value="selectedList['checkbox_' + ind]" v-model="selectedList['checkbox_' + ind]" text-key="textLabel"
-              value-key="data" shrinkToFit="true"
-              >
+              value-key="data" shrinkToFit="true">
               <template v-slot:label>
                 <div :class="isMobile ? 'large-label' : 'small-label'">
                   {{ $t(ind + '.category') }}
