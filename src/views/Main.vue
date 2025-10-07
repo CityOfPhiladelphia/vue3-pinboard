@@ -51,14 +51,12 @@ const DataStore = useDataStore();
 const route = useRoute();
 const router = useRouter();
 
+// REFS
 const isMapVisible = ref(false);
 const isAlertModalOpen = ref(false);
-// const currentBuffer = ref(null);
 const buttonText = ref('app.viewMap');
-
 const brandingLink = ref(null);
 const appLink = ref('/');
-
 const searchString = ref(null);
 const refineEnabled = ref(true);
 const addressInputPlaceholder = ref(null);
@@ -75,8 +73,7 @@ if ($config.refineEnabled === false) {
   refineEnabled.value = false;
 }
 
-// computed
-
+// COMPUTED
 const brandingImage = computed(() => {
   let value = null;
   if (!isMobile.value) {
@@ -245,49 +242,68 @@ const closureMessageAllSites = computed(() => {
   return message;
 });
 
-const getHoliday = () => {
-  if (import.meta.env.VITE_DEBUG) console.log('getHoliday, DataStore.holidays:', DataStore.holidays);
-  let currentYear = format(new Date(), 'yyyy');
-  let currentMonth = format(new Date(), 'MM');
-  let currentDay = format(new Date(), 'dd');
-  let dateStart = new Date(currentYear, currentMonth-1, currentDay);
-  // let dateStart = new Date(2023, 0, 2);
-  // if (import.meta.env.VITE_DEBUG) console.log('currentYear:', currentYear, 'currentMonth:', currentMonth, 'currentDay:', currentDay, 'dateStart:', dateStart, 'dateStartUnix:', parseInt(format(dateStart, 'T')));
-  let currentUnixDate = parseInt(format(dateStart, 'T'));
-
-  let holi = {
-    holiday_label: '',
-    start_date: '',
-    coming_soon: false,
-    current: false,
-    just_passed: false,
-  };
-
-  for (let holiday of DataStore.holidays) {
-    // if (import.meta.env.VITE_DEBUG) console.log('holiday.start_date:', holiday.start_date, parseISO(format(holiday.start_date, 'T')));
-    // if (import.meta.env.VITE_DEBUG) console.log('currentUnixDate:', currentUnixDate, 'holiday.start_date:', holiday.start_date, parseInt(format(parseISO(holiday.start_date), 'T')));
-    let oneWeekAhead = parseInt(format(subWeeks(parseISO(holiday.start_date), 1), 'T'));
-    let actualHoliday = parseInt(format(parseISO(holiday.start_date), 'T'));
-    let oneWeekBehind = parseInt(format(addWeeks(parseISO(holiday.start_date), 1), 'T'));
-
-    if (currentUnixDate >= oneWeekAhead && currentUnixDate < actualHoliday) {
-      holi.holiday_label = holiday.holiday_label;
-      holi.coming_soon = true;
-      holi.start_date = holiday.start_date;
-    } else if (currentUnixDate == actualHoliday) {
-      holi.holiday_label = holiday.holiday_label;
-      holi.current = true;
-      holi.start_date = holiday.start_date;
-    } else if (currentUnixDate <= oneWeekBehind && currentUnixDate > actualHoliday) {
-      holi.holiday_label = holiday.holiday_label;
-      holi.just_passed = true;
-    }
-    // if (import.meta.env.VITE_DEBUG) console.log('holiday.start_date:', holiday.start_date, format(holiday.start_date, 'T'));
+const appTitle = computed(() => {
+  let value;
+  if ($config.app.title) {
+    value = $config.app.title;
+  } else if (i18nEnabled.value) {
+    value = t('app.title');
   }
-  // if (import.meta.env.VITE_DEBUG) console.log('watch holidays, holi.holiday_label:', holi.holiday_label, 'holi.coming_soon:', holi.coming_soon, 'holi.current:', holi.current);
-  MainStore.holiday = holi;
-};
+  return value;
+});
 
+const appSubTitle = computed(() => {
+  let value;
+  if (import.meta.env.VITE_DEBUG) console.log('instance.appContext.config.globalProperties.$i18n', instance.appContext.config.globalProperties.$i18n);
+  if (!isMobile.value) {
+    if ($config.app.subtitle && $config.app.subtitle != 'i18n') {
+      value = $config.app.subtitle;
+    } else if (i18nEnabled.value && $config.app.subtitle == 'i18n') {
+      // if (import.meta.env.VITE_DEBUG) console.log('t("app.subtitle"):', t('app.subtitle'));
+      value = t('app.subtitle');
+    }
+  }
+  return value;
+});
+
+const i18nLanguages = computed(() => {
+  let values = [];
+  // if (import.meta.env.VITE_DEBUG) console.log('i18nLanguages, $config.i18n:', $config.i18n);
+  if ($config.i18n.languages) {
+    values = $config.i18n.languages;
+  }
+  return values;
+});
+
+const footerLinks = computed(() => {
+  if ($config.footer) {
+    let newValues = []
+    for (let i of $config.footer) {
+      let value = {}
+      for (let j of Object.keys(i)) {
+        const valOrGetter = i[j];
+        if (typeof valOrGetter === 'function') {
+          value[j] = valOrGetter();
+          continue;
+        }
+        // if (import.meta.env.VITE_DEBUG) console.log('i:', i, 'j:', j);
+        if (!i18nEnabled.value || j !== "text") {
+          value[j] = i[j];
+        } else {
+          value[j] = t(i[j]);
+        }
+      }
+      newValues.push(value)
+    }
+    return newValues;
+  }
+});
+
+const toggleKeys = computed(() => {
+  return Array.from(Object.keys($config.refine[$config.refine.type]), (key) => $config.refine[$config.refine.type][key]?.toggleKey).filter(Boolean);
+});
+
+// MATCHERS
 watch(
   () => database.value,
   async nextDatabase => {
@@ -306,9 +322,9 @@ watch(
 
     if (nexti18nLocale !== 'en') {
       let query = { 'lang': nexti18nLocale };
-      router.push({ query: { ...startQuery, ...query }});
+      router.push({ query: { ...startQuery, ...query } });
     } else {
-      router.push({ query: { ...startQuery }});
+      router.push({ query: { ...startQuery } });
     }
 
     event('language-click', {
@@ -322,8 +338,8 @@ watch(
   () => MapStore.bufferForAddressOrLocationOrZipcode,
   async nextBufferForAddressOrLocationOrZipcode => {
     // if (Object.keys(nextBufferForAddressOrLocationOrZipcode).length) {
-      if (import.meta.env.VITE_DEBUG) console.log('watch MapStore.bufferForAddressOrLocationOrZipcode is calling filterPoints, nextBufferForAddressOrLocationOrZipcode:', nextBufferForAddressOrLocationOrZipcode);
-      filterPoints();
+    if (import.meta.env.VITE_DEBUG) console.log('watch MapStore.bufferForAddressOrLocationOrZipcode is calling filterPoints, nextBufferForAddressOrLocationOrZipcode:', nextBufferForAddressOrLocationOrZipcode);
+    filterPoints();
     // }
   }
 );
@@ -361,61 +377,15 @@ watch(
 
 watch(
   () => route.query,
-  async() => {
+  async () => {
     await nextTick();
     setHeights();
   }
 )
 
-const setHeights = () => {
-  // if (import.meta.env.VITE_DEBUG) console.log('setHeights is running');
-  let header = document.querySelector("#app-header");
-  let headerOffsetHeight = header.offsetHeight;
-  // if (import.meta.env.VITE_DEBUG) console.log('header:', header, 'header.offsetHeight:', header.offsetHeight);
-  let addressSearchHolder = document.querySelector("#address-search-holder");
-  let addressSearchHolderOffsetHeight = addressSearchHolder.offsetHeight;
-  const refinePanel = document.querySelector('#refine-panel-component');
-  let refinePanelOffsetHeight = refinePanel.offsetHeight;
-  const holidayBanner = document.querySelector('#holiday-banner');
-  let holidayBannerOffsetHeight;
-  if (holidayBanner) {
-    holidayBannerOffsetHeight = holidayBanner.offsetHeight;
-  } else {
-    holidayBannerOffsetHeight = 0;
-  }
-  const mainRow = document.querySelector('#main-row');
-  if (isMobile.value && MainStore.shouldShowGreeting) {
-    mainRow.style.setProperty('height', `calc(100dvh - ${refinePanelOffsetHeight+headerOffsetHeight+holidayBannerOffsetHeight+addressSearchHolderOffsetHeight}px)`);
-  } else if (isMobile.value) {
-    mainRow.style.setProperty('height', `calc(100dvh - ${refinePanelOffsetHeight+headerOffsetHeight+holidayBannerOffsetHeight+addressSearchHolderOffsetHeight+46}px)`);
-  } else {
-    mainRow.style.setProperty('height', `calc(100dvh - ${refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+46}px)`);
-  }
-  const map = document.querySelector('#map');
-  if (isMobile.value && !MapStore.cyclomediaOn) {
-    map.style.setProperty('height', `calc(100dvh - ${refinePanelOffsetHeight+headerOffsetHeight+holidayBannerOffsetHeight+addressSearchHolderOffsetHeight+46}px)`);
-  } else if (isMobile.value) {
-    map.style.setProperty('height', `calc(50dvh - ${(refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+84)/2}px)`);
-  } else if (!MapStore.cyclomediaOn) {
-    map.style.setProperty('height', `calc(100dvh - ${refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+46}px)`);
-  } else {
-    map.style.setProperty('height', `calc(50dvh - ${(refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+44)/2}px)`);
-  }
-
-  const cyclomediaPanel = document.querySelector('#cyclomedia-panel');
-  if (isMobile.value && MapStore.cyclomediaOn) {
-    cyclomediaPanel.style.setProperty('height', `calc(50dvh - ${(refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+84)/2}px)`);
-  } else if (MapStore.cyclomediaOn) {
-    cyclomediaPanel.style.setProperty('height', `calc(50dvh - ${(refinePanelOffsetHeight+holidayBannerOffsetHeight+headerOffsetHeight+44)/2}px)`);
-  }
-
-  const mapStoreMap = MapStore.map;
-  mapStoreMap.resize();
-};
-
 watch(
   () => MapStore.cyclomediaOn,
-  async() => {
+  async () => {
     await nextTick();
     setHeights();
   }
@@ -423,7 +393,7 @@ watch(
 
 watch(
   () => refineOpen.value,
-  async() => {
+  async () => {
     await nextTick();
     setHeights();
   }
@@ -431,7 +401,7 @@ watch(
 
 watch(
   () => MainStore.shouldShowGreeting,
-  async() => {
+  async () => {
     if (isMobile.value) {
       await nextTick();
       setHeights();
@@ -439,6 +409,7 @@ watch(
   }
 )
 
+// LIFECYCLE FUNCTIONS
 onBeforeMount(() => {
   if ($config.appLink) {
     appLink.value = $config.appLink;
@@ -447,7 +418,7 @@ onBeforeMount(() => {
   }
 });
 
-onMounted(async() => {
+onMounted(async () => {
   await nextTick();
   setHeights();
   getHoliday();
@@ -460,7 +431,7 @@ onMounted(async() => {
 
   if (route.query.resource) {
     if (import.meta.env.VITE_DEBUG) console.log('App.vue mounted, route.query.resource:', route.query.resource);
-    let selectedResource = [ route.query.resource ];
+    let selectedResource = [route.query.resource];
     DataStore.selectedResource = selectedResource[0];
   }
 
@@ -513,7 +484,96 @@ onMounted(async() => {
 });
 
 // METHODS
-const closeHolidayBanner = async() => {
+const getHoliday = () => {
+  if (import.meta.env.VITE_DEBUG) console.log('getHoliday, DataStore.holidays:', DataStore.holidays);
+  let currentYear = format(new Date(), 'yyyy');
+  let currentMonth = format(new Date(), 'MM');
+  let currentDay = format(new Date(), 'dd');
+  let dateStart = new Date(currentYear, currentMonth - 1, currentDay);
+  // let dateStart = new Date(2023, 0, 2);
+  // if (import.meta.env.VITE_DEBUG) console.log('currentYear:', currentYear, 'currentMonth:', currentMonth, 'currentDay:', currentDay, 'dateStart:', dateStart, 'dateStartUnix:', parseInt(format(dateStart, 'T')));
+  let currentUnixDate = parseInt(format(dateStart, 'T'));
+
+  let holi = {
+    holiday_label: '',
+    start_date: '',
+    coming_soon: false,
+    current: false,
+    just_passed: false,
+  };
+
+  for (let holiday of DataStore.holidays) {
+    // if (import.meta.env.VITE_DEBUG) console.log('holiday.start_date:', holiday.start_date, parseISO(format(holiday.start_date, 'T')));
+    // if (import.meta.env.VITE_DEBUG) console.log('currentUnixDate:', currentUnixDate, 'holiday.start_date:', holiday.start_date, parseInt(format(parseISO(holiday.start_date), 'T')));
+    let oneWeekAhead = parseInt(format(subWeeks(parseISO(holiday.start_date), 1), 'T'));
+    let actualHoliday = parseInt(format(parseISO(holiday.start_date), 'T'));
+    let oneWeekBehind = parseInt(format(addWeeks(parseISO(holiday.start_date), 1), 'T'));
+
+    if (currentUnixDate >= oneWeekAhead && currentUnixDate < actualHoliday) {
+      holi.holiday_label = holiday.holiday_label;
+      holi.coming_soon = true;
+      holi.start_date = holiday.start_date;
+    } else if (currentUnixDate == actualHoliday) {
+      holi.holiday_label = holiday.holiday_label;
+      holi.current = true;
+      holi.start_date = holiday.start_date;
+    } else if (currentUnixDate <= oneWeekBehind && currentUnixDate > actualHoliday) {
+      holi.holiday_label = holiday.holiday_label;
+      holi.just_passed = true;
+    }
+    // if (import.meta.env.VITE_DEBUG) console.log('holiday.start_date:', holiday.start_date, format(holiday.start_date, 'T'));
+  }
+  // if (import.meta.env.VITE_DEBUG) console.log('watch holidays, holi.holiday_label:', holi.holiday_label, 'holi.coming_soon:', holi.coming_soon, 'holi.current:', holi.current);
+  MainStore.holiday = holi;
+};
+
+const setHeights = () => {
+  // if (import.meta.env.VITE_DEBUG) console.log('setHeights is running');
+  let header = document.querySelector("#app-header");
+  let headerOffsetHeight = header.offsetHeight;
+  // if (import.meta.env.VITE_DEBUG) console.log('header:', header, 'header.offsetHeight:', header.offsetHeight);
+  let addressSearchHolder = document.querySelector("#address-search-holder");
+  let addressSearchHolderOffsetHeight = addressSearchHolder.offsetHeight;
+  const refinePanel = document.querySelector('#refine-panel-component');
+  let refinePanelOffsetHeight = refinePanel.offsetHeight;
+  const holidayBanner = document.querySelector('#holiday-banner');
+  let holidayBannerOffsetHeight;
+  if (holidayBanner) {
+    holidayBannerOffsetHeight = holidayBanner.offsetHeight;
+  } else {
+    holidayBannerOffsetHeight = 0;
+  }
+  const mainRow = document.querySelector('#main-row');
+  if (isMobile.value && MainStore.shouldShowGreeting) {
+    mainRow.style.setProperty('height', `calc(100dvh - ${refinePanelOffsetHeight + headerOffsetHeight + holidayBannerOffsetHeight + addressSearchHolderOffsetHeight}px)`);
+  } else if (isMobile.value) {
+    mainRow.style.setProperty('height', `calc(100dvh - ${refinePanelOffsetHeight + headerOffsetHeight + holidayBannerOffsetHeight + addressSearchHolderOffsetHeight + 46}px)`);
+  } else {
+    mainRow.style.setProperty('height', `calc(100dvh - ${refinePanelOffsetHeight + holidayBannerOffsetHeight + headerOffsetHeight + 46}px)`);
+  }
+  const map = document.querySelector('#map');
+  if (isMobile.value && !MapStore.cyclomediaOn) {
+    map.style.setProperty('height', `calc(100dvh - ${refinePanelOffsetHeight + headerOffsetHeight + holidayBannerOffsetHeight + addressSearchHolderOffsetHeight + 46}px)`);
+  } else if (isMobile.value) {
+    map.style.setProperty('height', `calc(50dvh - ${(refinePanelOffsetHeight + holidayBannerOffsetHeight + headerOffsetHeight + 84) / 2}px)`);
+  } else if (!MapStore.cyclomediaOn) {
+    map.style.setProperty('height', `calc(100dvh - ${refinePanelOffsetHeight + holidayBannerOffsetHeight + headerOffsetHeight + 46}px)`);
+  } else {
+    map.style.setProperty('height', `calc(50dvh - ${(refinePanelOffsetHeight + holidayBannerOffsetHeight + headerOffsetHeight + 44) / 2}px)`);
+  }
+
+  const cyclomediaPanel = document.querySelector('#cyclomedia-panel');
+  if (isMobile.value && MapStore.cyclomediaOn) {
+    cyclomediaPanel.style.setProperty('height', `calc(50dvh - ${(refinePanelOffsetHeight + holidayBannerOffsetHeight + headerOffsetHeight + 84) / 2}px)`);
+  } else if (MapStore.cyclomediaOn) {
+    cyclomediaPanel.style.setProperty('height', `calc(50dvh - ${(refinePanelOffsetHeight + holidayBannerOffsetHeight + headerOffsetHeight + 44) / 2}px)`);
+  }
+
+  const mapStoreMap = MapStore.map;
+  mapStoreMap.resize();
+};
+
+const closeHolidayBanner = async () => {
   showAutomaticHolidayBanner.value = false;
   showForceHolidayBanner.value = false;
   await nextTick();
@@ -526,11 +586,11 @@ const geolocate = () => {
   MainStore.selectedZipcode = null;
 }
 
-const clearGeocodeAndZipcode = async() => {
+const clearGeocodeAndZipcode = async () => {
   let startQuery = { ...route.query };
   delete startQuery['address'];
   delete startQuery['zipcode'];
-  router.push({ query: { ...startQuery }});
+  router.push({ query: { ...startQuery } });
 };
 
 const clearBadAddress = () => {
@@ -711,18 +771,6 @@ const checkKeywords = (row) => {
 
     if (import.meta.env.VITE_DEBUG) console.log('checkKeywords, description:', description, 'selectedKeywords.value:', selectedKeywords.value);
 
-    // const descriptionTranslated = description.map(tag => {
-    //   if (i18nEnabled.value) {
-    //     let tagTranslated = t(tag);
-    //     if (import.meta.env.VITE_DEBUG) console.log('tag:', tag, 'tagTranslated:', tagTranslated);
-    //     return tagTranslated;
-    //   } else {
-    //     return tag;
-    //   }
-    // });
-    // if (import.meta.env.VITE_DEBUG) console.log('description:', description, 'descriptionTranslated:', descriptionTranslated);
-    // if (import.meta.env.VITE_DEBUG) console.log('still going, selectedKeywords.value[0]:', selectedKeywords.value[0], 'row.properties.tags:', row.properties.tags, 'description:', description);
-
     let threshold = 0.2;
     if ($config.searchBar.fuseThreshold) {
       threshold = $config.searchBar.fuseThreshold;
@@ -836,8 +884,15 @@ const filterPoints = () => {
 
   // if (import.meta.env.VITE_DEBUG) console.log('filteredRows:', filteredRows);
   // if Finder app passes a custom refine function, Pinboard will use that to modify the current data. Otherwise use the data as is.
-  DataStore.currentData = $config.refine.customRefine ? $config.refine.customRefine(filteredRows, MainStore.selectedServices) : filteredRows;
+  DataStore.currentData = toggleKeys.value.length ? applyToggleRefineFunctions(filteredRows, MainStore.selectedServices) : filteredRows;
 };
+
+const applyToggleRefineFunctions = (locations, services) => {
+  toggleKeys.value.forEach((key) => {
+    locations = $config.refine[$config.refine.type][key.split('_')[0]].toggleRefine(locations, services);
+  })
+  return locations;
+}
 
 // todo move to Map.vue
 const toggleToMap = () => {
@@ -854,63 +909,6 @@ const closeModal = () => {
   isAlertModalOpen.value = false;
 };
 
-const appTitle = computed(() => {
-  let value;
-  if ($config.app.title) {
-    value = $config.app.title;
-  } else if (i18nEnabled.value) {
-    value = t('app.title');
-  }
-  return value;
-});
-
-const appSubTitle = computed(() => {
-  let value;
-  if (import.meta.env.VITE_DEBUG) console.log('instance.appContext.config.globalProperties.$i18n', instance.appContext.config.globalProperties.$i18n);
-  if (!isMobile.value) {
-    if ($config.app.subtitle && $config.app.subtitle != 'i18n') {
-      value = $config.app.subtitle;
-    } else if (i18nEnabled.value && $config.app.subtitle == 'i18n') {
-      // if (import.meta.env.VITE_DEBUG) console.log('t("app.subtitle"):', t('app.subtitle'));
-      value = t('app.subtitle');
-    }
-  }
-  return value;
-});
-
-const i18nLanguages = computed(() => {
-  let values = [];
-  // if (import.meta.env.VITE_DEBUG) console.log('i18nLanguages, $config.i18n:', $config.i18n);
-  if ($config.i18n.languages) {
-    values = $config.i18n.languages;
-  }
-  return values;
-});
-
-const footerLinks = computed(() => {
-  if ($config.footer) {
-    let newValues = []
-    for (let i of $config.footer) {
-      let value = {}
-      for (let j of Object.keys(i)) {
-        const valOrGetter = i[j];
-        if (typeof valOrGetter === 'function') {
-          value[j] = valOrGetter();
-          continue;
-        }
-        // if (import.meta.env.VITE_DEBUG) console.log('i:', i, 'j:', j);
-        if (!i18nEnabled.value || j !== "text") {
-          value[j] = i[j];
-        } else {
-          value[j] = t(i[j]);
-        }
-      }
-      newValues.push(value)
-    }
-    return newValues;
-  }
-});
-
 const popupClicked = () => {
   if (import.meta.env.VITE_DEBUG) console.log('popupClicked is running');
   if (isMobile.value) {
@@ -922,186 +920,102 @@ const popupClicked = () => {
 
 <template>
 
-<app-header
-  :app-title="appTitle"
-  :app-subtitle="appSubTitle"
-  :app-link="appLink"
-  :is-sticky="true"
-  :is-fluid="true"
-  :branding-image="brandingImage"
-  :branding-link="brandingLink"
-  >
-  <template #mobile-nav>
-    <mobile-nav :links="footerLinks" />
-  </template>
+  <app-header :app-title="appTitle" :app-subtitle="appSubTitle" :app-link="appLink" :is-sticky="true" :is-fluid="true"
+    :branding-image="brandingImage" :branding-link="brandingLink">
+    <template #mobile-nav>
+      <mobile-nav :links="footerLinks" />
+    </template>
 
-  <template
-    v-if="i18nEnabled"
-    #lang-selector-nav
-  >
-    <lang-selector
-      v-if="i18nEnabled && !i18nSelectorHidden"
-      :languages="i18nLanguages"
-    />
-  </template>
-</app-header>
+    <template v-if="i18nEnabled" #lang-selector-nav>
+      <lang-selector v-if="i18nEnabled && !i18nSelectorHidden" :languages="i18nLanguages" />
+    </template>
+  </app-header>
 
-<main id="main" class="main invisible-scrollbar">
+  <main id="main" class="main invisible-scrollbar">
 
-  <div
-    v-show="isAlertModalOpen"
-    class="modalWrapper"
-    @click="closeModal"
-  >
-    <modal
-      type="none"
-      :hide-close-button="true"
-      :close="closeModal"
-    >
-      <template #title>
-        {{ alertModalTitle }}
-      </template>
-      <slot>
-        <div class="content">
-          <div
-            v-html="alertModalBody"
-          ></div>
+    <div v-show="isAlertModalOpen" class="modalWrapper" @click="closeModal">
+      <modal type="none" :hide-close-button="true" :close="closeModal">
+        <template #title>
+          {{ alertModalTitle }}
+        </template>
+        <slot>
+          <div class="content">
+            <div v-html="alertModalBody"></div>
+          </div>
+        </slot>
+        <template #actions-before>
+          <button class="button is-secondary" @click="closeModal">
+            Close
+          </button>
+        </template>
+      </modal>
+    </div>
+
+    <div id="main-column" class="main-column invisible-scrollbar">
+      <alert-banner v-if="$config.alerts && $config.alerts.header && $config.alerts.header.enabled" />
+
+      <div
+        v-if="showForceHolidayBanner || showAutomaticHolidayBanner && holiday.coming_soon || showAutomaticHolidayBanner && holiday.current"
+        id="holiday-banner" class="holiday-banner columns is-mobile">
+        <div v-if="!CustomRouterLink" class="column holiday-banner-large-column is-10" v-html="closureMessageAllSites">
         </div>
-      </slot>
-      <template #actions-before>
-        <button
-          class="button is-secondary"
-          @click="closeModal"
-        >
-          Close
-        </button>
-      </template>
-    </modal>
-  </div>
+        <div v-if="CustomRouterLink" class="column holiday-banner-large-column is-10">
+          <CustomRouterLink></CustomRouterLink>
+        </div>
 
-  <div
-    id="main-column"
-    class="main-column invisible-scrollbar"
-  >
-    <alert-banner v-if="$config.alerts && $config.alerts.header && $config.alerts.header.enabled" />
-
-    <div
-      v-if="showForceHolidayBanner || showAutomaticHolidayBanner && holiday.coming_soon || showAutomaticHolidayBanner && holiday.current"
-      id="holiday-banner"
-      class="holiday-banner columns is-mobile"
-    >
-      <div
-        v-if="!CustomRouterLink"
-        class="column holiday-banner-large-column is-10"
-        v-html="closureMessageAllSites"
-      >
-      </div>
-      <div
-        v-if="CustomRouterLink"
-        class="column holiday-banner-large-column is-10"
-      >
-        <CustomRouterLink></CustomRouterLink>
+        <div class="column holiday-banner-small-column is-2">
+          <button style="height: 100% !important;"
+            class="button is-primary is-small is-pulled-right holiday-banner-close-button" @click="closeHolidayBanner">
+            x
+          </button>
+        </div>
       </div>
 
-      <div class="column holiday-banner-small-column is-2">
-        <button
-          style="height: 100% !important;"
-          class="button is-primary is-small is-pulled-right holiday-banner-close-button"
-          @click="closeHolidayBanner"
-        >
-          x
-        </button>
+      <address-search-control v-if="isMobile" :input-id="'address-search-input'" />
+
+      <div>
+        <refine-panel :refine-title="refineTitle" />
+        <!-- @geolocate-control-fire="geolocateControlFire" -->
       </div>
-    </div>
 
-    <address-search-control
-      v-if="isMobile"
-      :input-id="'address-search-input'"
-    />
-
-    <div>
-      <refine-panel
-        :refine-title="refineTitle"
-      />
-      <!-- @geolocate-control-fire="geolocateControlFire" -->
-    </div>
-
-    <div
-      v-show="!isMobile || isMobile && !refineOpen"
-      id="main-row"
-      class="main-row"
-    >
-      <div
-        v-show="locationsPanelVisible"
-        class="locations-holder"
-      >
-        <locations-panel
-          :is-map-visible="isMapVisible"
-          @clear-bad-address="clearBadAddress"
-          @clicked-view-map="toggleToMap"
-        />
-      </div>
-      <div
-        v-show="mapPanelVisible"
-        id="map-panel-holder"
-        class="map-panel-holder"
-      >
-        <map-panel
-          @clear-search="clearSearchTriggered"
-          @toggleMap="toggleToMap"
-          @geolocate="geolocate"
-          @popup-clicked="popupClicked"
-        />
+      <div v-show="!isMobile || isMobile && !refineOpen" id="main-row" class="main-row">
+        <div v-show="locationsPanelVisible" class="locations-holder">
+          <locations-panel :is-map-visible="isMapVisible" @clear-bad-address="clearBadAddress"
+            @clicked-view-map="toggleToMap" />
+        </div>
+        <div v-show="mapPanelVisible" id="map-panel-holder" class="map-panel-holder">
+          <map-panel @clear-search="clearSearchTriggered" @toggleMap="toggleToMap" @geolocate="geolocate"
+            @popup-clicked="popupClicked" />
           <!-- @geolocate-control-fire="geolocateControlFire" -->
+        </div>
       </div>
+
+    </div>
+    <div v-show="toggleButtonsVisible" class="toggle-buttons-holder">
+      <button class="capitalized toggle-button toggle-button-left"
+        :class="isMapVisible ? 'toggle-button-inactive' : 'toggle-button-active'" @click="toggleToList">
+        <div class="text-div">
+          <font-awesome-icon icon="fa-solid fa-rectangle-list" class="toggle-button-icon" />
+          {{ $t('app.list') }}
+        </div>
+      </button>
+      <button class="capitalized toggle-button toggle-button-right"
+        :class="isMapVisible ? 'toggle-button-active' : 'toggle-button-inactive'" @click="toggleToMap">
+        <div class="text-div">
+          <font-awesome-icon icon="fa-solid fa-map-marker-alt" class="toggle-button-icon" />
+          {{ $t('app.map') }}
+        </div>
+      </button>
     </div>
 
-  </div>
-  <div
-    v-show="toggleButtonsVisible"
-    class="toggle-buttons-holder"
-  >
-    <button
-      class="capitalized toggle-button toggle-button-left"
-      :class="isMapVisible ? 'toggle-button-inactive' : 'toggle-button-active'"
-      @click="toggleToList"
-    >
-      <div class="text-div">
-        <font-awesome-icon
-          icon="fa-solid fa-rectangle-list"
-          class="toggle-button-icon"
-        />
-        {{ $t('app.list') }}
-      </div>
-    </button>
-    <button
-      class="capitalized toggle-button toggle-button-right"
-      :class="isMapVisible ? 'toggle-button-active' : 'toggle-button-inactive'"
-      @click="toggleToMap"
-    >
-      <div class="text-div">
-        <font-awesome-icon
-          icon="fa-solid fa-map-marker-alt"
-          class="toggle-button-icon"
-        />
-        {{ $t('app.map') }}
-      </div>
-    </button>
-  </div>
+  </main>
 
-</main>
-
-<app-footer
-  :is-sticky="true"
-  :is-hidden-mobile="true"
-  :links="footerLinks"
->
-</app-footer>
+  <app-footer :is-sticky="true" :is-hidden-mobile="true" :links="footerLinks">
+  </app-footer>
 
 </template>
 
 <style lang="scss">
-
 .text-div {
   height: 100%;
   width: 100%;
@@ -1155,7 +1069,7 @@ const popupClicked = () => {
 }
 
 .toggle-button-active {
- background-color: #ffffff;
+  background-color: #ffffff;
 }
 
 .toggle-button-inactive {
@@ -1178,7 +1092,7 @@ const popupClicked = () => {
   border-right-width: 0px;
 }
 
-.no-scroll{
+.no-scroll {
   overflow: hidden;
   height: 100vh;
 }
@@ -1240,5 +1154,4 @@ const popupClicked = () => {
   align-items: center;
   z-index: 1000;
 }
-
 </style>

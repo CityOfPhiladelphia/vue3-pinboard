@@ -329,7 +329,7 @@ const makeID = (itemTitle) => {
 };
 
 const getActiveToggles = () => {
-  const tagNames = [...new Set(props.toggleKeys).intersection(new Set(Object.values(route.query)[0]?.split(',')))];
+  const tagNames = [...new Set(props.toggleKeys).intersection(new Set(Object.values(route.query).toString().split(',')))];
   const tagArray = Array.from((tagNames), (toggle) => {
     return {
       text: $config.toggleTags?.[toggle]?.tagText ? $config.toggleTags[toggle].tagText.replace("_", ".") : '',
