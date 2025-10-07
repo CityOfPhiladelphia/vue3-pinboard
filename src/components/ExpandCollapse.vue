@@ -329,11 +329,11 @@ const makeID = (itemTitle) => {
 };
 
 const getActiveToggles = () => {
-  const tagNames = [...new Set(props.toggleKeys).intersection(new Set(Object.values(route.query)[0].split(',')))];
+  const tagNames = [...new Set(props.toggleKeys).intersection(new Set(Object.values(route.query)[0]?.split(',')))];
   const tagArray = Array.from((tagNames), (toggle) => {
     return {
-      text: $config.toggleTags[toggle].tagText.replace("_", "."),
-      color: $config.toggleTags[toggle].color
+      text: $config.toggleTags?.[toggle]?.tagText ? $config.toggleTags[toggle].tagText.replace("_", ".") : '',
+      color: $config.toggleTags?.[toggle]?.color ? $config.toggleTags[toggle].color : ''
     }
   });
   return Object.fromEntries(tagNames.map((tag, i) => [tag, tagArray[i]]));
