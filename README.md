@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.6.3
+
+* allows changing tag text to a different phrase for a toggle than the toggle name
+
 ### 2.6.2
 
 * fixes attempt to translate content that did not need translation
