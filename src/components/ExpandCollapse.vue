@@ -190,8 +190,6 @@ watch(
   async () => {
     // if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse watch route, nextRoute:', nextRoute);
     activeToggles.value = getActiveToggles();
-    console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
-    console.log("TOGGLES: ", activeToggles.value)
   }
 )
 
