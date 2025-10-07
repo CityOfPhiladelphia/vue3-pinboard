@@ -190,6 +190,8 @@ watch(
   async () => {
     // if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse watch route, nextRoute:', nextRoute);
     activeToggles.value = getActiveToggles();
+    console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+    console.log("TOGGLES: ", activeToggles.value)
   }
 )
 
@@ -329,7 +331,7 @@ const makeID = (itemTitle) => {
 };
 
 const getActiveToggles = () => {
-  const tagNames = [...new Set(props.toggleKeys).intersection(new Set(Object.values(route.query)[0]?.split(',')))];
+  const tagNames = [...new Set(props.toggleKeys).intersection(new Set(Object.values(route.query).toString().split(',')))];
   const tagArray = Array.from((tagNames), (toggle) => {
     return {
       text: $config.toggleTags?.[toggle]?.tagText ? $config.toggleTags[toggle].tagText.replace("_", ".") : '',
@@ -439,6 +441,7 @@ const getActiveToggles = () => {
 
 .location-name {
   line-height: .5rem;
+  margin-left: 0.313rem;
 }
 
 .checkbox-label {
@@ -505,6 +508,7 @@ const getActiveToggles = () => {
     text-transform: uppercase;
     position: relative;
     top: -3px;
+    margin-left: 0.626rem;
     padding-left: 14px;
     padding-right: 14px;
     padding-top: 7px;
