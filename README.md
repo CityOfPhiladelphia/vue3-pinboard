@@ -30,9 +30,13 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.6.4
+
+* fixes a problem where tags would no render under certain circumstances
+
 ### 2.6.3
 
-* allows changing tag text to a different phrase for a toggle than the toggle name
+* allows alternate text for certain elements
 
 ### 2.6.2
 
