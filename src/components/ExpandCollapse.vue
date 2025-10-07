@@ -439,7 +439,6 @@ const getActiveToggles = () => {
 
 .location-name {
   line-height: .5rem;
-  margin-left: 0.313rem;
 }
 
 .checkbox-label {
@@ -506,7 +505,6 @@ const getActiveToggles = () => {
     text-transform: uppercase;
     position: relative;
     top: -3px;
-    margin-left: 0.626rem;
     padding-left: 14px;
     padding-right: 14px;
     padding-top: 7px;
