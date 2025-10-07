@@ -136,16 +136,6 @@ const sectionColor = computed(() => {
   return sectionColor;
 });
 
-const toggleTagTitles = computed(() => {
-  console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
-  return Array.from((activeToggles.value), (toggle) => $config.toggleTags[toggle].tagText)
-});
-
-const toggleTagColors = computed(() => {
-  console.log("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY")
-  return Array.from((activeToggles.value), (toggle) => $config.toggleTags[toggle].color)
-});
-
 const selectedResource = computed(() => {
   return DataStore.selectedResource;
 });
@@ -192,6 +182,14 @@ watch(
         }
       }
     }
+  }
+)
+
+watch(
+  () => route.query,
+  async () => {
+    // if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse watch route, nextRoute:', nextRoute);
+    activeToggles.value = getActiveToggles();
   }
 )
 
@@ -331,15 +329,14 @@ const makeID = (itemTitle) => {
 };
 
 const getActiveToggles = () => {
-
   const tagNames = [...new Set(props.toggleKeys).intersection(new Set(Object.values(route.query)[0].split(',')))];
-  const tagTitles = Array.from((tagNames), (toggle) => $config.toggleTags[toggle].tagText);
-  const tagColors = Array.from((tagNames), (toggle) => $config.toggleTags[toggle].color);
-
-  //MAKE OBJECTS FROM THESE ENTRIES
-
-
-  return toggleTags;
+  const tagArray = Array.from((tagNames), (toggle) => {
+    return {
+      text: $config.toggleTags[toggle].tagText.replace("_", "."),
+      color: $config.toggleTags[toggle].color
+    }
+  });
+  return Object.fromEntries(tagNames.map((tag, i) => [tag, tagArray[i]]));
 };
 
 </script>
@@ -362,9 +359,10 @@ const getActiveToggles = () => {
             :class="{ 'is-8': locationOpen && $config.printView, 'is-11': !locationOpen }">
             <span class="h5 location-name" :class="item._featureId" :aria-expanded="locationOpen">
               {{ siteName }}
-              <div v-for="i in activeToggles.values.length" class="section-name"
-                :style="{ 'background-color': toggleTagColors[i] }"
-                v-html="'<b>' + $t('categoryType.' + toggleTagTitles[i]) + '</b>'">
+              <div v-for="key in Object.keys(activeToggles)" class="section-name"
+                :style="{ 'background-color': activeToggles[key].color }"
+                v-html="'<b>' + $t(activeToggles[key].text) + '</b>'"
+                >
               </div>
               <div v-if="section && !i18nEnabled" class="section-name" :style="{ 'background-color': sectionColor }">
                 {{ sectionTitle }}
