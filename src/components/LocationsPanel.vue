@@ -81,7 +81,7 @@ onMounted(async () => {
 // COMPUTED
 const toggleKeys = computed(() => {
   return Array.from(Object.keys($config.refine[$config.refine.type]), (key) => $config.refine[$config.refine.type][key]?.toggleKey).filter(Boolean);
-})
+});
 
 const tagsPhrase = computed(() => {
   let value;
@@ -580,14 +580,14 @@ const locationsPanelClass = computed(() => {
       <div v-if="geocodeStatus !== 'error'" class="location-container">
 
         <div v-for="item in currentData" :key="item._featureId">
-          <expand-collapse :item="item" :is-map-visible="isMapVisible" :checked="selectAllCheckbox"
+          <expand-collapse :item="item" :is-map-visible="isMapVisible" :checked="selectAllCheckbox" :toggle-keys="toggleKeys"
             @print-box-checked="printBoxChecked">
             <print-share-section v-if="item._featureId == DataStore.selectedResource && $config.showPrintInCards"
               :item="item" />
 
             <expand-collapse-content
               v-if="$config.customComps && Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource"
-              :item="item" :is-mobile="isMobile" />
+              :item="item" :is-mobile="isMobile"/>
 
             <div
               v-if="!Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource"
