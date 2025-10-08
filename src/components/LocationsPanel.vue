@@ -203,12 +203,10 @@ const currentData = computed(() => {
   // get the max number of results for current toggle settings if parent app has toggleable refine groups
   if (toggleKeys.value.length) { numUnfilteredToggleResults.value = getTotalResultsWithToggles() };
 
-  // if parent app passed toggle keys to Pinboard, apply each custom refine function parent App
-  const locations = toggleKeys.value.length ? applyToggleRefineFunctions([...DataStore.currentData], MainStore.selectedServices) : [...DataStore.currentData];
-
   // if some toggle is active use the total results for the toggle status instead of the default
   numUnfilteredResults.value = MainStore.selectedServices.some((service) => toggleKeys.value.includes(service)) ? numUnfilteredToggleResults.value : numTotalResults.value.default;
 
+  const locations = [...DataStore.currentData];
   const valOrGetter = locationInfo.value.siteName;
   const valOrGetterType = typeof valOrGetter;
   let val;
@@ -580,14 +578,14 @@ const locationsPanelClass = computed(() => {
       <div v-if="geocodeStatus !== 'error'" class="location-container">
 
         <div v-for="item in currentData" :key="item._featureId">
-          <expand-collapse :item="item" :is-map-visible="isMapVisible" :checked="selectAllCheckbox" :toggle-keys="toggleKeys"
-            @print-box-checked="printBoxChecked">
+          <expand-collapse :item="item" :is-map-visible="isMapVisible" :checked="selectAllCheckbox"
+            :toggle-keys="toggleKeys" @print-box-checked="printBoxChecked">
             <print-share-section v-if="item._featureId == DataStore.selectedResource && $config.showPrintInCards"
               :item="item" />
 
             <expand-collapse-content
               v-if="$config.customComps && Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource"
-              :item="item" :is-mobile="isMobile"/>
+              :item="item" :is-mobile="isMobile" />
 
             <div
               v-if="!Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource"
