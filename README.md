@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.6.5
+
+* reduced busy work
+
 ### 2.6.4
 
 * fixes a problem where tags would no render under certain circumstances
