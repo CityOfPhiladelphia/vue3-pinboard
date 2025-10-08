@@ -45,7 +45,6 @@ const sortBy = ref('Alphabetically');
 const printCheckboxes = ref([]);
 const selectAllCheckbox = ref(false);
 const numUnfilteredResults = ref(0);
-const numUnfilteredToggleResults = ref(0);
 
 onMounted(async () => {
   // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue mounted, $config:', $config, 'i18nLocale.value:', i18nLocale.value, 'route.query:', route.query);
@@ -73,9 +72,9 @@ onMounted(async () => {
 
   // get toggleKey counts if toggleKeys is not empty
   toggleKeys.value.forEach((key) => {
-    numTotalResults.value[key] = $config.refine[$config.refine.type][key.split('_')[0]].toggleCount(database.value);
+    numMaxResults.value[key] = $config.refine[$config.refine.type][key.split('_')[0]].toggleCount(database.value);
   })
-  numTotalResults.value.default = toggleKeys.value.length ? applyToggleRefineFunctions(database.value, []).length : database.value.length;
+  numMaxResults.value.default = toggleKeys.value.length ? applyToggleRefineFunctions(database.value, []).length : database.value.length;
 });
 
 // COMPUTED
@@ -135,7 +134,7 @@ const database = computed(() => {
   return value;
 });
 
-const numTotalResults = computed(() => {
+const numMaxResults = computed(() => {
   return {
     default: 0
   }
@@ -200,15 +199,10 @@ const bufferLength = computed(() => {
 })
 
 const currentData = computed(() => {
-  // get the max number of results for current toggle settings if parent app has toggleable refine groups
-  if (toggleKeys.value.length) { numUnfilteredToggleResults.value = getTotalResultsWithToggles() };
-
-  // if parent app passed toggle keys to Pinboard, apply each custom refine function parent App
-  const locations = toggleKeys.value.length ? applyToggleRefineFunctions([...DataStore.currentData], MainStore.selectedServices) : [...DataStore.currentData];
-
   // if some toggle is active use the total results for the toggle status instead of the default
-  numUnfilteredResults.value = MainStore.selectedServices.some((service) => toggleKeys.value.includes(service)) ? numUnfilteredToggleResults.value : numTotalResults.value.default;
+  numUnfilteredResults.value = MainStore.selectedServices.some((service) => toggleKeys.value.includes(service)) ? getTotalResultsWithToggles() : numMaxResults.value.default;
 
+  const locations = [...DataStore.currentData];
   const valOrGetter = locationInfo.value.siteName;
   const valOrGetterType = typeof valOrGetter;
   let val;
@@ -377,7 +371,7 @@ const getTotalResultsWithToggles = () => {
 
   // bitwise AND each toggle current status buffer with compare buffer
   toggleKeys.value.forEach((key) => {
-    const toggleView = MainStore.selectedServices.includes(key) ? new DataView(numTotalResults.value[`${key}`]['toggleOn']) : new DataView(numTotalResults.value[`${key}`]['toggleOff']);
+    const toggleView = MainStore.selectedServices.includes(key) ? new DataView(numMaxResults.value[`${key}`]['toggleOn']) : new DataView(numMaxResults.value[`${key}`]['toggleOff']);
     for (let i = 0; i < bufferLength.value; i++) {
       compareView.setUint8(i, compareView.getUint8(i) & toggleView.getUint8(i));
     }
@@ -580,14 +574,14 @@ const locationsPanelClass = computed(() => {
       <div v-if="geocodeStatus !== 'error'" class="location-container">
 
         <div v-for="item in currentData" :key="item._featureId">
-          <expand-collapse :item="item" :is-map-visible="isMapVisible" :checked="selectAllCheckbox" :toggle-keys="toggleKeys"
-            @print-box-checked="printBoxChecked">
+          <expand-collapse :item="item" :is-map-visible="isMapVisible" :checked="selectAllCheckbox"
+            :toggle-keys="toggleKeys" @print-box-checked="printBoxChecked">
             <print-share-section v-if="item._featureId == DataStore.selectedResource && $config.showPrintInCards"
               :item="item" />
 
             <expand-collapse-content
               v-if="$config.customComps && Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource"
-              :item="item" :is-mobile="isMobile"/>
+              :item="item" :is-mobile="isMobile" />
 
             <div
               v-if="!Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource"
