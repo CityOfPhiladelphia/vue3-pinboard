@@ -67,6 +67,7 @@ if ($config.app.logoLink && $config.app.logoLink == 'none') {
   brandingLink.value = {
     style: 'pointer-events: none',
   }
+  MainStore.brandingLink = brandingLink.value;
 }
 
 if ($config.refineEnabled === false) {
@@ -85,6 +86,7 @@ const brandingImage = computed(() => {
       }
     }
   }
+  MainStore.brandingImage = value;
   return value;
 });
 
@@ -416,6 +418,7 @@ onBeforeMount(() => {
   } else {
     appLink.value = '.';
   }
+  MainStore.appLink = appLink.value;
 });
 
 onMounted(async () => {

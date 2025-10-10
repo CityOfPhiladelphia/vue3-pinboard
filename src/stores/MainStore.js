@@ -34,6 +34,9 @@ export const useMainStore = defineStore('MainStore', {
       submittedCheckboxValue: null,
       filterChangeCounter: 0,
       appTitle: '',
+      appLink: '',
+      brandingLink: null,
+      brandingImage: ''
     };
   },
 
