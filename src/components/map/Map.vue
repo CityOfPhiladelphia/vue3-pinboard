@@ -519,7 +519,6 @@ const removeAllCyclomediaMapLayers = () => {
   let viewConeGeojson = polygon([[[0,0], [0,0], [0,0], [0,0]]]);
   map.getSource('cyclomediaViewcone').setData(viewConeGeojson);
   $mapConfig.pwdDrawnMapStyle.sources.cyclomediaViewcone.data = viewConeGeojson;
-  MapStore.setCyclomediaCameraLngLat(MapStore.cyclomediaCameraLngLat, null);
 }
 
 // toggle cyclomedia on and off

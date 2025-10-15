@@ -143,9 +143,9 @@ const setNewLocation = async (coords) => {
       }
     });
 
-    if (!MapStore.currentAddressCoords.length) {
-      $emit('updateCameraLngLat', coords);
-    }
+    // if (!MapStore.currentAddressCoords.length) {
+    //   $emit('updateCameraLngLat', coords);
+    // }
     const orientation = viewer.getOrientation();
     $emit('updateCameraYaw', orientation.yaw);
     $emit('updateCameraHFov', orientation.hFov, orientation.yaw);
