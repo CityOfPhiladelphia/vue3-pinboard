@@ -6,7 +6,7 @@ import { useGeocodeStore } from '../stores/GeocodeStore.js';
 import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
-import { ref, computed, getCurrentInstance, onBeforeMount, onMounted, onBeforeUpdate, watch } from 'vue';
+import { ref, computed, getCurrentInstance, onBeforeMount, onMounted, watch } from 'vue';
 import { event } from 'vue-gtag'
 
 const MainStore = useMainStore();
@@ -80,11 +80,6 @@ onMounted(async () => {
 
   printCheckboxes.value = MainStore.printCheckboxes;
 });
-
-onBeforeUpdate(() => {
-  // if some toggle is active use the total results for the toggle status instead of the default
-  numUnfilteredResults.value = MainStore.selectedServices.some((service) => toggleKeys.value.includes(service)) ? getTotalResultsWithToggles() : numMaxResults.value.default
-})
 
 // COMPUTED
 const toggleKeys = computed(() => {
@@ -349,6 +344,12 @@ watch(
     }
   }
 );
+
+watch(currentData, () => {
+  // if some toggle is active use the total results for the toggle status instead of the default
+  console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXX")
+  numUnfilteredResults.value = MainStore.selectedServices.some((service) => toggleKeys.value.includes(service)) ? getTotalResultsWithToggles() : numMaxResults.value.default
+})
 
 // METHODS
 const countBits = (bits) => {
