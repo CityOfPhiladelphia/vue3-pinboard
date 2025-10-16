@@ -6,7 +6,7 @@ import { useGeocodeStore } from '../stores/GeocodeStore.js';
 import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
-import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
+import { ref, computed, getCurrentInstance, onMounted, onBeforeUpdate, watch } from 'vue';
 import { event } from 'vue-gtag'
 
 const MainStore = useMainStore();
@@ -39,13 +39,15 @@ const props = defineProps({
   },
 });
 
-// DATA
+// REFS
 const searchDistance = ref(null);
 const sortBy = ref('Alphabetically');
 const printCheckboxes = ref([]);
 const selectAllCheckbox = ref(false);
 const numUnfilteredResults = ref(0);
+const numMaxResults = ref({});
 
+// LIFECYCLE HOOKS
 onMounted(async () => {
   // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue mounted, $config:', $config, 'i18nLocale.value:', i18nLocale.value, 'route.query:', route.query);
   const routeQueryKeys = Object.keys(route.query);
@@ -76,6 +78,11 @@ onMounted(async () => {
   })
   numMaxResults.value.default = toggleKeys.value.length ? applyToggleRefineFunctions(database.value, []).length : database.value.length;
 });
+
+onBeforeUpdate(() => {
+  // if some toggle is active use the total results for the toggle status instead of the default
+  numUnfilteredResults.value = MainStore.selectedServices.some((service) => toggleKeys.value.includes(service)) ? getTotalResultsWithToggles() : numMaxResults.value.default
+})
 
 // COMPUTED
 const toggleKeys = computed(() => {
@@ -132,12 +139,6 @@ const database = computed(() => {
     value = DataStore.sources[DataStore.appType].data.rows || DataStore.sources[DataStore.appType].data.features || DataStore.sources[DataStore.appType].features;
   }
   return value;
-});
-
-const numMaxResults = computed(() => {
-  return {
-    default: 0
-  }
 });
 
 const summarySentenceStart = computed(() => {
@@ -199,9 +200,6 @@ const bufferLength = computed(() => {
 })
 
 const currentData = computed(() => {
-  // if some toggle is active use the total results for the toggle status instead of the default
-  numUnfilteredResults.value = MainStore.selectedServices.some((service) => toggleKeys.value.includes(service)) ? getTotalResultsWithToggles() : numMaxResults.value.default;
-
   const locations = [...DataStore.currentData];
   const valOrGetter = locationInfo.value.siteName;
   const valOrGetterType = typeof valOrGetter;
