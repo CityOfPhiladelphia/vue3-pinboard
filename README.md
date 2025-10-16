@@ -30,6 +30,12 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.6.6
+
+* makes print/share section opt out instead of opt in
+* fixes bug with camera placement in cyclomedia
+* fixes bug with opening cyclomedia after using print view
+
 ### 2.6.5
 
 * reduced busy work
