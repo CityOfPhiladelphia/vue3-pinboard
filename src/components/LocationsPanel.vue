@@ -347,7 +347,6 @@ watch(
 
 watch(currentData, () => {
   // if some toggle is active use the total results for the toggle status instead of the default
-  console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXX")
   numUnfilteredResults.value = MainStore.selectedServices.some((service) => toggleKeys.value.includes(service)) ? getTotalResultsWithToggles() : numMaxResults.value.default
 })
 
