@@ -575,7 +575,7 @@ const locationsPanelClass = computed(() => {
         <div v-for="item in currentData" :key="item._featureId">
           <expand-collapse :item="item" :is-map-visible="isMapVisible" :checked="selectAllCheckbox"
             :toggle-keys="toggleKeys" @print-box-checked="printBoxChecked">
-            <print-share-section v-if="item._featureId == DataStore.selectedResource && $config.showPrintInCards"
+            <print-share-section v-if="item._featureId == DataStore.selectedResource && !$config.hidePrintInCards"
               :item="item" />
 
             <expand-collapse-content
