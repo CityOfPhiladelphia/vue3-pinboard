@@ -11,7 +11,7 @@ const DataStore = useDataStore();
 
 import $mapConfig from '../../mapConfig';
 
-const cyclomediaInitialized = ref(false);
+const cyclomediaInitialized = computed(() => MapStore.cyclomediaInitialized);
 
 const $emit = defineEmits(['updateCameraYaw', 'updateCameraLngLat', 'updateCameraHFov', 'toggleCyclomedia']);
 
@@ -143,9 +143,9 @@ const setNewLocation = async (coords) => {
       }
     });
 
-    if (!MapStore.currentAddressCoords.length) {
-      $emit('updateCameraLngLat', coords);
-    }
+    // if (!MapStore.currentAddressCoords.length) {
+    //   $emit('updateCameraLngLat', coords);
+    // }
     const orientation = viewer.getOrientation();
     $emit('updateCameraYaw', orientation.yaw);
     $emit('updateCameraHFov', orientation.hFov, orientation.yaw);
@@ -167,7 +167,23 @@ onMounted( async() => {
   let CYCLOMEDIA_PASSWORD = import.meta.env.VITE_CYCLOMEDIA_PASSWORD;
   if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue onMounted, StreetSmartApi:', StreetSmartApi, 'CYCLOMEDIA_USERNAME:', CYCLOMEDIA_USERNAME, 'CYCLOMEDIA_PASSWORD:', CYCLOMEDIA_PASSWORD);
 
-  if (!cyclomediaInitialized.value) {
+  if (cyclomediaInitialized.value) {
+    StreetSmartApi.destroy({
+      targetElement: cycloviewer,
+    });
+    await StreetSmartApi.init({
+      targetElement: cycloviewer,
+      username: CYCLOMEDIA_USERNAME,
+      password: CYCLOMEDIA_PASSWORD,
+      apiKey: import.meta.env.VITE_CYCLOMEDIA_API_KEY,
+      srs: 'EPSG:4326',
+      locale: 'en-us',
+      addressSettings: {
+        locale: 'en-us',
+        database: 'CMDatabase',
+      },
+    })
+  } else {
     if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue onMounted, initializing cyclomedia');
     await StreetSmartApi.init({
       targetElement: cycloviewer,
@@ -182,7 +198,7 @@ onMounted( async() => {
       },
     })
     if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue onMounted, cyclomedia initialized');
-    cyclomediaInitialized.value = true;
+    MapStore.cyclomediaInitialized = true;
   }
 
   if (DataStore.selectedResource && selectedResourceCoords.value) {
