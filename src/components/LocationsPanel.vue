@@ -6,7 +6,7 @@ import { useGeocodeStore } from '../stores/GeocodeStore.js';
 import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
-import { ref, computed, getCurrentInstance, onMounted, onBeforeUpdate, watch } from 'vue';
+import { ref, computed, getCurrentInstance, onBeforeMount, onMounted, onBeforeUpdate, watch } from 'vue';
 import { event } from 'vue-gtag'
 
 const MainStore = useMainStore();
@@ -48,6 +48,14 @@ const numUnfilteredResults = ref(0);
 const numMaxResults = ref({});
 
 // LIFECYCLE HOOKS
+onBeforeMount(() => {
+  // get toggleKey counts if toggleKeys is not empty
+  toggleKeys.value.forEach((key) => {
+    numMaxResults.value[key] = $config.refine[$config.refine.type][key.split('_')[0]].toggleCount(database.value);
+  })
+  numMaxResults.value.default = toggleKeys.value.length ? applyToggleRefineFunctions(database.value, []).length : database.value.length;
+})
+
 onMounted(async () => {
   // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue mounted, $config:', $config, 'i18nLocale.value:', i18nLocale.value, 'route.query:', route.query);
   const routeQueryKeys = Object.keys(route.query);
@@ -71,12 +79,6 @@ onMounted(async () => {
   MapStore.searchDistance = value;
 
   printCheckboxes.value = MainStore.printCheckboxes;
-
-  // get toggleKey counts if toggleKeys is not empty
-  toggleKeys.value.forEach((key) => {
-    numMaxResults.value[key] = $config.refine[$config.refine.type][key.split('_')[0]].toggleCount(database.value);
-  })
-  numMaxResults.value.default = toggleKeys.value.length ? applyToggleRefineFunctions(database.value, []).length : database.value.length;
 });
 
 onBeforeUpdate(() => {
