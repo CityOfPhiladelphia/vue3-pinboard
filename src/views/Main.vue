@@ -424,7 +424,7 @@ onBeforeMount(() => {
 onMounted(async () => {
   await nextTick();
   setHeights();
-  getHoliday();
+  if ($config.holidays) { getHoliday() }
 
   $config.searchBar.searchTypes.forEach(item => {
     if (route.query[item]) {

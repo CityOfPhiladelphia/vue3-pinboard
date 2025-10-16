@@ -351,12 +351,11 @@ watch(
 );
 
 // METHODS
-const countBits_32bit = (n) => {
-  // 32-bit implementation of Hamming Weight algorithm for counting bits
-  n -= (n >> 1) & 0x55555555;
-  n = (n & 0x33333333) + ((n >> 2) & 0x33333333);
-  n = (n + (n >> 4)) & 0x0f0f0f0f;
-  return (n * 0x01010101) >> 24;
+const countBits = (bits) => {
+  // 8-bit Hamming Weight algorithm for counting bits
+  bits -= (bits >> 1) & 0b01010101;
+  bits = (bits & 0b00110011) + ((bits >> 2) & 0b00110011);
+  return (bits + (bits >> 4)) & 0b00001111;
 }
 
 const getTotalResultsWithToggles = () => {
@@ -379,7 +378,7 @@ const getTotalResultsWithToggles = () => {
 
   // count the number of set bits to get the max total results based on toggle statuses
   let activeToggleCount = 0;
-  for (let i = 0; i < Math.ceil(database.value.length / 32); i++) { activeToggleCount += countBits_32bit(compareView.getUint32(i)) };
+  for (let i = 0; i < Math.ceil(database.value.length / 8); i++) { activeToggleCount += countBits(compareView.getUint8(i)) };
   return activeToggleCount;
 }
 
