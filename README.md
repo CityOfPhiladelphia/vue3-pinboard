@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.6.7
+
+* adds missing params to printView, fixes bug with site count
+
 ### 2.6.6
 
 * makes print/share section opt out instead of opt in
