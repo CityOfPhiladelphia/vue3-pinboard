@@ -50,10 +50,14 @@ const numMaxResults = ref({});
 // LIFECYCLE HOOKS
 onBeforeMount(() => {
   // get toggleKey counts if toggleKeys is not empty
-  toggleKeys.value.forEach((key) => {
-    numMaxResults.value[key] = $config.refine[$config.refine.type][key.split('_')[0]].toggleCount(database.value);
-  })
-  numMaxResults.value.default = toggleKeys.value.length ? applyToggleRefineFunctions(database.value, []).length : database.value.length;
+  if (!toggleKeys.value.length) {
+    numMaxResults.value.default = database.value.length;
+  } else {
+    toggleKeys.value.forEach((key) => {
+      numMaxResults.value[key] = $config.refine[$config.refine.type][key.split('_')[0]].toggleCount(database.value);
+    })
+    numMaxResults.value.default = toggleKeys.value.length ? applyToggleRefineFunctions(database.value, []).length : database.value.length;
+  }
 })
 
 onMounted(async () => {
@@ -83,7 +87,11 @@ onMounted(async () => {
 
 // COMPUTED
 const toggleKeys = computed(() => {
-  return Array.from(Object.keys($config.refine[$config.refine.type]), (key) => $config.refine[$config.refine.type][key]?.toggleKey).filter(Boolean);
+  if ($config.refine.type == 'multipleFieldGroups') {
+    return Array.from(Object.keys($config.refine[$config.refine.type]), (key) => $config.refine[$config.refine.type][key]?.toggleKey).filter(Boolean);
+  } else {
+    return [];
+  }
 });
 
 const tagsPhrase = computed(() => {
@@ -346,8 +354,12 @@ watch(
 );
 
 watch(currentData, () => {
-  // if some toggle is active use the total results for the toggle status instead of the default
-  numUnfilteredResults.value = MainStore.selectedServices.some((service) => toggleKeys.value.includes(service)) ? getTotalResultsWithToggles() : numMaxResults.value.default
+  if ($config.refine.type !== 'multipleFieldGroups'){
+    numUnfilteredResults.value = numMaxResults.value.default;
+  } else {
+    // if some toggle is active use the total results for the toggle status instead of the default
+    numUnfilteredResults.value = MainStore.selectedServices.some((service) => toggleKeys.value.includes(service)) ? getTotalResultsWithToggles() : numMaxResults.value.default
+  }
 })
 
 // METHODS
