@@ -51,7 +51,7 @@ const initData = async() => {
     await DataStore.fillAppType();
     await DataStore.fillResources();
     await DataStore.fillZipcodes();
-    await DataStore.fillHolidays();
+    if ($config.holidays) { await DataStore.fillHolidays() }
     MainStore.firstRouteLoaded = true;
   }
 }

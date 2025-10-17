@@ -1,28 +1,25 @@
 <script setup>
 
 import { ref, computed, onMounted } from 'vue';
-
+import { useRoute, useRouter } from 'vue-router';
 import { useMainStore } from '../stores/MainStore.js';
-const MainStore = useMainStore();
 import { useDataStore } from '../stores/DataStore.js';
-const DataStore = useDataStore();
 import { useConfigStore } from '../stores/ConfigStore.js';
-const ConfigStore = useConfigStore();
-const $config = ConfigStore.config;
-
 import { useI18n } from 'vue-i18n';
-const { t } = useI18n();
+const MainStore = useMainStore();
+const DataStore = useDataStore();
+const ConfigStore = useConfigStore();
 
+const { t } = useI18n();
+const route = useRoute();
+const router = useRouter();
+
+const $config = ConfigStore.config;
 const ExpandCollapseContent = $config.customComps.expandCollapseContent;
 
 const locationOpen = ref(false);
 
-import { useRoute, useRouter } from 'vue-router';
-const route = useRoute();
-const router = useRouter();
-
 // computed
-
 const isMobile = computed(() => {
   return MainStore.windowDimensions.width < 768;
 });
@@ -137,11 +134,7 @@ const getSiteName = (item) => {
 };
 
 const i18nEnabled = computed(() => {
-  if ($config.i18n && $config.i18n.enabled) {
-    return true;
-  } else {
-    return false;
-  }
+  return $config.i18n && $config.i18n.enabled;
 });
 
 const appTitle = computed(() => {
@@ -162,7 +155,7 @@ const appSubTitle = computed(() => {
       value = $config.app.subtitle;
     } else if (i18nEnabled.value && $config.app.subtitle == 'i18n') {
       // if (import.meta.env.VITE_DEBUG) console.log('t("app.subtitle"):', t('app.subtitle'));
-      value = t('app.subtitle'); 
+      value = t('app.subtitle');
     }
   }
   return value;
@@ -178,11 +171,7 @@ const i18nLanguages = computed(() => {
 });
 
 const i18nSelectorHidden = computed(() => {
-  if ($config.i18n && $config.i18n.selectorHidden) {
-    return true;
-  } else {
-    return false;
-  }
+  return $config.i18n && $config.i18n.selectorHidden;
 });
 
 </script>
@@ -192,16 +181,16 @@ const i18nSelectorHidden = computed(() => {
   <app-header
     :app-title="appTitle"
     :app-subtitle="appSubTitle"
-    :app-link="appLink"
+    :app-link="MainStore.appLink"
     :is-sticky="false"
     :is-fluid="true"
-    :branding-image="brandingImage"
-    :branding-link="brandingLink"
+    :branding-image="MainStore.brandingImage"
+    :branding-link="MainStore.brandingLink"
     >
     <template #mobile-nav>
       <mobile-nav :links="footerLinks" />
     </template>
-    
+
     <template
       v-if="i18nEnabled && !i18nSelectorHidden"
       #lang-selector-nav

@@ -6,7 +6,7 @@ import { useGeocodeStore } from '../stores/GeocodeStore.js';
 import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
-import { ref, computed, getCurrentInstance, onMounted, onBeforeMount, watch } from 'vue';
+import { ref, computed, getCurrentInstance, onBeforeMount, onMounted, watch } from 'vue';
 import { event } from 'vue-gtag'
 
 const MainStore = useMainStore();
@@ -39,12 +39,22 @@ const props = defineProps({
   },
 });
 
-// DATA
+// REFS
 const searchDistance = ref(null);
 const sortBy = ref('Alphabetically');
 const printCheckboxes = ref([]);
 const selectAllCheckbox = ref(false);
 const numUnfilteredResults = ref(0);
+const numMaxResults = ref({});
+
+// LIFECYCLE HOOKS
+onBeforeMount(() => {
+  // get toggleKey counts if toggleKeys is not empty
+  toggleKeys.value.forEach((key) => {
+    numMaxResults.value[key] = $config.refine[$config.refine.type][key.split('_')[0]].toggleCount(database.value);
+  })
+  numMaxResults.value.default = toggleKeys.value.length ? applyToggleRefineFunctions(database.value, []).length : database.value.length;
+})
 
 onMounted(async () => {
   // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue mounted, $config:', $config, 'i18nLocale.value:', i18nLocale.value, 'route.query:', route.query);
@@ -69,12 +79,6 @@ onMounted(async () => {
   MapStore.searchDistance = value;
 
   printCheckboxes.value = MainStore.printCheckboxes;
-
-  // get toggleKey counts if toggleKeys is not empty
-  toggleKeys.value.forEach((key) => {
-    numMaxResults.value[key] = $config.refine[$config.refine.type][key.split('_')[0]].toggleCount(database.value);
-  })
-  numMaxResults.value.default = toggleKeys.value.length ? applyToggleRefineFunctions(database.value, []).length : database.value.length;
 });
 
 // COMPUTED
@@ -132,12 +136,6 @@ const database = computed(() => {
     value = DataStore.sources[DataStore.appType].data.rows || DataStore.sources[DataStore.appType].data.features || DataStore.sources[DataStore.appType].features;
   }
   return value;
-});
-
-const numMaxResults = computed(() => {
-  return {
-    default: 0
-  }
 });
 
 const summarySentenceStart = computed(() => {
@@ -199,9 +197,6 @@ const bufferLength = computed(() => {
 })
 
 const currentData = computed(() => {
-  // if some toggle is active use the total results for the toggle status instead of the default
-  numUnfilteredResults.value = MainStore.selectedServices.some((service) => toggleKeys.value.includes(service)) ? getTotalResultsWithToggles() : numMaxResults.value.default;
-
   const locations = [...DataStore.currentData];
   const valOrGetter = locationInfo.value.siteName;
   const valOrGetterType = typeof valOrGetter;
@@ -350,13 +345,17 @@ watch(
   }
 );
 
+watch(currentData, () => {
+  // if some toggle is active use the total results for the toggle status instead of the default
+  numUnfilteredResults.value = MainStore.selectedServices.some((service) => toggleKeys.value.includes(service)) ? getTotalResultsWithToggles() : numMaxResults.value.default
+})
+
 // METHODS
-const countBits_32bit = (n) => {
-  // 32-bit implementation of Hamming Weight algorithm for counting bits
-  n -= (n >> 1) & 0x55555555;
-  n = (n & 0x33333333) + ((n >> 2) & 0x33333333);
-  n = (n + (n >> 4)) & 0x0f0f0f0f;
-  return (n * 0x01010101) >> 24;
+const countBits = (bits) => {
+  // 8-bit Hamming Weight algorithm for counting bits
+  bits -= (bits >> 1) & 0b01010101;
+  bits = (bits & 0b00110011) + ((bits >> 2) & 0b00110011);
+  return (bits + (bits >> 4)) & 0b00001111;
 }
 
 const getTotalResultsWithToggles = () => {
@@ -379,7 +378,7 @@ const getTotalResultsWithToggles = () => {
 
   // count the number of set bits to get the max total results based on toggle statuses
   let activeToggleCount = 0;
-  for (let i = 0; i < Math.ceil(database.value.length / 32); i++) { activeToggleCount += countBits_32bit(compareView.getUint32(i)) };
+  for (let i = 0; i < Math.ceil(database.value.length / 8); i++) { activeToggleCount += countBits(compareView.getUint8(i)) };
   return activeToggleCount;
 }
 
