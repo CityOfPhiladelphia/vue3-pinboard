@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.6.9
+
+* fix for categoryField refine apps
+
 ### 2.6.8
 
 * adds (back?) the ability to add a tooltip to a label of a radio button set in the refine panel
