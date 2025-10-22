@@ -9,7 +9,7 @@ import { useGeocodeStore } from '../stores/GeocodeStore.js';
 import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 
-const getGeocodeAndPutInStore = async(address) => {
+const getGeocodeAndPutInStore = async (address) => {
   const MapStore = useMapStore();
   MapStore.geolocation = null;
   const GeocodeStore = useGeocodeStore();
@@ -31,14 +31,14 @@ const getGeocodeAndPutInStore = async(address) => {
   MainStore.setCurrentAddress(currentAddress);
 }
 
-const clearGeocode = async() => {
+const clearGeocode = async () => {
   const GeocodeStore = useGeocodeStore();
   const MainStore = useMainStore();
   GeocodeStore.aisData = {};
   MainStore.currentAddress = null;
 }
 
-const initData = async() => {
+const initData = async () => {
   if (import.meta.env.VITE_DEBUG) console.log('initData is running');
   const MainStore = useMainStore();
   if (!MainStore.firstRouteLoaded) {
@@ -141,9 +141,9 @@ const initRouter = (publicPath) => {
       }
     }
     if (to.query.keyword && to.query.keyword.length) {
-      MainStore.selectedKeywords = to.query.keyword.split(',');
+      MainStore.selectedKeywords = new Set(to.query.keyword.split(','));
     } else {
-      MainStore.selectedKeywords = [];
+      MainStore.selectedKeywords.clear();
     }
 
     MainStore.filterChangeCounter++;

@@ -20,7 +20,7 @@ export const useMainStore = defineStore('MainStore', {
         current: false,
         start_date: '',
       },
-      selectedKeywords: [],
+      selectedKeywords: new Set(),
       selectedServices: [],
       lastSelectMethod: '',
       publicPath: null,
