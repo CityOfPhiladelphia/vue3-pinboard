@@ -32,6 +32,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ### 2.6.9
 
+* fixes error where keyword serch boxes could not be closed
+  
+### 2.6.9
+
 * fix for categoryField refine apps
 
 ### 2.6.8
