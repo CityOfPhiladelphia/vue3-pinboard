@@ -568,6 +568,14 @@ const refineListTranslated_default = () => {
               <template v-slot:label>
                 <div :class="isMobile ? 'large-label' : 'small-label'">
                   {{ $t(ind + '.category') }}
+                  <icon-tool-tip v-if="!isMobile && refineListTranslated[ind]['tooltip']"
+                    :tip="refineListTranslated[ind]['tooltip']" :circle-type="'hover'"
+                    :position="refineList[ind]['tooltip']['position']"
+                    :multiline="refineList[ind]['tooltip']['multiline']" />
+                  <div v-if="isMobile && refineListTranslated[ind]['tooltip']" class="mobile-tooltip">
+                    <font-awesome-icon icon="info-circle" class="fa-infoCircle" />
+                    {{ $t(refineListTranslated[ind]['tooltip']) }}
+                  </div>
                 </div>
               </template>
             </radio>

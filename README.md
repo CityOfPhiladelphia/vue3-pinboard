@@ -30,6 +30,18 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.6.9
+
+* fix for categoryField refine apps
+
+### 2.6.8
+
+* adds (back?) the ability to add a tooltip to a label of a radio button set in the refine panel
+
+### 2.6.7
+
+* adds missing params to printView, fixes bug with site count
+
 ### 2.6.6
 
 * makes print/share section opt out instead of opt in

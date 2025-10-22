@@ -302,7 +302,11 @@ const footerLinks = computed(() => {
 });
 
 const toggleKeys = computed(() => {
-  return Array.from(Object.keys($config.refine[$config.refine.type]), (key) => $config.refine[$config.refine.type][key]?.toggleKey).filter(Boolean);
+  if ($config.refine.type == 'multipleFieldGroups') {
+    return Array.from(Object.keys($config.refine[$config.refine.type]), (key) => $config.refine[$config.refine.type][key]?.toggleKey).filter(Boolean);
+  } else {
+    return [];
+  }
 });
 
 // MATCHERS
