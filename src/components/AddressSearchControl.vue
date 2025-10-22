@@ -106,9 +106,9 @@ const handleSubmit = (val) => {
   let valToString = valAsFloat.toString();
   let checkVals = val === valToString;
   if (import.meta.env.VITE_DEBUG) console.log('handleSubmit 1, val.substring(0):', val.substring(0), 'valAsFloat:', valAsFloat, 'checkVals:', checkVals, '$config.searchBar.searchTypes:', $config.searchBar.searchTypes);
-  
+
   let startQuery = { ...route.query };
-  
+
   if (isNaN(valAsFloat)) {
     if (!$config.searchBar.searchTypes.includes('keyword')) {
       if (import.meta.env.VITE_DEBUG) console.log('cannot search keywords');
@@ -132,7 +132,7 @@ const handleSubmit = (val) => {
           return;
         }
       }
-      MainStore.selectedKeywords.push(val);
+      MainStore.selectedKeywords.add(val);
       let startKeyword;
       if (startQuery['keyword'] && startQuery['keyword'] != '') {
         startKeyword = startQuery['keyword'];
