@@ -143,8 +143,7 @@ watch(
     selected.value = selectedServices.value.length ?
       $config.refine.type === 'categoryField_value' ? selectedServices.value[0] : selectedServices.value :
       $config.refine.type === 'categoryField_value' ? null : [];
-    const uniq = getUniqueFieldsObject();
-    selectedList.value = selected.value.length ? getSelectedNowObject(uniq) : {};
+    selectedList.value = selected.value && selected.value.length && $config.refine.type === 'multipleFieldGroups' ? getSelectedNowObject(getUniqueFieldsObject()) : {};
   }
 );
 
