@@ -69,7 +69,7 @@ const geocode = computed(() => { return GeocodeStore.aisData });
 const i18nEnabled = computed(() => { return $config.i18n && $config.i18n.enabled });
 const i18nLocale = computed(() => { return instance.appContext.config.globalProperties.$i18n.locale });
 const isMobile = computed(() => { return MainStore.windowDimensions.width < 768 });
-const keywordsEntered = computed(() => { return MainStore.selectedKeywords });
+const keywordsEntered = computed(() => { return [...MainStore.selectedKeywords] });
 const NumRefineColumns = computed(() => { return isMobile.value ? 1 : 4 });
 const refineList = computed(() => { return MainStore.refineList });
 
@@ -237,7 +237,7 @@ const clearAll = async (e) => {
   router.push({ query: { ...startQuery } });
 
   // set stores to empty values
-  MainStore.selectedKeywords = [];
+  MainStore.selectedKeywords.clear();
   MainStore.selectedZipcode = null;
   MapStore.zipcodeCenter = [];
   selected.value = (refineType.value === 'categoryField_value') ? null : [];
@@ -285,19 +285,14 @@ const closeBox = (e, box) => {
 
 const closeKeywordsBox = (e, box) => {
   e.stopPropagation();
-  // if (import.meta.env.VITE_DEBUG) console.log('closeKeywordsBox is running, e:', e);
-  const startQuery = { ...route.query };
-  let keywordsArray = [];
-  if (startQuery.keyword.length) {
-    if (typeof startQuery.keyword === 'string') {
-      keywordsArray = startQuery.keyword.split(',');
-    }
-    else if (Array.isArray(startQuery.keyword)) {
-      keywordsArray = startQuery.keyword;
-    }
+  // if (import.meta.env.VITE_DEBUG) console.log('closeKeywordsBox is running, e: ', e, 'box: ', box);
+  if (MainStore.selectedKeywords.delete(box).size) {
+    router.push({ query: { ...route.query, ...{ keyword: [...MainStore.selectedKeywords].toString() } } });
   }
-  router.push({ query: { ...route.query, ...{ keyword: keywordsArray } } });
-  MainStore.selectedKeywords = keywordsArray;
+  else {
+    const queryNoKeyword = delete { ...route.query }['keyword'];
+    router.push({ query: { ...queryNoKeyword } });
+  }
 };
 
 const closeZipcodeBox = (e, box) => {

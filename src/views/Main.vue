@@ -135,7 +135,7 @@ const i18nSelectorHidden = computed(() => {
 });
 
 const selectedKeywords = computed(() => {
-  return MainStore.selectedKeywords;
+  return [...MainStore.selectedKeywords];
 });
 
 const selectedServices = computed(() => {
@@ -614,7 +614,7 @@ const clearSearchTriggered = () => {
   // if (import.meta.env.VITE_DEBUG) console.log('in clearSearchTriggered2, route.query:', route.query, 'startQuery:', startQuery);
   router.push({ query: startQuery });
   searchString.value = '';
-  MainStore.selectedKeywords = [];
+  MainStore.selectedKeywords.clear();
   MainStore.selectedZipcode = null;
   MapStore.bufferForAddressOrLocationOrZipcode = null;
   // MainStore.currentSearch = null;
@@ -733,7 +733,7 @@ const checkKeywords = (row) => {
       tags = tags.filter(tag => {
         if (tag.i18nDependent) {
           const tagLang = tag.field.split('_')[0];
-          if (import.meta.env.VITE_DEBUG) console.log('tagLang:', tagLang, 'i18nLocale.value:', i18nLocale.value);
+          // if (import.meta.env.VITE_DEBUG) console.log('tagLang:', tagLang, 'i18nLocale.value:', i18nLocale.value);
           if (tagLang === i18nLocale.value) {
             return true;
           } else {
@@ -772,7 +772,7 @@ const checkKeywords = (row) => {
       }
     }
 
-    if (import.meta.env.VITE_DEBUG) console.log('checkKeywords, description:', description, 'selectedKeywords.value:', selectedKeywords.value);
+    // if (import.meta.env.VITE_DEBUG) console.log('checkKeywords, description:', description, 'selectedKeywords.value:', selectedKeywords.value);
 
     let threshold = 0.2;
     if ($config.searchBar.fuseThreshold) {
