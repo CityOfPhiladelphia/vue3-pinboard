@@ -30,6 +30,14 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.6.11
+
+* default value for toggleKey in TooltipCHeckbox
+
+### 2.6.10
+
+* fixes error where keyword serch boxes could not be closed
+  
 ### 2.6.9
 
 * fix for categoryField refine apps
