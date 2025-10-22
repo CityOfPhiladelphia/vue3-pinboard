@@ -88,7 +88,7 @@ const props = defineProps({
    */
   toggleKey: {
     type: String,
-    default: false,
+    default: '',
   },
 
   /**
