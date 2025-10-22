@@ -285,8 +285,9 @@ const closeBox = (e, box) => {
 
 const closeKeywordsBox = (e, box) => {
   e.stopPropagation();
-  // if (import.meta.env.VITE_DEBUG) console.log('closeKeywordsBox is running, e: ', e, 'box: ', box);
-  if (MainStore.selectedKeywords.delete(box).size) {
+  if (import.meta.env.VITE_DEBUG) console.log('closeKeywordsBox is running, e: ', e, 'box: ', box);
+  MainStore.selectedKeywords.delete(box)
+  if (MainStore.selectedKeywords.size > 0) {
     router.push({ query: { ...route.query, ...{ keyword: [...MainStore.selectedKeywords].toString() } } });
   }
   else {
