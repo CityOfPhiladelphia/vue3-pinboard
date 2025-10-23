@@ -290,8 +290,9 @@ const closeKeywordsBox = (e, box) => {
     router.push({ query: { ...route.query, ...{ keyword: [...MainStore.selectedKeywords].toString() } } });
   }
   else {
-    const queryNoKeyword = delete { ...route.query }['keyword'];
-    router.push({ query: { ...queryNoKeyword } });
+    const cleanedQuery = { ...route.query };
+    delete cleanedQuery ['keyword'];
+    router.push({ query: { ...cleanedQuery } });
   }
 };
 
