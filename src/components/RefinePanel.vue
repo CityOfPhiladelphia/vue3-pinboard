@@ -361,7 +361,6 @@ const getSelectedNowObject = (uniqueObject) => {
 
 const getUniqueFieldsObject = () => {
   if (import.meta.env.VITE_DEBUG) console.log('getUniqueFieldsObject is running');
-  console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
   const uniq = {};
   Object.keys($config.refine.multipleFieldGroups).forEach((group) => {
     uniq[group] = { expanded: false };
