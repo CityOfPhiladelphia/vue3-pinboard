@@ -143,7 +143,7 @@ watch(
     selected.value = selectedServices.value.length ?
       $config.refine.type === 'categoryField_value' ? selectedServices.value[0] : selectedServices.value :
       $config.refine.type === 'categoryField_value' ? null : [];
-    selectedList.value = selected.value && selected.value.length && $config.refine.type === 'multipleFieldGroups' ? getSelectedNowObject(getUniqueFieldsObject()) : {};
+    selectedList.value = (selected.value && selected.value.length && $config.refine.type) === 'multipleFieldGroups' ? getSelectedNowObject(getUniqueFieldsObject()) : {};
   }
 );
 
@@ -360,7 +360,8 @@ const getSelectedNowObject = (uniqueObject) => {
 }
 
 const getUniqueFieldsObject = () => {
-  // if (import.meta.env.VITE_DEBUG) console.log('getUniqueFieldsObject is running');
+  if (import.meta.env.VITE_DEBUG) console.log('getUniqueFieldsObject is running');
+  console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
   const uniq = {};
   Object.keys($config.refine.multipleFieldGroups).forEach((group) => {
     uniq[group] = { expanded: false };
