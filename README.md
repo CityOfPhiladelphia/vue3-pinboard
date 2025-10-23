@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.6.13
+
+* fixed bug where closing keyword box closed all boxes
+
 ### 2.6.12
 
 * restores searchbox fixes
