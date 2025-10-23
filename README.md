@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.6.12
+
+* restores searchbox fixes
+
 ### 2.6.11
 
 * default value for toggleKey in TooltipCHeckbox

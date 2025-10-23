@@ -143,8 +143,7 @@ watch(
     selected.value = selectedServices.value.length ?
       $config.refine.type === 'categoryField_value' ? selectedServices.value[0] : selectedServices.value :
       $config.refine.type === 'categoryField_value' ? null : [];
-    const uniq = getUniqueFieldsObject();
-    selectedList.value = selected.value.length ? getSelectedNowObject(uniq) : {};
+    selectedList.value = (selected.value && selected.value.length && $config.refine.type) === 'multipleFieldGroups' ? getSelectedNowObject(getUniqueFieldsObject()) : {};
   }
 );
 
@@ -285,8 +284,9 @@ const closeBox = (e, box) => {
 
 const closeKeywordsBox = (e, box) => {
   e.stopPropagation();
-  // if (import.meta.env.VITE_DEBUG) console.log('closeKeywordsBox is running, e: ', e, 'box: ', box);
-  if (MainStore.selectedKeywords.delete(box).size) {
+  if (import.meta.env.VITE_DEBUG) console.log('closeKeywordsBox is running, e: ', e, 'box: ', box);
+  MainStore.selectedKeywords.delete(box)
+  if (MainStore.selectedKeywords.size > 0) {
     router.push({ query: { ...route.query, ...{ keyword: [...MainStore.selectedKeywords].toString() } } });
   }
   else {
@@ -360,7 +360,7 @@ const getSelectedNowObject = (uniqueObject) => {
 }
 
 const getUniqueFieldsObject = () => {
-  // if (import.meta.env.VITE_DEBUG) console.log('getUniqueFieldsObject is running');
+  if (import.meta.env.VITE_DEBUG) console.log('getUniqueFieldsObject is running');
   const uniq = {};
   Object.keys($config.refine.multipleFieldGroups).forEach((group) => {
     uniq[group] = { expanded: false };

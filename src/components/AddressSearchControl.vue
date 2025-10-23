@@ -149,9 +149,6 @@ const handleSubmit = (val) => {
     if (import.meta.env.VITE_DEBUG) console.log('its an address');
     query = { 'address': val };
   }
-  delete startQuery['address'];
-  delete startQuery['keyword'];
-  delete startQuery['zipcode'];
   if (import.meta.env.VITE_DEBUG) console.log('handleSubmit is running, valAsFloat:', valAsFloat, 'startQuery:', startQuery, 'route.query:', route.query, 'query:', query, 'val:', val, 'val.substring(0, 1):', val.substring(0, 1));
   router.push({ query: { ...startQuery, ...query }});
   if (query) {
