@@ -134,8 +134,8 @@ const handleSubmit = (val) => {
           return;
         }
       }
-      val.split(',').forEach((keyword) => {
-        MainStore.selectedKeywords.add(keyword);
+      val.split(/\W/).filter(Boolean).forEach((keyword) => {
+        MainStore.selectedKeywords.add(keyword.trim());
       })
       query = { ...startQuery, ...{ 'keyword': [...MainStore.selectedKeywords].toString() }};
     }
