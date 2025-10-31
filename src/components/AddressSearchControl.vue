@@ -101,6 +101,8 @@ const checkboxText = computed(() => {
 
 const handleSubmit = (val) => {
   if (import.meta.env.VITE_DEBUG) console.log('handleSubmit is running, val:', val);
+  val = val.trim();
+  if (!val) return;
   let query;
   let valAsFloat = parseFloat(val.substring(0));
   let valToString = valAsFloat.toString();
@@ -132,13 +134,10 @@ const handleSubmit = (val) => {
           return;
         }
       }
-      MainStore.selectedKeywords.add(val);
-      let startKeyword;
-      if (startQuery['keyword'] && startQuery['keyword'] != '') {
-        startKeyword = startQuery['keyword'];
-        val = startKeyword + ',' + val;
-      }
-      query = { ...startQuery, ...{ 'keyword': val }};
+      val.split(/\W/).filter(Boolean).forEach((keyword) => {
+        MainStore.selectedKeywords.add(keyword.trim());
+      })
+      query = { ...startQuery, ...{ 'keyword': [...MainStore.selectedKeywords].toString() }};
     }
   } else if (checkVals) {
     if (import.meta.env.VITE_DEBUG) console.log('its a zipcode');
