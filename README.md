@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.6.14
+
+* fixes bug where same keyword could be added to query params repeatedly
+
 ### 2.6.13
 
 * fixed bug where closing keyword box closed all boxes
