@@ -755,7 +755,9 @@ const checkKeywords = (row) => {
         } else if (tag.type == 'value' && row.properties[tag.field] !== null && row.properties[tag.field] != ' ') {
           // if (import.meta.env.VITE_DEBUG) console.log('in else if, row.properties[tag.field]:', row.properties[tag.field]);
           let value = row.properties[tag.field];
-          description = description.concat(value.split(','));
+
+          console.log(value)
+          description = value ? description.concat(value.split(',')) : description;
         } else if (tag.type == 'array' && Array.isArray(row.properties[tag.field])) {
           if (tag.translate) {
             description = description.concat(row.properties[tag.field].map(item => t(item)));
