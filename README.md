@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.6.15
+
+* deletes dev dependencies since they cause conflicts with individual projects that import vue3-pinboard
+
 ### 2.6.14
 
 * fixes bug where same keyword could be added to query params repeatedly
