@@ -32,7 +32,7 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ### 2.6.15
 
-* deletes dev dependencies since they cause conflicts with individual projects that import vue3-pinboard
+* upgrades dev dependencies since they cause conflicts with individual projects that import vue3-pinboard
 
 ### 2.6.14
 
