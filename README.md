@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.6.16
+
+* upgrades vue, vue-router, and vue-i18n
+
 ### 2.6.15
 
 * upgrades dev dependencies since they cause conflicts with individual projects that import vue3-pinboard
