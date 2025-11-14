@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.6.18
+
+* adds @fortawesome/free-brands-svg-icons
+
 ### 2.6.17
 
 * uses pinia 3.0.4
