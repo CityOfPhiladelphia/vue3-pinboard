@@ -314,6 +314,7 @@ const onToggle = (e) => {
 .toggle::after {
   background-color: #ffffff;
   border-radius: 50%;
+  content: "";
   height: .875rem;
   width: .875rem;
   position: absolute;
