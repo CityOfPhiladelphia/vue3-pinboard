@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.6.20
+
+* added small margin to top of toggles
+
 ### 2.6.19
 
 * fixes rendering issue with toggle slider when zooming
