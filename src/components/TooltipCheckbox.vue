@@ -268,6 +268,11 @@ const onToggle = (e) => {
 </template>
 
 <style>
+
+.checkbox-toggle {
+  margin-top: 0.5rem;
+}
+
 .checkbox-toggle input[type=checkbox] {
   cursor: pointer;
 }
