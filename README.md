@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.6.19
+
+* fixes rendering issue with toggle slider when zooming
+
 ### 2.6.18
 
 * adds @fortawesome/free-brands-svg-icons
