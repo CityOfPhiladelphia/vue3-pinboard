@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.6.21
+
+* fix issue where toggle switch failed to render
+
 ### 2.6.20
 
 * added small margin to top of toggles
