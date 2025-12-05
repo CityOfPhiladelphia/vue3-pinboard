@@ -309,12 +309,11 @@ const onToggle = (e) => {
 .toggle::after {
   background-color: #ffffff;
   border-radius: 50%;
-  content: "";
-  height: .9rem;
-  width: .9rem;
+  height: .875rem;
+  width: .875rem;
   position: absolute;
-  top: 0.069rem;
-  left: 0.125rem;
+  top: 0.125rem;
+  left: 0.175rem;
 }
 
 .toggle:checked {
@@ -323,7 +322,7 @@ const onToggle = (e) => {
 
 .toggle:checked::after {
   background-color: #ffffff;
-  left: 0.813rem;
+  left: 0.775rem;
 }
 
 .mobile-tooltip {
