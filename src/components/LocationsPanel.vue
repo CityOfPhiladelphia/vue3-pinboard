@@ -30,7 +30,7 @@ const instance = getCurrentInstance();
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
-const $emit = defineEmits(['clear-bad-address']);
+const $emit = defineEmits(['clear-bad-address', 'clicked-view-map']);
 
 const props = defineProps({
   isMapVisible: {
@@ -184,6 +184,7 @@ const geocodeStatus = computed(() => {
   } else if (!GeocodeStore.aisData.features) {
     return 'none';
   }
+  return 'error';
 });
 
 const sortDisabled = computed(() => {
@@ -255,14 +256,6 @@ const currentDataList = computed(() => {
   return currentData.value.map(row => row._featureId);
 });
 
-const dataStatus = computed(() => {
-  let value;
-  if (DataStore.sources[$config.app.type]) {
-    value = DataStore.sources[$config.app.type].status;
-  }
-  return 'success';
-});
-
 const locationInfo = computed(() => {
   return $config.locationInfo;
 });
@@ -277,9 +270,9 @@ const loadingSources = computed(() => {
 
 watch(
   () => i18nLocale.value,
-  async () => {
+  async (nexti18nLocale) => {
     let value = searchDistance.value.split(' ')[0];
-    // if (import.meta.env.VITE_DEBUG) console.log('i18nLocale change, nexti18nLocale:', nexti18nLocale, 'value:', value);
+    if (import.meta.env.VITE_DEBUG) console.log('i18nLocale change, nexti18nLocale:', nexti18nLocale, 'value:', value);
     if (value == 1) {
       searchDistance.value = value + ' ' + t('mile');
     } else {
@@ -305,14 +298,14 @@ watch(
       printCheckboxes.value = [];
       let inputs = document.querySelectorAll('.location-checkbox');
       // if (import.meta.env.VITE_DEBUG) console.log('inputs:', inputs);
-      for (var i = 0; i < inputs.length; i++) {
+      for (let i = 0; i < inputs.length; i++) {
         inputs[i].checked = false;
       }
     } else {
       printCheckboxes.value = currentDataList.value;
       let inputs = document.querySelectorAll('.location-checkbox');
       // if (import.meta.env.VITE_DEBUG) console.log('inputs:', inputs);
-      for (var i = 0; i < inputs.length; i++) {
+      for (let i = 0; i < inputs.length; i++) {
         inputs[i].checked = true;
       }
     }
@@ -323,7 +316,7 @@ watch(
 watch(
   () => route.query,
   async nextRoute => {
-    // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel watch route, nextRoute:', nextRoute);
+  if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel watch route, nextRoute:', nextRoute);
     const routeQueryKeys = Object.keys(route.query);
     if (routeQueryKeys.length == 1 && !routeQueryKeys.includes('lang') || routeQueryKeys.length > 1) {
       MainStore.shouldShowGreeting = false;
@@ -498,221 +491,356 @@ const locationsPanelClass = computed(() => {
 </script>
 
 <template>
-  <div id="locations-panel-content" :class="locationsPanelClass + ' locations'">
-
-    <div v-if="shouldShowGreeting" class="topics-container cell medium-cell-block-y">
-      <custom-greeting v-if="shouldShowGreeting && hasCustomGreeting" @view-list="clickedViewList"
-        @view-map="clickedViewMap" :database="database" :isMobile="isMobile" />
+  <div
+    id="locations-panel-content"
+    :class="locationsPanelClass + ' locations'"
+  >
+    <div
+      v-if="shouldShowGreeting"
+      class="topics-container cell medium-cell-block-y"
+    >
+      <custom-greeting
+        v-if="shouldShowGreeting && hasCustomGreeting"
+        :database="database"
+        :is-mobile="isMobile"
+        @view-list="clickedViewList"
+        @view-map="clickedViewMap"
+      />
     </div>
 
-    <div v-if="!shouldShowGreeting && loadingSources"
-      class="columns is-vcentered is-align-content-center has-text-centered loading-data">
+    <div
+      v-if="!shouldShowGreeting && loadingSources"
+      class="columns is-vcentered is-align-content-center has-text-centered loading-data"
+    >
       <!-- Loading Data -->
       <div class="column">
-        <font-awesome-icon icon="fa-solid fa-spinner" class="fa-6x center-spinner" spin />
+        <font-awesome-icon
+          icon="fa-solid fa-spinner"
+          class="fa-6x center-spinner"
+          spin
+        />
       </div>
     </div>
 
-    <div v-if="!shouldShowGreeting && !loadingSources && dataStatus === 'success'"
-      class="summary-and-location-container">
-
+    <div
+      v-if="!shouldShowGreeting && !loadingSources && dataStatus === 'success'"
+      class="summary-and-location-container"
+    >
       <div class="summary-container">
-        <div v-if="!isMobile && geocodeStatus !== 'error' > 0" class="columns is-desktop cut-right mb-0">
-          <div v-if="allowPrint" class="column is-6-desktop is-12-tablet mr-0 mb-0 pb-0 columns loc-panel-widget">
+        <div
+          v-if="!isMobile && geocodeStatus !== 'error' > 0"
+          class="columns is-desktop cut-right mb-0"
+        >
+          <div
+            v-if="allowPrint"
+            class="column is-6-desktop is-12-tablet mr-0 mb-0 pb-0 columns loc-panel-widget"
+          >
             <div class="field column is-6 pt-5">
-              <input class="is-checkradio location-checkbox" id="locationsPanelCheckbox" type="checkbox"
-                name="locationsPanelCheckbox" @click="clickedSelectAll">
+              <input
+                id="locationsPanelCheckbox"
+                class="is-checkradio location-checkbox"
+                type="checkbox"
+                name="locationsPanelCheckbox"
+                @click="clickedSelectAll"
+              >
               <label for="locationsPanelCheckbox">
                 <span v-if="!i18nEnabled">
                   Select All
                 </span>
-                <span v-if="i18nEnabled" v-html="$t('selectAll')" />
+                <span
+                  v-if="i18nEnabled"
+                  v-text="$t('selectAll')"
+                />
               </label>
             </div>
             <div class="column is-6 pt-3">
-              <button @click="clickedPrint" class="button app-button"
-                :class="!printCheckboxes.length ? 'disabled' : ''">
+              <button
+                class="button app-button"
+                :class="!printCheckboxes.length ? 'disabled' : ''"
+                @click="clickedPrint"
+              >
                 <p v-if="!i18nEnabled">
                   Print
                 </p>
-                <p v-if="i18nEnabled" v-html="$t('print')" />
+                <p
+                  v-if="i18nEnabled"
+                  v-text="$t('print')"
+                />
               </button>
             </div>
           </div>
 
-          <div v-if="anySearch" class="column is-6-desktop is-12-tablet mr-0 mb-0 pb-0 pr-0 columns loc-panel-widget">
+          <div
+            v-if="anySearch"
+            class="column is-6-desktop is-12-tablet mr-0 mb-0 pb-0 pr-0 columns loc-panel-widget"
+          >
             <div class="column is-6-tablet is-7-desktop p-0">
-              <dropdown id="sortby-dropdown" v-model="sortBy" :options="sortByOptions" :placeholder="$t('sortBy')"
-                :disabled="sortDisabled" />
+              <dropdown
+                id="sortby-dropdown"
+                v-model="sortBy"
+                :options="sortByOptions"
+                :placeholder="$t('sortBy')"
+                :disabled="sortDisabled"
+              />
             </div>
             <div class="column is-6-tablet is-5-desktop p-0">
-              <dropdown id="distance-dropdown" v-model="searchDistance" :options="searchDistanceOptions"
-                :placeholder="$t('distance')" :disabled="sortDisabled" />
+              <dropdown
+                id="distance-dropdown"
+                v-model="searchDistance"
+                :options="searchDistanceOptions"
+                :placeholder="$t('distance')"
+                :disabled="sortDisabled"
+              />
             </div>
           </div>
         </div>
 
-        <div v-if="isMobile && geocodeStatus !== 'error'" class="columns is-mobile mb-0">
+        <div
+          v-if="isMobile && geocodeStatus !== 'error'"
+          class="columns is-mobile mb-0"
+        >
           <div class="mb-1 p-0 mobile-dropdown-container column is-6">
-            <dropdown id="sortby-dropdown" v-model="sortBy" :options="sortByOptions" placeholder="Sort By"
-              :disabled="sortDisabled" />
+            <dropdown
+              id="sortby-dropdown"
+              v-model="sortBy"
+              :options="sortByOptions"
+              placeholder="Sort By"
+              :disabled="sortDisabled"
+            />
           </div>
           <div class="mb-1 p-0 mobile-dropdown-container column is-6">
-            <dropdown id="distance-dropdown" v-model="searchDistance" :options="searchDistanceOptions"
-              placeholder="Distance" :disabled="sortDisabled" />
+            <dropdown
+              id="distance-dropdown"
+              v-model="searchDistance"
+              :options="searchDistanceOptions"
+              placeholder="Distance"
+              :disabled="sortDisabled"
+            />
           </div>
         </div>
 
-        <div v-if="geocodeStatus !== 'error'" class="mt-2 mb-2">
+        <div
+          v-if="geocodeStatus !== 'error'"
+          class="mt-2 mb-2"
+        >
           {{ summarySentenceStart }}
         </div>
       </div>
 
-      <div v-if="geocodeStatus === 'error'" class="h3 no-results">
-        <p class="pb-4">The address that was searched is not a valid Philadelphia address.</p>
-        <button class="button app-button is-vcentered" @click="clearBadAddress">
+      <div
+        v-if="geocodeStatus === 'error'"
+        class="h3 no-results"
+      >
+        <p class="pb-4">
+          The address that was searched is not a valid Philadelphia address.
+        </p>
+        <button
+          class="button app-button is-vcentered"
+          @click="clearBadAddress"
+        >
           Clear Address
         </button>
       </div>
-      <div v-if="geocodeStatus !== 'error' && currentData.length === 0" class="h3 no-results">
+      <div
+        v-if="geocodeStatus !== 'error' && currentData.length === 0"
+        class="h3 no-results"
+      >
         <p v-if="!i18nEnabled">
           We're sorry, there are no results for that search.
           Adjust the filters you've selected and try again.
         </p>
-        <p v-if="i18nEnabled" v-html="$t('app.noResults')" />
+        <p
+          v-if="i18nEnabled"
+          v-text="$t('app.noResults')"
+        />
       </div>
 
-      <div v-if="geocodeStatus !== 'error'" class="location-container">
-
-        <div v-for="item in currentData" :key="item._featureId">
-          <expand-collapse :item="item" :is-map-visible="isMapVisible" :checked="selectAllCheckbox"
-            :toggle-keys="toggleKeys" @print-box-checked="printBoxChecked">
-            <print-share-section v-if="item._featureId == DataStore.selectedResource && !$config.hidePrintInCards"
-              :item="item" />
-
-            <expand-collapse-content
-              v-if="$config.customComps && Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource"
-              :item="item" :is-mobile="isMobile" />
+      <div
+        v-if="geocodeStatus !== 'error'"
+        class="location-container"
+      >
+        <div
+          v-for="item in currentData"
+          :key="item._featureId"
+        >
+          <expand-collapse
+            :item="item"
+            :is-map-visible="props.isMapVisible"
+            :checked="selectAllCheckbox"
+            :toggle-keys="toggleKeys"
+            @print-box-checked="printBoxChecked"
+          >
+            <print-share-section
+              v-if="item._featureId == DataStore.selectedResource && !$config.hidePrintInCards"
+              :item="item"
+            />
 
             <div
-              v-if="!Object.keys($config.customComps).includes('expandCollapseContent') && item._featureId == DataStore.selectedResource"
-              class="main-ec-content">
-              <div class="columns top-section">
-                <div class="column is-6">
-                  <div v-if="item.properties.street_address" class="columns is-mobile">
-                    <div class="column is-1">
-                      <font-awesome-icon icon="map-marker-alt" />
+              v-if="item._featureId == DataStore.selectedResource"
+            >
+              <!-- Render custom content component if provider from app's config -->
+              <expand-collapse-content
+                v-if="$config.customComps && Object.keys($config.customComps).includes('expandCollapseContent')"
+                :item="item"
+                :is-mobile="isMobile"
+              />
+              <!-- Render standard expanded content -->
+              <div
+                v-else
+                class="main-ec-content"
+              >
+                <div class="columns top-section">
+                  <div class="column is-6">
+                    <div
+                      v-if="item.properties.street_address"
+                      class="columns is-mobile"
+                    >
+                      <div class="column is-1">
+                        <font-awesome-icon icon="map-marker-alt" />
+                      </div>
+                      <div
+                        class="column is-11"
+                        v-text="parseAddress(item.properties.street_address)"
+                      />
                     </div>
-                    <div class="column is-11" v-html="parseAddress(item.properties.street_address)">
+                  </div>
+
+                  <div class="column is-6">
+                    <div
+                      v-if="item.properties.phone_number"
+                      class="columns is-mobile"
+                    >
+                      <div class="column is-1">
+                        <font-awesome-icon icon="phone" />
+                      </div>
+                      <div class="column is-11">
+                        {{ item.properties.phone_number }}
+                      </div>
+                    </div>
+
+                    <div
+                      v-if="item.properties.email"
+                      class="columns is-mobile"
+                    >
+                      <div class="column is-1">
+                        <font-awesome-icon icon="envelope" />
+                      </div>
+                      <div class="column is-11">
+                        <a :href="`mailto:${item.properties.email}`">{{ item.properties.email }}</a>
+                      </div>
+                    </div>
+
+                    <div
+                      v-if="item.properties.website"
+                      class="columns is-mobile website-div"
+                    >
+                      <div class="column is-1">
+                        <font-awesome-icon icon="globe" />
+                      </div>
+                      <div class="column is-11">
+                        <a
+                          target="_blank"
+                          :href="makeValidUrl(item.properties.website)"
+                        >
+                          {{ item.properties.website }}
+                          <font-awesome-icon icon="external-link-alt" />
+                        </a>
+                      </div>
+                    </div>
+
+                    <div
+                      v-if="item.properties.facebook_name"
+                      class="columns is-mobile"
+                    >
+                      <div class="column is-1">
+                        <font-awesome-icon :icon="['fab', 'facebook']" />
+                      </div>
+                      <div class="column is-11">
+                        <a
+                          target="_blank"
+                          :href="item.properties.facebook_name"
+                        >
+                          Facebook
+                        </a>
+                      </div>
+                    </div>
+
+                    <div
+                      v-if="item.properties.twitter"
+                      class="columns is-mobile"
+                    >
+                      <div class="column is-1">
+                        <font-awesome-icon :icon="['fab', 'twitter']" />
+                      </div>
+                      <div class="column is-11">
+                        <a
+                          target="_blank"
+                          :href="item.properties.twitter"
+                        >
+                          Twitter
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div class="column is-6">
+                <div v-if="item.properties.services_offered">
+                  <h3 v-if="!i18nEnabled">
+                    Services offered
+                  </h3>
+                  <h3 v-if="i18nEnabled">
+                    {{ $t('servicesOffered') }}
+                  </h3>
 
-                  <div v-if="item.properties.phone_number" class="columns is-mobile">
-                    <div class="column is-1">
-                      <font-awesome-icon icon="phone" />
-                    </div>
-                    <div class="column is-11">
-                      {{ item.properties.phone_number }}
+                  <div
+                    v-if="!i18nEnabled"
+                    class="columns is-multiline is-gapless"
+                  >
+                    <div
+                      v-for="i in parseServiceList(item.properties.services_offered)"
+                      :key="i"
+                      class="column is-half"
+                    >
+                      {{ i }}
                     </div>
                   </div>
 
-                  <div v-if="item.properties.email" class="columns is-mobile">
-                    <div class="column is-1">
-                      <font-awesome-icon icon="envelope" />
-                    </div>
-                    <div class="column is-11">
-                      <a :href="`mailto:${item.properties.email}`">{{ item.properties.email }}</a>
-                    </div>
-                  </div>
-
-                  <div v-if="item.properties.website" class="columns is-mobile website-div">
-                    <div class="column is-1">
-                      <font-awesome-icon icon="globe" />
-                    </div>
-                    <div class="column is-11">
-                      <a target="_blank" :href="makeValidUrl(item.properties.website)">
-                        {{ item.properties.website }}
-                        <font-awesome-icon icon="external-link-alt" />
-                      </a>
-                    </div>
-                  </div>
-
-                  <div v-if="item.properties.facebook_name" class="columns is-mobile">
-                    <div class="column is-1">
-                      <font-awesome-icon :icon="['fab', 'facebook']" />
-                    </div>
-                    <div class="column is-11">
-                      <a target="_blank" :href="item.properties.facebook_name">
-                        Facebook
-                      </a>
-                    </div>
-                  </div>
-
-                  <div v-if="item.properties.twitter" class="columns is-mobile">
-                    <div class="column is-1">
-                      <font-awesome-icon :icon="['fab', 'twitter']" />
-                    </div>
-                    <div class="column is-11">
-                      <a target="_blank" :href="item.properties.twitter">
-                        Twitter
-                      </a>
+                  <div
+                    v-if="i18nEnabled"
+                    class="columns is-multiline is-gapless"
+                  >
+                    <div
+                      v-for="service in parseServiceList(item.properties.services_offered)"
+                      :key="service"
+                      class="column is-half"
+                    >
+                      {{ $t(service) }}
                     </div>
                   </div>
                 </div>
 
-              </div>
-
-              <div v-if="item.properties.services_offered">
-                <h3 v-if="!i18nEnabled">
-                  Services offered
-                </h3>
-                <h3 v-if="i18nEnabled">
-                  {{ $t('servicesOffered') }}
-                </h3>
-
-                <div v-if="!i18nEnabled" class="columns is-multiline is-gapless">
-                  <div v-for="i in parseServiceList(item.properties.services_offered)" :key="i" class="column is-half">
-                    {{ i }}
+                <div v-if="item.properties.tags && item.properties.tags.length">
+                  <h3 v-if="!i18nEnabled">
+                    {{ tagsPhrase }}
+                  </h3>
+                  <h3 v-if="i18nEnabled">
+                    {{ $t(tagsPhrase) }}
+                  </h3>
+                  <div>
+                    {{ parseTagsList(item.properties.tags) }}
                   </div>
-                </div>
-
-                <div v-if="i18nEnabled" class="columns is-multiline is-gapless">
-                  <div v-for="service in parseServiceList(item.properties.services_offered)" :key="service"
-                    class="column is-half">
-                    {{ $t(service) }}
-                  </div>
-                </div>
-
-
-              </div>
-
-              <div v-if="item.properties.tags && item.properties.tags.length">
-                <h3 v-if="!i18nEnabled">
-                  {{ tagsPhrase }}
-                </h3>
-                <h3 v-if="i18nEnabled">
-                  {{ $t(tagsPhrase) }}
-                </h3>
-                <div>
-                  {{ parseTagsList(item.properties.tags) }}
                 </div>
               </div>
             </div>
-
           </expand-collapse>
         </div>
-
       </div>
-
     </div>
-
   </div>
 </template>
 
 <style lang="scss">
+
 .loading-data {
   height: 100%;
 }
@@ -723,14 +851,6 @@ const locationsPanelClass = computed(() => {
 
 .dropdown-div {
   padding-top: 0px !important;
-}
-
-#dd-sortby-dropdown {
-  // font-size: 14px;
-}
-
-#dd-distance-dropdown {
-  // font-size: 14px;
 }
 
 .locations-panel {
@@ -838,4 +958,5 @@ fieldset.disabled .button {
 #location-container {
   scroll-margin-top: 200px;
 }
+
 </style>

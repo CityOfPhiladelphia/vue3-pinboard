@@ -2,7 +2,7 @@
 
 import { useMainStore } from '../stores/MainStore.js';
 import { onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 const route = useRoute();
 
 import { useConfigStore } from '../stores/ConfigStore.js';
@@ -21,7 +21,7 @@ onMounted(() => {
 <template>
   <div class="tutorial-scroller">
     <div class="tutorial-container">
-      <img :src="$config.tutorial[route.params.file]"/>
+      <img :src="$config.tutorial[route.params.file]">
     </div>
   </div>
 </template>

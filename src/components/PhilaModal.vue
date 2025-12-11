@@ -2,6 +2,7 @@
 <script>
 export default {
   name: 'Modal',
+  emits: ['close'],
   methods: {
     close() {
       this.$emit('close');
@@ -24,7 +25,7 @@ export default {
             >
               <font-awesome-icon icon="times" />
             </button>
-            <slot name="title"></slot>
+            <slot name="title" />
           </div>
           <hr>
           <div class="modal-body">
@@ -96,7 +97,6 @@ export default {
   margin: 0 auto;
 }
 
-
 .modal-container-inner {
   display: table-cell;
   vertical-align: middle;
@@ -117,6 +117,5 @@ export default {
 .modal-body {
   margin: 1rem 0;
 }
-
 
 </style>

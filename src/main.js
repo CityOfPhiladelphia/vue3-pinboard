@@ -42,7 +42,7 @@ import Radio from "@phila/phila-ui-radio";
 import Checkbox from "@phila/phila-ui-checkbox";
 
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faE, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faSearch } from '@fortawesome/free-solid-svg-icons';
 import { faHome } from '@fortawesome/free-solid-svg-icons';
 import { faBook } from '@fortawesome/free-solid-svg-icons';
 import { faWrench } from '@fortawesome/free-solid-svg-icons';
@@ -152,7 +152,7 @@ export default function pinboard(config) {
 
   app.use(VueGtag, {
     disableScriptLoad: true,
-    config: { 
+    config: {
       id: 'GTM-MC6CR2',
       // id: 'G-NHET8T5XY8',
     }

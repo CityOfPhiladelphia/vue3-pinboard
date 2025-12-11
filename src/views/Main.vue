@@ -279,9 +279,9 @@ const i18nLanguages = computed(() => {
 
 const footerLinks = computed(() => {
   if ($config.footer) {
-    let newValues = []
+    const newValues = []
     for (let i of $config.footer) {
-      let value = {}
+      const value = {}
       for (let j of Object.keys(i)) {
         const valOrGetter = i[j];
         if (typeof valOrGetter === 'function') {
@@ -299,6 +299,7 @@ const footerLinks = computed(() => {
     }
     return newValues;
   }
+  return null;
 });
 
 const toggleKeys = computed(() => {
@@ -352,7 +353,7 @@ watch(
 
 watch(
   () => selectedServices.value,
-  async => {
+  async () => {
     if (import.meta.env.VITE_DEBUG) console.log('watch selectedServices is firing');
     if (database.value) {
       if (import.meta.env.VITE_DEBUG) console.log('watch selectedServices is calling filterPoints');
@@ -445,13 +446,13 @@ onMounted(async () => {
   if ($config.searchBar) {
     let routeQuery = Object.keys(route.query);
     // if (import.meta.env.VITE_DEBUG) console.log('App.vue mounted in searchTypes section, route:', route, 'routeQuery:', routeQuery, 'Object.keys(route.query)[0]', Object.keys(route.query)[0]);
-    let value;
+    let value = '';
     for (let query of routeQuery) {
       if (query === 'address' || query === 'keyword') {
         value = route.query[query];
       }
     }
-    addressInputPlaceholder.value = $config.searchBar.placeholder;
+    addressInputPlaceholder.value = value ? value : $config.searchBar.placeholder;
   }
 
   if (!i18nEnabled.value) {
@@ -633,10 +634,11 @@ const checkServices = (row) => {
   let value;
   let selectedGroups = [];
   switch ($config.refine.type) {
-    case 'categoryField_value':
+    case 'categoryField_value': {
       value = $config.refine.value(row);
       return selectedServices.includes(value);
-    case 'categoryField_array':
+    }
+    case 'categoryField_array': {
       let servicesSplit = $config.refine.value(row);
       if (typeof servicesSplit === 'string') {
         servicesSplit = servicesSplit.split(',').map(s => s.trim());
@@ -649,7 +651,8 @@ const checkServices = (row) => {
       } else {
         return false;
       }
-    case 'multipleFields':
+    }
+    case 'multipleFields': {
       for (let field in $config.refine.multipleFields) {
         if (selectedServices.includes(field)) {
           let getter = $config.refine.multipleFields[field];
@@ -660,7 +663,9 @@ const checkServices = (row) => {
         }
       }
       return true;
-    case 'multipleFieldGroups':
+    }
+
+    case 'multipleFieldGroups': {
       let booleanConditions = [];
       for (let value of selectedServices) {
         // if (import.meta.env.VITE_DEBUG) console.log('value:', value);
@@ -686,24 +691,28 @@ const checkServices = (row) => {
           }
         }
         switch ($config.refine.andOr) {
-          case 'and':
+          case 'and': {
             if (groupValues.includes(false)) booleanConditions.push(false);
             else booleanConditions.push(true);
             break;
-          case 'or':
+          }
+          case 'or': {
             if (groupValues.includes(true)) booleanConditions.push(true);
             else booleanConditions.push(false);
             break;
-          default:
+          }
+          default: {
             if (groupValues.includes(true)) booleanConditions.push(true);
             else booleanConditions.push(false);
+          }
         }
       }
-
       if (booleanConditions.includes(false)) return false;
       else return true;
-    default:
+    }
+    default: {
       return true;
+    }
   }
 };
 
@@ -737,7 +746,7 @@ const checkKeywords = (row) => {
       tags = tags.filter(tag => {
         if (tag.i18nDependent) {
           const tagLang = tag.field.split('_')[0];
-          // if (import.meta.env.VITE_DEBUG) console.log('tagLang:', tagLang, 'i18nLocale.value:', i18nLocale.value);
+          if (import.meta.env.VITE_DEBUG) console.log('tagLang:', tagLang, 'i18nLocale.value:', i18nLocale.value);
           if (tagLang === i18nLocale.value) {
             return true;
           } else {
@@ -749,11 +758,11 @@ const checkKeywords = (row) => {
       });
 
       for (let tag of tags) {
-        // if (import.meta.env.VITE_DEBUG) console.log('tag:', tag, 'tag.field:', tag.field, 'row.properties[tag.field]:', row.properties[tag.field]);
+        if (import.meta.env.VITE_DEBUG) console.log('tag:', tag, 'tag.field:', tag.field, 'row.properties[tag.field]:', row.properties[tag.field]);
         if (tag.type == 'boolean' && row.properties[tag.field] == 'Yes') {
           description.push(tag.value);
         } else if (tag.type == 'value' && row.properties[tag.field] !== null && row.properties[tag.field] != ' ') {
-          // if (import.meta.env.VITE_DEBUG) console.log('in else if, row.properties[tag.field]:', row.properties[tag.field]);
+          if (import.meta.env.VITE_DEBUG) console.log('in else if, row.properties[tag.field]:', row.properties[tag.field]);
           let value = row.properties[tag.field];
           description = value ? description.concat(value.split(',')) : description;
         } else if (tag.type == 'array' && Array.isArray(row.properties[tag.field])) {
@@ -776,7 +785,7 @@ const checkKeywords = (row) => {
       }
     }
 
-    // if (import.meta.env.VITE_DEBUG) console.log('checkKeywords, description:', description, 'selectedKeywords.value:', selectedKeywords.value);
+    if (import.meta.env.VITE_DEBUG) console.log('checkKeywords, description:', description, 'selectedKeywords.value:', selectedKeywords.value);
 
     let threshold = 0.2;
     if ($config.searchBar.fuseThreshold) {
@@ -793,7 +802,7 @@ const checkKeywords = (row) => {
       // shouldSort: true,
       // includeMatches: false,
       // findAllMatches: true,
-      minMatchCharLength: 3,
+      minMatchCharLength: 5,
       location: 0,
       threshold: threshold,
       distance: distance,
@@ -811,16 +820,16 @@ const checkKeywords = (row) => {
     const fuse = new Fuse(description, options);
     let results = {};
     for (let keyword of selectedKeywords.value) {
-      // if (import.meta.env.VITE_DEBUG) console.log('in selectedKeywords loop, keyword.toString():', keyword.toString(), 'description:', description);//'description[0].split(","):', description[0].split(','));
+      if (import.meta.env.VITE_DEBUG) console.log('in selectedKeywords loop, keyword.toString():', keyword.toString(), 'description:', description);//'description[0].split(","):', description[0].split(','));
       if ($config.skipFuse) {
         let keywordString = '' + keyword;
-        // if (import.meta.env.VITE_DEBUG) console.log('skipFuse, keywordString:', keywordString);
+        if (import.meta.env.VITE_DEBUG) console.log('skipFuse, keywordString:', keywordString);
         if (description.includes(keywordString)) {
-          // if (import.meta.env.VITE_DEBUG) console.log('19148 is in description');
+          if (import.meta.env.VITE_DEBUG) console.log('19148 is in description');
           results[keyword] = ['true'];
         }
       } else {
-        // if (import.meta.env.VITE_DEBUG) console.log('fuse.search(keyword):', fuse.search(keyword), 'description:', description);
+        if (import.meta.env.VITE_DEBUG) console.log('fuse.search(keyword):', fuse.search(keyword), 'description:', description);
         results[keyword] = fuse.search(keyword);
       }
     }
@@ -926,100 +935,175 @@ const popupClicked = () => {
 </script>
 
 <template>
-
-  <app-header :app-title="appTitle" :app-subtitle="appSubTitle" :app-link="appLink" :is-sticky="true" :is-fluid="true"
-    :branding-image="brandingImage" :branding-link="brandingLink">
+  <app-header
+    :app-title="appTitle"
+    :app-subtitle="appSubTitle"
+    :app-link="appLink"
+    :is-sticky="true"
+    :is-fluid="true"
+    :branding-image="brandingImage"
+    :branding-link="brandingLink"
+  >
     <template #mobile-nav>
       <mobile-nav :links="footerLinks" />
     </template>
 
-    <template v-if="i18nEnabled" #lang-selector-nav>
-      <lang-selector v-if="i18nEnabled && !i18nSelectorHidden" :languages="i18nLanguages" />
+    <template
+      v-if="i18nEnabled"
+      #lang-selector-nav
+    >
+      <lang-selector
+        v-if="i18nEnabled && !i18nSelectorHidden"
+        :languages="i18nLanguages"
+      />
     </template>
   </app-header>
 
-  <main id="main" class="main invisible-scrollbar">
-
-    <div v-show="isAlertModalOpen" class="modalWrapper" @click="closeModal">
-      <modal type="none" :hide-close-button="true" :close="closeModal">
+  <main
+    id="main"
+    class="main invisible-scrollbar"
+  >
+    <div
+      v-show="isAlertModalOpen"
+      class="modalWrapper"
+      @click="closeModal"
+    >
+      <modal
+        type="none"
+        :hide-close-button="true"
+        :close="closeModal"
+      >
         <template #title>
           {{ alertModalTitle }}
         </template>
         <slot>
           <div class="content">
-            <div v-html="alertModalBody"></div>
+            <div v-html="alertModalBody" />
           </div>
         </slot>
         <template #actions-before>
-          <button class="button is-secondary" @click="closeModal">
+          <button
+            class="button is-secondary"
+            @click="closeModal"
+          >
             Close
           </button>
         </template>
       </modal>
     </div>
 
-    <div id="main-column" class="main-column invisible-scrollbar">
+    <div
+      id="main-column"
+      class="main-column invisible-scrollbar"
+    >
       <alert-banner v-if="$config.alerts && $config.alerts.header && $config.alerts.header.enabled" />
 
       <div
         v-if="showForceHolidayBanner || showAutomaticHolidayBanner && holiday.coming_soon || showAutomaticHolidayBanner && holiday.current"
-        id="holiday-banner" class="holiday-banner columns is-mobile">
-        <div v-if="!CustomRouterLink" class="column holiday-banner-large-column is-10" v-html="closureMessageAllSites">
-        </div>
-        <div v-if="CustomRouterLink" class="column holiday-banner-large-column is-10">
-          <CustomRouterLink></CustomRouterLink>
+        id="holiday-banner"
+        class="holiday-banner columns is-mobile"
+      >
+        <div
+          v-if="!CustomRouterLink"
+          class="column holiday-banner-large-column is-10"
+          v-html="closureMessageAllSites"
+        />
+        <div
+          v-if="CustomRouterLink"
+          class="column holiday-banner-large-column is-10"
+        >
+          <CustomRouterLink />
         </div>
 
         <div class="column holiday-banner-small-column is-2">
-          <button style="height: 100% !important;"
-            class="button is-primary is-small is-pulled-right holiday-banner-close-button" @click="closeHolidayBanner">
+          <button
+            style="height: 100% !important;"
+            class="button is-primary is-small is-pulled-right holiday-banner-close-button"
+            @click="closeHolidayBanner"
+          >
             x
           </button>
         </div>
       </div>
 
-      <address-search-control v-if="isMobile" :input-id="'address-search-input'" />
+      <address-search-control
+        v-if="isMobile"
+        :input-id="'address-search-input'"
+      />
 
       <div>
         <refine-panel :refine-title="refineTitle" />
         <!-- @geolocate-control-fire="geolocateControlFire" -->
       </div>
 
-      <div v-show="!isMobile || isMobile && !refineOpen" id="main-row" class="main-row">
-        <div v-show="locationsPanelVisible" class="locations-holder">
-          <locations-panel :is-map-visible="isMapVisible" @clear-bad-address="clearBadAddress"
-            @clicked-view-map="toggleToMap" />
+      <div
+        v-show="!isMobile || isMobile && !refineOpen"
+        id="main-row"
+        class="main-row"
+      >
+        <div
+          v-show="locationsPanelVisible"
+          class="locations-holder"
+        >
+          <locations-panel
+            :is-map-visible="isMapVisible"
+            @clear-bad-address="clearBadAddress"
+            @clicked-view-map="toggleToMap"
+          />
         </div>
-        <div v-show="mapPanelVisible" id="map-panel-holder" class="map-panel-holder">
-          <map-panel @clear-search="clearSearchTriggered" @toggleMap="toggleToMap" @geolocate="geolocate"
-            @popup-clicked="popupClicked" />
+        <div
+          v-show="mapPanelVisible"
+          id="map-panel-holder"
+          class="map-panel-holder"
+        >
+          <map-panel
+            @clear-search="clearSearchTriggered"
+            @toggle-map="toggleToMap"
+            @geolocate="geolocate"
+            @popup-clicked="popupClicked"
+          />
           <!-- @geolocate-control-fire="geolocateControlFire" -->
         </div>
       </div>
-
     </div>
-    <div v-show="toggleButtonsVisible" class="toggle-buttons-holder">
-      <button class="capitalized toggle-button toggle-button-left"
-        :class="isMapVisible ? 'toggle-button-inactive' : 'toggle-button-active'" @click="toggleToList">
+    <div
+      v-show="toggleButtonsVisible"
+      class="toggle-buttons-holder"
+    >
+      <button
+        class="capitalized toggle-button toggle-button-left"
+        :class="isMapVisible ? 'toggle-button-inactive' : 'toggle-button-active'"
+        @click="toggleToList"
+      >
         <div class="text-div">
-          <font-awesome-icon icon="fa-solid fa-rectangle-list" class="toggle-button-icon" />
+          <font-awesome-icon
+            icon="fa-solid fa-rectangle-list"
+            class="toggle-button-icon"
+          />
           {{ $t('app.list') }}
         </div>
       </button>
-      <button class="capitalized toggle-button toggle-button-right"
-        :class="isMapVisible ? 'toggle-button-active' : 'toggle-button-inactive'" @click="toggleToMap">
+      <button
+        class="capitalized toggle-button toggle-button-right"
+        :class="isMapVisible ? 'toggle-button-active' : 'toggle-button-inactive'"
+        @click="toggleToMap"
+      >
         <div class="text-div">
-          <font-awesome-icon icon="fa-solid fa-map-marker-alt" class="toggle-button-icon" />
+          <font-awesome-icon
+            icon="fa-solid fa-map-marker-alt"
+            class="toggle-button-icon"
+          />
           {{ $t('app.map') }}
         </div>
       </button>
     </div>
-
   </main>
 
-  <app-footer :is-sticky="true" :is-hidden-mobile="true" :links="footerLinks">
-  </app-footer>
-
+  <app-footer
+    :is-sticky="true"
+    :is-hidden-mobile="true"
+    :links="footerLinks"
+  />
 </template>
 
 <style lang="scss">

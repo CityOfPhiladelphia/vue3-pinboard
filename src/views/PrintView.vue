@@ -177,7 +177,6 @@ const i18nSelectorHidden = computed(() => {
 </script>
 
 <template>
-
   <app-header
     :app-title="appTitle"
     :app-subtitle="appSubTitle"
@@ -186,7 +185,7 @@ const i18nSelectorHidden = computed(() => {
     :is-fluid="true"
     :branding-image="MainStore.brandingImage"
     :branding-link="MainStore.brandingLink"
-    >
+  >
     <template #mobile-nav>
       <mobile-nav :links="footerLinks" />
     </template>
@@ -211,7 +210,7 @@ const i18nSelectorHidden = computed(() => {
     >
       <div class="back-link no-print">
         <a @click="clickedBackToHome">
-          < {{ $t('back') }}
+          {{ $t('back') }}
         </a>
       </div>
 
@@ -226,8 +225,9 @@ const i18nSelectorHidden = computed(() => {
 
       <!-- class="component-holder card-content" -->
       <div
+        v-for="(item, index) of items"
+        :key="index"
         class="container single-item"
-        v-for="item of items"
       >
         <div
           class="columns location-row is-mobile"
@@ -262,13 +262,11 @@ const i18nSelectorHidden = computed(() => {
                 <div
                   class="column is-11"
                   v-html="parseAddress(item.properties.street_address)"
-                >
-                </div>
+                />
               </div>
             </div>
 
             <div class="column is-6">
-
               <div
                 v-if="item.properties.phone_number"
                 class="columns is-mobile"
@@ -355,7 +353,6 @@ const i18nSelectorHidden = computed(() => {
                 </div>
               </div>
             </div>
-
           </div>
 
           <div
@@ -387,10 +384,8 @@ const i18nSelectorHidden = computed(() => {
           </div>
         </div>
       </div>
-
     </div>
   </div>
-
 </template>
 
 <style scoped>

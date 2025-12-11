@@ -1,11 +1,9 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, computed, watch, useTemplateRef } from 'vue';
 import { useMapStore } from '../../stores/MapStore';
 const MapStore = useMapStore();
 import { useGeocodeStore } from '../../stores/GeocodeStore';
 const GeocodeStore = useGeocodeStore();
-import { useMainStore } from '../../stores/MainStore';
-const MainStore = useMainStore();
 import { useDataStore } from '../../stores/DataStore';
 const DataStore = useDataStore();
 
@@ -14,6 +12,7 @@ import $mapConfig from '../../mapConfig';
 const cyclomediaInitialized = computed(() => MapStore.cyclomediaInitialized);
 
 const $emit = defineEmits(['updateCameraYaw', 'updateCameraLngLat', 'updateCameraHFov', 'toggleCyclomedia']);
+const streetView = useTemplateRef('cycloviewer')
 
 const selectedResourceCoords = computed(() => {
   let dataSource;
@@ -29,6 +28,7 @@ const selectedResourceCoords = computed(() => {
   if (dataPoint && dataPoint.geometry && dataPoint.geometry.coordinates) {
     return dataPoint.geometry.coordinates;
   }
+  return null;
 });
 
 watch(
@@ -68,7 +68,6 @@ const navBarExpanded = ref(false);
 const setNewLocation = async (coords) => {
   if (MapStore.cyclomediaOn) {
     // if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue setNewLocation, coords:', coords);
-    const today = new Date();
     const year = MapStore.cyclomediaYear;
     let thisYear, lastYear;
     let params = {};
@@ -169,10 +168,10 @@ onMounted( async() => {
 
   if (cyclomediaInitialized.value) {
     StreetSmartApi.destroy({
-      targetElement: cycloviewer,
+      targetElement: streetView.value,
     });
     await StreetSmartApi.init({
-      targetElement: cycloviewer,
+      targetElement: streetView.value,
       username: CYCLOMEDIA_USERNAME,
       password: CYCLOMEDIA_PASSWORD,
       apiKey: import.meta.env.VITE_CYCLOMEDIA_API_KEY,
@@ -186,7 +185,7 @@ onMounted( async() => {
   } else {
     if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue onMounted, initializing cyclomedia');
     await StreetSmartApi.init({
-      targetElement: cycloviewer,
+      targetElement: streetView.value,
       username: CYCLOMEDIA_USERNAME,
       password: CYCLOMEDIA_PASSWORD,
       apiKey: import.meta.env.VITE_CYCLOMEDIA_API_KEY,
@@ -218,21 +217,21 @@ const popoutClicked = () => {
 </script>
 
 <template>
-  <div id="cyclomedia-panel" class="cyclomedia-panel">
-
+  <div
+    id="cyclomedia-panel"
+    class="cyclomedia-panel"
+  >
     <div class="cyclomedia-pop-out">
       <font-awesome-icon
         icon="fa-external-link-alt"
         @click="popoutClicked"
-      ></font-awesome-icon>
+      />
     </div>
     <div
       id="cycloviewer"
       ref="cycloviewer"
       class="panoramaViewerWindow"
-    >
-    </div>
-
+    />
   </div>
 </template>
 

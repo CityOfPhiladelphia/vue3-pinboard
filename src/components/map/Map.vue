@@ -22,10 +22,8 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import '../../assets/mapbox-gl-draw.min.js'
 import '../../assets/maplibre-gl-draw.css';
 import destination from '@turf/destination';
-import { point, polygon, multiPolygon, feature, featureCollection } from '@turf/helpers';
+import { point, polygon, featureCollection } from '@turf/helpers';
 import centerOfMass from '@turf/center-of-mass';
-import bbox from '@turf/bbox';
-import buffer from '@turf/buffer';
 
 // STORES
 const MapStore = useMapStore();
@@ -706,7 +704,6 @@ const updateCyclomediaCameraViewcone = (cycloHFov, cycloYaw) => {
       :items="$config.legendControl.legend.data"
       :options="{ shape: 'circle' }"
     />
-
   </div>
   <KeepAlive>
     <CyclomediaPanel
@@ -717,8 +714,6 @@ const updateCyclomediaCameraViewcone = (cycloHFov, cycloYaw) => {
       @toggle-cyclomedia="toggleCyclomedia"
     />
   </KeepAlive>
-
-
 </template>
 
 <style>

@@ -6,7 +6,7 @@ import { useMainStore } from '../stores/MainStore.js';
 // import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
-import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
+import { computed } from 'vue';
 import { event } from 'vue-gtag'
 
 import { useI18n } from 'vue-i18n';
@@ -20,8 +20,6 @@ const MainStore = useMainStore();
 
 const router = useRouter();
 const route = useRoute();
-
-const submittedCheckboxValue = ref(null);
 
 defineProps({
   // searchPlaceholder: {
@@ -134,7 +132,7 @@ const handleSubmit = (val) => {
           return;
         }
       }
-      val.split(/\W/).filter(Boolean).forEach((keyword) => {
+      val.split(/\b/).filter(Boolean).forEach((keyword) => {
         MainStore.selectedKeywords.add(keyword.trim());
       })
       query = { ...startQuery, ...{ 'keyword': [...MainStore.selectedKeywords].toString() }};
@@ -179,8 +177,14 @@ const holder = computed(() => {
     :class="holder"
     :style="{ top: yPosition, width: holderWidth }"
   >
-    <div class="field has-addons" :style="{ width: '100%' }">
-      <div class="control has-icons-right" :style="{ width: '100%' }">
+    <div
+      class="field has-addons"
+      :style="{ width: '100%' }"
+    >
+      <div
+        class="control has-icons-right"
+        :style="{ width: '100%' }"
+      >
         <label
           :for="inputId"
           class="search-label"
@@ -191,8 +195,8 @@ const holder = computed(() => {
           class="input address-input"
           type="text"
           :placeholder="t(searchPlaceholder)"
-          @keydown.enter="handleSubmit(MainStore.searchValue)"
           autocomplete="on"
+          @keydown.enter="handleSubmit(MainStore.searchValue)"
         >
       </div>
       <div class="control">

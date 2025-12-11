@@ -1,16 +1,12 @@
 <script setup>
 
-import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue';
-
+import { computed } from 'vue';
 import { useMapStore } from '../stores/MapStore.js'
-const MapStore = useMapStore();
 import Map from './map/Map.vue';
 
-defineEmits(['geolocate', 'popup-clicked']);
+const MapStore = useMapStore();
 
-// import { useDataStore } from '../stores/DataStore.js';
-// const DataStore = useDataStore();
-// await DataStore.fillZipcodes();
+defineEmits(['geolocate', 'popup-clicked']);
 
 const mapPanelClass = computed(() => {
   if (MapStore.cyclomediaOn || MapStore.eagleviewOn) {
