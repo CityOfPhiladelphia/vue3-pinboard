@@ -309,7 +309,7 @@ const toggleKeys = computed(() => {
   }
 });
 
-// MATCHERS
+// WATCHERS
 watch(
   () => database.value,
   async nextDatabase => {

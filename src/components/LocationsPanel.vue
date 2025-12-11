@@ -1,5 +1,5 @@
 <script setup>
-
+// IMPORTS
 import { useMainStore } from '../stores/MainStore.js';
 import { useMapStore } from '../stores/MapStore.js';
 import { useGeocodeStore } from '../stores/GeocodeStore.js';
@@ -8,36 +8,34 @@ import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
 import { ref, computed, getCurrentInstance, onBeforeMount, onMounted, watch } from 'vue';
 import { event } from 'vue-gtag'
+import PrintShareSection from './PrintShareSection.vue';
+import ExpandCollapse from './ExpandCollapse.vue';
+import { useI18n } from 'vue-i18n';
 
+// INITIALIZATIONS
 const MainStore = useMainStore();
 const MapStore = useMapStore();
 const GeocodeStore = useGeocodeStore();
 const DataStore = useDataStore();
-
-import PrintShareSection from './PrintShareSection.vue';
-import ExpandCollapse from './ExpandCollapse.vue';
-
 const ConfigStore = useConfigStore();
 const $config = ConfigStore.config;
 const CustomGreeting = $config.customComps.customGreeting;
 const ExpandCollapseContent = $config.customComps.expandCollapseContent;
-// if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapseContent:', ExpandCollapseContent);
-
 const route = useRoute();
 const router = useRouter();
-
 const instance = getCurrentInstance();
-import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
-const $emit = defineEmits(['clear-bad-address', 'clicked-view-map']);
-
+// PROPS
 const props = defineProps({
   isMapVisible: {
     type: Boolean,
     default: true,
   },
 });
+
+// EMITS
+const $emit = defineEmits(['clear-bad-address', 'clicked-view-map']);
 
 // REFS
 const searchDistance = ref(null);
@@ -523,7 +521,7 @@ const locationsPanelClass = computed(() => {
     </div>
 
     <div
-      v-if="!shouldShowGreeting && !loadingSources && dataStatus === 'success'"
+      v-if="!shouldShowGreeting && !loadingSources"
       class="summary-and-location-container"
     >
       <div class="summary-container">
