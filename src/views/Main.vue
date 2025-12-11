@@ -86,7 +86,6 @@ const brandingImage = computed(() => {
       }
     }
   }
-  MainStore.brandingImage = value;
   return value;
 });
 
@@ -424,6 +423,7 @@ onBeforeMount(() => {
     appLink.value = '.';
   }
   MainStore.appLink = appLink.value;
+  MainStore.brandingImage = brandingImage.value;
 });
 
 onMounted(async () => {

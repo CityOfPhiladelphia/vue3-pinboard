@@ -1,6 +1,6 @@
 <script setup>
 // VUE IMPORTS
-import { ref, computed, getCurrentInstance, onMounted, watch, nextTick } from 'vue';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { findIconDefinition } from '@fortawesome/fontawesome-svg-core';
