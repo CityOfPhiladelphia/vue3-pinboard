@@ -11,6 +11,10 @@ const MapStore = useMapStore();
 const GeocodeStore = useGeocodeStore();
 const DataStore = useDataStore();
 
+import { streetSmartApi_scripts } from '@/assets/cyclomediaScripts';
+import { useExternalModule } from '@/composables/useExternalModule';
+useExternalModule(streetSmartApi_scripts)
+
 // EMITS
 const $emit = defineEmits(['updateCameraYaw', 'updateCameraLngLat', 'updateCameraHFov', 'toggleCyclomedia']);
 
@@ -18,51 +22,9 @@ const $emit = defineEmits(['updateCameraYaw', 'updateCameraLngLat', 'updateCamer
 const navBarExpanded = ref(false);
 const streetView = useTemplateRef('cycloviewer')
 
-// WATCHERS
-watch(
-  () => selectedResourceCoords.value,
-  newSelectedResourceCoords => {
-    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue watch selectedResourceCoords, newSelectedResourceCoords:', newSelectedResourceCoords);
-    if (newSelectedResourceCoords && newSelectedResourceCoords.length) setNewLocation(newSelectedResourceCoords);
-  }
-)
-
-watch(
-  () => MapStore.currentAddressCoords,
-  newLngLat => {
-    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue watch cyclomediaLngLat, newLngLat:', newLngLat);
-    if (newLngLat.length) setNewLocation(newLngLat);
-  }
-)
-
-watch(
-  () => MapStore.cyclomediaOn,
-  newCyclomediaOn => {
-    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue watch cyclomediaOn, newCyclomediaOn:', newCyclomediaOn);
-    if (newCyclomediaOn) {
-      if (DataStore.selectedResource) {
-        setNewLocation(selectedResourceCoords.value);
-      } else if (MapStore.currentAddressCoords.length) {
-        setNewLocation(MapStore.currentAddressCoords);
-      } else {
-        setNewLocation($mapConfig.cityCenterCoords);
-      }
-    }
-  }
-)
-
-watch(
-  () => MapStore.clickedCyclomediaRecordingCoords,
-  newClickedCyclomediaRecordingCoords => {
-    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue watch clickedCyclomediaRecordingCoords, newClickedCyclomediaRecordingCoords:', newClickedCyclomediaRecordingCoords);
-    if (newClickedCyclomediaRecordingCoords) {
-      setNewLocation(newClickedCyclomediaRecordingCoords);
-    }
-  }
-)
-
 // LIFECYCLE HOOKS
 onMounted( async() => {
+  console.log("MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM")
   let CYCLOMEDIA_USERNAME = import.meta.env.VITE_CYCLOMEDIA_USERNAME;
   let CYCLOMEDIA_PASSWORD = import.meta.env.VITE_CYCLOMEDIA_PASSWORD;
   if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue onMounted, StreetSmartApi:', StreetSmartApi, 'CYCLOMEDIA_USERNAME:', CYCLOMEDIA_USERNAME, 'CYCLOMEDIA_PASSWORD:', CYCLOMEDIA_PASSWORD);
@@ -129,6 +91,49 @@ const selectedResourceCoords = computed(() => {
   }
   return null;
 });
+
+// WATCHERS
+watch(
+  () => selectedResourceCoords.value,
+  newSelectedResourceCoords => {
+    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue watch selectedResourceCoords, newSelectedResourceCoords:', newSelectedResourceCoords);
+    if (newSelectedResourceCoords && newSelectedResourceCoords.length) setNewLocation(newSelectedResourceCoords);
+  }
+)
+
+watch(
+  () => MapStore.currentAddressCoords,
+  newLngLat => {
+    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue watch cyclomediaLngLat, newLngLat:', newLngLat);
+    if (newLngLat.length) setNewLocation(newLngLat);
+  }
+)
+
+watch(
+  () => MapStore.cyclomediaOn,
+  newCyclomediaOn => {
+    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue watch cyclomediaOn, newCyclomediaOn:', newCyclomediaOn);
+    if (newCyclomediaOn) {
+      if (DataStore.selectedResource) {
+        setNewLocation(selectedResourceCoords.value);
+      } else if (MapStore.currentAddressCoords.length) {
+        setNewLocation(MapStore.currentAddressCoords);
+      } else {
+        setNewLocation($mapConfig.cityCenterCoords);
+      }
+    }
+  }
+)
+
+watch(
+  () => MapStore.clickedCyclomediaRecordingCoords,
+  newClickedCyclomediaRecordingCoords => {
+    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue watch clickedCyclomediaRecordingCoords, newClickedCyclomediaRecordingCoords:', newClickedCyclomediaRecordingCoords);
+    if (newClickedCyclomediaRecordingCoords) {
+      setNewLocation(newClickedCyclomediaRecordingCoords);
+    }
+  }
+)
 
 // FUNCTIONS
 const popoutClicked = () => {
