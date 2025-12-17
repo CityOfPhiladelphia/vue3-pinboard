@@ -6,59 +6,30 @@ import { useGeocodeStore } from '../../stores/GeocodeStore';
 import { useDataStore } from '../../stores/DataStore';
 import $mapConfig from '../../mapConfig';
 
+import { useCyclomedia } from '@/composables/cyclomedia/useCyclomedia';
+const cyclomedia = useCyclomedia
+
 // INITIALIZATIONS
 const MapStore = useMapStore();
 const GeocodeStore = useGeocodeStore();
 const DataStore = useDataStore();
 
-import { streetSmartApi_scripts } from '@/assets/cyclomediaScripts';
-import { useExternalModule } from '@/composables/useExternalModule';
-useExternalModule(streetSmartApi_scripts)
-
 // EMITS
 const $emit = defineEmits(['updateCameraYaw', 'updateCameraLngLat', 'updateCameraHFov', 'toggleCyclomedia']);
 
 // REFS
-const navBarExpanded = ref(false);
 const streetView = useTemplateRef('cycloviewer')
 
 // LIFECYCLE HOOKS
 onMounted( async() => {
-  console.log("MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM")
-  let CYCLOMEDIA_USERNAME = import.meta.env.VITE_CYCLOMEDIA_USERNAME;
-  let CYCLOMEDIA_PASSWORD = import.meta.env.VITE_CYCLOMEDIA_PASSWORD;
-  if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue onMounted, StreetSmartApi:', StreetSmartApi, 'CYCLOMEDIA_USERNAME:', CYCLOMEDIA_USERNAME, 'CYCLOMEDIA_PASSWORD:', CYCLOMEDIA_PASSWORD);
+  if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue onMounted, cyclomedia:', cyclomedia, 'CYCLOMEDIA_USERNAME:', import.meta.env.VITE_CYCLOMEDIA_USERNAME, 'CYCLOMEDIA_PASSWORD:', import.meta.env.VITE_CYCLOMEDIA_PASSWORD);
 
   if (cyclomediaInitialized.value) {
-    StreetSmartApi.destroy({
-      targetElement: streetView.value,
-    });
-    await StreetSmartApi.init({
-      targetElement: streetView.value,
-      username: CYCLOMEDIA_USERNAME,
-      password: CYCLOMEDIA_PASSWORD,
-      apiKey: import.meta.env.VITE_CYCLOMEDIA_API_KEY,
-      srs: 'EPSG:4326',
-      locale: 'en-us',
-      addressSettings: {
-        locale: 'en-us',
-        database: 'CMDatabase',
-      },
-    })
+    cyclomedia.destroy(streetView.value);
+    await cyclomedia.init(streetView.value)
   } else {
     if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue onMounted, initializing cyclomedia');
-    await StreetSmartApi.init({
-      targetElement: streetView.value,
-      username: CYCLOMEDIA_USERNAME,
-      password: CYCLOMEDIA_PASSWORD,
-      apiKey: import.meta.env.VITE_CYCLOMEDIA_API_KEY,
-      srs: 'EPSG:4326',
-      locale: 'en-us',
-      addressSettings: {
-        locale: 'en-us',
-        database: 'CMDatabase',
-      },
-    })
+    await cyclomedia.init(streetView.value)
     if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue onMounted, cyclomedia initialized');
     MapStore.cyclomediaInitialized = true;
   }
@@ -160,23 +131,13 @@ const setNewLocation = async (coords) => {
         orientation: { pitch: 0 },
       };
     }
+
     if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue setNewLocation, lastYear:', lastYear, 'thisYear:', thisYear, 'coords:', coords);
-    const response = await StreetSmartApi.open(
-      params,
-      {
-        viewerType: StreetSmartApi.ViewerType.PANORAMA,
-        srs: 'EPSG:4326',
-        panoramaViewer: {
-          closable: false,
-          maximizable: false,
-        },
-      }
-    )
+    const response = await cyclomedia.open(params)
     let viewer = response[0];
     if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue setNewLocation, viewer:', viewer, 'response:', response);
-    viewer.toggleNavbarExpanded(navBarExpanded.value);
-    viewer.toggleButtonEnabled('panorama.elevation', false);
-    viewer.toggleButtonEnabled('panorama.reportBlurring', false);
+    if (viewer.getButtonEnabled('panorama.reportBlurring')) viewer.toggleReportBlurring()
+    if (viewer.getCenterMapVisible()) viewer.toggleCenterMapVisibility()
 
     for (let overlay of viewer.props.overlays) {
       if (overlay.id === 'surfaceCursorLayer') {

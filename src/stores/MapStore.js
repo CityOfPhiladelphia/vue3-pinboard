@@ -31,7 +31,7 @@ export const useMapStore = defineStore("MapStore", {
       cyclomediaCameraHFov: null,
       cyclomediaCameraXyz: null,
       cyclomediaCameraLngLat: null,
-      cyclomediaYear: null,
+      cyclomediaYear: null
     };
   },
   actions: {

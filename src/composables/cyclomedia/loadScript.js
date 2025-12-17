@@ -11,7 +11,7 @@ export const loadScript = (src, type = 'text/javascript', integrity = '', crosso
       return;
     }
 
-    console.log("LOADING: ", src)
+    if (import.meta.env.VITE_DEBUG) console.log("LOADING: ", src)
 
     // create new tag
     const tag = document.createElement("script");

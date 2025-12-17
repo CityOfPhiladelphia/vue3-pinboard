@@ -108,6 +108,9 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import VueGoodTablePlugin from 'vue-good-table-next';
 import i18nFromFiles from './i18n/i18n.js';
 
+import { useCyclomedia } from '@/composables/cyclomedia/useCyclomedia.js';
+useCyclomedia.loadScripts();
+
 export default function pinboard(config) {
   const app = createApp(App);
   if (import.meta.env.VITE_DEBUG) console.log('config:', config, 'app:', app);
@@ -159,6 +162,7 @@ export default function pinboard(config) {
   }, router);
 
   app.use(router);
+  // app.config.globalProperties.window = window
   app.mount('#app')
 };
 
