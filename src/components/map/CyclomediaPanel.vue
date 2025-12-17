@@ -4,15 +4,15 @@ import { onMounted, computed, watch, useTemplateRef } from 'vue';
 import { useMapStore } from '../../stores/MapStore';
 import { useGeocodeStore } from '../../stores/GeocodeStore';
 import { useDataStore } from '../../stores/DataStore';
+import { useCyclomedia } from '@/composables/cyclomedia/useCyclomedia';
 import $mapConfig from '../../mapConfig';
 
-import { useCyclomedia } from '@/composables/cyclomedia/useCyclomedia';
-const cyclomedia = useCyclomedia
 
 // INITIALIZATIONS
 const MapStore = useMapStore();
 const GeocodeStore = useGeocodeStore();
 const DataStore = useDataStore();
+const cyclomedia = useCyclomedia;
 
 // EMITS
 const $emit = defineEmits(['updateCameraYaw', 'updateCameraLngLat', 'updateCameraHFov', 'toggleCyclomedia']);
@@ -22,7 +22,7 @@ const streetView = useTemplateRef('cycloviewer')
 
 // LIFECYCLE HOOKS
 onMounted( async() => {
-  if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue onMounted, cyclomedia:', cyclomedia, 'CYCLOMEDIA_USERNAME:', import.meta.env.VITE_CYCLOMEDIA_USERNAME, 'CYCLOMEDIA_PASSWORD:', import.meta.env.VITE_CYCLOMEDIA_PASSWORD);
+  if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue onMounted, cyclomedia:', cyclomedia);
 
   if (cyclomediaInitialized.value) {
     cyclomedia.destroy(streetView.value);
@@ -114,30 +114,21 @@ const popoutClicked = () => {
 
 const setNewLocation = async (coords) => {
   if (MapStore.cyclomediaOn) {
-    // if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue setNewLocation, coords:', coords);
+    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue setNewLocation, coords:', coords);
     const year = MapStore.cyclomediaYear;
     let thisYear, lastYear;
-    let params = {};
+    let params = {
+      coordinate: coords,
+      orientation: { pitch: 0 },
+    };
     if (year) {
       lastYear = `${year}-01-01`;
       thisYear = `${year + 1}-01-01`;
-      params = {
-        coordinate: coords,
-        dateRange: { from: lastYear, to: thisYear },
-      };
-    } else {
-      params = {
-        coordinate: coords,
-        orientation: { pitch: 0 },
-      };
+      params.dateRange = { from: lastYear, to: thisYear }
     }
 
     if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue setNewLocation, lastYear:', lastYear, 'thisYear:', thisYear, 'coords:', coords);
-    const response = await cyclomedia.open(params)
-    let viewer = response[0];
-    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue setNewLocation, viewer:', viewer, 'response:', response);
-    if (viewer.getButtonEnabled('panorama.reportBlurring')) viewer.toggleReportBlurring()
-    if (viewer.getCenterMapVisible()) viewer.toggleCenterMapVisibility()
+    const viewer = await cyclomedia.open(params)
 
     for (let overlay of viewer.props.overlays) {
       if (overlay.id === 'surfaceCursorLayer') {
