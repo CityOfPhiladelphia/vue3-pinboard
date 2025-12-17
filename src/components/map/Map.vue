@@ -244,8 +244,6 @@ watch(
   }
 });
 
-
-
 watch(
   () => zipcodeData.value,
   async newZipcodeData => {
@@ -465,7 +463,6 @@ const cyclomediaRecordingsClient = new CyclomediaRecordingsClient(
 // map object
 let map;
 
-
 // LIFECYCLE HOOKS
 onMounted(async () => {
   if (import.meta.env.VITE_DEBUG) console.log('Map.vue onMounted');
@@ -678,15 +675,9 @@ onMounted(async () => {
     <GeolocateControl
       @geolocate="$emit('geolocate')"
     />
-    <!-- @geolocate="MapStore.geolocate" -->
 
     <ImageryToggleControl @toggle-imagery="toggleImagery" />
     <CyclomediaControl @toggle-cyclomedia="toggleCyclomedia" />
-
-    <!-- <ImageryDropdownControl
-      v-if="MapStore.imageryOn"
-      @set-imagery="setImagery"
-    /> -->
 
     <OverlayLegend
       v-if="$config.legendControl"
