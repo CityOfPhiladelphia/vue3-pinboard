@@ -1,6 +1,6 @@
 <script setup>
 // IMPORTS
-import { ref, onMounted, computed, watch, useTemplateRef } from 'vue';
+import { onMounted, computed, watch, useTemplateRef } from 'vue';
 import { useMapStore } from '../../stores/MapStore';
 import { useGeocodeStore } from '../../stores/GeocodeStore';
 import { useDataStore } from '../../stores/DataStore';
