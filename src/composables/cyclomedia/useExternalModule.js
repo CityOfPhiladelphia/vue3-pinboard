@@ -1,6 +1,9 @@
 import { loadScript } from "./loadScript";
 
 /**
+ * Takes an array of Objects hwere each Object contains the script's source and attributes
+ * It will then attempt to download and append each script to the document head
+ * Promise will resolve to true if all scripts are sucessfully loaded
  *
  * @param {Array[Object]} scripts
  * @returns {Promise(Boolean)}
@@ -8,15 +11,7 @@ import { loadScript } from "./loadScript";
 
 export const useExternalModule = async (scripts) => {
   return new Promise((resolve, reject) => {
-    let allLoaded = true;
-    scripts.forEach(async (script) => {
-      try {
-        await loadScript(script.src, script?.type ?? 'text/javascript', script?.integrity ?? '', script?.crossorigin ?? '', script?.async ?? false, script?.defer ?? false);
-      } catch (error) {
-        allLoaded = false;
-        console.error(error);
-      }
-    });
-    allLoaded ? resolve(allLoaded) : reject(new Error('Failed to load all external scripts'))
+    const allLoaded = Promise.all(Array.from(scripts, (script) => loadScript(script.src, script?.type ?? 'text/javascript', script?.integrity ?? '', script?.crossorigin ?? '', script?.async ?? false, script?.defer ?? false)))
+    allLoaded.state === "fulfilled" ? resolve(true) : reject(new Error('Failed to load all external scripts'))
   })
 };
