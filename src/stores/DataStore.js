@@ -28,32 +28,20 @@ export const useDataStore = defineStore('DataStore', {
       this.appType = ConfigStore.config.app.type;
     },
     async fillAgoToken() {
-      let data = qs.stringify({
-        'f': 'json',
-        'username': import.meta.env.VITE_AGO_USERNAME,
-        'password': import.meta.env.VITE_AGO_PASSWORD,
-        'referer': 'https://www.mydomain.com'
-      });
-
-      let config = {
-        method: 'post',
-        maxBodyLength: Infinity,
-        url: 'https://www.arcgis.com/sharing/rest/generateToken',
+      const response = await fetch('https://www.arcgis.com/sharing/rest/generateToken', {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          // 'Authorization': 'Basic Og=='
         },
-        data : data
-      };
-
-      await axios.request(config)
-      .then((response) => {
-        if (import.meta.env.VITE_DEBUG) console.log(JSON.stringify(response.data));
-        this.agoToken = response.data;
+        body: new URLSearchParams({
+          'f': 'json',
+          'username': import.meta.env.VITE_AGO_USERNAME,
+          'password': import.meta.env.VITE_AGO_PASSWORD,
+          'referer': 'https://www.mydomain.com'
+        })
       })
-      .catch((error) => {
-        if (import.meta.env.VITE_DEBUG) console.log(error);
-      });
+      const data = await response.json();
+      this.agoToken = data;
     },
     async fillResources() {
       const $config = useConfigStore().config;
