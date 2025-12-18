@@ -1,33 +1,36 @@
+import App from './App.vue'
 import { createApp } from 'vue'
+import VueGtag from "vue-gtag";
+
+// ROUTER
+import { useRouter, useRoute } from 'vue-router'
+import initRouter from './router'
+
+// i18n
+import { createI18n } from 'vue-i18n'
+import i18nFromFiles from './i18n/i18n.js';
+
+// DATA STORES
 import { createPinia } from 'pinia'
 import { useConfigStore } from './stores/ConfigStore.js';
 import { useDataStore } from './stores/DataStore.js';
 import { useMainStore } from './stores/MainStore.js';
-import VueGtag from "vue-gtag";
 
-import { useRouter, useRoute } from 'vue-router'
-
-if (import.meta.env.VITE_DEBUG) console.log('test, import.meta.env.VITE_DEBUG:', import.meta.env.VITE_DEBUG);
-
-import { createI18n } from 'vue-i18n'
-
-import App from './App.vue'
-import initRouter from './router'
-
-import mergeDeep from './util/merge-deep';
-
+// TABLE PLUGIN
+import VueGoodTablePlugin from 'vue-good-table-next';
 import 'vue-good-table-next/dist/vue-good-table-next.css'
-import "@fortawesome/fontawesome-pro/css/fontawesome.min.css";
-import "@fortawesome/fontawesome-pro/css/solid.min.css";
-import '@creativebulma/bulma-tooltip/dist/bulma-tooltip.min.css';
+
+// STYLES
 import "bulma";
-import '@phila/phila-ui-core/dist/styles/scss/all.scss';
 import "bulma-checkradio/dist/css/bulma-checkradio.min.css";
+import '@creativebulma/bulma-tooltip/dist/bulma-tooltip.min.css';
 import './assets/main_pin.scss';
 import './assets/intro.scss';
 import './assets/card.scss';
 import './assets/style.scss';
 
+// PHILLY UI
+import '@phila/phila-ui-core/dist/styles/scss/all.scss';
 import PhilaUICore from "@phila/phila-ui-core";
 import AppHeader from "@phila/phila-ui-app-header";
 import AppFooter from "@phila/phila-ui-app-footer";
@@ -41,6 +44,10 @@ import LangSelector from "@phila/phila-ui-lang-selector";
 import Radio from "@phila/phila-ui-radio";
 import Checkbox from "@phila/phila-ui-checkbox";
 
+// FONT AWESOME
+import "@fortawesome/fontawesome-pro/css/fontawesome.min.css";
+import "@fortawesome/fontawesome-pro/css/solid.min.css";
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
 import { faHome } from '@fortawesome/free-solid-svg-icons';
@@ -104,11 +111,13 @@ library.add(
   faExclamation,
 );
 
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import VueGoodTablePlugin from 'vue-good-table-next';
-import i18nFromFiles from './i18n/i18n.js';
-
+// UTILITIES AND COMPOSABLES
+import mergeDeep from './util/merge-deep';
+import { loadScript } from './composables/externalScripts/loadScript';
 import { loadCyclomedia } from '@/composables/cyclomedia/useCyclomedia.js';
+
+// LOAD EXTERNAL SCRIPTS
+loadScript("https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js", "text/javascript")
 loadCyclomedia();
 
 export default function pinboard(config) {
