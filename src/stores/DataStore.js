@@ -1,10 +1,7 @@
 import { defineStore, acceptHMRUpdate } from 'pinia';
-import axios from 'axios';
 import { point } from '@turf/helpers';
-
-import qs from 'qs';
-
 import { useConfigStore } from './ConfigStore.js';
+import axios from 'axios';
 
 export const useDataStore = defineStore('DataStore', {
   state: () => {
