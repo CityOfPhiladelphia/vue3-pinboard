@@ -2,31 +2,32 @@ import { streetSmartApi_scripts } from '@/composables/cyclomedia/cyclomediaScrip
 import { useExternalModule } from '@/composables/cyclomedia/useExternalModule';
 
 /**
- * Object with methods to handle calls to Cyclomedia's StreetSmartApi
- */
-
-export const useCyclomedia = {
-  /**
    * Loads all the scrpits required to run Cyclomedia's StreetSmartApi
    * Method is an alternative to installing the npm package, or loading the scripts in an HTML file
    *
    * @returns {Boolean} - true if all scripts were loaded successfully
    */
-  loadScripts: async () => {
-    let allLoaded = false;
+  export const loadCyclomedia = async () => {
     try {
-      allLoaded = await useExternalModule(streetSmartApi_scripts)
+      return await useExternalModule(streetSmartApi_scripts)
     } catch (error) {
       console.error(error);
+      return false;
     }
-    return allLoaded;
-  },
+  }
+
+/**
+ *
+ * @returns Functions to load Cyclomedia and its dependent scripts and to handle calls to Cyclomedia's StreetSmartApi
+ */
+
+export function useCyclomedia() {
   /**
    *
    * @param {HTMLElement | VueTemplateRef} element - the element where Cyclomedia app will be rendered
    * @returns {Promise}
    */
-  init: async element => {
+  const init = async (element) => {
     const initConfig = {
       targetElement: element,
       username: import.meta.env.VITE_CYCLOMEDIA_USERNAME,
@@ -47,14 +48,15 @@ export const useCyclomedia = {
       console.error('StreetSmartApi init failed:', error);
       return null;
     }
-  },
+  }
+
   /**
    * Opens the Cyclomedia viewer
    *
    * @param {Object} params - settings for Cyclomedia panel to open with
    * @returns {viewer | null} - returns viewer Object if open is successful
    */
-  open: async (params) => {
+  const open = async (params) => {
     const openConfig = {
       viewerType: window.StreetSmartApi.ViewerType.PANORAMA,
       srs: 'EPSG:4326',
@@ -77,14 +79,15 @@ export const useCyclomedia = {
     if (viewer.props.ui['panorama.reportBlurring'].visible) viewer.toggleReportBlurring();
     if (viewer.getCenterMapVisible()) viewer.toggleCenterMapVisibility();
     return viewer;
-  },
+  }
+
   /**
    * Closes the Cyclomedia viewer
    *
    * @param {HTMLElement | VueTemplateRef} element
    * @returns {null}
    */
-  destroy: async (element) => {
+  const destroy = async (element) => {
     if (!window.StreetSmartApi) return null;
     try {
       return await window.StreetSmartApi.destroy({ targetElement: element });
@@ -93,4 +96,6 @@ export const useCyclomedia = {
       return null;
     }
   }
+
+  return { init, open, destroy }
 }

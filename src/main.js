@@ -108,8 +108,8 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import VueGoodTablePlugin from 'vue-good-table-next';
 import i18nFromFiles from './i18n/i18n.js';
 
-import { useCyclomedia } from '@/composables/cyclomedia/useCyclomedia.js';
-useCyclomedia.loadScripts();
+import { loadCyclomedia } from '@/composables/cyclomedia/useCyclomedia.js';
+loadCyclomedia();
 
 export default function pinboard(config) {
   const app = createApp(App);

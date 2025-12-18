@@ -7,12 +7,11 @@ import { useDataStore } from '../../stores/DataStore';
 import { useCyclomedia } from '@/composables/cyclomedia/useCyclomedia';
 import $mapConfig from '../../mapConfig';
 
-
 // INITIALIZATIONS
 const MapStore = useMapStore();
 const GeocodeStore = useGeocodeStore();
 const DataStore = useDataStore();
-const cyclomedia = useCyclomedia;
+const cyclomedia = useCyclomedia();
 
 // EMITS
 const $emit = defineEmits(['updateCameraYaw', 'updateCameraLngLat', 'updateCameraHFov', 'toggleCyclomedia']);
