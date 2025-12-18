@@ -128,7 +128,7 @@ const setNewLocation = async (coords) => {
 
     if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue setNewLocation, lastYear:', lastYear, 'thisYear:', thisYear, 'coords:', coords);
     const viewer = await cyclomedia.open(params)
-    streetView.value.querySelector('.windowcontrols').classList.add('invisible')
+    streetView.value.querySelector('.windowcontrols').classList.add('invisible') // hides button that rendered behind the popout button
 
     for (let overlay of viewer.props.overlays) {
       if (overlay.id === 'surfaceCursorLayer') {
