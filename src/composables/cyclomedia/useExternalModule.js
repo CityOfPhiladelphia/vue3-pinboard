@@ -10,8 +10,8 @@ import { loadScript } from "./loadScript";
  */
 
 export const useExternalModule = async (scripts) => {
+  const allLoaded = await Promise.all(Array.from(scripts, (script) => loadScript(script.src, script?.type ?? 'text/javascript', script?.integrity ?? '', script?.crossorigin ?? '', script?.async ?? false, script?.defer ?? false)))
   return new Promise((resolve, reject) => {
-    const allLoaded = Promise.all(Array.from(scripts, (script) => loadScript(script.src, script?.type ?? 'text/javascript', script?.integrity ?? '', script?.crossorigin ?? '', script?.async ?? false, script?.defer ?? false)))
-    allLoaded.state === "fulfilled" ? resolve(true) : reject(new Error('Failed to load all external scripts'))
+    allLoaded.every((value) => value === true) ? resolve(true) : reject(new Error('Failed to load all external scripts'))
   })
 };
