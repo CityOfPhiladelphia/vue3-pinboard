@@ -1,5 +1,11 @@
 import { loadScript } from "./loadScript";
 
+/**
+ *
+ * @param {Array[Object]} scripts
+ * @returns {Promise(Boolean)}
+ */
+
 export const useExternalModule = async (scripts) => {
   return new Promise((resolve, reject) => {
     let allLoaded = true;
@@ -11,7 +17,6 @@ export const useExternalModule = async (scripts) => {
         console.error(error);
       }
     });
-    allLoaded ? resolve() : reject(new Error('Failed to load all external scripts'))
-    return allLoaded;
+    allLoaded ? resolve(allLoaded) : reject(new Error('Failed to load all external scripts'))
   })
 };

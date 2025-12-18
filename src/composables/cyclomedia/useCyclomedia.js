@@ -1,6 +1,10 @@
 import { streetSmartApi_scripts } from '@/composables/cyclomedia/cyclomediaScripts';
 import { useExternalModule } from '@/composables/cyclomedia/useExternalModule';
 
+/**
+ * Object with methods to handle calls to Cyclomedia's StreetSmartApi
+ */
+
 export const useCyclomedia = {
   loadScripts: async () => {
     let allLoaded = false;

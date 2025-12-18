@@ -1,3 +1,7 @@
+/**
+ * Scripts required to import Cyclomedia's StreetSmartApi
+ */
+
 const pep_script = {
   src: "https://code.jquery.com/pep/0.4.3/pep.min.js",
   type: "text/javascript",
