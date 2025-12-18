@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.7.0
+
+* Pinboard now loads common external scripts itself instead of parent apps to do the imports
+
 ### 2.6.21
 
 * fix issue where toggle switch failed to render
