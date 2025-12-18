@@ -6,6 +6,12 @@ import { useExternalModule } from '@/composables/cyclomedia/useExternalModule';
  */
 
 export const useCyclomedia = {
+  /**
+   * Loads all the scrpits required to run Cyclomedia's StreetSmartApi
+   * Method is an alternative to installing the npm package, or loading the scripts in an HTML file
+   *
+   * @returns {Boolean} - true if all scripts were loaded successfully
+   */
   loadScripts: async () => {
     let allLoaded = false;
     try {
@@ -15,6 +21,11 @@ export const useCyclomedia = {
     }
     return allLoaded;
   },
+  /**
+   *
+   * @param {HTMLElement | VueTemplateRef} element - the element where Cyclomedia app will be rendered
+   * @returns {Promise}
+   */
   init: async element => {
     const initConfig = {
       targetElement: element,
@@ -37,6 +48,12 @@ export const useCyclomedia = {
       return null;
     }
   },
+  /**
+   * Opens the Cyclomedia viewer
+   *
+   * @param {Object} params - settings for Cyclomedia panel to open with
+   * @returns {viewer | null} - returns viewer Object if open is successful
+   */
   open: async (params) => {
     const openConfig = {
       viewerType: window.StreetSmartApi.ViewerType.PANORAMA,
@@ -61,6 +78,12 @@ export const useCyclomedia = {
     if (viewer.getCenterMapVisible()) viewer.toggleCenterMapVisibility();
     return viewer;
   },
+  /**
+   * Closes the Cyclomedia viewer
+   *
+   * @param {HTMLElement | VueTemplateRef} element
+   * @returns {null}
+   */
   destroy: async (element) => {
     if (!window.StreetSmartApi) return null;
     try {
