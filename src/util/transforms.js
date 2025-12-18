@@ -98,13 +98,6 @@ export default {
         Wy: 'WY',
       };
 
-      let fixit = function(str) {
-        for (let oldCase in titleCaseFix) {
-          let newCase = titleCaseFix[oldCase];
-        }
-        return str;
-      };
-
       str = str.toLowerCase().split(' ').map(function(word) {
         let wordFormatted = word.charAt(0).toUpperCase() + word.slice(1);
         wordFormatted = titleCaseFix[wordFormatted] || wordFormatted;

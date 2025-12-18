@@ -26,6 +26,7 @@ const props = defineProps({
   },
   item: {
     type: Object,
+    default: () => {}
   },
   checked: {
     type: Boolean,
@@ -67,24 +68,6 @@ const locationClass = computed(() => {
   return value;
 });
 
-// const plusIconWeight = computed(() => {
-//   let value = 'fas';
-//   let regularExists = findIconDefinition({ prefix: 'far', iconName: 'plus' });
-//   // if (import.meta.env.VITE_DEBUG) console.log('expandCollapse.vue computed, library:', library, 'regularExists:', regularExists);
-//   if (regularExists) {
-//     value = 'far';
-//   }
-//   return value;
-// });
-
-const showLabels = computed(() => {
-  let value = false;
-  if ($config.refine.showLabels) {
-    value = true;
-  }
-  return value;
-});
-
 const i18nEnabled = computed(() => {
   let value;
   if ($config.i18n && $config.i18n.enabled) {
@@ -94,14 +77,6 @@ const i18nEnabled = computed(() => {
   }
   return value;
 });
-
-// const subsections = computed(() => {
-//   return $config.subsections || {};
-// });
-
-const toggleTag = computed(() => {
-
-})
 
 const section = computed(() => {
   let section;
@@ -113,14 +88,6 @@ const section = computed(() => {
   }
   return section;
 });
-
-// const sectionItem = computed(() => {
-//   let sectionItem = {};
-//   if (Object.keys(subsections.value).length) {
-//     sectionItem = $config.sections;
-//   }
-//   return sectionItem;
-// });
 
 const sectionTitle = computed(() => {
   let sectionTitle;
@@ -262,12 +229,6 @@ const clickCheckBox = (e) => {
   $emit('print-box-checked', props.item._featureId);
 };
 
-const openPrintView = (e) => {
-  e.stopPropagation();
-  if (import.meta.env.VITE_DEBUG) console.log('openPrintView is running, e:', e, 'props.item._featureId:', props.item._featureId);
-  window.open('./resource-view/' + props.item._featureId, '_blank');
-};
-
 const isElementInViewport = (el) => {
   if (import.meta.env.VITE_DEBUG) console.log('el:', el);
   const rect = el.getBoundingClientRect();
@@ -317,17 +278,6 @@ const openLocation = () => {
   }
 };
 
-const makeID = (itemTitle) => {
-  // if (import.meta.env.VITE_DEBUG) console.log('itemTitle:', itemTitle);
-  let value;
-  if (itemTitle) {
-    value = itemTitle.replace(/\s+/g, '-').toLowerCase();
-  } else {
-    value = '';
-  }
-  return value;
-};
-
 const getActiveToggles = () => {
   const tagNames = [...new Set(props.toggleKeys).intersection(new Set(Object.values(route.query).toString().split(',')))];
   const tagArray = Array.from((tagNames), (toggle) => {
@@ -343,39 +293,84 @@ const getActiveToggles = () => {
 
 <template>
   <div class="whole-item">
-    <div class="location-item columns is-mobile pr-2" :class="{ 'open': locationOpen }">
-      <div v-if="allowPrint && !isMobile" class="field column expand-collapse-checkbox is-1 pt-4 pb-0">
+    <div
+      class="location-item columns is-mobile pr-2"
+      :class="{ 'open': locationOpen }"
+    >
+      <div
+        v-if="allowPrint && !isMobile"
+        class="field column expand-collapse-checkbox is-1 pt-4 pb-0"
+      >
         <div class="checkbox-height-fixer">
-          <input class="is-checkradio location-checkbox" :id="'checkbox' + item._featureId" type="checkbox"
-            :name="'checkbox' + item._featureId" @click="clickCheckBox">
-          <label :for="'checkbox' + item._featureId" class="checkbox-label">
-          </label>
+          <input
+            :id="'checkbox' + item._featureId"
+            class="is-checkradio location-checkbox"
+            type="checkbox"
+            :name="'checkbox' + item._featureId"
+            @click="clickCheckBox"
+          >
+          <label
+            :for="'checkbox' + item._featureId"
+            class="checkbox-label"
+          />
         </div>
       </div>
-      <div class="column is-12-mobile p-0" :class="allowPrint ? 'is-11-tablet' : 'is-12-tablet pl-3'">
-        <div class="columns location-row is-mobile" :class="allowPrint ? 'pl-0' : 'pl-2'" tabindex="0"
-          @click="expandLocation" @keypress.space.prevent @keyup.space="expandLocation" @keyup.enter="expandLocation">
-          <div class="location-title column"
-            :class="{ 'is-8': locationOpen && $config.printView, 'is-11': !locationOpen }">
-            <span class="h5 location-name" :class="item._featureId" :aria-expanded="locationOpen">
+      <div
+        class="column is-12-mobile p-0"
+        :class="allowPrint ? 'is-11-tablet' : 'is-12-tablet pl-3'"
+      >
+        <div
+          class="columns location-row is-mobile"
+          :class="allowPrint ? 'pl-0' : 'pl-2'"
+          tabindex="0"
+          @click="expandLocation"
+          @keypress.space.prevent
+          @keypress.enter.prevent
+          @keyup.space="expandLocation"
+          @keyup.enter="expandLocation"
+        >
+          <div
+            class="location-title column"
+            :class="{ 'is-8': locationOpen && $config.printView, 'is-11': !locationOpen }"
+          >
+            <span
+              class="h5 location-name"
+              :class="item._featureId"
+            >
               {{ siteName }}
-              <div v-for="key in Object.keys(activeToggles)" class="section-name"
-                :style="{ 'background-color': activeToggles[key].color }"
-                v-html="'<b>' + $t(activeToggles[key].text) + '</b>'"
-                >
-              </div>
-              <div v-if="section && !i18nEnabled" class="section-name" :style="{ 'background-color': sectionColor }">
+              <div
+                v-for="(value, key) in activeToggles"
+                :key="`toggle-${key}`"
+                class="section-name"
+                :style="{ 'background-color': value.color }"
+                v-html="'<b>' + $t(value.text) + '</b>'"
+              />
+              <div
+                v-if="section && !i18nEnabled"
+                class="section-name"
+                :style="{ 'background-color': sectionColor }"
+              >
                 {{ sectionTitle }}
               </div>
-              <div v-if="section && i18nEnabled" class="section-name" :style="{ 'background-color': sectionColor }"
-                v-html="'<b>' + $t('categoryType.' + sectionTitle) + '</b>'">
-              </div>
+              <div
+                v-if="section && i18nEnabled"
+                class="section-name"
+                :style="{ 'background-color': sectionColor }"
+                v-html="'<b>' + $t('categoryType.' + sectionTitle) + '</b>'"
+              />
             </span>
           </div>
 
           <div class="location-icon column is-1">
-            <font-awesome-icon v-if="!locationOpen" class="plus-icon" :icon="['fas', 'plus']" />
-            <font-awesome-icon v-if="locationOpen" :icon="['fas', 'minus']" />
+            <font-awesome-icon
+              v-if="!locationOpen"
+              class="plus-icon"
+              :icon="['fas', 'plus']"
+            />
+            <font-awesome-icon
+              v-if="locationOpen"
+              :icon="['fas', 'minus']"
+            />
           </div>
         </div>
       </div>
@@ -384,7 +379,6 @@ const getActiveToggles = () => {
     <div :class="locationClass">
       <slot />
     </div>
-
   </div>
 </template>
 
@@ -397,12 +391,6 @@ const getActiveToggles = () => {
   height: 40px !important
 }
 
-// .is-checkradio[type=checkbox]+label {
-//   border-width: 2px !important;
-//   border-color: #2176d2 !important;
-// }
-
-// .is-checkradio[type=checkbox].location-checkbox:not([disabled])+label::before, .is-checkradio[type=checkbox].location-checkbox:not([disabled])+label:before, .is-checkradio[type=radio]:not([disabled])+label::before, .is-checkradio[type=radio]:not([disabled])+label:before {
 .is-checkradio[type=checkbox].location-checkbox:not([disabled])+label::before,
 .is-checkradio[type=checkbox].location-checkbox:not([disabled])+label:before {
   background-color: white;
@@ -415,7 +403,6 @@ const getActiveToggles = () => {
   background-color: #2176d2 !important;
 }
 
-// .is-checkradio[type=checkbox].location-checkbox:hover:not([disabled])+label::before, .is-checkradio[type=checkbox].location-checkbox:hover:not([disabled])+label:before, .is-checkradio[type=radio]:hover:not([disabled])+label::before, .is-checkradio[type=radio]:hover:not([disabled])+label:before {
 .is-checkradio[type=checkbox].location-checkbox:hover:not([disabled])+label::before,
 .is-checkradio[type=checkbox].location-checkbox:hover:not([disabled])+label:before {
   border-width: 2px !important;
@@ -429,7 +416,6 @@ const getActiveToggles = () => {
   background-color: white;
 }
 
-// .is-checkradio[type=checkbox]:checked+label::after, .is-checkradio[type=checkbox]:checked+label:after, .is-checkradio[type=radio]:checked+label::after, .is-checkradio[type=radio]:checked+label:after {
 .is-checkradio[type=checkbox]:checked+label::after,
 .is-checkradio[type=checkbox]:checked+label:after {
   border-width: 2px !important;
@@ -452,7 +438,6 @@ const getActiveToggles = () => {
 }
 
 .location-item {
-  // border-bottom: 1px solid black;
   position: relative;
   height: 100%;
   padding-top: 12px;

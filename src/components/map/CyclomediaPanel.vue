@@ -1,19 +1,49 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
+// IMPORTS
+import { onMounted, computed, watch, useTemplateRef } from 'vue';
 import { useMapStore } from '../../stores/MapStore';
-const MapStore = useMapStore();
 import { useGeocodeStore } from '../../stores/GeocodeStore';
-const GeocodeStore = useGeocodeStore();
-import { useMainStore } from '../../stores/MainStore';
-const MainStore = useMainStore();
 import { useDataStore } from '../../stores/DataStore';
-const DataStore = useDataStore();
-
+import { useCyclomedia } from '../../composables/cyclomedia/useCyclomedia';
 import $mapConfig from '../../mapConfig';
 
-const cyclomediaInitialized = computed(() => MapStore.cyclomediaInitialized);
+// INITIALIZATIONS
+const MapStore = useMapStore();
+const GeocodeStore = useGeocodeStore();
+const DataStore = useDataStore();
+const cyclomedia = useCyclomedia();
 
+// EMITS
 const $emit = defineEmits(['updateCameraYaw', 'updateCameraLngLat', 'updateCameraHFov', 'toggleCyclomedia']);
+
+// REFS
+const streetView = useTemplateRef('cycloviewer')
+
+// LIFECYCLE HOOKS
+onMounted( async() => {
+  if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue onMounted, cyclomedia:', cyclomedia);
+
+  if (cyclomediaInitialized.value) {
+    cyclomedia.destroy(streetView.value);
+    await cyclomedia.init(streetView.value)
+  } else {
+    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue onMounted, initializing cyclomedia');
+    await cyclomedia.init(streetView.value)
+    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue onMounted, cyclomedia initialized');
+    MapStore.cyclomediaInitialized = true;
+  }
+
+  if (DataStore.selectedResource && selectedResourceCoords.value) {
+    setNewLocation(selectedResourceCoords.value);
+  } else if (GeocodeStore.aisData.features) {
+    setNewLocation(GeocodeStore.aisData.features[0].geometry.coordinates);
+  } else {
+    setNewLocation([ -75.163471, 39.953338 ]);
+  }
+})
+
+// COMPUTED VALUES
+const cyclomediaInitialized = computed(() => MapStore.cyclomediaInitialized);
 
 const selectedResourceCoords = computed(() => {
   let dataSource;
@@ -29,8 +59,10 @@ const selectedResourceCoords = computed(() => {
   if (dataPoint && dataPoint.geometry && dataPoint.geometry.coordinates) {
     return dataPoint.geometry.coordinates;
   }
+  return null;
 });
 
+// WATCHERS
 watch(
   () => selectedResourceCoords.value,
   newSelectedResourceCoords => {
@@ -63,45 +95,40 @@ watch(
   }
 )
 
-const navBarExpanded = ref(false);
+watch(
+  () => MapStore.clickedCyclomediaRecordingCoords,
+  newClickedCyclomediaRecordingCoords => {
+    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue watch clickedCyclomediaRecordingCoords, newClickedCyclomediaRecordingCoords:', newClickedCyclomediaRecordingCoords);
+    if (newClickedCyclomediaRecordingCoords) {
+      setNewLocation(newClickedCyclomediaRecordingCoords);
+    }
+  }
+)
+
+// FUNCTIONS
+const popoutClicked = () => {
+  window.open('//cyclomedia.phila.gov/?lat=' + MapStore.cyclomediaCameraLngLat[1] + '&lng=' + MapStore.cyclomediaCameraLngLat[0], '_blank');
+  $emit('toggleCyclomedia');
+}
 
 const setNewLocation = async (coords) => {
   if (MapStore.cyclomediaOn) {
-    // if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue setNewLocation, coords:', coords);
-    const today = new Date();
+    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue setNewLocation, coords:', coords);
     const year = MapStore.cyclomediaYear;
     let thisYear, lastYear;
-    let params = {};
+    let params = {
+      coordinate: coords,
+      orientation: { pitch: 0 },
+    };
     if (year) {
       lastYear = `${year}-01-01`;
       thisYear = `${year + 1}-01-01`;
-      params = {
-        coordinate: coords,
-        dateRange: { from: lastYear, to: thisYear },
-      };
-    } else {
-      params = {
-        coordinate: coords,
-        orientation: { pitch: 0 },
-      };
+      params.dateRange = { from: lastYear, to: thisYear }
     }
+
     if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue setNewLocation, lastYear:', lastYear, 'thisYear:', thisYear, 'coords:', coords);
-    const response = await StreetSmartApi.open(
-      params,
-      {
-        viewerType: StreetSmartApi.ViewerType.PANORAMA,
-        srs: 'EPSG:4326',
-        panoramaViewer: {
-          closable: false,
-          maximizable: false,
-        },
-      }
-    )
-    let viewer = response[0];
-    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue setNewLocation, viewer:', viewer, 'response:', response);
-    viewer.toggleNavbarExpanded(navBarExpanded.value);
-    viewer.toggleButtonEnabled('panorama.elevation', false);
-    viewer.toggleButtonEnabled('panorama.reportBlurring', false);
+    const viewer = await cyclomedia.open(params)
+    streetView.value.querySelector('.windowcontrols').classList.add('invisible') // hides button that rendered behind the popout button
 
     for (let overlay of viewer.props.overlays) {
       if (overlay.id === 'surfaceCursorLayer') {
@@ -131,6 +158,7 @@ const setNewLocation = async (coords) => {
       if (import.meta.env.VITE_DEBUG) console.log('update cyclomedia date, viewer.props.recording.year:', viewer.props.recording.year);
       MapStore.cyclomediaYear = viewer.props.recording.year;
       const orientation = viewer.getOrientation();
+      viewer.setOrientation({ pitch: 0 });
       if (import.meta.env.VITE_DEBUG) console.log('orientation:', orientation);
       if (viewer.props.orientation.xyz !== MapStore.cyclomediaCameraXyz) {
         const lngLat = [ viewer.props.orientation.xyz[0], viewer.props.orientation.xyz[1] ];
@@ -143,96 +171,30 @@ const setNewLocation = async (coords) => {
       }
     });
 
-    // if (!MapStore.currentAddressCoords.length) {
-    //   $emit('updateCameraLngLat', coords);
-    // }
     const orientation = viewer.getOrientation();
     $emit('updateCameraYaw', orientation.yaw);
     $emit('updateCameraHFov', orientation.hFov, orientation.yaw);
   }
 }
 
-watch(
-  () => MapStore.clickedCyclomediaRecordingCoords,
-  newClickedCyclomediaRecordingCoords => {
-    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue watch clickedCyclomediaRecordingCoords, newClickedCyclomediaRecordingCoords:', newClickedCyclomediaRecordingCoords);
-    if (newClickedCyclomediaRecordingCoords) {
-      setNewLocation(newClickedCyclomediaRecordingCoords);
-    }
-  }
-)
-
-onMounted( async() => {
-  let CYCLOMEDIA_USERNAME = import.meta.env.VITE_CYCLOMEDIA_USERNAME;
-  let CYCLOMEDIA_PASSWORD = import.meta.env.VITE_CYCLOMEDIA_PASSWORD;
-  if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue onMounted, StreetSmartApi:', StreetSmartApi, 'CYCLOMEDIA_USERNAME:', CYCLOMEDIA_USERNAME, 'CYCLOMEDIA_PASSWORD:', CYCLOMEDIA_PASSWORD);
-
-  if (cyclomediaInitialized.value) {
-    StreetSmartApi.destroy({
-      targetElement: cycloviewer,
-    });
-    await StreetSmartApi.init({
-      targetElement: cycloviewer,
-      username: CYCLOMEDIA_USERNAME,
-      password: CYCLOMEDIA_PASSWORD,
-      apiKey: import.meta.env.VITE_CYCLOMEDIA_API_KEY,
-      srs: 'EPSG:4326',
-      locale: 'en-us',
-      addressSettings: {
-        locale: 'en-us',
-        database: 'CMDatabase',
-      },
-    })
-  } else {
-    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue onMounted, initializing cyclomedia');
-    await StreetSmartApi.init({
-      targetElement: cycloviewer,
-      username: CYCLOMEDIA_USERNAME,
-      password: CYCLOMEDIA_PASSWORD,
-      apiKey: import.meta.env.VITE_CYCLOMEDIA_API_KEY,
-      srs: 'EPSG:4326',
-      locale: 'en-us',
-      addressSettings: {
-        locale: 'en-us',
-        database: 'CMDatabase',
-      },
-    })
-    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue onMounted, cyclomedia initialized');
-    MapStore.cyclomediaInitialized = true;
-  }
-
-  if (DataStore.selectedResource && selectedResourceCoords.value) {
-    setNewLocation(selectedResourceCoords.value);
-  } else if (GeocodeStore.aisData.features) {
-    setNewLocation(GeocodeStore.aisData.features[0].geometry.coordinates);
-  } else {
-    setNewLocation([ -75.163471, 39.953338 ]);
-  }
-})
-
-const popoutClicked = () => {
-  window.open('//cyclomedia.phila.gov/?lat=' + MapStore.cyclomediaCameraLngLat[1] + '&lng=' + MapStore.cyclomediaCameraLngLat[0], '_blank');
-  $emit('toggleCyclomedia');
-}
-
 </script>
 
 <template>
-  <div id="cyclomedia-panel" class="cyclomedia-panel">
-
+  <div
+    id="cyclomedia-panel"
+    class="cyclomedia-panel"
+  >
     <div class="cyclomedia-pop-out">
       <font-awesome-icon
         icon="fa-external-link-alt"
         @click="popoutClicked"
-      ></font-awesome-icon>
+      />
     </div>
     <div
       id="cycloviewer"
       ref="cycloviewer"
       class="panoramaViewerWindow"
-    >
-    </div>
-
+    />
   </div>
 </template>
 

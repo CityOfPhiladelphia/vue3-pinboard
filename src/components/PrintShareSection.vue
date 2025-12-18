@@ -24,7 +24,7 @@ const MainStore = useMainStore();
 const props = defineProps({
   'item': {
     type: Object,
-    default: {},
+    default: () => {},
   },
 });
 

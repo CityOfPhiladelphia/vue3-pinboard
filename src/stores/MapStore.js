@@ -25,14 +25,13 @@ export const useMapStore = defineStore("MapStore", {
       zipcodeCenter: null,
       geolocation: null,
       cyclomediaOn: false,
-      cyclomediaOn: false,
       cyclomediaInitialized: false,
       cyclomediaRecordingsOn: false,
       cyclomediaCameraYaw: null,
       cyclomediaCameraHFov: null,
       cyclomediaCameraXyz: null,
       cyclomediaCameraLngLat: null,
-      cyclomediaYear: null,
+      cyclomediaYear: null
     };
   },
   actions: {

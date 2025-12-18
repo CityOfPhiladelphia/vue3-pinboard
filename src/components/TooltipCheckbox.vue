@@ -133,10 +133,6 @@ const isMobile = computed(() => {
   return MainStore.windowDimensions.width < 768;
 });
 
-const toggleMobile = computed(() => {
-  return 'toggle-mobile';
-})
-
 const checkRadioClasses = computed(() => {
   if (props.small) {
     return `${classes.value} small-checkradio`;
@@ -157,7 +153,7 @@ watch(
 
 watch(
   () => error,
-  async => {
+  async () => {
     if (Array.isArray(props.errors)) {
       return props.errors[0];
     }
@@ -201,7 +197,10 @@ const onToggle = (e) => {
 </script>
 
 <template>
-  <div class="input-wrap input-checkbox" :class="checkRadioClasses">
+  <div
+    class="input-wrap input-checkbox"
+    :class="checkRadioClasses"
+  >
     <fieldset>
       <legend>
         <template v-if="label">
@@ -218,49 +217,112 @@ const onToggle = (e) => {
           <span>{{ error }}</span>
         </div>
       </template>
-      <div v-if="desc" class="is-field-info">
+      <div
+        v-if="desc"
+        class="is-field-info"
+      >
         {{ desc }}
       </div>
       <template v-else>
-        <div v-if="$slots['desc']" class="is-field-info">
+        <div
+          v-if="$slots['desc']"
+          class="is-field-info"
+        >
           <!-- @slot Alternative description -->
           <slot name="desc" />
         </div>
       </template>
-      <div :id="`cb-group-${id}`" :style="`columns: ${numOfColumns} auto`">
-        <div v-for="(option, key) in checkboxes" :key="`k-${key}`">
-          <input v-if="localValue.includes(props.toggleKey)" :id="`cb-${key}-${id}`" :name="`cb-${key}-${id}`"
-            type="checkbox" class="is-checkradio" disabled>
-          <input v-else :id="`cb-${key}-${id}`" v-model="localValue" :name="`cb-${key}-${id}`" type="checkbox"
-            :aria-checked="value.includes(optionValue(option, key))" class="is-checkradio" role="checkbox"
-            v-bind="option.attrs || {}" :value="optionValue(option, key)" @change="onChange()">
+      <div
+        :id="`cb-group-${id}`"
+        :style="`columns: ${numOfColumns} auto`"
+      >
+        <div
+          v-for="(option, key) in checkboxes"
+          :key="`k-${key}`"
+        >
+          <input
+            v-if="localValue.includes(props.toggleKey)"
+            :id="`cb-${key}-${id}`"
+            :name="`cb-${key}-${id}`"
+            type="checkbox"
+            class="is-checkradio"
+            disabled
+          >
+          <input
+            v-else
+            :id="`cb-${key}-${id}`"
+            v-model="localValue"
+            :name="`cb-${key}-${id}`"
+            type="checkbox"
+            :aria-checked="value.includes(optionValue(option, key))"
+            class="is-checkradio"
+            role="checkbox"
+            v-bind="option.attrs || {}"
+            :value="optionValue(option, key)"
+            @change="onChange()"
+          >
           <label :for="`cb-${key}-${id}`">
             {{ !textKey ? option : option[textKey] }}
             <slot name="tooltip" />
-            <div v-if="isMobile && option.tooltip" class="mobile-tooltip">
-              <font-awesome-icon icon="info-circle" class="fa-infoCircle" />
+            <div
+              v-if="isMobile && option.tooltip"
+              class="mobile-tooltip"
+            >
+              <font-awesome-icon
+                icon="info-circle"
+                class="fa-infoCircle"
+              />
               {{ option.tooltip.tip }}
             </div>
           </label>
-          <icon-tool-tip v-if="!isMobile && option.tooltip" :tip="option.tooltip.tip" :circle-type="'hover'"
-            :multiline="option.tooltip.multiline" />
+          <icon-tool-tip
+            v-if="!isMobile && option.tooltip"
+            :tip="option.tooltip.tip"
+            :circle-type="'hover'"
+            :multiline="option.tooltip.multiline"
+          />
         </div>
         <!-- If group is toggleable, render final checkbox as toggle for the group -->
-        <div v-if="props.toggleKey" :key="`k-${props.options.length}`" class="checkbox-toggle">
-          <label :for="`toggle-${props.options.length}-${id}`" :class="isMobile ? 'toggle-text-mobile' : 'toggle-text'">
-            <input :id="`toggle-${props.options.length}-${id}`" v-model="localValue"
-              :name="`toggle-${props.options.length}-${id}`" type="checkbox"
-              :aria-checked="value.includes(optionValue(toggle, props.options.length))" class="toggle" role="checkbox"
-              v-bind="toggle.attrs || {}" :value="optionValue(toggle, props.options.length)" @change="onToggle()">
+        <div
+          v-if="props.toggleKey"
+          :key="`k-${props.options.length}`"
+          class="checkbox-toggle"
+        >
+          <label
+            :for="`toggle-${props.options.length}-${id}`"
+            :class="isMobile ? 'toggle-text-mobile' : 'toggle-text'"
+          >
+            <input
+              :id="`toggle-${props.options.length}-${id}`"
+              v-model="localValue"
+              :name="`toggle-${props.options.length}-${id}`"
+              type="checkbox"
+              :aria-checked="value.includes(optionValue(toggle, props.options.length))"
+              class="toggle"
+              role="checkbox"
+              v-bind="toggle.attrs || {}"
+              :value="optionValue(toggle, props.options.length)"
+              @change="onToggle()"
+            >
             {{ !textKey ? toggle : toggle[textKey] }}
             <slot name="tooltip" />
-            <div v-if="isMobile && toggle.tooltip" class="mobile-tooltip">
-              <font-awesome-icon icon="info-circle" class="fa-infoCircle" />
+            <div
+              v-if="isMobile && toggle.tooltip"
+              class="mobile-tooltip"
+            >
+              <font-awesome-icon
+                icon="info-circle"
+                class="fa-infoCircle"
+              />
               {{ toggle.tooltip.tip }}
             </div>
           </label>
-          <icon-tool-tip v-if="!isMobile && toggle.tooltip" :tip="toggle.tooltip.tip" :circle-type="'hover'"
-            :multiline="toggle.tooltip.multiline" />
+          <icon-tool-tip
+            v-if="!isMobile && toggle.tooltip"
+            :tip="toggle.tooltip.tip"
+            :circle-type="'hover'"
+            :multiline="toggle.tooltip.multiline"
+          />
         </div>
       </div>
     </fieldset>

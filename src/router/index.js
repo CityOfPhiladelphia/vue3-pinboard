@@ -65,7 +65,7 @@ const initRouter = (publicPath) => {
         path: '/',
         name: 'home',
         component: Main,
-        beforeEnter: async (to, from) => {
+        beforeEnter: async () => {
           await initData();
         }
       },
@@ -73,7 +73,7 @@ const initRouter = (publicPath) => {
         path: '/print',
         name: 'printView',
         component: PrintView,
-        beforeEnter: async (to, from) => {
+        beforeEnter: async () => {
           await initData();
         }
       },
