@@ -114,7 +114,7 @@ library.add(
 // UTILITIES AND COMPOSABLES
 import mergeDeep from './util/merge-deep';
 import { loadScript } from './composables/externalScripts/loadScript';
-import { loadCyclomedia } from '@/composables/cyclomedia/useCyclomedia.js';
+import { loadCyclomedia } from './composables/cyclomedia/useCyclomedia';
 
 // LOAD EXTERNAL SCRIPTS
 loadScript("https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js", "text/javascript")

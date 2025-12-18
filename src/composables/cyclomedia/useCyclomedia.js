@@ -1,5 +1,5 @@
-import { streetSmartApi_scripts } from '@/composables/cyclomedia/cyclomediaScripts';
-import { useExternalModule } from '@/composables/externalScripts/useExternalModule';
+import { streetSmartApi_scripts } from './cyclomediaScripts';
+import { useExternalModule } from '../externalScripts/useExternalModule';
 
 /**
    * Loads all the scrpits required to run Cyclomedia's StreetSmartApi

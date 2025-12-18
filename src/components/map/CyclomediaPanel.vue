@@ -4,7 +4,7 @@ import { onMounted, computed, watch, useTemplateRef } from 'vue';
 import { useMapStore } from '../../stores/MapStore';
 import { useGeocodeStore } from '../../stores/GeocodeStore';
 import { useDataStore } from '../../stores/DataStore';
-import { useCyclomedia } from '@/composables/cyclomedia/useCyclomedia';
+import { useCyclomedia } from '../../composables/cyclomedia/useCyclomedia';
 import $mapConfig from '../../mapConfig';
 
 // INITIALIZATIONS
@@ -128,6 +128,9 @@ const setNewLocation = async (coords) => {
 
     if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue setNewLocation, lastYear:', lastYear, 'thisYear:', thisYear, 'coords:', coords);
     const viewer = await cyclomedia.open(params)
+    console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+    streetView.value.querySelector('.windowcontrols').classList.add('invisible')
+    console.log(streetView.value.querySelector('.windowcontrols'))
 
     for (let overlay of viewer.props.overlays) {
       if (overlay.id === 'surfaceCursorLayer') {
