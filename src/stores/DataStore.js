@@ -41,33 +41,7 @@ export const useDataStore = defineStore('DataStore', {
         })
       })
       const data = await response.json();
-      this.agoToken = data.token;
-      // let data = qs.stringify({
-      //   'f': 'json',
-      //   'username': import.meta.env.VITE_AGO_USERNAME,
-      //   'password': import.meta.env.VITE_AGO_PASSWORD,
-      //   'referer': 'https://www.mydomain.com'
-      // });
-
-      // let config = {
-      //   method: 'post',
-      //   maxBodyLength: Infinity,
-      //   url: 'https://www.arcgis.com/sharing/rest/generateToken',
-      //   headers: {
-      //     'Content-Type': 'application/x-www-form-urlencoded',
-      //     // 'Authorization': 'Basic Og=='
-      //   },
-      //   data : data
-      // };
-
-      // await axios.request(config)
-      // .then((response) => {
-      //   if (import.meta.env.VITE_DEBUG) console.log(JSON.stringify(response.data));
-      //   this.agoToken = response.data;
-      // })
-      // .catch((error) => {
-      //   if (import.meta.env.VITE_DEBUG) console.log(error);
-      // });
+      this.agoToken = data;
     },
     async fillResources() {
       const $config = useConfigStore().config;
