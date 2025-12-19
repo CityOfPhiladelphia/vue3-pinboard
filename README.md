@@ -30,6 +30,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.7.1
+
+* fixes button and link styles
+
 ### 2.7.0
 
 * Pinboard now loads common external scripts itself instead of parent apps to do the imports
