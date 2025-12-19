@@ -20,15 +20,6 @@ import { useMainStore } from './stores/MainStore.js';
 import VueGoodTablePlugin from 'vue-good-table-next';
 import 'vue-good-table-next/dist/vue-good-table-next.css'
 
-// STYLES
-import "bulma";
-import "bulma-checkradio/dist/css/bulma-checkradio.min.css";
-import '@creativebulma/bulma-tooltip/dist/bulma-tooltip.min.css';
-import './assets/main_pin.scss';
-import './assets/intro.scss';
-import './assets/card.scss';
-import './assets/style.scss';
-
 // PHILLY UI
 import '@phila/phila-ui-core/dist/styles/scss/all.scss';
 import PhilaUICore from "@phila/phila-ui-core";
@@ -43,6 +34,15 @@ import Textbox from "@phila/phila-ui-textbox";
 import LangSelector from "@phila/phila-ui-lang-selector";
 import Radio from "@phila/phila-ui-radio";
 import Checkbox from "@phila/phila-ui-checkbox";
+
+// STYLES
+import "bulma";
+import "bulma-checkradio/dist/css/bulma-checkradio.min.css";
+import '@creativebulma/bulma-tooltip/dist/bulma-tooltip.min.css';
+import './assets/main_pin.scss';
+import './assets/intro.scss';
+import './assets/card.scss';
+import './assets/style.scss';
 
 // FONT AWESOME
 import "@fortawesome/fontawesome-pro/css/fontawesome.min.css";

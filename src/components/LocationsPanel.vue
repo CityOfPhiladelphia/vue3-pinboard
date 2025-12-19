@@ -934,12 +934,6 @@ const locationsPanelClass = computed(() => {
 fieldset.disabled .button {
   background-color: #cfcfcf !important;
   border-color: #cfcfcf !important;
-}
-
-.button.disabled,
-fieldset.disabled .button {
-  background-color: #cfcfcf !important;
-  border-color: #cfcfcf !important;
   cursor: not-allowed;
 }
 

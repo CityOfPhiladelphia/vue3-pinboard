@@ -180,22 +180,6 @@ onMounted(() => {
   }
 
   activeToggles.value = getActiveToggles();
-
-  // window.addEventListener('keydown', (e) => {
-  //   if (import.meta.env.VITE_DEBUG) console.log('keydown is running, e', e);
-  //   if (e.keyCode === 32 && e.target === document.body) {
-  //     e.preventDefault();
-  //   }
-  // });
-
-  // let divButton = document.querySelector('#refine-top');
-  // divButton.addEventListener('keypress', activate.bind(this));
-  // function activate(e) {
-  //   if (import.meta.env.VITE_DEBUG) console.log('activate, e:', e, 'e.path[0]:', e.path[0]);
-  //   if (e.type === 'keypress' && [ 13, 32 ].includes(e.keyCode) && e.srcElement.id == 'refine-top') {
-  //     expandRefine();
-  //   }
-  // };
 });
 
 const siteName = computed(() => {

@@ -25,20 +25,23 @@ export const useDataStore = defineStore('DataStore', {
       this.appType = ConfigStore.config.app.type;
     },
     async fillAgoToken() {
-      const response = await fetch('https://www.arcgis.com/sharing/rest/generateToken', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          'f': 'json',
-          'username': import.meta.env.VITE_AGO_USERNAME,
-          'password': import.meta.env.VITE_AGO_PASSWORD,
-          'referer': 'https://www.mydomain.com'
+      try {
+        const response = await fetch('https://www.arcgis.com/sharing/rest/generateToken', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams({
+            'f': 'json',
+            'username': import.meta.env.VITE_AGO_USERNAME,
+            'password': import.meta.env.VITE_AGO_PASSWORD,
+            'referer': 'https://www.mydomain.com'
+          })
         })
-      })
-      const data = await response.json();
-      this.agoToken = data;
+        this.agoToken = await response.json();
+      } catch (err) {
+        console.log(err);
+      }
     },
     async fillResources() {
       const $config = useConfigStore().config;
@@ -64,9 +67,9 @@ export const useDataStore = defineStore('DataStore', {
 
         let response;
         if (dataConfig.bearer) {
-          response = await axios.get(dataConfig.url, params );
+          response = await axios.get(dataConfig.url, params);
         } else {
-          response = await axios.get(dataConfig.url, { params } );
+          response = await axios.get(dataConfig.url, { params });
         }
         if (import.meta.env.VITE_DEBUG) console.log('fillResources is running, params:', params, 'response:', response);
 
@@ -93,7 +96,7 @@ export const useDataStore = defineStore('DataStore', {
               }
             }
             if (import.meta.env.VITE_DEBUG) console.log('data.features.length:', data.features.length);
-            for (let i=0; i<data.features.length; i++) {
+            for (let i = 0; i < data.features.length; i++) {
               data.features[i]._featureId = source + '_' + i;
               data.features[i].properties._featureId = source + '_' + i;
             }
@@ -101,7 +104,7 @@ export const useDataStore = defineStore('DataStore', {
             if (import.meta.env.VITE_DEBUG) console.log('2nd option, data.rows.length:', data.rows.length);
             data.features = [];
             let j = 0;
-            for (let i=0; i<data.rows.length; i++) {
+            for (let i = 0; i < data.rows.length; i++) {
               if (data.rows[i].lon && data.rows[i].lat) {
                 data.features[j] = point([data.rows[i].lon, data.rows[i].lat], data.rows[i]);
               } else {
@@ -110,7 +113,7 @@ export const useDataStore = defineStore('DataStore', {
               }
               data.features[j]._featureId = source + '_' + j;
               data.features[j].properties._featureId = source + '_' + j;
-              j = j+1;
+              j = j + 1;
               if ($config.hiddenRefine) {
                 for (let field in $config.hiddenRefine) {
                   let getter = $config.hiddenRefine[field];
@@ -123,7 +126,7 @@ export const useDataStore = defineStore('DataStore', {
             response.features = [];
             if (import.meta.env.VITE_DEBUG) console.log('3rd option, data:', data, 'response.features:', response.features);
             let j = 0;
-            for (let i=0; i<data.length; i++) {
+            for (let i = 0; i < data.length; i++) {
               if (data[i].longitude && data[i].latitude) {
                 response.features[j] = point([data[i].longitude, data[i].latitude], data[i]);
               } else {
@@ -132,7 +135,7 @@ export const useDataStore = defineStore('DataStore', {
               }
               response.features[j]._featureId = source + '_' + j;
               response.features[j].properties._featureId = source + '_' + j;
-              j = j+1;
+              j = j + 1;
             }
             if ($config.hiddenRefine) {
               for (let field in $config.hiddenRefine) {
@@ -149,7 +152,7 @@ export const useDataStore = defineStore('DataStore', {
       return;
     },
     async fillZipcodes() {
-      try{
+      try {
         let url = 'https://services.arcgis.com/fLeGjb7u4uXqeF9q/arcgis/rest/services/Zipcodes_Poly/FeatureServer/0/query';
         let params = {
           where: '1=1',
@@ -165,10 +168,10 @@ export const useDataStore = defineStore('DataStore', {
           if (import.meta.env.VITE_DEBUG) console.log('fillZipcodes complete, data:', data);
           return;
         } else {
-           console.warn('fillZipcodes - await resolved but HTTP status was not successful');
+          console.warn('fillZipcodes - await resolved but HTTP status was not successful');
         }
       } catch {
-         console.error('fillZipcodes - await never resolved, failed to fetch data');
+        console.error('fillZipcodes - await never resolved, failed to fetch data');
       }
     },
     async fillHolidays() {
@@ -178,10 +181,10 @@ export const useDataStore = defineStore('DataStore', {
           const data = await response.json()
           this.holidays = data.holidays;
         } else {
-           console.warn('stormwaterData - await resolved but HTTP status was not successful')
+          console.warn('stormwaterData - await resolved but HTTP status was not successful')
         }
       } catch {
-         console.error('stormwaterData - await never resolved, failed to fetch data')
+        console.error('stormwaterData - await never resolved, failed to fetch data')
       }
     },
   },
