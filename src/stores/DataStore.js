@@ -54,19 +54,19 @@ export const useDataStore = defineStore('DataStore', {
         };
 
         const dependent = dataConfig.dependent ? this.sources[dataConfig.dependent] : null;
-        if (import.meta.env.VITE_DEBUG) console.log('source:', source, 'dataConfig:', dataConfig, 'params:', params, 'dependent:', dependent);
+        if (import.meta.env.VITE_DEBUG) { console.log('source:', source, 'dataConfig:', dataConfig, 'params:', params, 'dependent:', dependent) };
 
         if (params && params.where && typeof params.where === 'function') params.where = params.where(dependent.data);
-        if (import.meta.env.VITE_DEBUG) console.log('params:', params);
+        if (import.meta.env.VITE_DEBUG) { console.log('params:', params) };
 
         try {
           const response = dataConfig.bearer ? await axios.get(dataConfig.url, params) : await axios.get(dataConfig.url, { params });
-          if (import.meta.env.VITE_DEBUG) console.log('fillResources is running, params:', params, 'response:', response);
+          if (import.meta.env.VITE_DEBUG) { console.log('fillResources is running, params:', params, 'response:', response) };
 
           if (response.status === 200) {
             const data = await response.data;
 
-            if (import.meta.env.VITE_DEBUG) console.log('dataConfig.options.success:', dataConfig.options.success, 'dependent:', dependent);
+            if (import.meta.env.VITE_DEBUG) { console.log('dataConfig.options.success:', dataConfig.options.success, 'dependent:', dependent) };
             if (dataConfig.options.success) {
               if (dataConfig.replaceOnSuccess) {
                 data.rows = dataConfig.options.success(data);
@@ -76,7 +76,7 @@ export const useDataStore = defineStore('DataStore', {
             }
 
             if (data.features) {
-              if (import.meta.env.VITE_DEBUG) console.log('first option, data.features.length:', data.features.length);
+              if (import.meta.env.VITE_DEBUG) { console.log('first option, data.features.length:', data.features.length) };
               // data.features = data.features.filter(item => item.geometry);
               data.features = data.features.filter(item => item.hide_on_finder !== true);
               if ($config.hiddenRefine) {
@@ -85,13 +85,13 @@ export const useDataStore = defineStore('DataStore', {
                   data.features = data.features.filter(item => getter(item) == true);
                 }
               }
-              if (import.meta.env.VITE_DEBUG) console.log('data.features.length:', data.features.length);
+              if (import.meta.env.VITE_DEBUG) { console.log('data.features.length:', data.features.length) };
               for (let i = 0; i < data.features.length; i++) {
                 data.features[i]._featureId = source + '_' + i;
                 data.features[i].properties._featureId = source + '_' + i;
               }
             } else if (data.rows) {
-              if (import.meta.env.VITE_DEBUG) console.log('2nd option, data.rows.length:', data.rows.length);
+              if (import.meta.env.VITE_DEBUG) { console.log('2nd option, data.rows.length:', data.rows.length) };
               data.features = [];
               let j = 0;
               for (let i = 0; i < data.rows.length; i++) {
@@ -114,7 +114,7 @@ export const useDataStore = defineStore('DataStore', {
               delete data.rows;
             } else if (data.length > 0) {
               response.features = [];
-              if (import.meta.env.VITE_DEBUG) console.log('3rd option, data:', data, 'response.features:', response.features);
+              if (import.meta.env.VITE_DEBUG) { console.log('3rd option, data:', data, 'response.features:', response.features) };
               let j = 0;
               for (let i = 0; i < data.length; i++) {
                 if (data[i].longitude && data[i].latitude) {
@@ -133,7 +133,7 @@ export const useDataStore = defineStore('DataStore', {
                   response.features = response.features.filter(item => getter(item) == true);
                 }
               }
-              if (import.meta.env.VITE_DEBUG) console.log('3rd option 2, response:', response, 'response.features:', response.features);
+              if (import.meta.env.VITE_DEBUG) { console.log('3rd option 2, response:', response, 'response.features:', response.features) };
             }
             this.sources[source] = response;
           }
@@ -159,7 +159,7 @@ export const useDataStore = defineStore('DataStore', {
         const response = await fetch(`${url}?${params}`);
         if (response.ok) {
           this.zipcodes = await response.json();
-          if (import.meta.env.VITE_DEBUG) console.log('fillZipcodes complete, zipcodes:', this.zipcodes);
+          if (import.meta.env.VITE_DEBUG) { console.log('fillZipcodes complete, zipcodes:', this.zipcodes) };
           return;
         } else {
           console.warn('fillZipcodes - await resolved but HTTP status was not successful');

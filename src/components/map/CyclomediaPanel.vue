@@ -21,15 +21,14 @@ const streetView = useTemplateRef('cycloviewer')
 
 // LIFECYCLE HOOKS
 onMounted( async() => {
-  if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue onMounted, cyclomedia:', cyclomedia);
-
+  if (import.meta.env.VITE_DEBUG) { console.log('CyclomediaPanel.vue onMounted, cyclomedia:', cyclomedia) };
   if (cyclomediaInitialized.value) {
     cyclomedia.destroy(streetView.value);
     await cyclomedia.init(streetView.value)
   } else {
-    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue onMounted, initializing cyclomedia');
+    if (import.meta.env.VITE_DEBUG) { console.log('CyclomediaPanel.vue onMounted, initializing cyclomedia') };
     await cyclomedia.init(streetView.value)
-    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue onMounted, cyclomedia initialized');
+    if (import.meta.env.VITE_DEBUG) { console.log('CyclomediaPanel.vue onMounted, cyclomedia initialized') };
     MapStore.cyclomediaInitialized = true;
   }
 
@@ -53,9 +52,9 @@ const selectedResourceCoords = computed(() => {
     dataSource = DataStore.sources[DataStore.appType].features;
   }
 
-  if (import.meta.env.VITE_DEBUG) console.log('selectedResourceCoords, dataSource:', dataSource, 'DataStore.selectedResource:', DataStore.selectedResource);
+  if (import.meta.env.VITE_DEBUG) { console.log('selectedResourceCoords, dataSource:', dataSource, 'DataStore.selectedResource:', DataStore.selectedResource) };
   const dataPoint = dataSource.filter(dataPoint => dataPoint._featureId === DataStore.selectedResource)[0];
-  if (import.meta.env.VITE_DEBUG) console.log('selectedResourceCoords, dataPoint:', dataPoint);
+  if (import.meta.env.VITE_DEBUG) { console.log('selectedResourceCoords, dataPoint:', dataPoint) };
   if (dataPoint && dataPoint.geometry && dataPoint.geometry.coordinates) {
     return dataPoint.geometry.coordinates;
   }
@@ -66,7 +65,7 @@ const selectedResourceCoords = computed(() => {
 watch(
   () => selectedResourceCoords.value,
   newSelectedResourceCoords => {
-    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue watch selectedResourceCoords, newSelectedResourceCoords:', newSelectedResourceCoords);
+    if (import.meta.env.VITE_DEBUG) { console.log('CyclomediaPanel.vue watch selectedResourceCoords, newSelectedResourceCoords:', newSelectedResourceCoords) };
     if (newSelectedResourceCoords && newSelectedResourceCoords.length) setNewLocation(newSelectedResourceCoords);
   }
 )
@@ -74,7 +73,7 @@ watch(
 watch(
   () => MapStore.currentAddressCoords,
   newLngLat => {
-    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue watch cyclomediaLngLat, newLngLat:', newLngLat);
+    if (import.meta.env.VITE_DEBUG) { console.log('CyclomediaPanel.vue watch cyclomediaLngLat, newLngLat:', newLngLat) };
     if (newLngLat.length) setNewLocation(newLngLat);
   }
 )
@@ -82,7 +81,7 @@ watch(
 watch(
   () => MapStore.cyclomediaOn,
   newCyclomediaOn => {
-    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue watch cyclomediaOn, newCyclomediaOn:', newCyclomediaOn);
+    if (import.meta.env.VITE_DEBUG) { console.log('CyclomediaPanel.vue watch cyclomediaOn, newCyclomediaOn:', newCyclomediaOn) };
     if (newCyclomediaOn) {
       if (DataStore.selectedResource) {
         setNewLocation(selectedResourceCoords.value);
@@ -98,7 +97,7 @@ watch(
 watch(
   () => MapStore.clickedCyclomediaRecordingCoords,
   newClickedCyclomediaRecordingCoords => {
-    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue watch clickedCyclomediaRecordingCoords, newClickedCyclomediaRecordingCoords:', newClickedCyclomediaRecordingCoords);
+    if (import.meta.env.VITE_DEBUG) { console.log('CyclomediaPanel.vue watch clickedCyclomediaRecordingCoords, newClickedCyclomediaRecordingCoords:', newClickedCyclomediaRecordingCoords) };
     if (newClickedCyclomediaRecordingCoords) {
       setNewLocation(newClickedCyclomediaRecordingCoords);
     }
@@ -113,7 +112,7 @@ const popoutClicked = () => {
 
 const setNewLocation = async (coords) => {
   if (MapStore.cyclomediaOn) {
-    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue setNewLocation, coords:', coords);
+    if (import.meta.env.VITE_DEBUG) { console.log('CyclomediaPanel.vue setNewLocation, coords:', coords) };
     const year = MapStore.cyclomediaYear;
     let thisYear, lastYear;
     let params = {
@@ -126,7 +125,7 @@ const setNewLocation = async (coords) => {
       params.dateRange = { from: lastYear, to: thisYear }
     }
 
-    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue setNewLocation, lastYear:', lastYear, 'thisYear:', thisYear, 'coords:', coords);
+    if (import.meta.env.VITE_DEBUG) { console.log('CyclomediaPanel.vue setNewLocation, lastYear:', lastYear, 'thisYear:', thisYear, 'coords:', coords) };
     const viewer = await cyclomedia.open(params)
     streetView.value.querySelector('.windowcontrols').classList.add('invisible') // hides button that rendered behind the popout button
 
@@ -139,7 +138,7 @@ const setNewLocation = async (coords) => {
     }
 
     viewer.on('VIEW_CHANGE', function(e) {
-      if (import.meta.env.VITE_DEBUG) console.log('on VIEW_CHANGE fired, type:', e.type, 'detail:', e.detail, 'viewer.props:', viewer.props, 'viewer.props.orientation.xyz:', viewer.props.orientation.xyz, 'MapStore.cyclomediaCameraXyz:', MapStore.cyclomediaCameraXyz);
+      if (import.meta.env.VITE_DEBUG) { console.log('on VIEW_CHANGE fired, type:', e.type, 'detail:', e.detail, 'viewer.props:', viewer.props, 'viewer.props.orientation.xyz:', viewer.props.orientation.xyz, 'MapStore.cyclomediaCameraXyz:', MapStore.cyclomediaCameraXyz) };
       if (MapStore.cyclomediaOn) {
         MapStore.cyclomediaCameraYaw = e.detail.yaw;
         MapStore.cyclomediaCameraHFov = e.detail.hFov;
@@ -154,18 +153,18 @@ const setNewLocation = async (coords) => {
     });
 
     viewer.on('VIEW_LOAD_END', function(e) {
-      if (import.meta.env.VITE_DEBUG) console.log('on VIEW_LOAD_END fired, type:', e.type, 'e:', e, 'viewer.props.orientation:', viewer.props.orientation, 'viewer.props:', viewer.props);
-      if (import.meta.env.VITE_DEBUG) console.log('update cyclomedia date, viewer.props.recording.year:', viewer.props.recording.year);
+      if (import.meta.env.VITE_DEBUG) { console.log('on VIEW_LOAD_END fired, type:', e.type, 'e:', e, 'viewer.props.orientation:', viewer.props.orientation, 'viewer.props:', viewer.props) };
+      if (import.meta.env.VITE_DEBUG) { console.log('update cyclomedia date, viewer.props.recording.year:', viewer.props.recording.year) };
       MapStore.cyclomediaYear = viewer.props.recording.year;
       const orientation = viewer.getOrientation();
       viewer.setOrientation({ pitch: 0 });
-      if (import.meta.env.VITE_DEBUG) console.log('orientation:', orientation);
+      if (import.meta.env.VITE_DEBUG) { console.log('orientation:', orientation) };
       if (viewer.props.orientation.xyz !== MapStore.cyclomediaCameraXyz) {
         const lngLat = [ viewer.props.orientation.xyz[0], viewer.props.orientation.xyz[1] ];
         MapStore.setCyclomediaCameraLngLat(lngLat, viewer.props.orientation.xyz);
         $emit('updateCameraLngLat', lngLat);
         const orientation = viewer.getOrientation();
-        if (import.meta.env.VITE_DEBUG) console.log('orientation:', orientation);
+        if (import.meta.env.VITE_DEBUG) { console.log('orientation:', orientation) };
         $emit('updateCameraYaw', orientation.yaw);
         $emit('updateCameraHFov', orientation.hFov, orientation.yaw);
       }

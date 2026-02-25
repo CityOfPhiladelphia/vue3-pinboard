@@ -122,7 +122,7 @@ loadCyclomedia();
 
 export default function pinboard(config) {
   const app = createApp(App);
-  if (import.meta.env.VITE_DEBUG) console.log('config:', config, 'app:', app);
+  if (import.meta.env.VITE_DEBUG) { console.log('config:', config, 'app:', app) };
 
   app.component("AppHeader", AppHeader);
   app.component("AppFooter", AppFooter);
@@ -143,7 +143,7 @@ export default function pinboard(config) {
   const i18nProject = config.i18n.data.messages;
   const messages = mergeDeep(i18nFromFiles.i18n.data.messages, i18nProject);
   config.i18n.data.messages = messages;
-  if (import.meta.env.VITE_DEBUG) console.log('i18nFromFiles:', i18nFromFiles, 'messages:', messages);
+  if (import.meta.env.VITE_DEBUG) { console.log('i18nFromFiles:', i18nFromFiles, 'messages:', messages) };
   const i18n = createI18n({
     legacy: false,
     globalInjection: true,
@@ -156,11 +156,11 @@ export default function pinboard(config) {
   app.use(createPinia())
 
   const ConfigStore = useConfigStore();
-  if (import.meta.env.VITE_DEBUG) console.log('ConfigStore:', ConfigStore);
+  if (import.meta.env.VITE_DEBUG) { console.log('ConfigStore:', ConfigStore) };
   ConfigStore.config = config;
 
   const router = initRouter(config.publicPath);
-  if (import.meta.env.VITE_DEBUG) console.log('router:', router);
+  if (import.meta.env.VITE_DEBUG) { console.log('router:', router) };
 
   app.use(VueGtag, {
     disableScriptLoad: true,

@@ -33,17 +33,17 @@ defineProps({
 });
 
 const clearSearch = () => {
-  if (import.meta.env.VITE_DEBUG) console.log('clearSearch is running');
+  if (import.meta.env.VITE_DEBUG) { console.log('clearSearch is running') };
   MainStore.searchValue = '';
 }
 
 const searchPlaceholder = computed(() => {
   const searchTypes = $config.searchBar.searchTypes;
   const searchTypesLength = searchTypes.length;
-  if (import.meta.env.VITE_DEBUG) console.log('searchTypes:', searchTypes, 'searchTypes.length:', searchTypes.length);
+  if (import.meta.env.VITE_DEBUG) { console.log('searchTypes:', searchTypes, 'searchTypes.length:', searchTypes.length) };
   let value = 'Search by '
   for (let i=0; i<searchTypes.length; i++) {
-    if (import.meta.env.VITE_DEBUG) console.log('i:', i, 'searchTypes[i]:', searchTypes[i]);
+    if (import.meta.env.VITE_DEBUG) { console.log('i:', i, 'searchTypes[i]:', searchTypes[i]) };
     value += searchTypes[i];
     if (searchTypes.length > 2 && i == searchTypesLength - 2) {
       value += ', or ';
@@ -98,32 +98,32 @@ const checkboxText = computed(() => {
 });
 
 const handleSubmit = (val) => {
-  if (import.meta.env.VITE_DEBUG) console.log('handleSubmit is running, val:', val);
+  if (import.meta.env.VITE_DEBUG) { console.log('handleSubmit is running, val:', val) };
   val = val.trim();
   if (!val) return;
   let query;
   let valAsFloat = parseFloat(val.substring(0));
   let valToString = valAsFloat.toString();
   let checkVals = val === valToString;
-  if (import.meta.env.VITE_DEBUG) console.log('handleSubmit 1, val.substring(0):', val.substring(0), 'valAsFloat:', valAsFloat, 'checkVals:', checkVals, '$config.searchBar.searchTypes:', $config.searchBar.searchTypes);
+  if (import.meta.env.VITE_DEBUG) { console.log('handleSubmit 1, val.substring(0):', val.substring(0), 'valAsFloat:', valAsFloat, 'checkVals:', checkVals, '$config.searchBar.searchTypes:', $config.searchBar.searchTypes) };
 
   let startQuery = { ...route.query };
 
   if (isNaN(valAsFloat)) {
     if (!$config.searchBar.searchTypes.includes('keyword')) {
-      if (import.meta.env.VITE_DEBUG) console.log('cannot search keywords');
+      if (import.meta.env.VITE_DEBUG) { console.log('cannot search keywords') };
       this.$warning(`Please search an address`, {
         duration: 4000,
         closeOnClick: true,
       });
       return;
     } else {
-      if (import.meta.env.VITE_DEBUG) console.log('in handleSubmit, checking checkboxText');
+      if (import.meta.env.VITE_DEBUG) { console.log('in handleSubmit, checking checkboxText') };
       // let match = checkboxText.value.filter((value) => value.toLowerCase() === val.toLowerCase());
       for (let key of Object.keys(checkboxText.value)) {
-        // if (import.meta.env.VITE_DEBUG) console.log('key:', key);
+        // if (import.meta.env.VITE_DEBUG) { console.log('key:', key) };
         if (key.toLowerCase() == val.toLowerCase()) {
-          if (import.meta.env.VITE_DEBUG) console.log('in handleSubmit, checking checkboxText - its there');
+          if (import.meta.env.VITE_DEBUG) { console.log('in handleSubmit, checking checkboxText - its there') };
           // alert('There is already a checkbox or radio button for that search term');
           MainStore.selectedServices.push(checkboxText.value[key]);
           if (MainStore.shouldShowGreeting && !isMobile.value) {
@@ -138,15 +138,15 @@ const handleSubmit = (val) => {
       query = { ...startQuery, ...{ 'keyword': [...MainStore.selectedKeywords].toString() }};
     }
   } else if (checkVals) {
-    if (import.meta.env.VITE_DEBUG) console.log('its a zipcode');
+    if (import.meta.env.VITE_DEBUG) { console.log('its a zipcode') };
     if ($config.allowZipcodeSearch) {
       query = { 'zipcode': val };
     }
   } else {
-    if (import.meta.env.VITE_DEBUG) console.log('its an address');
+    if (import.meta.env.VITE_DEBUG) { console.log('its an address') };
     query = { 'address': val };
   }
-  if (import.meta.env.VITE_DEBUG) console.log('handleSubmit is running, valAsFloat:', valAsFloat, 'startQuery:', startQuery, 'route.query:', route.query, 'query:', query, 'val:', val, 'val.substring(0, 1):', val.substring(0, 1));
+  if (import.meta.env.VITE_DEBUG) { console.log('handleSubmit is running, valAsFloat:', valAsFloat, 'startQuery:', startQuery, 'route.query:', route.query, 'query:', query, 'val:', val, 'val.substring(0, 1):', val.substring(0, 1)) };
   router.push({ query: { ...startQuery, ...query }});
   if (query) {
     const searchCategory = Object.keys(query)[0];

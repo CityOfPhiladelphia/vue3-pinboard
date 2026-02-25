@@ -59,7 +59,7 @@ onBeforeMount(() => {
 })
 
 onMounted(async () => {
-  // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue mounted, $config:', $config, 'i18nLocale.value:', i18nLocale.value, 'route.query:', route.query);
+  // if (import.meta.env.VITE_DEBUG) { console.log('LocationsPanel.vue mounted, $config:', $config, 'i18nLocale.value:', i18nLocale.value, 'route.query:', route.query) };
   const routeQueryKeys = Object.keys(route.query);
   let routeChanged = false;
   if (routeQueryKeys.length == 1 && !routeQueryKeys.includes('lang') || routeQueryKeys.length > 1) {
@@ -138,7 +138,7 @@ const allowPrint = computed(() => {
 const database = computed(() => {
   let value = {}
   if (DataStore.sources[DataStore.appType]) {
-    // if (import.meta.env.VITE_DEBUG) console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]);
+    // if (import.meta.env.VITE_DEBUG) { console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]) };
     value = DataStore.sources[DataStore.appType].data.rows || DataStore.sources[DataStore.appType].data.features || DataStore.sources[DataStore.appType].features;
   }
   return value;
@@ -209,13 +209,13 @@ const currentData = computed(() => {
   const valOrGetterType = typeof valOrGetter;
   let val;
 
-  // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue, currentData, sortBy.value:', sortBy.value, 'locations:', locations, 'valOrGetter:', valOrGetter, 'valOrGetterType:', valOrGetterType);
+  // if (import.meta.env.VITE_DEBUG) { console.log('LocationsPanel.vue, currentData, sortBy.value:', sortBy.value, 'locations:', locations, 'valOrGetter:', valOrGetter, 'valOrGetterType:', valOrGetterType) };
   if (sortBy.value == 'Distance') {
-    // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue currentData computed, sortBy.value:', sortBy.value);
+    // if (import.meta.env.VITE_DEBUG) { console.log('LocationsPanel.vue currentData computed, sortBy.value:', sortBy.value) };
     val = 'distance';
-    // if (import.meta.env.VITE_DEBUG) console.log('it includes address');
+    // if (import.meta.env.VITE_DEBUG) { console.log('it includes address') };
     locations.sort(function (a, b) {
-      // if (import.meta.env.VITE_DEBUG) console.log('a:', a, 'b:', b, 'val:', val);
+      // if (import.meta.env.VITE_DEBUG) { console.log('a:', a, 'b:', b, 'val:', val) };
       if (a[val] < b[val]) {
         return -1;
       }
@@ -225,7 +225,7 @@ const currentData = computed(() => {
       return 0;
     });
   } else {
-    // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel.vue currentData computed, sortBy.value:', sortBy.value);
+    // if (import.meta.env.VITE_DEBUG) { console.log('LocationsPanel.vue currentData computed, sortBy.value:', sortBy.value) };
     if (valOrGetterType === 'function') {
       const getter = valOrGetter;
       locations.sort(function (a, b) {
@@ -240,7 +240,7 @@ const currentData = computed(() => {
     } else {
       val = valOrGetter;
       locations.sort(function (a, b) {
-        // if (import.meta.env.VITE_DEBUG) console.log('a:', a, 'b:', b, 'val:', val);
+        // if (import.meta.env.VITE_DEBUG) { console.log('a:', a, 'b:', b, 'val:', val) };
         if (a[val] != null && b[val] != null) {
           return a[val].localeCompare(b[val]);
         }
@@ -270,7 +270,7 @@ watch(
   () => i18nLocale.value,
   async (nexti18nLocale) => {
     let value = searchDistance.value.split(' ')[0];
-    if (import.meta.env.VITE_DEBUG) console.log('i18nLocale change, nexti18nLocale:', nexti18nLocale, 'value:', value);
+    if (import.meta.env.VITE_DEBUG) { console.log('i18nLocale change, nexti18nLocale:', nexti18nLocale, 'value:', value) };
     if (value == 1) {
       searchDistance.value = value + ' ' + t('mile');
     } else {
@@ -282,7 +282,7 @@ watch(
 watch(
   () => searchDistance.value,
   async nextSearchDistance => {
-    // if (import.meta.env.VITE_DEBUG) console.log('watch searchDistance, nextSearchDistance:', nextSearchDistance, 'parseInt(nextSearchDistance):', parseInt(nextSearchDistance));
+    // if (import.meta.env.VITE_DEBUG) { console.log('watch searchDistance, nextSearchDistance:', nextSearchDistance, 'parseInt(nextSearchDistance):', parseInt(nextSearchDistance)) };
     MapStore.searchDistance = parseInt(nextSearchDistance);
     MainStore.filterChangeCounter++;
   }
@@ -291,18 +291,16 @@ watch(
 watch(
   () => selectAllCheckbox.value,
   async nextSelectAllCheckbox => {
-    // if (import.meta.env.VITE_DEBUG) console.log('watch selectAllCheckbox, nextSelectAllCheckbox:', nextSelectAllCheckbox);
+    if (import.meta.env.VITE_DEBUG) { console.log('watch selectAllCheckbox, nextSelectAllCheckbox:', nextSelectAllCheckbox) };
     if (nextSelectAllCheckbox == false) {
       printCheckboxes.value = [];
       let inputs = document.querySelectorAll('.location-checkbox');
-      // if (import.meta.env.VITE_DEBUG) console.log('inputs:', inputs);
       for (let i = 0; i < inputs.length; i++) {
         inputs[i].checked = false;
       }
     } else {
       printCheckboxes.value = currentDataList.value;
       let inputs = document.querySelectorAll('.location-checkbox');
-      // if (import.meta.env.VITE_DEBUG) console.log('inputs:', inputs);
       for (let i = 0; i < inputs.length; i++) {
         inputs[i].checked = true;
       }
@@ -314,7 +312,7 @@ watch(
 watch(
   () => route.query,
   async nextRoute => {
-  if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel watch route, nextRoute:', nextRoute);
+  if (import.meta.env.VITE_DEBUG) { console.log('LocationsPanel watch route, nextRoute:', nextRoute) };
     const routeQueryKeys = Object.keys(route.query);
     if (routeQueryKeys.length == 1 && !routeQueryKeys.includes('lang') || routeQueryKeys.length > 1) {
       MainStore.shouldShowGreeting = false;
@@ -397,8 +395,7 @@ const clearBadAddress = () => {
 };
 
 const clickedPrint = () => {
-  // MainStore.selectedZipcode = null;
-  // if (import.meta.env.VITE_DEBUG) console.log('clickedPrint is running');
+  // if (import.meta.env.VITE_DEBUG) { console.log('clickedPrint is running') };
   if (!printCheckboxes.value.length) {
     this.$warning(noLocations.value, {
       duration: 3000,
@@ -411,7 +408,7 @@ const clickedPrint = () => {
 };
 
 const printBoxChecked = (id) => {
-  // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel printBoxChecked, id:', id);
+  // if (import.meta.env.VITE_DEBUG) { console.log('LocationsPanel printBoxChecked, id:', id) };
   if (printCheckboxes.value.includes(id)) {
     printCheckboxes.value.splice(printCheckboxes.value.indexOf(id), 1);
     MainStore.printCheckboxes = printCheckboxes.value;
@@ -422,12 +419,10 @@ const printBoxChecked = (id) => {
 };
 
 const clickedSelectAll = () => {
-  // if (import.meta.env.VITE_DEBUG) console.log('LocationsPanel clickedSelectAll is running');
+  // if (import.meta.env.VITE_DEBUG) { console.log('LocationsPanel clickedSelectAll is running') };
   if (selectAllCheckbox.value) {
-    // if (import.meta.env.VITE_DEBUG) console.log('clickedSelect all if');
     selectAllCheckbox.value = false;
   } else {
-    // if (import.meta.env.VITE_DEBUG) console.log('clickedSelect all else');
     selectAllCheckbox.value = true;
   }
 };

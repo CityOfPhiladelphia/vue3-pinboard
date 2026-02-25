@@ -31,7 +31,7 @@ const printCheckboxes = computed(() =>{
 const database = computed(() => {
   let value = {}
   if (DataStore.sources[DataStore.appType]) {
-    // if (import.meta.env.VITE_DEBUG) console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]);
+    // if (import.meta.env.VITE_DEBUG) { console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]) };
     value = DataStore.sources[DataStore.appType].data.rows || DataStore.sources[DataStore.appType].data.features || DataStore.sources[DataStore.appType].features;
   }
   return value;
@@ -40,9 +40,9 @@ const database = computed(() => {
 const items = computed(() => {
   let filteredData;
   if (database.value) {
-    if (import.meta.env.VITE_DEBUG) console.log('in PrintView.vue items computed, database.value:', database.value);
+    if (import.meta.env.VITE_DEBUG) { console.log('in PrintView.vue items computed, database.value:', database.value) };
     filteredData = database.value.filter(item => {
-      // if (import.meta.env.VITE_DEBUG) console.log('in PrintView.vue items computed, item._featureId:', item._featureId, 'printCheckboxes.value:', printCheckboxes.value, 'printCheckboxes.value.includes(item._featureId):', printCheckboxes.value.includes(item._featureId));
+      // if (import.meta.env.VITE_DEBUG) { console.log('in PrintView.vue items computed, item._featureId:', item._featureId, 'printCheckboxes.value:', printCheckboxes.value, 'printCheckboxes.value.includes(item._featureId):', printCheckboxes.value.includes(item._featureId)) };
       return printCheckboxes.value.includes(item._featureId)
     });
   }
@@ -62,7 +62,7 @@ onMounted(async () => {
 // methods
 
 const clickedBackToHome = () => {
-  // if (import.meta.env.VITE_DEBUG) console.log('clickedBackToHome is running');
+  // if (import.meta.env.VITE_DEBUG) { console.log('clickedBackToHome is running') };
   router.go(-1);
 };
 
@@ -142,7 +142,7 @@ const appTitle = computed(() => {
   if ($config.app.title) {
     value = $config.app.title;
   } else if (i18nEnabled.value) {
-    // if (import.meta.env.VITE_DEBUG) console.log('t("app.title"):', t('app.title'));
+    // if (import.meta.env.VITE_DEBUG) { console.log('t("app.title"):', t('app.title'));
     value = t('app.title');
   }
   return value;
@@ -154,7 +154,7 @@ const appSubTitle = computed(() => {
     if ($config.app.subtitle && $config.app.subtitle != 'i18n') {
       value = $config.app.subtitle;
     } else if (i18nEnabled.value && $config.app.subtitle == 'i18n') {
-      // if (import.meta.env.VITE_DEBUG) console.log('t("app.subtitle"):', t('app.subtitle'));
+      // if (import.meta.env.VITE_DEBUG) { console.log('t("app.subtitle"):', t('app.subtitle'));
       value = t('app.subtitle');
     }
   }
@@ -163,7 +163,7 @@ const appSubTitle = computed(() => {
 
 const i18nLanguages = computed(() => {
   let values = [];
-  // if (import.meta.env.VITE_DEBUG) console.log('i18nLanguages, $config.i18n:', $config.i18n);
+  // if (import.meta.env.VITE_DEBUG) { console.log('i18nLanguages, $config.i18n:', $config.i18n);
   if ($config.i18n.languages) {
     values = $config.i18n.languages;
   }

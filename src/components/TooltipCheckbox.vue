@@ -175,7 +175,7 @@ const optionValue = (option, key) => {
 };
 
 const onChange = (e) => {
-  if (import.meta.env.VITE_DEBUG) console.log('Checkbox onChange e:', e);
+  if (import.meta.env.VITE_DEBUG) { console.log('Checkbox onChange e:', e) };
   $emit("change", e);
   $emit("update:modelValue", localValue.value);
 };
@@ -184,7 +184,7 @@ const onChange = (e) => {
 // if so, then save all the other selected items in the toggledValues ref and emit only the toggle key
 // if toggle key is not present, then emit the values saved in the toggledValues
 const onToggle = (e) => {
-  if (import.meta.env.VITE_DEBUG) console.log('Checkbox onToggle e:', e);
+  if (import.meta.env.VITE_DEBUG) { console.log('Checkbox onToggle e:', e) };
   const toggleOn = Object.values(localValue.value).includes(props.toggleKey);
   if (toggleOn) {
     toggledValues.value = localValue.value.splice(0).filter((value) => value !== props.toggleKey)

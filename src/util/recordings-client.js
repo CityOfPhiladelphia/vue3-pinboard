@@ -10,7 +10,7 @@ class RecordingsClient {
   // this takes map bounds and an EPSG coordinate system id, e.g. 3857
   // and returns an array of cyclomedia recording points
   async getRecordings(bounds, callback) {
-    if (import.meta.env.VITE_DEBUG) console.log('recordings-client.js, getRecordings is running, bounds:', bounds);
+    if (import.meta.env.VITE_DEBUG) { console.log('recordings-client.js, getRecordings is running, bounds:', bounds) };
 
     const swCoord = bounds.getSouthWest();
     const neCoord = bounds.getNorthEast();
@@ -49,7 +49,7 @@ class RecordingsClient {
 
       // check for > 1
       if (recordingEls.length < 1) {
-        if (import.meta.env.VITE_DEBUG) console.log('no cyclomedia recordings for bounds');
+        if (import.meta.env.VITE_DEBUG) { console.log('no cyclomedia recordings for bounds') };
         return;
       }
 

@@ -18,7 +18,7 @@ const getGeocodeAndPutInStore = async (address) => {
   if (!GeocodeStore.aisData.features) {
     MainStore.currentAddress = null;
     MapStore.bufferForAddressOrLocationOrZipcode = null;
-    if (import.meta.env.VITE_DEBUG) console.log('getGeocodeAndPutInStore, calling not-found');
+    if (import.meta.env.VITE_DEBUG) { console.log('getGeocodeAndPutInStore, calling not-found') };
     return;
   }
   MainStore.selectedZipcode = null;
@@ -39,7 +39,7 @@ const clearGeocode = async () => {
 }
 
 const initData = async () => {
-  if (import.meta.env.VITE_DEBUG) console.log('initData is running');
+  if (import.meta.env.VITE_DEBUG) { console.log('initData is running') };
   const MainStore = useMainStore();
   if (!MainStore.firstRouteLoaded) {
     const DataStore = useDataStore();
@@ -57,7 +57,7 @@ const initData = async () => {
 }
 
 const initRouter = (publicPath) => {
-  if (import.meta.env.VITE_DEBUG) console.log('router/index.js initRouter is running, publicPath:', publicPath);
+  if (import.meta.env.VITE_DEBUG) { console.log('router/index.js initRouter is running, publicPath:', publicPath) };
   const router = createRouter({
     history: createWebHistory(publicPath),
     routes: [
@@ -86,7 +86,7 @@ const initRouter = (publicPath) => {
   })
 
   router.beforeEach(async (to, from) => {
-    if (import.meta.env.VITE_DEBUG) console.log('router.beforeEach to:', to, 'from:', from);
+    if (import.meta.env.VITE_DEBUG) { console.log('router.beforeEach to:', to, 'from:', from) };
   });
 
   router.afterEach(async (to, from) => {
@@ -94,7 +94,7 @@ const initRouter = (publicPath) => {
     const MainStore = useMainStore();
     const MapStore = useMapStore();
     const GeocodeStore = useGeocodeStore();
-    if (import.meta.env.VITE_DEBUG) console.log('router.afterEach to:', to, 'from:', from);
+    if (import.meta.env.VITE_DEBUG) { console.log('router.afterEach to:', to, 'from:', from) };
     // if (to.query.resource && to.query.resource != from.query.resource) {
     if (to.query.resource) {
       DataStore.selectedResource = to.query.resource;
@@ -104,7 +104,7 @@ const initRouter = (publicPath) => {
     if (to.query.address && to.query.address != from.query.address) {
       MainStore.selectedZipcode = null;
       await getGeocodeAndPutInStore(to.query.address);
-      if (import.meta.env.VITE_DEBUG) console.log('router.afterEach is calling MapStore.fillBufferForAddressOrLocationOrZipcode, to.query.address:', to.query.address);
+      if (import.meta.env.VITE_DEBUG) { console.log('router.afterEach is calling MapStore.fillBufferForAddressOrLocationOrZipcode, to.query.address:', to.query.address) };
       if (GeocodeStore.aisData.features) {
         MapStore.fillBufferForAddressOrLocationOrZipcode();
       }
@@ -112,13 +112,13 @@ const initRouter = (publicPath) => {
       clearGeocode();
     }
     if (to.query.zipcode && to.query.zipcode != from.query.zipcode) {
-      if (import.meta.env.VITE_DEBUG) console.log('fillBufferForAddressOrLocationOrZipcode is running, DataStore.zipcodes.features:', DataStore.zipcodes.features);
+      if (import.meta.env.VITE_DEBUG) { console.log('fillBufferForAddressOrLocationOrZipcode is running, DataStore.zipcodes.features:', DataStore.zipcodes.features) };
       let zipcodesData = DataStore.zipcodes;
       let zipcode;
       if (zipcodesData) {
         zipcode = zipcodesData.features.filter(item => item.properties.code == to.query.zipcode)[0];
       }
-      if (import.meta.env.VITE_DEBUG) console.log('router.afterEach has zipcode and is calling MapStore.fillBufferForAddressOrLocationOrZipcode');
+      if (import.meta.env.VITE_DEBUG) { console.log('router.afterEach has zipcode and is calling MapStore.fillBufferForAddressOrLocationOrZipcode') };
       if (zipcode) {
         MapStore.geolocation = null;
         MainStore.selectedZipcode = to.query.zipcode;

@@ -32,7 +32,7 @@ import centerOfMass from '@turf/center-of-mass';
 // CONFIG
 import $mapConfig from '../../mapConfig';
 const $config = useConfigStore().config;
-if (import.meta.env.VITE_DEBUG) console.log('Map.vue $config:', $config, '$mapConfig:', $mapConfig);
+if (import.meta.env.VITE_DEBUG) { console.log('Map.vue $config:', $config, '$mapConfig:', $mapConfig) };
 
 // STORES
 const MapStore = useMapStore();
@@ -100,7 +100,7 @@ watch(
   () => MapStore.geolocation,
   async newGeolocation => {
     MapStore.fillBufferForAddressOrLocationOrZipcode();
-    if (import.meta.env.VITE_DEBUG) console.log('Map.vue geolocation watch, newGeolocation:', newGeolocation);
+    if (import.meta.env.VITE_DEBUG) { console.log('Map.vue geolocation watch, newGeolocation:', newGeolocation) };
     if (newGeolocation) {
       map.setCenter(newGeolocation);
       map.getSource('geolocationMarker').setData(point(newGeolocation));
@@ -113,7 +113,7 @@ watch(
 watch(
   () => MapStore.bufferForAddressOrLocationOrZipcode,
   async newBuffer => {
-    if (import.meta.env.VITE_DEBUG) console.log('Map.vue bufferForAddressOrLocationOrZipcode watch, newBuffer:', newBuffer);
+    if (import.meta.env.VITE_DEBUG) { console.log('Map.vue bufferForAddressOrLocationOrZipcode watch, newBuffer:', newBuffer) };
     if (newBuffer && map.getSource('buffer')) {
       map.getSource('buffer').setData(newBuffer);
     } else if (map.getSource('buffer')) {
@@ -126,8 +126,8 @@ watch(
   () => DataStore.currentData,
   async newData => {
   let geojson = featureCollection(newData);
-    // if (import.meta.env.VITE_DEBUG) console.log('geojson:', geojson, 'map.getStyle().sources.resources.data:', map.getStyle().sources.resources.data);
-  if (import.meta.env.VITE_DEBUG) console.log('map.getSource("resources"):', map.getSource('resources'));
+    // if (import.meta.env.VITE_DEBUG) { console.log('geojson:', geojson, 'map.getStyle().sources.resources.data:', map.getStyle().sources.resources.data) };
+  if (import.meta.env.VITE_DEBUG) { console.log('map.getSource("resources"):', map.getSource('resources')) };
   if (map.getSource('resources')) {
     map.getSource('resources').setData(geojson);
   }
@@ -136,7 +136,7 @@ watch(
 watch(
   () => DataStore.selectedResource,
   async (newSelectedResource, oldSelectedResource) => {
-    if (import.meta.env.VITE_DEBUG) console.log('Map.vue DataStore.selectedResource watch, map.isStyleLoaded():', map.isStyleLoaded(), 'newSelectedResource:', newSelectedResource, 'oldSelectedResource:', oldSelectedResource);
+    if (import.meta.env.VITE_DEBUG) { console.log('Map.vue DataStore.selectedResource watch, map.isStyleLoaded():', map.isStyleLoaded(), 'newSelectedResource:', newSelectedResource, 'oldSelectedResource:', oldSelectedResource) };
     if (map.isStyleLoaded()) {
       if (oldSelectedResource) {
         map.setPaintProperty(
@@ -159,7 +159,7 @@ watch(
         }
       }
       if (newSelectedResource) {
-        if(import.meta.env.VITE_DEBUG) console.log('Map.vue DataStore.selectedResource watch, newSelectedResource:', newSelectedResource);
+        if(import.meta.env.VITE_DEBUG) { console.log('Map.vue DataStore.selectedResource watch, newSelectedResource:', newSelectedResource) };
         if (map.getSource('resources')) {
           map.setPaintProperty(
             'resources',
@@ -172,18 +172,18 @@ watch(
             ]
           )
         };
-        if (import.meta.env.VITE_DEBUG) console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources[DataStore.appType].data:', DataStore.sources[DataStore.appType].data, 'DataStore.sources[DataStore.appType].data.features:', DataStore.sources[DataStore.appType].data.features);
+        if (import.meta.env.VITE_DEBUG) { console.log('DataStore.appType:', DataStore.appType, 'DataStore.sources[DataStore.appType].data:', DataStore.sources[DataStore.appType].data, 'DataStore.sources[DataStore.appType].data.features:', DataStore.sources[DataStore.appType].data.features) };
 
         let dataPoint;
         if (DataStore.sources[DataStore.appType].data.features) {
-          if (import.meta.env.VITE_DEBUG) console.log('DataStore.sources[DataStore.appType].data.features:', DataStore.sources[DataStore.appType].data.features, 'newSelectedResource:', newSelectedResource);
+          if (import.meta.env.VITE_DEBUG) { console.log('DataStore.sources[DataStore.appType].data.features:', DataStore.sources[DataStore.appType].data.features, 'newSelectedResource:', newSelectedResource) };
           dataPoint = DataStore.sources[DataStore.appType].data.features.filter(item => item._featureId == newSelectedResource)[0];
         } else if (DataStore.sources[DataStore.appType].features) {
-          if (import.meta.env.VITE_DEBUG) console.log('DataStore.sources[DataStore.appType].data.features:', DataStore.sources[DataStore.appType].data.features, 'newSelectedResource:', newSelectedResource);
+          if (import.meta.env.VITE_DEBUG) { console.log('DataStore.sources[DataStore.appType].data.features:', DataStore.sources[DataStore.appType].data.features, 'newSelectedResource:', newSelectedResource) };
           dataPoint = DataStore.sources[DataStore.appType].features.filter(item => item._featureId == newSelectedResource)[0];
         }
 
-        if (import.meta.env.VITE_DEBUG) console.log('dataPoint:', dataPoint);
+        if (import.meta.env.VITE_DEBUG) { console.log('dataPoint:', dataPoint) };
         if (MainStore.lastSelectMethod == 'row' && dataPoint.geometry && dataPoint.geometry.coordinates) {
           map.setCenter(dataPoint.geometry.coordinates);
         }
@@ -214,7 +214,7 @@ watch(
 watch(
   () => GeocodeStore.aisData,
   async newAddress => {
-    if (import.meta.env.VITE_DEBUG) console.log('MapStore aisData watch, newAddress:', newAddress);
+    if (import.meta.env.VITE_DEBUG) { console.log('MapStore aisData watch, newAddress:', newAddress) };
     if (newAddress.features && newAddress.features[0].geometry.coordinates.length) {
       const newCoords = newAddress.features[0].geometry.coordinates;
       map.setCenter(newCoords);
@@ -235,7 +235,7 @@ watch(
 watch(
   () => pwdCoordinates.value,
   newCoords => {
-  if (import.meta.env.VITE_DEBUG) console.log('Map pwdCoordinates watch, newCoords:', newCoords, 'MapStore.addressMarker:', MapStore.addressMarker);
+  if (import.meta.env.VITE_DEBUG) { console.log('Map pwdCoordinates watch, newCoords:', newCoords, 'MapStore.addressMarker:', MapStore.addressMarker) };
   if (newCoords.length) {
     const address = point(newCoords);
     map.getSource('addressMarker').setData(address);
@@ -248,14 +248,14 @@ watch(
   () => zipcodeData.value,
   async newZipcodeData => {
     map.getSource('zipcode').setData(newZipcodeData);
-    if (import.meta.env.VITE_DEBUG) console.log('watch zipcodeData.value, newZipcodeData:', newZipcodeData);
+    if (import.meta.env.VITE_DEBUG) { console.log('watch zipcodeData.value, newZipcodeData:', newZipcodeData) };
   }
 )
 
 watch(
   () => MapStore.zipcodeCenter,
   async newZipcodeCenter => {
-    if (import.meta.env.VITE_DEBUG) console.log('Map.vue zipcodeCenter watch, newZipcodeCenter:', newZipcodeCenter);
+    if (import.meta.env.VITE_DEBUG) { console.log('Map.vue zipcodeCenter watch, newZipcodeCenter:', newZipcodeCenter) };
     if (newZipcodeCenter.length) {
       map.setCenter(newZipcodeCenter);
     }
@@ -281,18 +281,18 @@ watch(
 
 // FUNCTIONS
 const clickedPopup = () => {
-  if (import.meta.env.VITE_DEBUG) console.log('clickedPopup');
+  if (import.meta.env.VITE_DEBUG) { console.log('clickedPopup') };
   $emit('popupClicked');
 }
 
 const toggleImagery = () => {
-  if (import.meta.env.VITE_DEBUG) console.log('toggleImagery, map.getStyle:', map.getStyle(), '$mapConfig.mapLayers:', $mapConfig.mapLayers);
+  if (import.meta.env.VITE_DEBUG) { console.log('toggleImagery, map.getStyle:', map.getStyle(), '$mapConfig.mapLayers:', $mapConfig.mapLayers) };
   if (!MapStore.imageryOn) {
     MapStore.imageryOn = true;
     map.addLayer($mapConfig.mapLayers[imagerySelected.value], 'cyclomediaRecordings')
     map.addLayer($mapConfig.mapLayers.imageryLabels, 'cyclomediaRecordings')
   } else {
-    if (import.meta.env.VITE_DEBUG) console.log('map.getStyle().layers:', map.getStyle().layers);
+    if (import.meta.env.VITE_DEBUG) { console.log('map.getStyle().layers:', map.getStyle().layers) };
     MapStore.imageryOn = false;
     map.removeLayer(imagerySelected.value);
     map.removeLayer('imageryLabels');
@@ -317,7 +317,7 @@ const removeAllCyclomediaMapLayers = () => {
 
 // toggle cyclomedia on and off
 const toggleCyclomedia = async() => {
-  if (import.meta.env.VITE_DEBUG) console.log('toggleCyclomedia, map.getStyle().sources:', map.getStyle().sources, 'map.getStyle().layers:', map.getStyle().layers);
+  if (import.meta.env.VITE_DEBUG) { console.log('toggleCyclomedia, map.getStyle().sources:', map.getStyle().sources, 'map.getStyle().layers:', map.getStyle().layers) };
   MapStore.cyclomediaOn = !MapStore.cyclomediaOn;
   if (MapStore.cyclomediaOn) {
     MapStore.eagleviewOn = false;
@@ -325,11 +325,11 @@ const toggleCyclomedia = async() => {
     if (zoom > 16.5) {
       await updateCyclomediaRecordings();
       if (MapStore.cyclomediaCameraLngLat) {
-        if (import.meta.env.VITE_DEBUG) console.log('in toggleCyclomedia, calling updateCyclomediaCameraLngLat, MapStore.cyclomediaCameraLngLat:', MapStore.cyclomediaCameraLngLat);
+        if (import.meta.env.VITE_DEBUG) { console.log('in toggleCyclomedia, calling updateCyclomediaCameraLngLat, MapStore.cyclomediaCameraLngLat:', MapStore.cyclomediaCameraLngLat) };
         updateCyclomediaCameraLngLat(MapStore.cyclomediaCameraLngLat);
       }
       if (MapStore.cyclomediaCameraHFov && MapStore.cyclomediaCameraYaw) {
-        if (import.meta.env.VITE_DEBUG) console.log('calling updateCyclomediaCameraViewcone');
+        if (import.meta.env.VITE_DEBUG) { console.log('calling updateCyclomediaCameraViewcone') };
         updateCyclomediaCameraViewcone(MapStore.cyclomediaCameraHFov, MapStore.cyclomediaCameraYaw);
       }
     }
@@ -339,7 +339,7 @@ const toggleCyclomedia = async() => {
 }
 
 const updateCyclomediaRecordings = async () => {
-  // if (import.meta.env.VITE_DEBUG) console.log('updateCyclomediaRecordings is running');
+  // if (import.meta.env.VITE_DEBUG) { console.log('updateCyclomediaRecordings is running') };
   const bounds = map.getBounds();
   cyclomediaRecordingsClient.getRecordings(
     bounds,
@@ -363,7 +363,7 @@ const updateCyclomediaRecordings = async () => {
         })
       }
       geojson.features = features;
-      // if (import.meta.env.VITE_DEBUG) console.log("map.getSource('cyclomediaRecordings'):", 'map.getStyle().layers:', map.getStyle().layers);
+      // if (import.meta.env.VITE_DEBUG) { console.log("map.getSource('cyclomediaRecordings'):", 'map.getStyle().layers:', map.getStyle().layers) };
       map.getSource('cyclomediaRecordings').setData(geojson);
       // I don't know why this works - maybe because the mergeDeep is still running
       $mapConfig.pwdDrawnMapStyle.sources.cyclomediaRecordings.data.features = features;
@@ -373,7 +373,7 @@ const updateCyclomediaRecordings = async () => {
 
 // everything for adding, moving, and orienting the cyclomedia camera icon and viewcone
 const updateCyclomediaCameraLngLat = (lngLat) => {
-  // if (import.meta.env.VITE_DEBUG) console.log('updateCyclomediaCameraLngLat is running, lngLat:', lngLat);
+  // if (import.meta.env.VITE_DEBUG) { console.log('updateCyclomediaCameraLngLat is running, lngLat:', lngLat) };
   if (!MapStore.cyclomediaOn) {
     return;
   } else {
@@ -384,7 +384,7 @@ const updateCyclomediaCameraLngLat = (lngLat) => {
 }
 
 const updateCyclomediaCameraAngle = (newOrientation) => {
-  // if (import.meta.env.VITE_DEBUG) console.log('updateCyclomediaCameraAngle is running, newOrientation:', newOrientation);
+  // if (import.meta.env.VITE_DEBUG) { console.log('updateCyclomediaCameraAngle is running, newOrientation:', newOrientation) };
   if (!newOrientation) {
     newOrientation = MapStore.cyclomediaCameraYaw;
   }
@@ -395,7 +395,7 @@ const updateCyclomediaCameraViewcone = (cycloHFov, cycloYaw) => {
   const halfAngle = cycloHFov / 2.0;
   let angle1 = cycloYaw - halfAngle;
   let angle2 = cycloYaw + halfAngle;
-  if (import.meta.env.VITE_DEBUG) console.log('updateCyclomediaCameraViewcone, cycloHFov:', cycloHFov, 'halfAngle:', halfAngle, 'angle1:', angle1, 'cycloYaw:', cycloYaw, 'angle2:', angle2);
+  if (import.meta.env.VITE_DEBUG) { console.log('updateCyclomediaCameraViewcone, cycloHFov:', cycloHFov, 'halfAngle:', halfAngle, 'angle1:', angle1, 'cycloYaw:', cycloYaw, 'angle2:', angle2) };
   const watchedZoom = map.getZoom();
   let distance;
   if (watchedZoom < 9) {
@@ -427,10 +427,10 @@ const updateCyclomediaCameraViewcone = (cycloHFov, cycloYaw) => {
   const cyclomediaCameraLngLat = MapStore.cyclomediaCameraLngLat;
   let options = { units: 'feet' };
   if (!cyclomediaCameraLngLat) {
-    if (import.meta.env.VITE_DEBUG) console.log('no cyclomediaCameraLngLat');
+    if (import.meta.env.VITE_DEBUG) { console.log('no cyclomediaCameraLngLat') };
     return;
   }
-  if (import.meta.env.VITE_DEBUG) console.log('cyclomediaCameraLngLat:', cyclomediaCameraLngLat);
+  if (import.meta.env.VITE_DEBUG) { console.log('cyclomediaCameraLngLat:', cyclomediaCameraLngLat) };
 
   var destination1 = destination([ cyclomediaCameraLngLat[0], cyclomediaCameraLngLat[1] ], distance, angle1, options);
   var destination2 = destination([ cyclomediaCameraLngLat[0], cyclomediaCameraLngLat[1] ], distance, angle2, options);
@@ -465,7 +465,7 @@ let map;
 
 // LIFECYCLE HOOKS
 onMounted(async () => {
-  if (import.meta.env.VITE_DEBUG) console.log('Map.vue onMounted');
+  if (import.meta.env.VITE_DEBUG) { console.log('Map.vue onMounted') };
 
   // create the maplibre map
   let currentTopicMapStyle = 'pwdDrawnMapStyle';
@@ -483,19 +483,19 @@ onMounted(async () => {
 
   MapStore.map = map;
 
-  // if (import.meta.env.VITE_DEBUG) console.log('Map.vue onMounted, DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]);
+  // if (import.meta.env.VITE_DEBUG) { console.log('Map.vue onMounted, DataStore.sources[DataStore.appType]:', DataStore.sources[DataStore.appType]) };
 
   map.on('load', async() => {
     let canvas = document.querySelector(".maplibregl-canvas");
     canvas.setAttribute('tabindex', -1);
 
     let geojson = featureCollection(DataStore.currentData);
-    if (import.meta.env.VITE_DEBUG) console.log('geojson:', geojson);
+    if (import.meta.env.VITE_DEBUG) { console.log('geojson:', geojson) };
     map.getSource('resources').setData(geojson);
 
     map.addLayer($config.mapLayer, 'addressMarker');
 
-    if (import.meta.env.VITE_DEBUG) console.log('map on load, map.getSource("resources"):', map.getSource('resources'));
+    if (import.meta.env.VITE_DEBUG) { console.log('map on load, map.getSource("resources"):', map.getSource('resources')) };
     if (map.getSource('resources') && DataStore.selectedResource) {
       map.setPaintProperty(
         'resources',
@@ -508,7 +508,7 @@ onMounted(async () => {
         ]
       )
     };
-    if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 2, DataStore.selectedResource:', DataStore.selectedResource);
+    if (import.meta.env.VITE_DEBUG) { console.log('Map.vue map on load 2, DataStore.selectedResource:', DataStore.selectedResource) };
 
     if (DataStore.sources[DataStore.appType]) {
       let dataPoint;
@@ -517,7 +517,7 @@ onMounted(async () => {
       } else {
         dataPoint = DataStore.sources[DataStore.appType].features.filter(item => item._featureId == DataStore.selectedResource)[0];
       }
-      if (import.meta.env.VITE_DEBUG) console.log('dataPoint:', dataPoint);
+      if (import.meta.env.VITE_DEBUG) { console.log('dataPoint:', dataPoint) };
       if (dataPoint) {
         const popup = document.getElementsByClassName('maplibregl-popup');
         if (popup.length) {
@@ -544,14 +544,14 @@ onMounted(async () => {
       }
     }
 
-    if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 3, MapStore.bufferForAddressOrLocationOrZipcode:', MapStore.bufferForAddressOrLocationOrZipcode);
+    if (import.meta.env.VITE_DEBUG) { console.log('Map.vue map on load 3, MapStore.bufferForAddressOrLocationOrZipcode:', MapStore.bufferForAddressOrLocationOrZipcode) };
     if (MapStore.bufferForAddressOrLocationOrZipcode !== null) {
       map.getSource('buffer').setData(MapStore.bufferForAddressOrLocationOrZipcode);
     }
-    if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 4');
+    if (import.meta.env.VITE_DEBUG) { console.log('Map.vue map on load 4') };
     if (DataStore.zipcodes && MainStore.selectedZipcode) {
 
-      if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 5, DataStore.zipcodes:', DataStore.zipcodes, 'MainStore.selectedZipcode:', MainStore.selectedZipcode);
+      if (import.meta.env.VITE_DEBUG) { console.log('Map.vue map on load 5, DataStore.zipcodes:', DataStore.zipcodes, 'MainStore.selectedZipcode:', MainStore.selectedZipcode) };
       const zipcodeData = DataStore.zipcodes.features.filter(item => item.properties.code == MainStore.selectedZipcode)[0];
       map.getSource('zipcode').setData(zipcodeData);
       const center = centerOfMass(zipcodeData);
@@ -559,14 +559,14 @@ onMounted(async () => {
       MapStore.zipcodeCenter = center;
     }
 
-    if (import.meta.env.VITE_DEBUG) console.log('Map.vue map on load 6, map.getStyle().layers:', map.getStyle().layers);
+    if (import.meta.env.VITE_DEBUG) { console.log('Map.vue map on load 6, map.getStyle().layers:', map.getStyle().layers) };
     await nextTick();
     map.resize();
   })
 
   // add the address marker and camera icon sources
   const markerImage = await map.loadImage(markerSrc.value)
-  if (import.meta.env.VITE_DEBUG) console.log('markerImage:', markerImage);
+  if (import.meta.env.VITE_DEBUG) { console.log('markerImage:', markerImage) };
   map.addImage('marker-blue', markerImage.data);
   const cameraImage = await map.loadImage(cameraSrc.value)
   map.addImage('camera-icon', cameraImage.data);
@@ -576,7 +576,7 @@ onMounted(async () => {
   // map.addControl(new maplibregl.GeolocateControl(), 'bottom-right');
 
   map.on('moveend', () => {
-    // if (import.meta.env.VITE_DEBUG) console.log('map moveend event, e:', e, 'map.getZoom()', map.getZoom(), 'map.getStyle().layers:', map.getStyle().layers, 'map.getStyle().sources:', map.getStyle().sources);
+    // if (import.meta.env.VITE_DEBUG) { console.log('map moveend event, e:', e, 'map.getZoom()', map.getZoom(), 'map.getStyle().layers:', map.getStyle().layers, 'map.getStyle().sources:', map.getStyle().sources) };
     if (MapStore.cyclomediaOn) {
       map.getZoom() > 16.5 ? MapStore.cyclomediaRecordingsOn = true : MapStore.cyclomediaRecordingsOn = false;
       if (MapStore.cyclomediaRecordingsOn) {
@@ -597,7 +597,7 @@ onMounted(async () => {
 
   // if a cyclomedia recording circle is clicked, set its coordinates in the MapStore
   map.on('click', 'cyclomediaRecordings', (e) => {
-    // if (import.meta.env.VITE_DEBUG) console.log('cyclomediaRecordings click, e:', e, 'e.features[0]:', e.features[0]);
+    // if (import.meta.env.VITE_DEBUG) { console.log('cyclomediaRecordings click, e:', e, 'e.features[0]:', e.features[0]) };
     e.clickOnLayer = true;
     MapStore.clickedCyclomediaRecordingCoords = [ e.lngLat.lng, e.lngLat.lat ];
   });
@@ -613,17 +613,17 @@ onMounted(async () => {
   });
 
   map.on('click', 'pwd', (e) => {
-    if (import.meta.env.VITE_DEBUG) console.log('Map.vue map click event, e:', e);
+    if (import.meta.env.VITE_DEBUG) { console.log('Map.vue map click event, e:', e) };
   })
 
   map.on('click', 'resources', (e) => {
-    if (import.meta.env.VITE_DEBUG) console.log('Map.vue map click event, e:', e, 'e.features:', e.features, 'e.features[0]._featureId:', e.features[0]._featureId);
+    if (import.meta.env.VITE_DEBUG) { console.log('Map.vue map click event, e:', e, 'e.features:', e.features, 'e.features[0]._featureId:', e.features[0]._featureId) };
     MainStore.lastSelectMethod = 'map';
-    // if (import.meta.env.VITE_DEBUG) console.log('click, e:', e, 'feature:', feature, 'properties:', properties);
+    // if (import.meta.env.VITE_DEBUG) { console.log('click, e:', e, 'feature:', feature, 'properties:', properties) };
     const selectedResourceId = e.features[0].properties._featureId;
     MapStore.latestSelectedResourceFromMap = selectedResourceId;
     let query = {...route.query};
-    if (import.meta.env.VITE_DEBUG) console.log('Map click query:', query);
+    if (import.meta.env.VITE_DEBUG) { console.log('Map click query:', query) };
     if (selectedResourceId != DataStore.selectedResource) {
       query['resource'] = selectedResourceId;
       router.push({ name: 'home', query });
@@ -634,7 +634,7 @@ onMounted(async () => {
   });
 
   map.on('mouseenter', 'resources', (e) => {
-    // if (import.meta.env.VITE_DEBUG) console.log('mouseenter, e:', e);
+    // if (import.meta.env.VITE_DEBUG) { console.log('mouseenter, e:', e) };
     if (e.features.length > 0) {
       map.getCanvas().style.cursor = 'pointer'
     }
@@ -645,7 +645,7 @@ onMounted(async () => {
   });
 
   map.on('style.load', () => {
-    if (import.meta.env.VITE_DEBUG) console.log('Map.vue map style.load event');
+    if (import.meta.env.VITE_DEBUG) { console.log('Map.vue map style.load event') };
   })
 });
 

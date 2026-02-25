@@ -117,7 +117,7 @@ const activeToggles = ref([]);
 watch(
   () => selectedResource.value,
   nextSelectedResource => {
-    // if (import.meta.env.VITE_DEBUG) console.log('watch selectedResource is running, nextSelectedResource:', nextSelectedResource);
+    // if (import.meta.env.VITE_DEBUG) { console.log('watch selectedResource is running, nextSelectedResource:', nextSelectedResource) };
     if (locationOpen.value || nextSelectedResource == props.item._featureId) {
       if (locationOpen.value === false) {
         openLocation();
@@ -133,17 +133,17 @@ watch(
 watch(
   () => props.isMapVisible,
   async (nextIsMapVisible) => {
-    // if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse watch isMapVisible');
+    // if (import.meta.env.VITE_DEBUG) { console.log('ExpandCollapse watch isMapVisible') };
     if (!nextIsMapVisible) {
       await nextTick();
       if (latestSelectedResourceFromMap.value) {
-        // if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse is reporting map is invisible and there is a latestSelectedResourceFromMap.value:', latestSelectedResourceFromMap.value);
+        // if (import.meta.env.VITE_DEBUG) { console.log('ExpandCollapse is reporting map is invisible and there is a latestSelectedResourceFromMap.value:', latestSelectedResourceFromMap.value) };
         if (latestSelectedResourceFromMap.value === props.item._featureId) {
           const el = document.getElementsByClassName(props.item._featureId)[0];
           const visible = isElementInViewport(el);
-          // if (import.meta.env.VITE_DEBUG) console.log('el:', el, 'visible:', visible);
+          // if (import.meta.env.VITE_DEBUG) { console.log('el:', el, 'visible:', visible) };
           if (!visible) {
-            // if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse in if in if');
+            // if (import.meta.env.VITE_DEBUG) { console.log('ExpandCollapse in if in if');
             el.scrollIntoView({ block: 'center' });
           }
         }
@@ -155,13 +155,13 @@ watch(
 watch(
   () => route.query,
   async () => {
-    // if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse watch route, nextRoute:', nextRoute);
+    // if (import.meta.env.VITE_DEBUG) { console.log('ExpandCollapse watch route, nextRoute:', nextRoute) };
     activeToggles.value = getActiveToggles();
   }
 )
 
 onMounted(() => {
-  if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse mounted');//, siteName);
+  if (import.meta.env.VITE_DEBUG) { console.log('ExpandCollapse mounted') };
   if (selectedResource.value == props.item._featureId) {
     openLocation();
   }
@@ -175,7 +175,7 @@ onMounted(() => {
     }
   }
   if (values.includes(true)) {
-    // if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse mounted, values includes true, printCheckboxes:', printCheckboxes, 'props.item._featureId:', props.item._featureId, 'printCheckboxes.includes(props.item_featureId):', printCheckboxes.includes(props.item_featureId));
+    // if (import.meta.env.VITE_DEBUG) { console.log('ExpandCollapse mounted, values includes true, printCheckboxes:', printCheckboxes, 'props.item._featureId:', props.item._featureId, 'printCheckboxes.includes(props.item_featureId):', printCheckboxes.includes(props.item_featureId)) };
     document.getElementById('checkbox' + props.item._featureId).checked = true;
   }
 
@@ -183,7 +183,7 @@ onMounted(() => {
 });
 
 const siteName = computed(() => {
-  // if (import.meta.env.VITE_DEBUG) console.log('siteName computed');
+  // if (import.meta.env.VITE_DEBUG) { console.log('siteName computed') };
   if (!props.item) {
     return;
   }
@@ -209,14 +209,14 @@ const siteName = computed(() => {
 });
 
 const clickCheckBox = (e) => {
-  if (import.meta.env.VITE_DEBUG) console.log('clickCheckBox is running, e:', e, 'props.item._featureId:', props.item._featureId);
+  if (import.meta.env.VITE_DEBUG) { console.log('clickCheckBox is running, e:', e, 'props.item._featureId:', props.item._featureId) };
   $emit('print-box-checked', props.item._featureId);
 };
 
 const isElementInViewport = (el) => {
-  if (import.meta.env.VITE_DEBUG) console.log('el:', el);
+  if (import.meta.env.VITE_DEBUG) { console.log('el:', el) };
   const rect = el.getBoundingClientRect();
-  // if (import.meta.env.VITE_DEBUG) console.log('bounding box', rect);
+  // if (import.meta.env.VITE_DEBUG) { console.log('bounding box', rect) };
   const visibility = {
     // TODO the 108 below is account for the combined height of the
     // app header and address header. this is not a good long-term
@@ -230,7 +230,7 @@ const isElementInViewport = (el) => {
     bottom: rect.bottom <= (window.innerHeight || document.documentElement.clientHeight),
     right: rect.right <= (window.innerWidth || document.documentElement.clientWidth),
   };
-  // if (import.meta.env.VITE_DEBUG) console.log('visibility', visibility);
+  // if (import.meta.env.VITE_DEBUG) { console.log('visibility', visibility) };
 
   // return if all sides are visible
   return Object.values(visibility).every(val => val);
@@ -240,7 +240,7 @@ const expandLocation = () => {
   MainStore.lastSelectMethod = 'row';
   const selectedResourceId = props.item._featureId;
   let query = { ...route.query };
-  if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse expandLocation query:', query);
+  if (import.meta.env.VITE_DEBUG) { console.log('ExpandCollapse expandLocation query:', query) };
   if (!locationOpen.value) {
     query['resource'] = selectedResourceId;
     router.push({ name: 'home', query });
@@ -248,15 +248,15 @@ const expandLocation = () => {
     delete query.resource;
     router.push({ name: 'home', query });
   }
-  if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse expandLocation after selectedResource is defined');
+  if (import.meta.env.VITE_DEBUG) { console.log('ExpandCollapse expandLocation after selectedResource is defined') };
 };
 
 const openLocation = () => {
   locationOpen.value = true;
   const el = document.getElementsByClassName(props.item._featureId)[0];
-  if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse openLocation is running, el:', el);
+  if (import.meta.env.VITE_DEBUG) { console.log('ExpandCollapse openLocation is running, el:', el) };
   let visible = isElementInViewport(el);
-  if (import.meta.env.VITE_DEBUG) console.log('ExpandCollapse visible 1:', visible)
+  if (import.meta.env.VITE_DEBUG) { console.log('ExpandCollapse visible 1:', visible) };
   if (!visible) {
     el.scrollIntoView({ block: 'center' });
   }

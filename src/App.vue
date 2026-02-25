@@ -1,6 +1,6 @@
 <script setup>
 
-if (import.meta.env.VITE_DEBUG) console.log('App.vue setup is running in debug mode');
+if (import.meta.env.VITE_DEBUG) { console.log('App.vue setup is running in debug mode') };
 
 import { useMainStore } from './stores/MainStore.js';
 import { useConfigStore } from './stores/ConfigStore.js';
@@ -23,7 +23,7 @@ if ($config.publicPath) {
 } else {
   MainStore.publicPath = '/';
 }
-if (import.meta.env.VITE_DEBUG) console.log('$config.publicPath:', $config.publicPath, 'MainStore.publicPath:', MainStore.publicPath);
+if (import.meta.env.VITE_DEBUG) { console.log('$config.publicPath:', $config.publicPath, 'MainStore.publicPath:', MainStore.publicPath) };
 
 // ROUTER
 const route = useRoute();
@@ -46,7 +46,7 @@ onBeforeMount(async () => {
   } else if (i18nEnabled.value) {
     pageTitle = $config.i18n.data.messages.en.app.title;
   }
-  if (import.meta.env.VITE_DEBUG) console.log('App onBeforeMount, $config.i18n.data.messages:', $config.i18n.data.messages, 'pageTitle:', pageTitle, 'route.params:', route.params, 'route.query:', route.query);
+  if (import.meta.env.VITE_DEBUG) { console.log('App onBeforeMount, $config.i18n.data.messages:', $config.i18n.data.messages, 'pageTitle:', pageTitle, 'route.params:', route.params, 'route.query:', route.query) };
   document.title = pageTitle;
 
   window.addEventListener('resize', handleWindowResize);
@@ -60,7 +60,7 @@ const handleWindowResize = () => {
   const rootHeight = rootStyle.getPropertyValue('height');
   const rootWidthNum = parseInt(rootWidth.replace('px', ''));
   const rootHeightNum = parseInt(rootHeight.replace('px', ''));
-  // if (import.meta.env.VITE_DEBUG) console.log('handleWindowResize, rootElement:', rootElement, 'rootWidth:', rootWidth, 'rootHeight:', rootHeight, 'rootWidthNum:', rootWidthNum, 'rootHeightNum:', rootHeightNum);
+  // if (import.meta.env.VITE_DEBUG) { console.log('handleWindowResize, rootElement:', rootElement, 'rootWidth:', rootWidth, 'rootHeight:', rootHeight, 'rootWidthNum:', rootWidthNum, 'rootHeightNum:', rootHeightNum) };
 
   const dim = {
     width: rootWidthNum,
@@ -72,11 +72,11 @@ const handleWindowResize = () => {
 watch(
   () => locale.value,
   (newLocale, oldLocale) => {
-    if (import.meta.env.VITE_DEBUG) console.log('watch locale:', newLocale, oldLocale);
+    if (import.meta.env.VITE_DEBUG) { console.log('watch locale:', newLocale, oldLocale) };
     let startQuery = { ...route.query };
 
     delete startQuery['lang'];
-    if (import.meta.env.VITE_DEBUG) console.log('watch i18nLocale, startQuery:', startQuery);
+    if (import.meta.env.VITE_DEBUG) { console.log('watch i18nLocale, startQuery:', startQuery) };
 
     if (newLocale !== 'en') {
       let query = { 'lang': newLocale };

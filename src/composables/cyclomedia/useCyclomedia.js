@@ -75,7 +75,7 @@ export function useCyclomedia() {
       return null;
     }
     const viewer = response[0];
-    if (import.meta.env.VITE_DEBUG) console.log('CyclomediaPanel.vue setNewLocation, viewer:', viewer, 'response:', response);
+    if (import.meta.env.VITE_DEBUG) { console.log('CyclomediaPanel.vue setNewLocation, viewer:', viewer, 'response:', response) };
     if (viewer.props.ui['panorama.reportBlurring'].visible) viewer.toggleReportBlurring();
     if (viewer.getCenterMapVisible()) viewer.toggleCenterMapVisibility();
     return viewer;
