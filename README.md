@@ -6,12 +6,22 @@ The package is in npm as [@phila/pinboard](https://www.npmjs.com/package/@phila/
 
 It is used to create multiple apps for the City of Philadelphia, including:
 
-|Site|GitHub|
-|---|---|
-|[Primary care finder](https://www.phila.gov/primary-care/)|[repo](https://github.com/CityOfPhiladelphia/primary-care-finder)|
-|[Food and meal finder](https://www.phila.gov/food/)|[repo](https://github.com/CityOfPhiladelphia/free-meals-resource-finder)|
-|[Resources for immigrants](https://www.phila.gov/oia/resource-finder/)|[repo](https://github.com/CityOfPhiladelphia/immigrant-resource-finder)|
-|[Resources for recycling and donation](https://www.phila.gov/recycling-donation-finder/)|[repo](https://github.com/CityOfPhiladelphia/recycling-and-donation-finder)|
+|Site|URL|GitHub|
+|---|---|---|
+|After school and summer program locator|https://www.phila.gov/ost/program-locator/#/|[repo](https://github.com/CityOfPhiladelphia/ost-finder)|
+|Black male resource finder|https://www.phila.gov/obme/resources/|[repo](https://github.com/CityOfPhiladelphia/obme-finder)|
+|Business resource finder|https://www.phila.gov/commerce/business-resource-finder/|[repo](https://github.com/CityOfPhiladelphia/business-technical-support-finder)|
+|Capital projects finder|https://www.phila.gov/capital-projects-finder/|[repo](https://github.com/CityOfPhiladelphia/capital-projects-resource-finder)|
+|COVID-19 testing finder|https://www.phila.gov/covid-testing-sites/|[repo](https://github.com/CityOfPhiladelphia/covid-testing-sites-finder)|
+|Farmers' Markets Finder|https://www.phila.gov/farmers-markets/|[repo](https://github.com/CityOfPhiladelphia/farmers-markets-finder)|
+|Food and meal finder|https://www.phila.gov/food/|[repo](https://github.com/CityOfPhiladelphia/free-meals-resource-finder)|
+|Immigrant resource finder|https://www.phila.gov/oia/resource-finder/|[repo](https://github.com/CityOfPhiladelphia/immigrant-resource-finder)|
+|Lactation space finder - City employee|https://city-lactation-spaces.phila.gov/|[repo](https://github.com/CityOfPhiladelphia/lactation-spaces-finder)|
+|Lactation space finder - Public|https://lactation-spaces.phila.gov/|[repo](https://github.com/CityOfPhiladelphia/lactation-spaces-finder)|
+|Mail-in voting finder|https://vote.phila.gov/ballot-drop-off/|[repo](https://github.com/CityOfPhiladelphia/mail-in-vote-finder)|
+|Philly free wi-fi finder|https://www.phila.gov/wifi/|[repo](https://github.com/CityOfPhiladelphia/wifi-finder)|
+|Primary care finder|https://www.phila.gov/primary-care/|[repo](https://github.com/CityOfPhiladelphia/primary-care-finder)|
+|Recycling and donation finder|https://www.phila.gov/recycling-donation-finder/|[repo](https://github.com/CityOfPhiladelphia/recycling-and-donation-finder)|
 
 ![Phone_List_Example](https://mapboard-images.s3.amazonaws.com/vue3-pinboard/vue3pinboard_phone_list.png)
 ![Phone_Map_Example](https://mapboard-images.s3.amazonaws.com/vue3-pinboard/vue3pinboard_phone_map.png)
