@@ -48,7 +48,7 @@ const router = useRouter();
 const $emit = defineEmits(['geolocate', 'popupClicked']);
 
 // REFs
-const imagerySelected = ref('2024');
+
 
 // COMPUTED VALUES
 // keep image sources as computed props so that the publicPath can be used, for pushing the app to different environments
@@ -289,12 +289,12 @@ const toggleImagery = () => {
   if (import.meta.env.VITE_DEBUG) console.log('toggleImagery, map.getStyle:', map.getStyle(), '$mapConfig.mapLayers:', $mapConfig.mapLayers);
   if (!MapStore.imageryOn) {
     MapStore.imageryOn = true;
-    map.addLayer($mapConfig.mapLayers[imagerySelected.value], 'cyclomediaRecordings')
+    map.addLayer($mapConfig.mapLayers.imagery, 'cyclomediaRecordings')
     map.addLayer($mapConfig.mapLayers.imageryLabels, 'cyclomediaRecordings')
   } else {
     if (import.meta.env.VITE_DEBUG) console.log('map.getStyle().layers:', map.getStyle().layers);
     MapStore.imageryOn = false;
-    map.removeLayer(imagerySelected.value);
+    map.removeLayer('imagery');
     map.removeLayer('imageryLabels');
   }
 }

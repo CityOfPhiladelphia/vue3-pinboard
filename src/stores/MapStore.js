@@ -20,7 +20,6 @@ export const useMapStore = defineStore("MapStore", {
       bufferList: null,
       bufferForAddressOrLocationOrZipcode: null,
       imageryOn: false,
-      imagerySelected: '2024',
       latestSelectedResourceFromMap: null,
       zipcodeCenter: null,
       geolocation: null,
