@@ -9,6 +9,7 @@ $dropdown-menu-min-width: 100px;
   html, body {
     height: 100%;
     width: 100%;
+    overflow: visible !important;
   }
 
   #app {
@@ -44,7 +45,9 @@ $dropdown-menu-min-width: 100px;
 }
 
 
-// html, body, #app are not set because it interferes with the print view
+html, body, #app {
+  overflow-y: hidden;
+}
 
 a {
   color: #0f4d90;
