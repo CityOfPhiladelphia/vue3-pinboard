@@ -40,6 +40,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.7.3
+
+* fixes sorting by distance and disabled vertical scrollbar
+
 ### 2.7.2
 
 * uses 2025 imagery
