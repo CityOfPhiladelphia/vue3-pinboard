@@ -721,7 +721,7 @@ const getDistances = (row) => {
   if (row.geometry) {
     let comparePoint;
     if (GeocodeStore.aisData.features) {
-      comparePoint = GeocodeStore.aisData.features[0].geometry;
+      comparePoint = GeocodeStore.aisData.features[0].geometry.coordinates;
     } else if (MapStore.zipcodeCenter) {
       comparePoint = MapStore.zipcodeCenter;
     } else if (MapStore.geolocation) {
