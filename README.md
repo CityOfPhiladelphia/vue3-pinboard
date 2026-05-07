@@ -40,6 +40,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.7.4
+
+* fixes underlining of icons in mobile and disabled scrollbars in desktop, adds padding to branding logo
+
 ### 2.7.3
 
 * fixes sorting by distance and disabled vertical scrollbar
