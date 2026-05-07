@@ -84,9 +84,11 @@ const brandingImage = computed(() => {
         alt: $config.app.logoAlt,
         width: $config.app.logoWidth || "200px",
       }
-      if ($config.app.logoPaddingLeft) {
-        value.style = { marginLeft: `${$config.app.logoPaddingLeft}px` };
-      }
+      const style = {};
+      if ($config.app.logoPaddingTop) style.marginTop = `${$config.app.logoPaddingTop}px`;
+      if ($config.app.logoPaddingBottom) style.marginBottom = `${$config.app.logoPaddingBottom}px`;
+      if ($config.app.logoPaddingLeft) style.marginLeft = `${$config.app.logoPaddingLeft}px`;
+      if (Object.keys(style).length) value.style = style;
     }
   }
   return value;
