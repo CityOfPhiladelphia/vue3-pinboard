@@ -71,6 +71,14 @@ a {
   }
 }
 
+#mobile-nav a {
+  text-decoration: none !important;
+}
+
+#mobile-menu {
+  overflow: auto !important;
+}
+
 .main {
   position: fixed;
   height: 100dvh !important;
