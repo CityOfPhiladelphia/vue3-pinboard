@@ -85,9 +85,9 @@ const brandingImage = computed(() => {
         width: $config.app.logoWidth || "200px",
       }
       const style = {};
-      if ($config.app.logoPaddingTop) style.marginTop = `${$config.app.logoPaddingTop}px`;
-      if ($config.app.logoPaddingBottom) style.marginBottom = `${$config.app.logoPaddingBottom}px`;
       if ($config.app.logoPaddingLeft) style.marginLeft = `${$config.app.logoPaddingLeft}px`;
+      const translateY = ($config.app.logoPaddingTop || 0) - ($config.app.logoPaddingBottom || 0);
+      if (translateY) style.transform = `translateY(${translateY}px)`;
       if (Object.keys(style).length) value.style = style;
     }
   }
@@ -434,6 +434,10 @@ onBeforeMount(() => {
 onMounted(async () => {
   await nextTick();
   setHeights();
+  const headerEl = document.querySelector('#app-header');
+  if (headerEl && typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(() => setHeights()).observe(headerEl);
+  }
   if ($config.holidays) { getHoliday() }
 
   $config.searchBar.searchTypes.forEach(item => {
@@ -544,6 +548,8 @@ const setHeights = () => {
   // if (import.meta.env.VITE_DEBUG) console.log('setHeights is running');
   let header = document.querySelector("#app-header");
   let headerOffsetHeight = header.offsetHeight;
+  const main = document.querySelector('main');
+  if (main) main.style.marginTop = `${headerOffsetHeight}px`;
   // if (import.meta.env.VITE_DEBUG) console.log('header:', header, 'header.offsetHeight:', header.offsetHeight);
   let addressSearchHolder = document.querySelector("#address-search-holder");
   let addressSearchHolderOffsetHeight = addressSearchHolder.offsetHeight;
