@@ -53,7 +53,7 @@ export const useMapStore = defineStore("MapStore", {
     async geolocate() {
       if (import.meta.env.VITE_DEBUG) console.log('geolocate is running');
       if (!this.geolocation) {
-        navigator.geolocation.getCurrentPosition(this.geofindSuccess, this.geofindError, { enableHighAccuracy: true, timeout: 1000, maximumAge: 0, distanceFilter: 5 });
+        navigator.geolocation.getCurrentPosition(this.geofindSuccess, this.geofindError, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0, distanceFilter: 5 });
       } else {
         this.geolocation = null;
         this.bufferForAddressOrLocationOrZipcode = null;
