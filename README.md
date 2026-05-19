@@ -40,6 +40,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.7.7
+
+* fixes geolocation
+
 ### 2.7.6
 
 * more fixes for header padding
