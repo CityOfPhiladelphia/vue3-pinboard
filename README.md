@@ -40,6 +40,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.7.9
+
+* adds message to user while geolocation is taking place
+
 ### 2.7.8
 
 * fixes cyclomedia from resetting the angle every time the view is moved

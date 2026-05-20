@@ -856,6 +856,7 @@ const checkKeywords = (row) => {
 }
 
 const filterPoints = () => {
+  if (import.meta.env.VITE_DEBUG) console.time('filterPoints');
   if (import.meta.env.VITE_DEBUG) console.log('Main.vue filterPoints is running, database.value:', database.value);
   const filteredRows = [];
 
@@ -912,6 +913,7 @@ const filterPoints = () => {
   // if (import.meta.env.VITE_DEBUG) console.log('filteredRows:', filteredRows);
   // if Finder app passes a custom refine function, Pinboard will use that to modify the current data. Otherwise use the data as is.
   DataStore.currentData = toggleKeys.value.length ? applyToggleRefineFunctions(filteredRows, MainStore.selectedServices) : filteredRows;
+  if (import.meta.env.VITE_DEBUG) console.timeEnd('filterPoints');
 };
 
 const applyToggleRefineFunctions = (locations, services) => {
