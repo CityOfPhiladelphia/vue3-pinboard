@@ -30,7 +30,8 @@ export const useMapStore = defineStore("MapStore", {
       cyclomediaCameraHFov: null,
       cyclomediaCameraXyz: null,
       cyclomediaCameraLngLat: null,
-      cyclomediaYear: null
+      cyclomediaYear: null,
+      geolocateStatus: null,
     };
   },
   actions: {
@@ -42,21 +43,33 @@ export const useMapStore = defineStore("MapStore", {
       this.cyclomediaCameraLngLat = lngLat;
     },
     geofindSuccess(position) {
+      if (import.meta.env.VITE_DEBUG) console.timeEnd('geolocate-gps');
       if (import.meta.env.VITE_DEBUG) console.log('geofindSuccess is running, position:', position);
       const MainStore = useMainStore();
       MainStore.shouldShowGreeting = false;
       this.geolocation = [position.coords.longitude, position.coords.latitude];
+      this.geolocateStatus = null;
     },
     geofindError(error) {
       if (import.meta.env.VITE_DEBUG) console.log('geofindError is running, error:', error);
+      this.geolocateStatus = 'error';
+      setTimeout(() => {
+        if (this.geolocateStatus === 'error') this.geolocateStatus = null;
+      }, 5000);
     },
     async geolocate() {
       if (import.meta.env.VITE_DEBUG) console.log('geolocate is running');
       if (!this.geolocation) {
-        navigator.geolocation.getCurrentPosition(this.geofindSuccess, this.geofindError, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0, distanceFilter: 5 });
+        if (import.meta.env.VITE_DEBUG) console.time('geolocate-gps');
+        this.geolocateStatus = 'loading';
+        navigator.geolocation.getCurrentPosition(this.geofindSuccess, this.geofindError, { enableHighAccuracy: false, timeout: 10000, maximumAge: 0, distanceFilter: 5 });
       } else {
+        this.geolocateStatus = 'clearing';
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         this.geolocation = null;
         this.bufferForAddressOrLocationOrZipcode = null;
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        this.geolocateStatus = null;
       }
     },
     async fillZipcodeCenter(zipcode) {

@@ -88,6 +88,13 @@ const pwdCoordinates = computed(() => {
   }
 });
 
+const geolocateStatusMessage = computed(() => {
+  if (MapStore.geolocateStatus === 'loading') return 'Locating you…';
+  if (MapStore.geolocateStatus === 'clearing') return 'Clearing location…';
+  if (MapStore.geolocateStatus === 'error') return 'Couldn\'t get your location';
+  return '';
+});
+
 // WATCHERS
 watch(
   () => MapStore.searchDistance,
@@ -99,9 +106,9 @@ watch(
 watch(
   () => MapStore.geolocation,
   async newGeolocation => {
-    MapStore.fillBufferForAddressOrLocationOrZipcode();
     if (import.meta.env.VITE_DEBUG) console.log('Map.vue geolocation watch, newGeolocation:', newGeolocation);
     if (newGeolocation) {
+      MapStore.fillBufferForAddressOrLocationOrZipcode();
       map.setCenter(newGeolocation);
       map.getSource('geolocationMarker').setData(point(newGeolocation));
     } else {
@@ -676,6 +683,19 @@ onMounted(async () => {
       @geolocate="$emit('geolocate')"
     />
 
+    <div
+      v-if="MapStore.geolocateStatus"
+      class="geolocate-status-banner"
+      :class="MapStore.geolocateStatus === 'error' ? 'is-error' : 'is-loading'"
+    >
+      <font-awesome-icon
+        v-if="MapStore.geolocateStatus !== 'error'"
+        icon="fa-solid fa-spinner"
+        spin
+      />
+      <span>{{ geolocateStatusMessage }}</span>
+    </div>
+
     <ImageryToggleControl @toggle-imagery="toggleImagery" />
     <CyclomediaControl @toggle-cyclomedia="toggleCyclomedia" />
 
@@ -700,6 +720,34 @@ onMounted(async () => {
 
 .center-spinner {
   color: #333333;
+}
+
+.geolocate-status-banner {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  padding: 8px 14px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 0 0 1px rgba(34, 41, 47, 0.1), 0 2px 4px 0 rgba(34, 41, 47, 0.2);
+}
+
+.geolocate-status-banner.is-loading {
+  background-color: #3e8ed0;
+  color: white;
+}
+
+.geolocate-status-banner.is-error {
+  background-color: #ffe08a;
+  color: rgba(0, 0, 0, 0.7);
 }
 
 </style>
