@@ -40,6 +40,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.7.10
+
+* adds translation to legends
+
 ### 2.7.9
 
 * adds message to user while geolocation is taking place
