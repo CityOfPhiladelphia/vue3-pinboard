@@ -1,6 +1,8 @@
 <script setup>
 
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+const { t, te } = useI18n();
 
 const props = defineProps({
   'position': {
@@ -20,6 +22,12 @@ const props = defineProps({
 const keys = computed(() => {
   return Object.keys(props.items);
 });
+
+// Legend keys are shown as-is unless the app provides a categoryType translation for them.
+const label = (key) => {
+  const path = 'categoryType.' + key;
+  return te(path) || te(path, 'en') ? t(path) : key;
+};
 
 </script>
 
@@ -56,7 +64,7 @@ const keys = computed(() => {
             class="legend-circle"
           />
           <div class="list-text">
-            {{ key }}
+            {{ label(key) }}
           </div>
         </li>
       </ul>
