@@ -7,6 +7,7 @@ import { useMainStore } from '../stores/MainStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
 import { computed } from 'vue';
+import trackEvent from '../util/track-event.js';
 
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
@@ -101,6 +102,7 @@ const handleSubmit = (val) => {
   val = val.trim();
   if (!val) return;
   let query;
+  let searchType;
   let valAsFloat = parseFloat(val.substring(0));
   let valToString = valAsFloat.toString();
   let checkVals = val === valToString;
@@ -135,18 +137,29 @@ const handleSubmit = (val) => {
         MainStore.selectedKeywords.add(keyword.trim());
       })
       query = { ...startQuery, ...{ 'keyword': [...MainStore.selectedKeywords].toString() }};
+      searchType = 'keyword';
     }
   } else if (checkVals) {
     if (import.meta.env.VITE_DEBUG) console.log('its a zipcode');
     if ($config.allowZipcodeSearch) {
       query = { 'zipcode': val };
+      searchType = 'zipcode';
     }
   } else {
     if (import.meta.env.VITE_DEBUG) console.log('its an address');
     query = { 'address': val };
+    searchType = 'address';
   }
   if (import.meta.env.VITE_DEBUG) console.log('handleSubmit is running, valAsFloat:', valAsFloat, 'startQuery:', startQuery, 'route.query:', route.query, 'query:', query, 'val:', val, 'val.substring(0, 1):', val.substring(0, 1));
   router.push({ query: { ...startQuery, ...query }});
+  if (searchType) {
+    // search_term is always sent, because Tag Manager otherwise keeps the previous search's term
+    // only keyword searches record what was typed; addresses and zipcodes are never sent
+    trackEvent('search', {
+      search_type: searchType,
+      search_term: searchType === 'keyword' ? val : undefined,
+    });
+  }
 };
 
 const holder = computed(() => {

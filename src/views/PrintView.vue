@@ -6,6 +6,7 @@ import { useMainStore } from '../stores/MainStore.js';
 import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 import { useI18n } from 'vue-i18n';
+import trackEvent from '../util/track-event.js';
 const MainStore = useMainStore();
 const DataStore = useDataStore();
 const ConfigStore = useConfigStore();
@@ -53,6 +54,7 @@ onMounted(async () => {
   if (printCheckboxes.value.length === 0) {
     router.push({ name: 'home' });
   } else {
+    trackEvent('print');
     setTimeout(() => {
       window.print();
     }, 500);
