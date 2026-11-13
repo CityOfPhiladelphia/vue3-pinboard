@@ -7,7 +7,7 @@ import { useGeocodeStore } from '../../stores/GeocodeStore.js';
 import { useDataStore } from '../../stores/DataStore.js';
 import { useConfigStore } from '../../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
-import { ref, computed, onMounted, watch, nextTick } from 'vue';
+import { computed, onMounted, watch, nextTick } from 'vue';
 
 // COMPONENTS
 import AddressSearchControl from '../AddressSearchControl.vue';
