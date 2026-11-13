@@ -6,7 +6,7 @@ import { useRouter, useRoute } from 'vue-router'
 import initRouter from './router'
 
 // i18n
-import { createI18n } from 'vue-i18n'
+import { createI18n, useI18n } from 'vue-i18n'
 import i18nFromFiles from './i18n/i18n.js';
 
 // DATA STORES
@@ -166,4 +166,4 @@ export default function pinboard(config) {
   app.mount('#app')
 };
 
-export { useDataStore, useMainStore, useConfigStore, useRouter, useRoute };
+export { useDataStore, useMainStore, useConfigStore, useRouter, useRoute, useI18n };

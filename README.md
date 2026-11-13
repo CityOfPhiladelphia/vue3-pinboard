@@ -40,6 +40,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.8.1
+
+* exports `useI18n`, so apps can use pinboard's vue-i18n instead of installing their own
+
 ### 2.8.0
 
 * upgrades maplibre-gl to 6.18
