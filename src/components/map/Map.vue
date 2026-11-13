@@ -19,12 +19,14 @@ import CyclomediaRecordingsClient from '../../util/recordings-client.js';
 import OverlayLegend from './OverlayLegend.vue';
 
 // MAPLIBRE
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-// this was recommended by a comment in https://github.com/mapbox/mapbox-gl-js/issues/9114
-// the official mapbox-gl-draw was blocking map clicks
-import '../../assets/mapbox-gl-draw.min.js'
-import '../../assets/maplibre-gl-draw.css';
+// maplibre looks for its worker file next to its own file, which no longer exists once pinboard and then each app bundle it,
+// so the worker's code is carried as text and handed to maplibre as a blob URL
+import maplibreWorkerSource from 'maplibre-gl/dist/maplibre-gl-worker.mjs?raw';
+maplibregl.setWorkerUrl(URL.createObjectURL(new Blob([ maplibreWorkerSource ], { type: 'text/javascript' })));
+// bundled into pinboard so every app gets the same marker without keeping its own copy in public/images
+import addressMarkerImage from '../../assets/images/address-marker.png';
 import destination from '@turf/destination';
 import { point, polygon, featureCollection } from '@turf/helpers';
 import centerOfMass from '@turf/center-of-mass';
@@ -52,10 +54,6 @@ const $emit = defineEmits(['geolocate', 'popupClicked']);
 
 // COMPUTED VALUES
 // keep image sources as computed props so that the publicPath can be used, for pushing the app to different environments
-const markerSrc = computed(() => {
-  return MainStore.publicPath + 'images/marker_blue_base_5.png';
-})
-
 const cameraSrc = computed(() => {
   return MainStore.publicPath + 'images/camera.png';
 })
@@ -572,7 +570,7 @@ onMounted(async () => {
   })
 
   // add the address marker and camera icon sources
-  const markerImage = await map.loadImage(markerSrc.value)
+  const markerImage = await map.loadImage(addressMarkerImage)
   if (import.meta.env.VITE_DEBUG) console.log('markerImage:', markerImage);
   map.addImage('marker-blue', markerImage.data);
   const cameraImage = await map.loadImage(cameraSrc.value)

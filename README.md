@@ -40,6 +40,11 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.8.0
+
+* upgrades maplibre-gl to 6.18
+* address marker image is now bundled into pinboard, so apps no longer need their own `public/images/marker_blue_base_5.png`
+
 ### 2.7.13
 
 * updates dependencies, including vue-i18n security fix
