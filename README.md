@@ -40,6 +40,18 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.7.13
+
+* updates dependencies, including vue-i18n security fix
+
+### 2.7.12
+
+* fixes google analytics tags
+
+### 2.7.11
+
+* uses OIDC to push to npmjs
+
 ### 2.7.10
 
 * adds translation to legends
