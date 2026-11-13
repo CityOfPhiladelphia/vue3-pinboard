@@ -54,7 +54,7 @@ onMounted(async () => {
   if (printCheckboxes.value.length === 0) {
     router.push({ name: 'home' });
   } else {
-    trackEvent('print');
+    trackEvent('finder_print');
     setTimeout(() => {
       window.print();
     }, 500);

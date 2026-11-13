@@ -104,7 +104,7 @@ const initRouter = (publicPath) => {
     const fromServices = from.query.services ? from.query.services.split(',') : [];
     const toServices = to.query.services ? to.query.services.split(',') : [];
     for (let service of toServices.filter(service => !fromServices.includes(service))) {
-      trackEvent('filter_select', { filter: service });
+      trackEvent('finder_filter_select', { finder_selected_filter: service });
     }
 
     // if (to.query.resource && to.query.resource != from.query.resource) {
