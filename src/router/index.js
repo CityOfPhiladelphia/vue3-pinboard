@@ -8,6 +8,7 @@ import { useMapStore } from '../stores/MapStore.js';
 import { useGeocodeStore } from '../stores/GeocodeStore.js';
 import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
+import trackEvent from '../util/track-event.js';
 
 const getGeocodeAndPutInStore = async (address) => {
   const MapStore = useMapStore();
@@ -95,6 +96,17 @@ const initRouter = (publicPath) => {
     const MapStore = useMapStore();
     const GeocodeStore = useGeocodeStore();
     if (import.meta.env.VITE_DEBUG) console.log('router.afterEach to:', to, 'from:', from);
+
+    // these run on the first page load too, so a shared link that opens in a language or with filters checked counts
+    if (to.query.lang && to.query.lang != from.query.lang) {
+      trackEvent('language_change', { language: to.query.lang });
+    }
+    const fromServices = from.query.services ? from.query.services.split(',') : [];
+    const toServices = to.query.services ? to.query.services.split(',') : [];
+    for (let service of toServices.filter(service => !fromServices.includes(service))) {
+      trackEvent('finder_filter_select', { finder_selected_filter: service });
+    }
+
     // if (to.query.resource && to.query.resource != from.query.resource) {
     if (to.query.resource) {
       DataStore.selectedResource = to.query.resource;

@@ -11,9 +11,6 @@ export const useMainStore = defineStore('MainStore', {
       clearAllClicked: false,
       // currentSearch: null,
       // alertResponse: null,
-      gtag: {
-        category: 'unspecified-pinboard-app'
-      },
       holiday: {
         holiday_label: '',
         coming_soon: false,

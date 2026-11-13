@@ -7,7 +7,6 @@ import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
 import { ref, computed, getCurrentInstance, onBeforeMount, onMounted, watch } from 'vue';
-import { event } from 'vue-gtag'
 import PrintShareSection from './PrintShareSection.vue';
 import ExpandCollapse from './ExpandCollapse.vue';
 import { useI18n } from 'vue-i18n';
@@ -434,19 +433,11 @@ const clickedSelectAll = () => {
 
 const clickedViewList = () => {
   MainStore.shouldShowGreeting = false;
-  event('click', {
-    'event_category': $config.gtag.category,
-    'event_label': 'view list',
-  });
 };
 
 const clickedViewMap = () => {
   MainStore.shouldShowGreeting = false;
   $emit('clicked-view-map');
-  event('click', {
-    'event_category': $config.gtag.category,
-    'event_label': 'view map',
-  });
 };
 
 const parseAddress = (address) => {

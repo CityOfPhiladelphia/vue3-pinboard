@@ -7,7 +7,6 @@ import { useDataStore } from '../stores/DataStore.js';
 import { useConfigStore } from '../stores/ConfigStore.js';
 import { useRoute, useRouter } from 'vue-router';
 import { ref, computed, getCurrentInstance, onMounted, watch, onBeforeMount, nextTick } from 'vue';
-import { event } from 'vue-gtag'
 
 const ConfigStore = useConfigStore();
 const $config = ConfigStore.config;
@@ -337,11 +336,6 @@ watch(
     } else {
       router.push({ query: { ...startQuery } });
     }
-
-    event('language-click', {
-      'event_category': $config.gtag.category,
-      'event_label': nexti18nLocale,
-    })
   }
 );
 

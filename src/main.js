@@ -1,6 +1,5 @@
 import App from './App.vue'
 import { createApp } from 'vue'
-import VueGtag from "vue-gtag";
 
 // ROUTER
 import { useRouter, useRoute } from 'vue-router'
@@ -161,14 +160,6 @@ export default function pinboard(config) {
 
   const router = initRouter(config.publicPath);
   if (import.meta.env.VITE_DEBUG) console.log('router:', router);
-
-  app.use(VueGtag, {
-    disableScriptLoad: true,
-    config: {
-      id: 'GTM-MC6CR2',
-      // id: 'G-NHET8T5XY8',
-    }
-  }, router);
 
   app.use(router);
   // app.config.globalProperties.window = window
