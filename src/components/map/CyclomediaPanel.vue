@@ -139,15 +139,15 @@ const setNewLocation = async (coords) => {
     }
 
     viewer.on('VIEW_CHANGE', function(e) {
-      if (import.meta.env.VITE_DEBUG) console.log('on VIEW_CHANGE fired, type:', e.type, 'detail:', e.detail, 'viewer.props:', viewer.props, 'viewer.props.orientation.xyz:', viewer.props.orientation.xyz, 'MapStore.cyclomediaCameraXyz:', MapStore.cyclomediaCameraXyz);
+      if (import.meta.env.VITE_DEBUG) console.log('on VIEW_CHANGE fired, type:', e.type, 'detail:', e.detail, 'viewer.props:', viewer.props, 'viewer.props.recording.xyz:', viewer.props.recording.xyz, 'MapStore.cyclomediaCameraXyz:', MapStore.cyclomediaCameraXyz);
       if (MapStore.cyclomediaOn) {
         MapStore.cyclomediaCameraYaw = e.detail.yaw;
         MapStore.cyclomediaCameraHFov = e.detail.hFov;
         $emit('updateCameraYaw', e.detail.yaw);
         $emit('updateCameraHFov', e.detail.hFov, e.detail.yaw);
-        if (viewer.props.orientation.xyz !== MapStore.cyclomediaCameraXyz) {
-          const lngLat = [ viewer.props.orientation.xyz[0], viewer.props.orientation.xyz[1] ];
-          MapStore.setCyclomediaCameraLngLat(lngLat, viewer.props.orientation.xyz);
+        if (viewer.props.recording.xyz !== MapStore.cyclomediaCameraXyz) {
+          const lngLat = [ viewer.props.recording.xyz[0], viewer.props.recording.xyz[1] ];
+          MapStore.setCyclomediaCameraLngLat(lngLat, viewer.props.recording.xyz);
           $emit('updateCameraLngLat', lngLat);
         }
       }
@@ -157,9 +157,9 @@ const setNewLocation = async (coords) => {
       if (import.meta.env.VITE_DEBUG) console.log('on VIEW_LOAD_END fired, type:', e.type, 'e:', e, 'viewer.props.orientation:', viewer.props.orientation, 'viewer.props:', viewer.props);
       if (import.meta.env.VITE_DEBUG) console.log('update cyclomedia date, viewer.props.recording.year:', viewer.props.recording.year);
       MapStore.cyclomediaYear = viewer.props.recording.year;
-      if (viewer.props.orientation.xyz !== MapStore.cyclomediaCameraXyz) {
-        const lngLat = [ viewer.props.orientation.xyz[0], viewer.props.orientation.xyz[1] ];
-        MapStore.setCyclomediaCameraLngLat(lngLat, viewer.props.orientation.xyz);
+      if (viewer.props.recording.xyz !== MapStore.cyclomediaCameraXyz) {
+        const lngLat = [ viewer.props.recording.xyz[0], viewer.props.recording.xyz[1] ];
+        MapStore.setCyclomediaCameraLngLat(lngLat, viewer.props.recording.xyz);
         $emit('updateCameraLngLat', lngLat);
         const orientation = viewer.getOrientation();
         if (import.meta.env.VITE_DEBUG) console.log('orientation:', orientation);

@@ -20,7 +20,7 @@ const reactDom_script = {
 }
 
 const streetSmartApi_script = {
-  src: "https://streetsmart.cyclomedia.com/api/v25.8/StreetSmartApi.js",
+  src: "https://streetsmart.cyclomedia.com/api/v26.4/StreetSmartApi.js",
   type: "text/javascript"
 }
 
