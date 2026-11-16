@@ -40,6 +40,10 @@ Create pull request for changes and merge into `main` branch.  run `npm version 
 
 ## Release Notes
 
+### 2.8.2
+
+* upgrades Cyclomedia's StreetSmart API from v25.8 to v26.4, and reads the camera position from its new location (`viewer.props.recording.xyz`)
+
 ### 2.8.1
 
 * exports `useI18n`, so apps can use pinboard's vue-i18n instead of installing their own
